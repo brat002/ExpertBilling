@@ -206,7 +206,7 @@ def trafficnode(request):
 @ajax_request
 @systemuser_required
 def trafficnode_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('nas.delete_trafficnode')):
+    if  not (request.user.is_staff==True and request.user.account.has_perm('nas.delete_trafficnode')):
         return {'status':False, 'message': _(u'У вас нет прав на удаление направлений')}
     id = request.GET.getlist('d')
     if id:
@@ -220,11 +220,11 @@ def trafficnode_delete(request):
         return {"status": True}
     else:
         return {"status": False, "message": "TrafficNode not found"} 
-    
+
 @ajax_request
 @systemuser_required
 def trafficclass_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.delete_trafficclass')):
+    if  not (request.user.is_staff==True and request.user.account.has_perm('billservice.delete_trafficclass')):
         return {'status':False, 'message': _(u'У вас нет прав на удаление классов трафика')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:

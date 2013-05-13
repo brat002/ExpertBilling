@@ -148,7 +148,7 @@ class check_vpn_access(Thread):
 
                 cur.connection.commit()
                 cur.execute("""SELECT rs.id,rs.account_id, rs.subaccount_id, rs.sessionid,rs.framed_ip_address, rs.speed_string,
-                                    lower(rs.framed_protocol) AS access_type,rs.nas_id, extract('epoch' from %s-rs.interrim_update) as last_update, rs.date_start,rs.ipinuse_id, rs.caller_id, ((SELECT pool_id FROM billservice_ipinuse WHERE id=rs.ipinuse_id)=(SELECT vpn_guest_ippool_id FROM billservice_tariff WHERE id=get_tarif(rs.account_id)))::boolean as guest_pool, rs.nas_port_id
+                                    lower(rs.framed_protocol) AS access_type,rs.nas_int_id, extract('epoch' from %s-rs.interrim_update) as last_update, rs.date_start,rs.ipinuse_id, rs.caller_id, ((SELECT pool_id FROM billservice_ipinuse WHERE id=rs.ipinuse_id)=(SELECT vpn_guest_ippool_id FROM billservice_tariff WHERE id=get_tarif(rs.account_id)))::boolean as guest_pool, rs.nas_port_id
                                     FROM radius_activesession AS rs WHERE rs.date_end IS NULL AND rs.date_start <= %s and session_status='ACTIVE';""", (dateAT, dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
@@ -158,7 +158,7 @@ class check_vpn_access(Thread):
                     try:
                         rs = RadiusSession(*row)
                         result=None
-                        nas = caches.nas_cache.by_ip.get(str(rs.nas_id))
+                        nas = caches.nas_cache.by_id.get(rs.nas_id)
                         acc = caches.account_cache.by_account.get(rs.account_id)
                         subacc = caches.subaccount_cache.by_id.get(rs.subaccount_id)
                         if not nas : continue
@@ -228,12 +228,12 @@ class check_vpn_access(Thread):
                         from_start = (dateAT-rs.date_start).seconds+(dateAT-rs.date_start).days*86400
                             
                         if (rs.time_from_last_update and rs.time_from_last_update+15>=nas.acct_interim_interval*3+3) or (not rs.time_from_last_update and from_start>=nas.acct_interim_interval*3+3):
-                            cur.execute("""UPDATE radius_activesession SET session_status='ACK' WHERE sessionid=%s;
-                                        """, (rs.sessionid,))
+                            cur.execute("""UPDATE radius_activesession SET session_status='ACK' WHERE id=%s;
+                                        """, (rs.id,))
                             cur.execute("""
                             UPDATE billservice_ipinuse SET disabled=now() WHERE id=%s
                             """, (rs.ipinuse_id, ))
-                            cur.connection.commit()               
+                        cur.connection.commit()               
                     
                     except Exception, ex:
                         logger.error("%s: row exec exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -1423,7 +1423,7 @@ class settlement_period_service_dog(Thread):
                         if ex.__class__ in vars.db_errors: raise ex
                 cur.connection.commit()
                 #Делаем проводки по разовым услугам тем, кому их ещё не делали
-                cur.execute("""SELECT tr.id
+                cur.execute("""SELECT DISTINCT tr.id
                                     FROM billservice_transaction as tr
                                     WHERE 
                                     promise_expired = False and type_id='PROMISE_PAYMENT' and
@@ -1433,7 +1433,7 @@ class settlement_period_service_dog(Thread):
                 if promises:
                     cur.execute("""
                             INSERT INTO billservice_transaction(bill, account_id, type_id, approved, summ, description, created, promise_expired) 
-                            SELECT id,account_id, 'PROMISE_DEBIT', approved, (-1)*summ, description, now(), True
+                            SELECT id, account_id, 'PROMISE_DEBIT', approved, (-1)*summ, description, now(), True
                               FROM billservice_transaction as tr
                               WHERE tr.id in (%s) and type_id='PROMISE_PAYMENT';
                     """ % ', '.join([str(x[0]) for x in promises]))

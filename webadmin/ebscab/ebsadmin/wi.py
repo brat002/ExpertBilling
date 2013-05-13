@@ -26,7 +26,7 @@ from ebsadmin.transactionreport import TRANSACTION_MODELS, model_by_table
 
 from billservice.models import Account, Transaction, TransactionType, PeriodicalServiceHistory, PeriodicalService, AccountAddonService, TotalTransactionReport as TransactionReport, OneTimeServiceHistory, SubAccount, AccountTarif, SuspendedPeriod, AccountHardware,\
     AddonServiceTransaction, SwitchPort
-from billservice.forms import SubAccountForm, AccountAddonService, TransactionModelForm
+from billservice.forms import SubAccountForm, SubAccountPartialForm, AccountAddonService, TransactionModelForm
 from billservice.models import SubAccount, AddonService, BalanceHistory, IPInUse
 from billservice.forms import TransactionReportForm, TransactionModelForm, AddonServiceForm, BallanceHistoryForm, TemplateSelectForm
 from billservice.forms import AccountAddonServiceModelForm, AccountHardwareForm
@@ -430,7 +430,7 @@ def accountsreport(request):
                 res = res.filter(elevator_direction=elevator_direction)
             
             if phone:
-                res = res.filter(Q(phone_h_contains=phone)| Q(phone_m_contains=phone))
+                res = res.filter(Q(phone_h__contains=phone)| Q(phone_m__contains=phone))
                 
             if status:
                 res = res.filter(status=status)
@@ -676,6 +676,7 @@ def accountedit(request):
 
         account = Account.objects.all_with_deleted().get(id=account_id)
         
+
             
 
         res = SubAccount.objects.filter(account=account)
@@ -709,13 +710,39 @@ def accountedit(request):
         if  not (request.user.account.has_perm('billservice.add_account')):
             messages.error(request, _(u'У вас нет прав на создание аккаунтов'), extra_tags='alert-danger')
             return HttpResponseRedirect(request.path)
-
+    
+    subaccount_form = None
+    subaccounts_count = 0
+    if account and request.method=='POST':
+        print 33
+        subaccounts_count = SubAccount.objects.filter(account=account).count()
+    
+    
+        if subaccounts_count==1:
+            subaccount = SubAccount.objects.filter(account=account)[0]
+            subaccount_form = SubAccountPartialForm(request.POST, instance=subaccount, prefix='subacc')
+    elif account and request.method=='GET':
+        print 44
+        subaccounts_count = SubAccount.objects.filter(account=account).count()
+    
+    
+        if subaccounts_count==1:
+            subaccount = SubAccount.objects.filter(account=account)[0]
+            subaccount_form = SubAccountPartialForm( instance=subaccount, prefix='subacc')        
+    else:
+        print 55
+        subaccount_form = SubAccountPartialForm(request.POST, prefix='subacc')
+    
+    print 66
     if request.method=='POST':
-
+        print 77
         if account and request.POST:
             form = AccountForm(request.POST, instance=account)
             org = Organization.objects.filter(account=account)
 
+
+
+                
             if org:
                 org_form = OrganizationForm(request.POST, instance=org[0], prefix='org')
                 bank = org[0].bank
@@ -735,22 +762,57 @@ def accountedit(request):
             form = AccountForm(request.POST)
             org_form = OrganizationForm(request.POST, prefix='org')
             bank_form = BankDataForm(request.POST, prefix='bankdata')
+            print 88
         
-        
-
+        print 99
         extra_form = AccountExtraForm(request.POST, instance=account)
         
-        if form.is_valid():
+        
 
+          
+        if form.is_valid():
+            print 10
             if not org_form.is_valid():
 
-                return {'extra_form': extra_form, 'org_form':org_form, 'prepaidtraffic':prepaidtraffic,  'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime, 'bank_form': bank_form, "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
+                return {'subaccount_form': subaccount_form, 'extra_form': extra_form, 'org_form':org_form, 'prepaidtraffic':prepaidtraffic,  'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime, 'bank_form': bank_form, "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
             
-
+            print 11
             model =form.save(commit=False)
             model.save()
             contract_num = form.cleaned_data.get("contract_num")
+            print 'ACCOUNT SAVED', subaccounts_count
+            if subaccounts_count<=1:
 
+                new = False
+                if subaccounts_count==0:
+                    subaccount = SubAccount(account=model)
+                    subaccount.save()
+                    new = True
+                    subaccount_form = SubAccountPartialForm(request.POST, instance = subaccount, prefix='subacc')
+                else:
+                    subaccount = SubAccount.objects.filter(account=model)[0]
+
+                subaccount_form = SubAccountPartialForm(request.POST, instance=subaccount, prefix='subacc')
+                    
+                if subaccount_form.is_valid():
+                    print 'form valid'
+                    
+                    subacc_model = subaccount_form.save(commit=False)
+                    if subacc_model.username or subacc_model.nas or subacc_model.ipn_ip_address or subacc_model.vpn_ip_address or subacc_model.vpn_ipv6_ip_address or subacc_model.ipv4_vpn_pool or subacc_model.ipv4_ipn_pool or subacc_model.switch:
+                        subacc_model.save()
+                        log('EDIT', request.user, subacc_model) if id else log('CREATE', request.user, subacc_model)
+                    else:
+                         subacc_model.delete()
+                else:
+                    if new == True:
+                        subaccount.delete()
+
+                    if subaccount_form.errors:
+                        for k, v in subaccount_form._errors.items():
+                            messages.error(request, '%s=>%s' % (k, ','.join(v)), extra_tags='alert-danger')
+                    return {'subaccount_form': subaccount_form, 'extra_form': extra_form, 'org_form':org_form, 'prepaidtraffic':prepaidtraffic,  'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime, 'bank_form': bank_form, "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
+
+            print 12       
             if not model.contract and contract_num:
                 contract_template = contract_num.template
                 contract_counter = contract_num.counter or 1
@@ -775,6 +837,8 @@ def accountedit(request):
                 contract_num.count = contract_counter
                 contract_num.save()
                     
+
+                            
             #print dir(org_form) 
             if form.cleaned_data.get('organization'):
                 org_model = org_form.save(commit=False)
@@ -794,6 +858,8 @@ def accountedit(request):
             messages.success(request, u'Аккаунт сохранён.', extra_tags='alert-success')
             return HttpResponseRedirect("%s?id=%s" % (reverse("account_edit"), model.id))
         else:
+            print 'DEBUG'
+            print form._errors
             if form._errors:
                 for k, v in form._errors.items():
                     messages.error(request, '%s=>%s' % (k, ','.join(v)), extra_tags='alert-danger')
@@ -808,7 +874,7 @@ def accountedit(request):
                 for k, v in bank_form._errors.items():
                     messages.error(request, '%s=>%s' % (k, ','.join(v)), extra_tags='alert-danger')
                 
-            return {'extra_form': extra_form, 'ticket_table': ticket_table, 'org_form':org_form, 'bank_form': bank_form,  'prepaidtraffic':prepaidtraffic, 'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
+            return {'subaccount_form': subaccount_form,'extra_form': extra_form, 'ticket_table': ticket_table, 'org_form':org_form, 'bank_form': bank_form,  'prepaidtraffic':prepaidtraffic, 'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
     if account:
         
         
@@ -832,7 +898,9 @@ def accountedit(request):
         extra_form = AccountExtraForm()
         org_form = OrganizationForm(prefix='org')
         bank_form = BankDataForm(prefix='org')
-    return { 'form':form, 'extra_form': extra_form, 'org_form':org_form, 'bank_form': bank_form,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table, 
+    if not subaccount_form and subaccounts_count==0:
+        subaccount_form = SubAccountPartialForm(request.POST, prefix='subacc')
+    return { 'form':form, 'subaccount_form': subaccount_form, 'extra_form': extra_form, 'org_form':org_form, 'bank_form': bank_form,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table, 
             'ticket_table': ticket_table} 
 
 @systemuser_required
@@ -882,9 +950,7 @@ def subaccountedit(request):
         else:
             form = SubAccountForm(request.POST)
         
-        vpn_ipinuse=subaccount.vpn_ipinuse if subaccount else None
-        vpn_ipv6_ipinuse=subaccount.vpn_ipv6_ipinuse if subaccount else None
-        ipn_ipinuse=subaccount.ipn_ipinuse if subaccount else None
+
         if form.is_valid():
             username = form.cleaned_data.get("username")
             ipn_mac_address = form.cleaned_data.get("ipn_mac_address")
@@ -895,196 +961,27 @@ def subaccountedit(request):
             ipv6_vpn_pool = form.cleaned_data.get("ipv6_vpn_pool")
             vpn_ipv6_ip_address = form.cleaned_data.get("vpn_ipv6_ip_address")
             
-            if username:
-                if id:
-                    subaccs = SubAccount.objects.filter(username = username).exclude(account = account).count()
-                else:
-                    subaccs = SubAccount.objects.filter(account__id = account_id, username = username).count()
-                #print 'subaccs', subaccs
-                if subaccs>0:
-                    return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form, 'message':u'Выбранное имя пользователя используется в другом аккаунте'}
     
     
-            if ipn_mac_address:    
-                subaccs = SubAccount.objects.exclude(account__id = account_id).filter(ipn_mac_address = ipn_mac_address).count()
-    
-                if subaccs>0:
-                    return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form, 'message':u'Выбранный мак-адрес используется в другом аккаунте'}
-    
-            if str(vpn_ip_address) not in ('','0.0.0.0', '0.0.0.0/32'):    
-                subaccs = SubAccount.objects.exclude(account__id = account_id).filter(vpn_ip_address = vpn_ip_address).count()
-    
-                if subaccs>0:
-                    return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form,  'message':u'Выбранный vpn_ip_address используется в другом аккаунте'}
-    
-            if str(ipn_ip_address) not in ('', '0.0.0.0', '0.0.0.0/32'):    
-    
-                subaccs = SubAccount.objects.exclude(account__id = account_id).filter(ipn_ip_address = ipn_ip_address).count()
-    
-                if subaccs>0:
 
-                    return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form,  'message':u'Выбранный ipn_ip_address используется в другом аккаунте'}
-    
-    
-            if str(vpn_ipv6_ip_address) not in ('','::', ':::'):    
-                subaccs = SubAccount.objects.exclude(account__id = account_id).filter(vpn_ipv6_ip_address = vpn_ipv6_ip_address).count()
-    
-                if subaccs>0:
-                    return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form,  'message':u'Выбранный ipv6 vpn_ip_address используется в другом аккаунте'}
     
             #print 111
 
             #print '1111111', subaccount, vpn_ipinuse, ipn_ipinuse, subaccount.ipv4_vpn_pool
-            if subaccount and vpn_ipinuse:
-    
-                #vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
-                #print 222
-                if  str(vpn_ip_address) not in ['0.0.0.0', '0.0.0.0/32','',None]:
-                    if ipv4_vpn_pool:
-                        if not IPy.IP(ipv4_vpn_pool.start_ip).int()<=IPy.IP(vpn_ip_address).int()<=IPy.IP(ipv4_vpn_pool.end_ip).int():
 
-                            return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form, 'message':u'Выбранный VPN IP адрес не принадлежит указанному VPN пулу'}
-                        
-                        #print 333
-                        if vpn_ipinuse.ip!=vpn_ip_address:
-                            obj = IPInUse.objects.get(id=vpn_ipinuse.id)
-                            obj.disabled=datetime.datetime.now()
-                            obj.save()
-                            #print 444
-                            log('EDIT', request.user, obj)
-                            vpn_ipinuse = IPInUse.objects.create(pool=ipv4_vpn_pool,ip=vpn_ip_address,datetime=datetime.datetime.now())
-                            log('EDIT', request.user, vpn_ipinuse)
-                    else:
-                        obj = IPInUse.objects.get(id=vpn_ipinuse.id)
-                        obj.disabled=datetime.datetime.now()
-                        obj.save()
-                        vpn_ipinuse = None
-                    
-                        
-                    
-                elif str(vpn_ip_address) in ['','0.0.0.0', '0.0.0.0/32','',None]:
-                    #print 666
-                    obj = vpn_ipinuse
-                    obj.disabled=datetime.datetime.now()
-                    obj.save()
-                    log('EDIT', request.user, obj)
-                    vpn_ipinuse=None
-            elif str(vpn_ip_address) not in ['','0.0.0.0', '0.0.0.0/32','',None] and ipv4_vpn_pool:
-                #print 777
-                if not IPy.IP(ipv4_vpn_pool.start_ip).int()<=IPy.IP(vpn_ip_address).int()<=IPy.IP(ipv4_vpn_pool.end_ip).int():
-
-                    return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form,  'message':u'Выбранный VPN IP адрес не принадлежит указанному VPN пулу'}
-    
-                ip=IPInUse(pool=ipv4_vpn_pool, ip=vpn_ip_address, datetime=datetime.datetime.now())
-                ip.save()
-                log('CREATE', request.user, ip)
-                vpn_ipinuse = ip 
-                #print 888
-                
-            #print '1111111', subaccount, vpn_ipinuse, ipn_ipinuse, subaccount.ipv4_vpn_pool
-            if subaccount and vpn_ipv6_ipinuse:
-    
-                #vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
-                #print 222
-                if  str(vpn_ipv6_ip_address) not in ['', '::',':::',None]:
-                    if ipv6_vpn_pool:
-                        if not IPy.IP(ipv6_vpn_pool.start_ip).int()<=IPy.IP(vpn_ipv6_ip_address).int()<=IPy.IP(ipv6_vpn_pool.end_ip).int():
-
-                            return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form, 'message':u'Выбранный IPV6 VPN IP адрес не принадлежит указанному VPN пулу'}
-                        
-                        #print 333
-                        if vpn_ipv6_ipinuse.ip!=vpn_ipv6_ip_address:
-                            obj = IPInUse.objects.get(id=vpn_ipv6_ipinuse.id)
-                            obj.disabled=datetime.datetime.now()
-                            obj.save()
-                            #print 444
-                            log('EDIT', request.user, obj)
-                            vpn_ipv6_ipinuse = IPInUse.objects.create(pool=ipv6_vpn_pool,ip=vpn_ipv6_ip_address, datetime=datetime.datetime.now())
-                            log('EDIT', request.user, vpn_ipv6_ipinuse)
-                    else:
-                        obj = IPInUse.objects.get(id=vpn_ipv6_ipinuse.id)
-                        obj.disabled=datetime.datetime.now()
-                        obj.save()
-                        vpn_ipv6_ipinuse = None
-                    
-                        
-                    
-                elif str(vpn_ipv6_ip_address) in ['','::', ':::', None]:
-                    #print 666
-                    obj = vpn_ipv6_ipinuse
-                    obj.disabled=datetime.datetime.now()
-                    obj.save()
-                    log('EDIT', request.user, obj)
-                    vpn_ipv6_ipinuse=None
-            elif str(vpn_ipv6_ip_address) not in ['','::', ':::', None] and ipv6_vpn_pool:
-                #print 777
-                if not IPy.IP(ipv6_vpn_pool.start_ip).int()<=IPy.IP(vpn_ipv6_ip_address).int()<=IPy.IP(ipv6_vpn_pool.end_ip).int():
-
-                    return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form,  'message':u'Выбранный IPV6 VPN IP адрес не принадлежит указанному VPN пулу'}
-    
-                ip=IPInUse(pool=ipv6_vpn_pool, ip=vpn_ipv6_ip_address, datetime=datetime.datetime.now())
-                ip.save()
-                log('CREATE', request.user, ip)
-                vpn_ipv6_ipinuse = ip 
-            
-            if subaccount and ipn_ipinuse:
-    
-    
-                
-                if  str(ipn_ip_address) not in ['0.0.0.0', '0.0.0.0/32','',None]:
-                    if ipv4_ipn_pool:
-                        if not ipaddr.IPv4Network(ipv4_ipn_pool.start_ip)<=ipaddr.IPv4Network(ipn_ip_address)<=ipaddr.IPv4Network(ipv4_ipn_pool.end_ip):
-
-                            return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form,  'message':u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'}
-                        
-                    
-                        if ipn_ipinuse.ip!=ipn_ip_address:
-                            obj = IPInUse.objects.get(id=ipn_ipinuse.id)
-                            obj.disabled=datetime.datetime.now()
-                            obj.save()
-                            log('EDIT', request.user, obj)
-                            ipn_ipinuse = IPInUse.objects.create(pool=ipv4_ipn_pool,ip=ipn_ip_address,datetime=datetime.datetime.now())
-                            log('CREATE', request.user, obj)
-                    else:
-                        obj = IPInUse.objects.get(id=ipn_ipinuse.id)
-                        obj.disabled=datetime.datetime.now()
-                        obj.save()
-                        log('EDIT', request.user, obj)
-                        ipn_ipinuse = None
-                    
-                        
-                    
-                elif str(ipn_ip_address) in ['','0.0.0.0', '0.0.0.0/32','',None]:
-    
-                    obj = IPInUse.objects.get(id=ipn_ipinuse.id)
-                    obj.disabled=datetime.datetime.now()
-                    obj.save()
-                    log('EDIT', request.user, obj)
-                    ipn_ipinuse=None
-            elif str(ipn_ip_address) not in ['','0.0.0.0', '0.0.0.0/32','',None] and ipv4_ipn_pool:
-    
-                if not ipaddr.IPv4Network(ipv4_ipn_pool.start_ip)<=ipaddr.IPv4Network(ipn_ip_address)<=ipaddr.IPv4Network(ipv4_ipn_pool.end_ip):
-                    transaction.rollback()
-                    return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, "accountaddonservice_table": table, 'form':form,  'message':u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'}
-    
-                ip=IPInUse(pool=ipv4_ipn_pool, ip=ipn_ip_address, datetime=datetime.datetime.now())
-                ip.save()
-                log('CREATE', request.user, ip)
-                ipn_ipinuse = ip 
                 
             model =form.save(commit=False)
-            model.vpn_ipinuse = vpn_ipinuse
-            model.ipn_ipinuse = ipn_ipinuse
-            model.ipn_ip_address = ipn_ip_address or '0.0.0.0'
-            model.vpn_ip_address = vpn_ip_address or '0.0.0.0'
-            model.vpn_ipv6_ipinuse = vpn_ipv6_ipinuse
+
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             messages.success(request, _(u'Субаккаунт сохранён.'), extra_tags='alert-success')
             return HttpResponseRedirect("%s?id=%s" % (reverse("subaccount"), model.id))
     
         else:
-            messages.warning(request, u'Ошибка.', extra_tags='alert-danger')
+            if form._errors:
+                for k, v in form._errors.items():
+                    if str(k)=='__all__': k=''
+                    messages.error(request, '%s %s' % (k, ','.join(v)), extra_tags='alert-danger')
             return {'subaccount': subaccount, 'account':account, "action_log_table":action_log_table, 'accountaddonservice_table':table,  'form':form}
     else:
         if  not (request.user.account.has_perm('billservice.view_subaccount')):
@@ -1323,6 +1220,7 @@ def activesessionreport(request):
     if request.GET:
         form = SessionFilterForm(request.GET)
         if form.is_valid():
+            account_text = request.GET.get('account_text')
             res = ActiveSession.objects.prefetch_related()
             if form.cleaned_data.get("account"):
                 res = res.filter(account__in=form.cleaned_data.get("account"))
@@ -1333,12 +1231,24 @@ def activesessionreport(request):
             if form.cleaned_data.get("date_end"):
                 res = res.filter(date_end__lte=form.cleaned_data.get("date_end"))
 
+            if form.cleaned_data.get("city"):
+                res = res.filter(account__city=form.cleaned_data.get("city"))
+
+            if form.cleaned_data.get("street"):
+                res = res.filter(account__street=form.cleaned_data.get("street"))
+
+            if form.cleaned_data.get("house"):
+                res = res.filter(account__house=form.cleaned_data.get("house"))
+                
             if form.cleaned_data.get("only_active"):
                 res = res.filter(session_status='ACTIVE')
+            if account_text:
+                res = res.filter(Q(account__username__startswith=account_text) | Q(account__contract__startswith=account_text) )
+            
 
             if form.cleaned_data.get("nas"):
                 res = res.filter(nas_int__in=form.cleaned_data.get("nas"))
-            res = res.values('id', 'subaccount__username', 'subaccount', 'framed_ip_address', 'interrim_update', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time')
+            res = res.values('id', 'subaccount__username', 'subaccount', 'framed_ip_address', 'interrim_update', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time', 'account__street', 'account__house', 'account__room')
             table = ActiveSessionTable(res)
             table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
             if table_to_report:
@@ -1352,7 +1262,7 @@ def activesessionreport(request):
     else:
         table = None
         res = ActiveSession.objects.filter(session_status='ACTIVE').prefetch_related()
-        res = res.values('id', 'subaccount__username', 'subaccount', 'framed_ip_address',  'interrim_update', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time')
+        res = res.values('id', 'subaccount__username', 'subaccount', 'framed_ip_address',  'interrim_update', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time', 'account__street', 'account__house', 'account__room')
         table = ActiveSessionTable(res)
         table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
         if table_to_report:

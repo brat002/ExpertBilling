@@ -368,7 +368,7 @@ def tariff_radiustraffic(request):
 
     if tariff_id:
 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
+        if  not (request.user.account.has_perm('billservice.tariff_view')):
             return {'status':True}
 
         if request.method == 'POST':
@@ -656,11 +656,11 @@ def tariff_prepaidtraffic_edit(request):
         if id:
             model = PrepaidTraffic.objects.get(id=id)
             form = PrepaidTrafficForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_prepaidtraffic')):
+            if  not (request.user.account.has_perm('billservice.change_prepaidtraffic')):
                 return {'status':False, 'message': _(u'У вас нет прав на редактирование правил начисления предоплаченного трафика')}
         else:
             form = PrepaidTrafficForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_prepaidtraffic')):
+        if  not (request.user.account.has_perm('billservice.add_prepaidtraffic')):
             return {'status':False, 'message': _(u'У вас нет прав на добавление правил начисления предоплаченного трафика')}
 
 
@@ -761,11 +761,11 @@ def tariff_radiustrafficnode_edit(request):
 
             model = RadiusTrafficNode.objects.get(id=id)
             form = RadiusTrafficNodeForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_radiustrafficnode')):
+            if  not (request.user.account.has_perm('billservice.change_radiustrafficnode')):
                 return {'status':False, 'message': _(u'У вас нет прав на редактирование правил тарификации RADIUS трафика')}
         else:
             form = RadiusTrafficNodeForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_radiustrafficnode')):
+        if  not (request.user.is_staff==True and request.user.account.has_perm('billservice.add_radiustrafficnode')):
             return {'status':False, 'message': _(u'У вас нет прав на добавление правил тарификации RADIUS трафика')}
 
 
@@ -790,7 +790,7 @@ def tariff_radiustrafficnode_edit(request):
         if radius_traffic_id:
             tts = RadiusTraffic.objects.get(id=radius_traffic_id)
         if id:
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.tariff_view')):
+            if  not (request.user.account.has_perm('billservice.tariff_view')):
                 return {'status':True}
 
             #items = PeriodicalService.objects.filter(tarif__id=tariff_id)
@@ -819,12 +819,12 @@ def tariff_periodicalservice_edit(request):
 
             model = PeriodicalService.objects.get(id=id)
             form = PeriodicalServiceForm(request.POST, instance=model) 
-            if  not (request.user.is_staff==True and request.user.has_perm('billservice.change_periodicalservice')):
+            if  not (request.user.account.has_perm('billservice.change_periodicalservice')):
                 return {'status':False, 'message': _(u'У вас нет прав на редактирование периодических услуг')}
         else:
 
             form = PeriodicalServiceForm(request.POST) 
-        if  not (request.user.is_staff==True and request.user.has_perm('billservice.add_periodicalservice')):
+        if  not (request.user.account.has_perm('billservice.add_periodicalservice')):
             return {'status':False, 'message': _(u'У вас нет прав на добавление периодических услуг')}
 
 

@@ -26,7 +26,7 @@ from itertools import chain
 from widgets import SplitDateTimeWidget, CheckboxSelectMultipleWithSelectAll
 from django.utils.translation import ugettext as _
 from django_select2 import *
-
+import IPy, ipaddr
 
 class HardwareChoices(AutoModelSelect2Field):
     queryset = Hardware.objects#.filter(accounthardware__isnull=True)
@@ -208,7 +208,7 @@ class SearchAccountForm(forms.Form):
     passport = forms.CharField(label=_(u"№ паспорта"), required = False)
     row = forms.CharField(label=_(u"Этаж"), required = False, widget = forms.TextInput(attrs={'class': 'input-small',}))
     
-    tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False)
+    tariff = forms.ModelMultipleChoiceField(queryset=Tariff.objects.all(), required=False, widget = forms.widgets.SelectMultiple(attrs={'size': '10',}))
     group_filter = forms.MultipleChoiceField(required=False)
     ballance_blocked = forms.ChoiceField(label=_(u'Блокировка по балансу'), required=False, choices = (('yes', _(u"Да"), ), ('no', _(u'Нет')), ('undefined', _(u'Не важно')),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
     limit_blocked = forms.ChoiceField(label=_(u'Блокировка по лимитам'), required=False, choices = (('yes', _(u"Да"), ), ('no', _(u'Нет')), ('undefined', _(u'Не важно')),), widget = forms.RadioSelect(renderer=MyCustomRenderer))
@@ -993,7 +993,155 @@ class SubAccountForm(ModelForm):
             
     class Meta:
         model = SubAccount
-        #exclude = ('ipn_ipinuse','vpn_ipinuse',)
+        exclude = ('ipn_ipinuse','vpn_ipinuse',)
+
+
+    def clean(self):
+        cleaned_data = super(SubAccountForm, self).clean()
+        
+        if cleaned_data.get('username',''):
+            subaccs = SubAccount.objects.filter(username = cleaned_data.get('username')).exclude(account = cleaned_data.get('account')).count()
+
+            #print 'subaccs', subaccs
+            if subaccs>0:
+                raise forms.ValidationError(_(u'Указанный логин субаккаунта используется в другом аккаунте'))
+
+
+        if cleaned_data.get('ipn_mac_address'):    
+            subaccs = SubAccount.objects.exclude(account = cleaned_data.get('account')).filter(ipn_mac_address = cleaned_data.get('ipn_mac_address')).count()
+
+            if subaccs>0:
+                raise forms.ValidationError(_(u'Указанный MAC-адрес используется в другом аккаунте'))
+
+        if str(cleaned_data.get('vpn_ip_address')) not in ('','0.0.0.0', '0.0.0.0/32'):    
+            subaccs = SubAccount.objects.exclude(account = cleaned_data.get('account')).filter(vpn_ip_address = cleaned_data.get('vpn_ip_address')).count()
+
+            if subaccs>0:
+                raise forms.ValidationError(_(u'Указанный VPN IP адрес используется в другом аккаунте'))
+            if cleaned_data.get('ipv4_vpn_pool'):
+                if not IPy.IP(cleaned_data.get('ipv4_vpn_pool').start_ip).int()<=IPy.IP(cleaned_data.get('vpn_ip_address')).int()<=IPy.IP(cleaned_data.get('ipv4_vpn_pool').end_ip).int():
+                    raise forms.ValidationError(_(u'Выбранный VPN IP адрес не принадлежит указанному VPN пулу'))
+                
+            
+        if str(cleaned_data.get('ipn_ip_address')) not in ('', '0.0.0.0', '0.0.0.0/32'):    
+
+            subaccs = SubAccount.objects.exclude(account = cleaned_data.get('account')).filter(ipn_ip_address = cleaned_data.get('ipn_ip_address')).count()
+
+            if subaccs>0:
+
+                raise forms.ValidationError(_(u'Указанный IPN IP адрес используется в другом аккаунте'))
+            if cleaned_data.get('ipv4_ipn_pool'):
+                if not ipaddr.IPv4Network(cleaned_data.get('ipv4_ipn_pool').start_ip)<=ipaddr.IPv4Network(cleaned_data.get('ipn_ip_address'))<=ipaddr.IPv4Network(cleaned_data.get('ipv4_ipn_pool').end_ip):
+                    raise forms.ValidationError(_(u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'))
+                
+
+
+
+        if str(cleaned_data.get('vpn_ipv6_ip_address')) not in ('','::', ':::'):    
+            subaccs = SubAccount.objects.exclude(account = cleaned_data.get('account')).filter(vpn_ipv6_ip_address = cleaned_data.get('vpn_ipv6_ip_address')).count()
+
+            if subaccs>0:
+                raise forms.ValidationError(_(u'Указанный VPN IPv6 IP адрес используется в другом аккаунте'))
+            
+            if cleaned_data.get('ipv6_vpn_pool'):
+                if not IPy.IP(cleaned_data.get('ipv6_vpn_pool').start_ip).int()<=IPy.IP(cleaned_data.get('vpn_ipv6_ip_address')).int()<=IPy.IP(cleaned_data.get('ipv6_vpn_pool').end_ip).int():
+                    raise forms.ValidationError(_(u'Выбранный IPv6 VPN IP адрес не принадлежит указанному IPv6 IPN пулу'))
+                
+
+        
+        return cleaned_data
+    
+    
+class SubAccountPartialForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.widgets.HiddenInput)
+    ipv4_vpn_pool = forms.ModelChoiceField(queryset=IPPool.objects.filter(type=0), required=False)
+    ipv6_vpn_pool = forms.ModelChoiceField(queryset=IPPool.objects.filter(type=2), required=False)
+    ipv4_ipn_pool = forms.ModelChoiceField(queryset=IPPool.objects.filter(type=1), required=False)
+
+    
+    def clean(self):
+        super(SubAccountPartialForm, self).clean()
+        cleaned_data = self.cleaned_data
+        
+#===============================================================================
+#        if cleaned_data.get('username',''):
+#            if cleaned_data.get('account'):
+#                subaccs = SubAccount.objects.filter(username = cleaned_data.get('username')).exclude(account = cleaned_data.get('account')).count()
+#            else:
+#                subaccs = SubAccount.objects.filter(username = cleaned_data.get('username')).count()
+#            
+# 
+#            #print 'subaccs', subaccs
+#            if subaccs>0:
+#                raise forms.ValidationError(_(u'Указанный логин субаккаунта используется в другом аккаунте'))
+#===============================================================================
+
+
+#===============================================================================
+#        if cleaned_data.get('ipn_mac_address'):    
+#            if cleaned_data.get('account'):
+#                subaccs = SubAccount.objects.exclude(account = cleaned_data.get('account')).filter(ipn_mac_address = cleaned_data.get('ipn_mac_address')).count()
+#            else:
+#                subaccs = SubAccount.objects.filter(ipn_mac_address = cleaned_data.get('ipn_mac_address')).count()
+# 
+#            if subaccs>0:
+#                raise forms.ValidationError(_(u'Указанный MAC-адрес используется в другом аккаунте'))
+#===============================================================================
+
+        if str(cleaned_data.get('vpn_ip_address')) not in ('','0.0.0.0', '0.0.0.0/32'):    
+            #===================================================================
+            # if cleaned_data.get('account'):
+            #    subaccs = SubAccount.objects.exclude(account = cleaned_data.get('account')).filter(vpn_ip_address = cleaned_data.get('vpn_ip_address')).count()
+            # else:
+            #    subaccs = SubAccount.objects.filter(vpn_ip_address = cleaned_data.get('vpn_ip_address')).count()
+            # if subaccs>0:
+            #    raise forms.ValidationError(_(u'Указанный VPN IP адрес используется в другом аккаунте'))
+            #===================================================================
+            if cleaned_data.get('ipv4_vpn_pool'):
+                if not IPy.IP(cleaned_data.get('ipv4_vpn_pool').start_ip).int()<=IPy.IP(cleaned_data.get('vpn_ip_address')).int()<=IPy.IP(cleaned_data.get('ipv4_vpn_pool').end_ip).int():
+                    raise forms.ValidationError(_(u'Выбранный VPN IP адрес не принадлежит указанному VPN пулу'))
+                
+            
+        if str(cleaned_data.get('ipn_ip_address')) not in ('', '0.0.0.0', '0.0.0.0/32'):    
+#===============================================================================
+#            if cleaned_data.get('account'):
+#                subaccs = SubAccount.objects.exclude(account = cleaned_data.get('account')).filter(ipn_ip_address = cleaned_data.get('ipn_ip_address')).count()
+#            else:
+#                subaccs = SubAccount.objects.filter(ipn_ip_address = cleaned_data.get('ipn_ip_address')).count()
+#            if subaccs>0:
+# 
+#                raise forms.ValidationError(_(u'Указанный IPN IP адрес используется в другом аккаунте'))
+#===============================================================================
+            if cleaned_data.get('ipv4_ipn_pool'):
+                if not ipaddr.IPv4Network(cleaned_data.get('ipv4_ipn_pool').start_ip)<=ipaddr.IPv4Network(cleaned_data.get('ipn_ip_address'))<=ipaddr.IPv4Network(cleaned_data.get('ipv4_ipn_pool').end_ip):
+                    raise forms.ValidationError(_(u'Выбранный IPN IP адрес не принадлежит указанному IPN пулу'))
+                
+
+
+
+        if str(cleaned_data.get('vpn_ipv6_ip_address')) not in ('','::', ':::'):    
+            #===================================================================
+            # if cleaned_data.get('account'):
+            #    subaccs = SubAccount.objects.exclude(account = cleaned_data.get('account')).filter(vpn_ipv6_ip_address = cleaned_data.get('vpn_ipv6_ip_address')).count()
+            # else:
+            #    subaccs = SubAccount.objects.filter(vpn_ipv6_ip_address = cleaned_data.get('vpn_ipv6_ip_address')).count()
+            #    
+            # if subaccs>0:
+            #    raise forms.ValidationError(_(u'Указанный VPN IPv6 IP адрес используется в другом аккаунте'))
+            #===================================================================
+            
+            if cleaned_data.get('ipv6_vpn_pool'):
+                if not IPy.IP(cleaned_data.get('ipv6_vpn_pool').start_ip).int()<=IPy.IP(cleaned_data.get('vpn_ipv6_ip_address')).int()<=IPy.IP(cleaned_data.get('ipv6_vpn_pool').end_ip).int():
+                    raise forms.ValidationError(_(u'Выбранный IPv6 VPN IP адрес не принадлежит указанному IPv6 IPN пулу'))
+                
+        return cleaned_data
+    
+    class Meta:
+        model = SubAccount
+        fields = ['id', 'nas', 'username', 'password', 'ipn_mac_address', 'ipn_ip_address', 'vpn_ip_address', 'vpn_ipv6_ip_address', 'ipv4_vpn_pool', 'ipv6_vpn_pool', 'ipv4_ipn_pool', 'sessionscount', 'switch', 'switch_port', 'vlan']
+        exclude = ('ipn_ipinuse','vpn_ipinuse', 'account')
+
         
 class TemplateSelectForm(forms.Form):
     def __init__(self, *args, **kwargs):
