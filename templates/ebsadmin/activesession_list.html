@@ -3,7 +3,7 @@
 {% load ebsadmin_tags %}
 {% load crispy_forms_tags %}
 {% block extra_head %}
-
+{% comment %}<script type="text/javascript" src="/media/dygraph/dygraph-dev.js"></script>{% endcomment %}
         <script type="text/javascript"> 
         $(document).ready(function() {
 
@@ -14,6 +14,63 @@
                 });
 
                 event.preventDefault(event);
+            });
+            $('#id_house').autocomplete({
+                source: function( request, response )
+                {                      
+                    $.ajax(
+                    { 
+                        url: "{% url house %}",
+                        data: {
+                                term: request.term, 
+                                street_name: $('#id_street').val(),    //Pass the selected country to php
+                                city_id: $('#id_city').val()
+                              },        
+                        type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                        dataType: "json",   //return data in json format                                                                                                                                       
+                        success: function( data ) 
+                        {
+                            response( $.map( data.records, function( item ) 
+                            {
+                                return item.name
+                            }));
+                        }
+                    });                
+                },
+                minChars: 0, // Минимальная длина запроса для срабатывания автозаполнения
+                maxHeight: 400, // Максимальная высота списка подсказок, в пикселях
+                width: 300, // Ширина списка
+                zIndex: 9999, // z-index списка
+                deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
+                onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
+            });
+            $('#id_street').autocomplete({
+                source: function( request, response )
+                {                      
+                    $.ajax(
+                    { 
+                        url: "{% url street %}",
+                        data: {
+                                term: request.term, 
+                                city_id: $('#id_city').val()
+                              },        
+                        type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                        dataType: "json",   //return data in json format                                                                                                                                       
+                        success: function( data ) 
+                        {
+                            response( $.map( data.records, function( item ) 
+                            {
+                                return item.name
+                            }));
+                        }
+                    });                
+                },
+                minChars: 0, // Минимальная длина запроса для срабатывания автозаполнения
+                maxHeight: 400, // Максимальная высота списка подсказок, в пикселях
+                width: 300, // Ширина списка
+                zIndex: 9999, // z-index списка
+                deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
+                onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
             });
             $("#id_main_table tbody .sreset").live("click", function(event){
                 var a=$(this);
@@ -80,6 +137,64 @@
             {% else %}
             $('#tab-control a[href="#filter"]').tab('show');
             {% endif %}
+            
+            function refresh()
+            {
+                
+                if ($('#id_autorefresh').is(':checked')){
+                window.location.href = window.location.href
+                }
+                setTimeout(refresh,60000);
+
+            }
+            
+            refresh();
+            
+            var auto_refresh = $.cookie('activesession_autorefresh');
+            if (auto_refresh) {
+                $('#id_autorefresh').prop('checked', true);
+            }
+            
+
+                $('#id_autorefresh').change(function(e){
+                  //save the latest tab using a cookie:
+                  $.cookie('activesession_autorefresh', $('#id_autorefresh').is(':checked'));
+                });
+               {% comment %} 
+                g = new Dygraph(
+                        document.getElementById("demodiv"),
+                        function() {
+                          var zp = function(x) { if (x < 10) return "0"+x; else return x; };
+                          var r = "date,parabola,line,another line,sine wave\n";
+                          for (var i=1; i<=31; i++) {
+                          r += "200610" + zp(i);
+                          r += "," + 10*(i*(31-i));
+                          r += "," + 10*(8*i);
+                          r += "," + 10*(250 - 8*i);
+                          r += "," + 10*(125 + 125 * Math.sin(0.3*i));
+                          r += "\n";
+                          }
+                          return r;
+                        },
+                        {
+                          labelsDiv: document.getElementById('status'),
+                          labelsSeparateLines: true,
+                          labelsKMB: true,
+                          legend: 'always',
+                          colors: ["rgb(51,204,204)",
+                                   "rgb(255,100,100)",
+                                   "#00DD55",
+                                   "rgba(50,50,200,0.4)"],
+                          width: 640,
+                          height: 480,
+                          title: 'Interesting Shapes',
+                          xlabel: 'Date',
+                          ylabel: 'Count',
+                          axisLineColor: 'white'
+                          // drawXGrid: false
+                        }
+                    );
+               {% endcomment %}
         });
         </script>
 
@@ -151,6 +266,54 @@
                     </div>
                     <div class="control-group">
                         <div class="control-row">
+                            <label class="control-label" for="input-agreement-no">{{form.city.label}}</label>
+                            <div class="controls">
+                            {{ form.city }}
+                            {% if form.city.errors %}
+                                <span class="help-inline">{% for error in form.city.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.city.help_text%}
+                                <p class="help-block">
+                                    {{ form.city.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-agreement-no">{{form.street.label}}</label>
+                            <div class="controls">
+                            {{ form.street }}
+                            {% if form.street.errors %}
+                                <span class="help-inline">{% for error in form.street.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.street.help_text%}
+                                <p class="help-block">
+                                    {{ form.street.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-row">
+                            <label class="control-label" for="input-agreement-no">{{form.house.label}}</label>
+                            <div class="controls">
+                            {{ form.house }}
+                            {% if form.house.errors %}
+                                <span class="help-inline">{% for error in form.house.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.house.help_text%}
+                                <p class="help-block">
+                                    {{ form.house.help_text|safe }}
+                                </p>
+                            {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-row">
                             <label class="control-label" for="input-agreement-no">{{form.nas.label}}</label>
                             <div class="controls">
                             {{ form.nas }}
@@ -195,7 +358,14 @@
     </div>
   
   </div>
-  <div class="tab-pane" id="result">{% if table %}{% render_table table %}{% endif %}</div>
+  <div class="tab-pane" id="result">{% if table %}
+<div id="demodiv"></div>
+      <div class="pull-right"><label class="checkbox inline">Автообновление:&nbsp;</label><input type="checkbox" id="id_autorefresh"></div>
+
+
+
+  {% render_table table %}
+  {% endif %}</div>
 
 </div>
  {% endblock %}

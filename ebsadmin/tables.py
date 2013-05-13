@@ -72,7 +72,7 @@ class RadioColumn(django_tables.Column):
         specific = self.attrs.get('td__input')
         attrs = django_tables.utils.AttributeDict(default, **(specific or general or {}))
         return mark_safe(u'<input %s/>' % attrs.as_html())
-    
+
 class SubAccountsTable(django_tables.Table):
     id = django_tables.LinkColumn('subaccount', get_params={'id':A('pk')})
     username = django_tables.LinkColumn('subaccount', get_params={'id':A('pk')})
@@ -116,9 +116,6 @@ class AccountAddonServiceTable(django_tables.Table):
     deactivated = FormatDateTimeColumn()
     temporary_blocked = FormatDateTimeColumn(verbose_name=_(u'Отключена'))
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
-    
-    
-    
     
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -354,6 +351,7 @@ class ActiveSessionTable(TableReport):
     date_start = FormatDateTimeColumn()
     interrim_update = FormatDateTimeColumn(verbose_name=_(u'Последнее обновление'))
     caller_id = django_tables.Column(verbose_name=_(u'Caller ID'), empty_values=())
+    address = django_tables.TemplateColumn(u"{{record.account__street|default:''}} {{record.account__house|default:''}}-{{record.account__room|default:''}}", orderable=False, verbose_name=u'Адрес')
     framed_ip_address = django_tables.Column(verbose_name=_(u'IP'), empty_values=())
     framed_protocol = django_tables.Column(verbose_name=_(u'Протокол'), empty_values=())
     session_time = django_tables.Column(verbose_name=_(u'Онлайн'), empty_values=())

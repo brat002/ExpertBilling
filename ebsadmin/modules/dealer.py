@@ -101,7 +101,7 @@ def dealer_select(request):
 @ajax_request
 @systemuser_required
 def dealer_delete(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('nas.delete_nas')):
+    if  not (request.user.is_staff==True and request.user.account.has_perm('nas.delete_nas')):
         return {'status':False, 'message': _(u'У вас нет прав на удаление серверов доступа')}
     id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
     if id:
