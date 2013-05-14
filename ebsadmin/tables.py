@@ -152,6 +152,7 @@ class TotalTransactionReportTable(TableReport):
     type = FormatBlankColumn(verbose_name=_(u'Тип'), accessor=A('type__name'))
 
     summ = FormatFloatColumn(verbose_name=_(u'Сумма'))
+    prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
     created = FormatDateTimeColumn(verbose_name=_(u'Создана'))
     end_promise = FormatDateTimeColumn(verbose_name=_(u'Окончание о.п.'))
     promise_expired = FormatDateTimeColumn()
@@ -178,7 +179,7 @@ class TotalTransactionReportTable(TableReport):
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-striped table-bordered table-condensed"'}
         configurable = True
-        available_fields = ("id", "account",  "type", "summ", "bill", "description", "end_promise",  "service_id", "created", 'd')
+        available_fields = ("id", "account",  "type", "summ", 'prev_balance', "bill", "description", "end_promise",  "service_id", "created", 'd')
         #model = TotalTransactionReport
         #exclude = ( 'table','tariff__name', "tariff", "systemuser")
         
@@ -188,6 +189,7 @@ class TransactionReportTable(TableReport):
     id = FormatBlankColumn()
     account = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')}, accessor=A('account__username'))
     type = FormatBlankColumn(verbose_name=_(u'Тип'), accessor=A('type__name'))
+    prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
     systemuser = FormatBlankColumn(verbose_name=_(u'Выполнил'), accessor=A('systemuser__username'))
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
     
@@ -210,7 +212,7 @@ class AddonServiceTransactionReportTable(TableReport):
     id = FormatBlankColumn()
     account = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')}, accessor=A('account__username'))
     type = FormatBlankColumn(verbose_name=_(u'Тип'), accessor=A('type__name'))
-
+    prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
     
     def render_d(self, value, record):
@@ -234,6 +236,7 @@ class PeriodicalServiceTransactionReportTable(TableReport):
     id = FormatBlankColumn()
     account__username = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')})
     service = django_tables.Column(accessor=A('service__name'))
+    prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
     type = django_tables.Column(accessor=A('type__name'))
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
     
@@ -258,6 +261,7 @@ class TrafficTransactionReportTable(TableReport):
     id = FormatBlankColumn()
     account__username = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')})
     #type = django_tables.Column(accessor=A('type__name'))
+    prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
     
     def render_d(self, value, record):
@@ -279,12 +283,15 @@ class CashierReportTable(TableReport):
     
     summ = FormatFloatColumn(verbose_name=_(u'Сумма'))
     fullname =django_tables.Column(verbose_name=u'ФИО', accessor=A('account.fullname'))
+    prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
     created = FormatDateTimeColumn(verbose_name=_(u'Создан'))
     class Meta:
         model = Transaction
-        fields = ('id', 'account', 'fullname', 'type', 'bill', 'description',  'summ', 'promise', 'promise_expired', 'created')
+        configurable = True
+        #available_fields = ('id', 'account', 'fullname', 'type', 'bill', 'description',  'summ', 'prev_balance', 'promise', 'promise_expired', 'created')
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-striped table-bordered table-condensed"'}
+        exclude = ('approved', 'accounttarif', 'tariff')
         
 
 class AccountsReportTable(TableReport):
