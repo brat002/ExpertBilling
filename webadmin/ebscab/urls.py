@@ -36,7 +36,6 @@ urlpatterns = patterns('',
     #url(r'^webcab/pay/(?P<pk>\d+)/$', OrderView.as_view(), name='order-payment-view'),
     #url(r'^webcab/pay/$', PaymentView.as_view(), name='payment-view'),
     url(r'^webcab/pay/$', SelectPaymentView.as_view(), name='payment-view'),
-    url(r'^ext/', include('django_select2.urls')),
     url(r'^autocomplete/', include('autocomplete_light.urls')),
     
 

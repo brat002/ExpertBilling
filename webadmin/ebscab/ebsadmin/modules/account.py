@@ -66,6 +66,9 @@ def accounttarif_edit(request):
         
         if form.is_valid(): 
             model = form.save(commit=False)
+            if AccountTarif.objects.filter(account=model.account, datetime__gte=model.datetime).exists():
+                messages.error(request, _(u'Нельзя создавать правило смены тарифного плана, если уже существует правило с большей датой.'), extra_tags='alert-danger')
+                return {'form':form,  'status': False}
             model.save()
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             return {'form':form,  'status': True} 

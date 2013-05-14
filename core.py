@@ -280,6 +280,7 @@ class periodical_service_bill(Thread):
     def iterate_ps(self, cur, caches, acc, ps, dateAT, acctf_id, acctf_datetime, next_date, current, pss_type):
         account_ballance = (acc.ballance or 0) + (acc.credit or 0)
         susp_per_mlt = 1
+        
         if pss_type == PERIOD:
 
             time_start_ps = acctf_datetime if ps.autostart else ps.time_start #Возможно баг. проверить на дату создания услуи и начало тарифного плана
@@ -335,6 +336,9 @@ class periodical_service_bill(Thread):
                 #Добавить проверку на окончание периода
                 #Смотрим на какую сумму должны были снять денег и снимаем её
                 while chk_date <= dateAT:    
+                    if chk_date >self.NOW:
+                        logger.error('%s: Periodical Service: GRADUAL %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date))
+                        return 
                     delta_coef = Decimal('1.00')
                     if vars.USE_COEFF_FOR_PS==True and next_date and chk_date+self.PER_DAY_DELTA>next_date:# если следующая проверка будет в новом расчётном периоде - считаем дельту
                         
@@ -402,6 +406,10 @@ class periodical_service_bill(Thread):
 
                 while first_time==True or chk_date <= period_start:
                     logger.debug('%s: Periodical Service: AT_START  account: %s service:%s type:%s check date: %s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, chk_date, next_date,))
+                    
+                    if chk_date >self.NOW:
+                        logger.error('%s: Periodical Service: AT_START %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date))
+                        return 
                     #Если следующее списание произойдёт уже на новом тарифе - отмечаем, что тарификация произведена
                     if  pss_type == PERIOD and ((next_date and chk_date>=next_date) or (ps.deactivated and ps.deactivated < chk_date)):
                         logger.debug('%s: Periodical Service: AT_START last billed is True for account: %s service:%s type:%s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, next_date))  
@@ -473,6 +481,9 @@ class periodical_service_bill(Thread):
 
                 while True:
                     logger.debug('%s: Periodical Service: AT_END  account: %s service:%s type:%s check date: %s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, chk_date, next_date,))
+                    if chk_date >self.NOW:
+                        logger.error('%s: Periodical Service: AT_END %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date))
+
                     mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0
                     cash_summ = mult*ps.cost
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
@@ -1435,7 +1446,7 @@ class settlement_period_service_dog(Thread):
                             INSERT INTO billservice_transaction(bill, account_id, type_id, approved, summ, description, created, promise_expired) 
                             SELECT id, account_id, 'PROMISE_DEBIT', approved, (-1)*summ, description, now(), True
                               FROM billservice_transaction as tr
-                              WHERE tr.id in (%s) and type_id='PROMISE_PAYMENT';
+                              WHERE tr.id in (%s) and tr.type_id='PROMISE_PAYMENT';
                     """ % ', '.join([str(x[0]) for x in promises]))
                     
                     cur.execute("""UPDATE billservice_transaction as tr SET promise_expired = True 
