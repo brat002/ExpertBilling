@@ -242,6 +242,7 @@ def stop():
     print(green('Stopping processes'))
     with settings(warn_only=True):
         local("billing force-stop")
+        local("billing force-stop")
         local("/etc/init.d/apache2 stop")
 
 
