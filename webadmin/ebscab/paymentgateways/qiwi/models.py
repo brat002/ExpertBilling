@@ -5,7 +5,8 @@ class Invoice(models.Model):
     txn_id = models.CharField(max_length=64, blank=True, null=True)# qiwi transaction id
     account = models.ForeignKey(Account)
     phone = models.CharField(max_length=15)
-    summ = models.DecimalField(decimal_places=10, max_digits=60)
+    summ = models.DecimalField(decimal_places=2, max_digits=20)
+    prev_balance = models.DecimalField(decimal_places=5, max_digits=20, blank=True, default=0)
     password = models.CharField(max_length=512)
     autoaccept= models.BooleanField(default=False)
     created = models.DateTimeField(blank=True, null=True)
