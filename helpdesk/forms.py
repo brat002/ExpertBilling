@@ -11,7 +11,7 @@ from helpdesk.lib import send_templated_mail
 from helpdesk.models import Ticket, Queue, FollowUp, Attachment, IgnoreEmail, TicketCC,\
     PreSetReply, SavedSearch
 from helpdesk.settings import HAS_TAG_SUPPORT
-from django_select2 import *
+
 from django.contrib.auth.models import User
 from django.utils.encoding import smart_unicode
 import copy
@@ -27,10 +27,7 @@ import autocomplete_light
 
 
 
-class TagChoices(AutoModelSelect2MultipleField):
-    queryset = Tag.objects
-    max_results = 20
-    search_fields = ['name__icontains', ]
+
     
 
 class TicketTypeForm(forms.Form):
