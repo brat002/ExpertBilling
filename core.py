@@ -1359,8 +1359,8 @@ class settlement_period_service_dog(Thread):
                         prepaid_traffic_reset = shedl.prepaid_traffic_reset if shedl.prepaid_traffic_reset else acc.datetime
                         prepaid_radius_traffic_reset = shedl.prepaid_radius_traffic_reset if shedl.prepaid_radius_traffic_reset else acc.datetime
                         #if (reset_traffic or acc.traffic_transmit_service_id is None) and (shedl.prepaid_traffic_reset is None or shedl.prepaid_traffic_reset<period_start or acc.acctf_id!= shedl.accounttarif_id):
-                        need_traffic_reset=(reset_traffic and prepaid_traffic_reset<period_start) or not acc.traffic_transmit_service_id or acc.acctf_id != shedl.accounttarif_id
-                        need_radius_traffic_reset=(radius_traffic and prepaid_radius_traffic_reset<period_start) or not acc.radius_traffic_transmit_service_id or acc.acctf_id != shedl.accounttarif_id
+                        need_traffic_reset=(reset_traffic and prepaid_traffic_reset<period_start) or not acc.traffic_transmit_service_id is not None or acc.acctf_id != shedl.accounttarif_id
+                        need_radius_traffic_reset=(radius_traffic and prepaid_radius_traffic_reset<period_start) or not acc.radius_traffic_transmit_service_id is not None  or acc.acctf_id != shedl.accounttarif_id
 
                         if need_traffic_reset:
                             #(Если нужно сбрасывать трафик или нет услуги доступа по трафику) И

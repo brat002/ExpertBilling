@@ -123,8 +123,6 @@ class TicketForm(forms.Form):
         queryset = User.objects.all(),
         required=False,
         label=_(u'Создал'),
-        help_text=_('If you select an owner other than yourself, they\'ll be '
-            'e-mailed details of this ticket immediately.'),
         widget=autocomplete_light.ChoiceWidget('UserAutocomplete')
         )
     
@@ -137,11 +135,9 @@ class TicketForm(forms.Form):
     
     assigned_to = forms.ModelChoiceField(
         required=False,
-        queryset = Account.objects.all(),
+        queryset = SystemUser.objects.all(),
         widget=autocomplete_light.ChoiceWidget('SystemUserAutocomplete'),
         label=_(u'Исполнитель'),
-        help_text=_('If you assign ticket yourself, they\'ll be '
-            'e-mailed details of this ticket immediately.')
         )
     
     due_date =  forms.DateTimeField(label=_(u'Due Date'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
