@@ -284,7 +284,8 @@ class PeriodicalServiceHistory(models.Model):
     #transaction = models.ForeignKey(to='Transaction')
     accounttarif = models.ForeignKey(to='AccountTarif', on_delete=models.CASCADE)
     created  = models.DateTimeField(auto_now_add=True)
-    summ = models.DecimalField(decimal_places=10, max_digits=30)
+    summ = models.DecimalField(decimal_places=5, max_digits=20)
+    prev_balance = models.DecimalField(verbose_name=(u'Предыдущий баланс'), decimal_places=5, max_digits=20, blank=True, default=0)
     account = models.ForeignKey('Account',on_delete = models.CASCADE)
     type   = models.ForeignKey('TransactionType', to_field='internal_name', null=True, on_delete = models.SET_NULL)
 
@@ -334,6 +335,7 @@ class OneTimeServiceHistory(models.Model):
     onetimeservice = models.ForeignKey(OneTimeService, null=True, on_delete=models.SET_NULL)
     created  = models.DateTimeField(auto_now_add=True)
     summ = models.IntegerField()
+    prev_balance = models.DecimalField(verbose_name=(u'Предыдущий баланс'), decimal_places=5, max_digits=20, blank=True, default=0)
     account=models.ForeignKey('Account', on_delete=models.CASCADE)
     accounttarif = models.ForeignKey('AccountTarif', on_delete=models.CASCADE)
     
@@ -989,6 +991,7 @@ class Transaction(models.Model):
     approved = models.BooleanField(default=True)
     tarif=models.ForeignKey(Tariff, blank=True, null=True, on_delete = models.SET_NULL)
     summ=models.DecimalField(default=0, blank=True, verbose_name=_(u"Сумма"), decimal_places=10,max_digits=20)
+    prev_balance = models.DecimalField(verbose_name=(u'Предыдущий баланс'), decimal_places=5, max_digits=20, blank=True, default=0)
     description = models.TextField(default='', blank=True, verbose_name=_(u"Комментарий"))
     created=models.DateTimeField(verbose_name=_(u"Дата"))
     #promise=models.BooleanField(default=False, verbose_name=_(u"Обещанный платёж"))
@@ -1520,6 +1523,7 @@ class TrafficTransaction(models.Model):
     traffictransmitservice = models.ForeignKey(TrafficTransmitService, null=True, on_delete=models.SET_NULL) # ON DELETE SET NULL
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     summ = models.FloatField()
+    prev_balance = models.DecimalField(verbose_name=(u'Предыдущий баланс'), decimal_places=5, max_digits=20, blank=True, default=0)
     created = models.DateTimeField()
     accounttarif = models.ForeignKey(AccountTarif, on_delete=models.CASCADE)
     
@@ -1535,6 +1539,7 @@ class TimeTransaction(models.Model):
     timeaccessservice = models.ForeignKey(TimeAccessService, null=True, on_delete=models.SET_NULL) # ON DELETE SET NULL
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     summ = models.FloatField()
+    prev_balance = models.DecimalField(verbose_name=(u'Предыдущий баланс'), decimal_places=5, max_digits=20, blank=True, default=0)
     created = models.DateTimeField()
     accounttarif = models.ForeignKey(AccountTarif, on_delete=models.CASCADE)
     
@@ -1687,6 +1692,7 @@ class AddonServiceTransaction(models.Model):
     accounttarif = models.ForeignKey(AccountTarif)
     type = models.ForeignKey(to=TransactionType, null=True, to_field='internal_name', verbose_name=_(u"Тип операции"), on_delete = models.SET_NULL)
     summ = models.DecimalField(decimal_places=5, max_digits=60)
+    prev_balance = models.DecimalField(verbose_name=(u'Предыдущий баланс'), decimal_places=5, max_digits=20, blank=True, default=0)
     created = models.DateTimeField()
     
     class Meta:
@@ -2117,6 +2123,7 @@ class TotalTransactionReport(models.Model):
     created = models.DateTimeField()
     tariff = models.ForeignKey(Tariff, blank=True, null=True)
     summ = models.DecimalField(decimal_places=10, max_digits=30)
+    prev_balance = models.DecimalField(verbose_name=(u'Предыдущий баланс'), decimal_places=5, max_digits=20, blank=True, default=0)
     account = models.ForeignKey(Account)
     type = models.ForeignKey(TransactionType, to_field='internal_name')
     systemuser = models.ForeignKey(SystemUser, blank=True, null=True)
