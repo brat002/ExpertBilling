@@ -5,9 +5,16 @@
 {% load custom_filters %}
 {% load crispy_forms_tags %}
 {% block extra_head %}
+<script src="/media/inputmask/jquery.inputmask.js" type="text/javascript"></script>
 
         <script type="text/javascript"> 
         $(document).ready(function() {
+        	$("#id_phone_m").inputmask("mask", {"mask": ["+9[9][9]-[9][9]-[9][9][9][9][9][9][9]",], skipOptionalPartCharacter: "", clearMaskOnLostFocus: true });
+        	$("#id_phone_h").inputmask("mask", {"mask": ["+9[9][9]-[9][9]-[9][9][9][9][9][9][9]"], skipOptionalPartCharacter: "", clearMaskOnLostFocus: true });
+        	$("#id_contactperson_phone").inputmask("mask", {"mask": ["+9[9][9]-[9][9]-[9][9][9][9][9][9][9]"], skipOptionalPartCharacter: "", clearMaskOnLostFocus: true });
+
+
+        	
         	{% if account %}
 
         	{% endif %}
