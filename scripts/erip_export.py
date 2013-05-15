@@ -13,19 +13,19 @@ conn.set_client_encoding('UTF8')
 cursor = conn.cursor()
 
 version = 3
-sender_code = 32100214
 message_number = datetime.datetime.now().strftime("%d%m%Y")
 message_date = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-unp = 190832724
-bank_code = 739
-rs = 3012741610015
-service_id = 1
+sender_code = 32300112
+unp = 390150916
+bank_code = 307
+rs = 3012116607010
+service_id = 2
 currency = 974
 ftp_host="host"
 ftp_username = "user"
 ftp_password = "password" 
 ftp_remote_path = "11111111/in"
-cursor.execute("SELECT username, fullname, COALESCE((SELECT name FROM billservice_street WHERE id=acc.street_id) ||', ' || (SELECT name FROM billservice_house WHERE id=acc.house_id) ||', ' || acc.room, '') FROM billservice_account as acc")
+cursor.execute("SELECT username, fullname, street ||', ' || house ||', ' || acc.room FROM billservice_account as acc")
 
 items = cursor.fetchall()
 header_mask = u"%s^%s^%s^%s^%s^%s^%s^%s^%s^%s\n"
@@ -37,15 +37,9 @@ outfile.write(header)
 i=1
 for item in items:
     username, fullname, address = item
-    #print i, "%s" % unicode(username), unicode(fullname), unicode(address)
-    #print row_mask % (i, unicode(username), unicode(fullname), unicode(address),'',0,'','','','','','','')
-    #print username, fullname, address
-    #print "1 %s" % username
-    #print "2 %s" % fullname
-    #print "3 %s" % address
-    #s=""+str(i)+"^"+"^"+username+"^"+fullname+"^"+address+"^"+"^"+"^"+"^"+"^"+"^"+"^\n"
+
     s= row_mask % (i, username, fullname, address)
-    #print s
+
     outfile.write(s.decode("utf-8"))
     i+=1
     
