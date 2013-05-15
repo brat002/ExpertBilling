@@ -57,6 +57,18 @@ class DateRangeField(forms.DateField):
                 return date_start, date_end
         return super(DateRangeField, self).clean(value)
 
+class PhoneField(forms.CharField):
+    def __init__(self, *args, **kwargs):
+        super(PhoneField, self ).__init__(*args, **kwargs)
+
+        
+    def clean(self, value):
+        
+        if isinstance(value, unicode) and value:
+            value = '+%s' % value.replace('+', '').replace('-', '').replace('(', '').replace(')', '').replace(' ', '').replace('_', '')
+        print type(value),value
+        return super(PhoneField, self).clean(value)
+    
 class FloatConditionField(forms.FloatField):
     def clean(self, value):
         if isinstance(value, unicode):
@@ -424,6 +436,10 @@ class AccountForm(DynamicForm):
         self.fields['comment'].widget.attrs['cols'] =10
         self.fields['created'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
         self.fields['birthday'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
+        self.fields['phone_m'] = PhoneField(required=False)
+        self.fields['phone_h'] = PhoneField(required=False)
+        self.fields['contactperson_phone'] = PhoneField(required=False)
+        
     
     class Meta:
         model = Account
