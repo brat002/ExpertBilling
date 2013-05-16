@@ -3,7 +3,7 @@
 {% load ebsadmin_tags %}
 {% load crispy_forms_tags %}
 {% block extra_head %}
-{% comment %}<script type="text/javascript" src="/media/dygraph/dygraph-dev.js"></script>{% endcomment %}
+<script type="text/javascript" src="/media/dygraph/dygraph-dev.js"></script>
         <script type="text/javascript"> 
         $(document).ready(function() {
 
@@ -160,41 +160,48 @@
                   //save the latest tab using a cookie:
                   $.cookie('activesession_autorefresh', $('#id_autorefresh').is(':checked'));
                 });
-               {% comment %} 
-                g = new Dygraph(
-                        document.getElementById("demodiv"),
-                        function() {
-                          var zp = function(x) { if (x < 10) return "0"+x; else return x; };
-                          var r = "date,parabola,line,another line,sine wave\n";
-                          for (var i=1; i<=31; i++) {
-                          r += "200610" + zp(i);
-                          r += "," + 10*(i*(31-i));
-                          r += "," + 10*(8*i);
-                          r += "," + 10*(250 - 8*i);
-                          r += "," + 10*(125 + 125 * Math.sin(0.3*i));
-                          r += "\n";
-                          }
-                          return r;
-                        },
+               
+
+                $.ajax(
                         {
-                          labelsDiv: document.getElementById('status'),
-                          labelsSeparateLines: true,
-                          labelsKMB: true,
-                          legend: 'always',
-                          colors: ["rgb(51,204,204)",
-                                   "rgb(255,100,100)",
-                                   "#00DD55",
-                                   "rgba(50,50,200,0.4)"],
-                          width: 640,
-                          height: 480,
-                          title: 'Interesting Shapes',
-                          xlabel: 'Date',
-                          ylabel: 'Count',
-                          axisLineColor: 'white'
-                          // drawXGrid: false
-                        }
-                    );
-               {% endcomment %}
+                            url: "{% url radiusstat %}",     
+                            type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                            dataType: "json",   //return data in json format                                                                                                                                       
+                            success: function( data ) 
+                            {
+                            	var new_arr=[];
+                            	
+                           	  $.map( data.records, function( item ) 
+                                         {
+                           		          item.date = new Date(item.date); 
+                           		            new_arr.push([item.date, item.start, item.alive, item.end])
+                                             return item
+                                         })
+                                g = new Dygraph(
+                                        document.getElementById("demodiv"),
+                                        new_arr,
+                                        {
+                                          //labelsSeparateLines: true,
+                                          legend: 'always',
+                                          width: 1024,
+                                          height: 200,
+                                          title: 'Текущий график онлайна',
+                                          xlabel: 'Дата',
+                                          ylabel: 'Кол-во',
+                                          labels: ['Дата', "Подключений", "Активно", "Отключений" ],
+                                          drawXGrid: true,
+                                          drawPoints: true,
+                                          showRangeSelector: true,
+                                          rangeSelectorHeight: 30,
+                                          rangeSelectorPlotStrokeColor: 'blue',
+                                          rangeSelectorPlotFillColor: 'lightblue'
+                                        }
+                                    );
+                            }
+                        })
+                
+
+               
         });
         </script>
 
@@ -359,7 +366,10 @@
   
   </div>
   <div class="tab-pane" id="result">{% if table %}
-<div id="demodiv"></div>
+  <div class='row-fluid'>
+<div class='span8' id="demodiv"></div>
+<div class='span3'  id="status"></div>
+</div>
       <div class="pull-right"><label class="checkbox inline">Автообновление:&nbsp;</label><input type="checkbox" id="id_autorefresh"></div>
 
 

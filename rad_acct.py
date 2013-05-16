@@ -210,7 +210,7 @@ class PacketSender(Thread):
 
 
 
-class SQLLoggerThread(Thread):
+class RadiusStatThread(Thread):
 
     def __init__(self, suicide_condition):
         Thread.__init__(self)
@@ -218,37 +218,70 @@ class SQLLoggerThread(Thread):
         self.dbconn = get_connection(vars.db_dsn)
         self.dbconn.set_isolation_level(0)
         self.cursor = self.dbconn.cursor()
-        self.sqllog_deque = deque()
-        self.sqllog_lock  = Lock()
+        self.radiusstat_deque = deque()
+        self.radiusstat_lock  = Lock()
+        self.aggr_dict = {}
 
         #print 'loggerthread initialized'
     
-    def add_message(self, nas_id=None, accounting_start=None, accounting_alive=None, accounting_stop=None, datetime=None):
-        self.sqllog_deque.append((nas_id, accounting_start, accounting_alive, accounting_stop, datetime))
-        #print 'message added'
+    def add_start(self, nas_id=None, timestamp=None):
+        if not vars.ENABLE_RADIUSSTAT: return
+        key = (nas_id, datetime.datetime(timestamp.year, timestamp.month, timestamp.day, timestamp.hour, timestamp.minute))
+        if key not in self.aggr_dict:
+            self.aggr_dict[key]=[]
+        
+        if len(self.aggr_dict[key])!=0:
+                self.aggr_dict[key][0]+=1
+        else:
+            self.aggr_dict[key] = [1, 0, 0]
 
+    def add_alive(self, nas_id=None, timestamp=None):
+        if not vars.ENABLE_RADIUSSTAT: return
+        key = (nas_id, datetime.datetime(timestamp.year, timestamp.month, timestamp.day, timestamp.hour, timestamp.minute))
+        if key not in self.aggr_dict:
+            self.aggr_dict[key]=[]
+        
+        if len(self.aggr_dict[key])!=0:
+                self.aggr_dict[key][1]+=1
+        else:
+            self.aggr_dict[key] = [0, 1, 0]
+
+    def add_stop(self, nas_id=None, timestamp=None):
+        if not vars.ENABLE_RADIUSSTAT: return
+        key = (nas_id, datetime.datetime(timestamp.year, timestamp.month, timestamp.day, timestamp.hour, timestamp.minute))
+        if key not in self.aggr_dict:
+            self.aggr_dict[key]=[]
+        
+        if len(self.aggr_dict[key])!=0:
+                self.aggr_dict[key][2]+=1
+        else:
+            self.aggr_dict[key] = [0, 0, 1]
+
+ 
     def run(self):
         a=0
         while True:
-            
-            #print 'log check'
-            #print "vars.SQLLOG_FLUSH_TIMEOUT", vars.SQLLOG_FLUSH_TIMEOUT
-            
+           
             if self.suicide_condition[self.__class__.__name__]: 
                 break
-            if time.time()-a<vars.SQLLOG_FLUSH_TIMEOUT: 
+            if time.time()-a<vars.RADIUSSTAT_FLUSH_TIMEOUT: 
                 time.sleep(2)
                 
                 continue
-            with self.sqllog_lock:
-                d = []
-                while len(self.sqllog_deque) > 0:
-                    d.append(self.sqllog_deque.pop())
-                self.cursor.executemany("""INSERT INTO radius_authlog(account_id, subaccount_id, nas_id, type, service, cause, datetime)
-                                    VALUES(%s,%s,%s,%s,%s,%s,%s)""", d)
-                    #print account, subaccount, nas, type, service, cause, datetime
-            #self.dbconn.commit()
+            now = datetime.datetime.now()
+            d = []
+            key_for_del=[]
+            for key, value in self.aggr_dict.iteritems():
+                nas_id, timestamp = key
+                start, alive, end = value
+                if timestamp+datetime.timedelta(seconds=vars.RADIUSSTAT_FLUSH_TIMEOUT)<now:
+                    self.cursor.execute("""SELECT radiusstat_insert(%s, %s, %s, %s, %s::timestamp without time zone)
+                                        """, (nas_id, start, alive, end, timestamp))
+                    key_for_del.append(key)
+            for key in key_for_del:
+                del self.aggr_dict[key]
             a=time.time()
+
             
                         
 class HandleSBase(object):
@@ -309,6 +342,9 @@ class HandleSAcct(HandleSBase):
         
     def handle(self):
         # TODO: Прикрутить корректное определение НАС-а
+        global radiusstatthr
+        
+        
         nas_by_int_id = False
         nas_int_id = None
         nas_name = ''
@@ -448,6 +484,8 @@ class HandleSAcct(HandleSBase):
                                         self.nasip, self.access_type, nas_int_id, session_speed, self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None ,ipinuse_id if ipinuse_id else None ))
                 if ipinuse_id:
                     self.cur.execute("UPDATE billservice_ipinuse SET ack=True where id=%s", (ipinuse_id,))
+                    
+                radiusstatthr.add_start(nas_id=nas_int_id, timestamp=now)
         elif self.packetobject['Acct-Status-Type']==['Alive']:
             bytes_in, bytes_out = self.get_bytes()
 
@@ -478,11 +516,13 @@ class HandleSAcct(HandleSBase):
                                     self.nasip, self.access_type, nas_int_id, session_speed, self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None ,ipinuse_id if ipinuse_id else None ))
 
             
-            logger.debug("Update %s insert %s", (data, insert_data, ))
+            
             self.cur.execute(data)
             res = self.cur.fetchone()
             if not res:
+                logger.debug("Creating session %s from accounting packet", (self.packetobject['Acct-Session-Id'][0], ))
                 self.cur.execute(insert_data)
+            radiusstatthr.add_alive(nas_id=nas_int_id, timestamp=now)
                             
         elif self.packetobject['Acct-Status-Type']==['Stop']:
             bytes_in, bytes_out=self.get_bytes()
@@ -496,6 +536,8 @@ class HandleSAcct(HandleSBase):
                 self.cur.execute("""UPDATE radius_activesession SET date_end=%s, session_status='ACK', acct_terminate_cause=%s
                              WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s and nas_port_id=%s and date_end is Null;;
                              """, (now, self.packetobject.get('Acct-Terminate-Cause', [''])[0], self.packetobject['Acct-Session-Id'][0], self.nasip, acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None,))
+                
+            radiusstatthr.add_stop(nas_id=nas_int_id, timestamp=now)                
             if ipinuse_id:
                 self.cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE id=%s", (ipinuse_id,))
         self.cur.connection.commit()
@@ -606,7 +648,7 @@ def ungraceful_save():
     sys.exit()
 
 def main():
-    global threads, curCachesDate, cacheThr, suicideCondition, server_acct, sqlloggerthread, packetSenderThr
+    global threads, curCachesDate, cacheThr, suicideCondition, server_acct, sqlloggerthread, packetSenderThr, radiusstatthr
     threads = []
 
     for i in xrange(vars.ACCT_THREAD_NUM):
@@ -624,6 +666,12 @@ def main():
     packetSenderThr.setName("PacketSender")
     packetSenderThr.start()    
     
+    radiusstatthr = RadiusStatThread(suicideCondition)
+    if vars.ENABLE_RADIUSSTAT:
+        
+        radiusstatthr.setName('RADIUSSTAT:THR:#%i: RadiusStatThread' % 1)
+        threads.append(radiusstatthr)
+        
     time.sleep(2)
     while cacheMaster.read is False:        
         if not cacheThr.isAlive:
