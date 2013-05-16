@@ -36,6 +36,7 @@ h.city, h.street, h.number, h.building
 JOIN accounts as a ON a.id=u.basic_account
 JOIN account_tariff_link as atl ON atl.account_id=u.basic_account
 LEFT JOIN houses as h ON h.id=u.house_id
+WHERE atl.is_deleted=0
 """)
 
 try:
