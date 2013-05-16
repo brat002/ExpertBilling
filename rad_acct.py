@@ -209,6 +209,47 @@ class PacketSender(Thread):
                 logger.error("%s readfrom exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
 
 
+
+class SQLLoggerThread(Thread):
+
+    def __init__(self, suicide_condition):
+        Thread.__init__(self)
+        self.suicide_condition = suicide_condition
+        self.dbconn = get_connection(vars.db_dsn)
+        self.dbconn.set_isolation_level(0)
+        self.cursor = self.dbconn.cursor()
+        self.sqllog_deque = deque()
+        self.sqllog_lock  = Lock()
+
+        #print 'loggerthread initialized'
+    
+    def add_message(self, nas_id=None, accounting_start=None, accounting_alive=None, accounting_stop=None, datetime=None):
+        self.sqllog_deque.append((nas_id, accounting_start, accounting_alive, accounting_stop, datetime))
+        #print 'message added'
+
+    def run(self):
+        a=0
+        while True:
+            
+            #print 'log check'
+            #print "vars.SQLLOG_FLUSH_TIMEOUT", vars.SQLLOG_FLUSH_TIMEOUT
+            
+            if self.suicide_condition[self.__class__.__name__]: 
+                break
+            if time.time()-a<vars.SQLLOG_FLUSH_TIMEOUT: 
+                time.sleep(2)
+                
+                continue
+            with self.sqllog_lock:
+                d = []
+                while len(self.sqllog_deque) > 0:
+                    d.append(self.sqllog_deque.pop())
+                self.cursor.executemany("""INSERT INTO radius_authlog(account_id, subaccount_id, nas_id, type, service, cause, datetime)
+                                    VALUES(%s,%s,%s,%s,%s,%s,%s)""", d)
+                    #print account, subaccount, nas, type, service, cause, datetime
+            #self.dbconn.commit()
+            a=time.time()
+            
                         
 class HandleSBase(object):
     __slots__ = ('packetobject', 'cacheDate', 'nasip', 'caches', 'replypacket', 'userName', 'transport', 'addrport')
