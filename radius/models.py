@@ -113,3 +113,12 @@ class AuthLog(models.Model):
             return 'success'
         return ''
     
+    
+class RadiusStat(models.Model):
+    nas = models.ForeignKey(Nas, blank=True, null=True, on_delete=models.SET_NULL)
+    start = models.PositiveIntegerField(blank=True, default=0)
+    alive = models.PositiveIntegerField(blank=True, default=0)
+    end = models.PositiveIntegerField(blank=True, default=0)
+    datetime = models.DateTimeField(db_index=True)
+    
+    

@@ -9,7 +9,7 @@ from billservice.models import Template, News, AccountAddonService, SaleCard, De
 
 import os
 from nas.models import Nas,  TrafficClass, TrafficNode
-from radius.models import ActiveSession
+from radius.models import ActiveSession, RadiusStat
 from billservice.helpers import systemuser_required
 from django.db import connection
 from billservice.forms import AccountForm, TimeSpeedForm, GroupForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm,AccountAddonServiceModelForm, DocumentRenderForm
@@ -5509,3 +5509,16 @@ def table_settings(request):
         print form._errors
         print 6
     return {"status": True}
+
+
+@systemuser_required
+@ajax_request
+def radiusstat(request):
+
+  items = RadiusStat.objects.all().order_by('-datetime')[:1000]
+
+  res=[]
+  for item in items:
+      res.append({"date":item.datetime.strftime('%Y-%m-%d %H:%M:%S'), "start": item.start, "alive": item.alive, "end": item.end,   })
+  
+  return {"records": res, 'status':True, 'totalCount':len(res)}

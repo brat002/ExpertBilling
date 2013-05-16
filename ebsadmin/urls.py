@@ -430,6 +430,8 @@ urlpatterns += patterns('ebsadmin.views',
     # url(r'^switches/$', 'switches'),
     url(r'^setportsstatus/$', 'set_ports_status'),
     url(r'^getportsstatus/$', 'get_ports_status'),
+    url(r'^radiusstat/$', 'radiusstat', name='radiusstat'),
+    
     # 
     # url(r'^cards/set/$', 'cards_set'),
     # url(r'^cards/delete/$', 'cards_delete'),
