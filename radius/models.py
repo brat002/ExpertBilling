@@ -119,6 +119,7 @@ class RadiusStat(models.Model):
     start = models.PositiveIntegerField(blank=True, default=0)
     alive = models.PositiveIntegerField(blank=True, default=0)
     end = models.PositiveIntegerField(blank=True, default=0)
+    active = models.PositiveIntegerField(blank=True, default=0)
     datetime = models.DateTimeField(db_index=True)
     
     

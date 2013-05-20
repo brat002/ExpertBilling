@@ -54,6 +54,12 @@ urlpatterns += patterns('ebsadmin.settlementperiod',
     url(r'^settlementperiod/$', 'settlementperiod', name='settlementperiod'),
 )
 
+urlpatterns += patterns('ebsadmin.modules.monitoring',
+    url(r'^monitoring/$', 'index', name='monitoring'),
+    url(r'^radiusstat/$', 'radiusstat', name='radiusstat'),
+)
+
+
 urlpatterns += patterns('ebsadmin.modules.permissiongroup',
     url(r'^permissiongroup/edit/$', 'permissiongroup_edit', name='permissiongroup_edit'),
     url(r'^permissiongroup/delete/$', 'permissiongroup_delete', name='permissiongroup_delete'),
@@ -72,7 +78,7 @@ urlpatterns += patterns('ebsadmin.systemuser',
     url(r'^systemuser/$', 'systemuser', name='systemuser'),
 )
 
-urlpatterns += patterns('ebsadmin.modules.nas',
+urlpatterns += patterns('ebsadmin.modules.nasses',
     url(r'^nas/edit/$', 'nas_edit', name='nas_edit'),
     url(r'^nas/delete/$', 'nas_delete', name='nas_delete'),
     url(r'^nas/testcreds/$', 'testCredentials', name='nas_test_credentials'),
@@ -430,7 +436,7 @@ urlpatterns += patterns('ebsadmin.views',
     # url(r'^switches/$', 'switches'),
     url(r'^setportsstatus/$', 'set_ports_status'),
     url(r'^getportsstatus/$', 'get_ports_status'),
-    url(r'^radiusstat/$', 'radiusstat', name='radiusstat'),
+    
     
     # 
     # url(r'^cards/set/$', 'cards_set'),

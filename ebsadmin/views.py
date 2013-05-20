@@ -9,7 +9,7 @@ from billservice.models import Template, News, AccountAddonService, SaleCard, De
 
 import os
 from nas.models import Nas,  TrafficClass, TrafficNode
-from radius.models import ActiveSession, RadiusStat
+
 from billservice.helpers import systemuser_required
 from django.db import connection
 from billservice.forms import AccountForm, TimeSpeedForm, GroupForm, SubAccountForm, SearchAccountForm, AccountTariffForm, AccountAddonForm,AccountAddonServiceModelForm, DocumentRenderForm
@@ -46,6 +46,7 @@ log = LogItem.objects.log_action
 from ebsadmin.forms import TableColumnsForm
 from ebsadmin.models import TableSettings
 import ebsadmin.tables
+from django.db.models import Sum
 
 try:
     import json
@@ -5511,14 +5512,3 @@ def table_settings(request):
     return {"status": True}
 
 
-@systemuser_required
-@ajax_request
-def radiusstat(request):
-
-  items = RadiusStat.objects.all().order_by('-datetime')[:1000]
-
-  res=[]
-  for item in items:
-      res.append({"date":item.datetime.strftime('%Y-%m-%d %H:%M:%S'), "start": item.start, "alive": item.alive, "end": item.end,   })
-  
-  return {"records": res, 'status':True, 'totalCount':len(res)}
