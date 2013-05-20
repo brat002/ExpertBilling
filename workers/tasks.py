@@ -91,7 +91,7 @@ def update_vpn_speed_state(nas_id, nas_port_id, session_id, newspeed):
 
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s and nas_id=%s and nas_port_id=%s;
+    cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s and nas_int_id=%s and nas_port_id=%s;
                 """ , (newspeed, session_id, nas_id, nas_port_id))
     conn.commit()
     cur.close()
@@ -910,3 +910,19 @@ def get_switch_function():
     cur.close()
     conn.close()    
     
+@periodic_task(run_every=crontab(minute="*/1"))
+def get_radius_stat():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT nas_int_id, count(*) FROM radius_activesession WHERE session_status='ACTIVE' GROUP BY nas_int_id ")
+    conn.commit()
+    now = datetime.datetime.now()
+    data = cur.fetchall()
+    if data:
+        for nas_id, count in data:
+            cur.execute("""SELECT radiusstat_active_insert(%s,  %s, %s::timestamp without time zone)
+                                            """, (nas_id, count, now))
+            conn.commit()
+    cur.close()
+    conn.close()   
+                    

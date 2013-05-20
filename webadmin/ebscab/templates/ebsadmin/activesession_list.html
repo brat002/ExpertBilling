@@ -3,7 +3,6 @@
 {% load ebsadmin_tags %}
 {% load crispy_forms_tags %}
 {% block extra_head %}
-<script type="text/javascript" src="/media/dygraph/dygraph-dev.js"></script>
         <script type="text/javascript"> 
         $(document).ready(function() {
 
@@ -162,43 +161,6 @@
                 });
                
 
-                $.ajax(
-                        {
-                            url: "{% url radiusstat %}",     
-                            type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
-                            dataType: "json",   //return data in json format                                                                                                                                       
-                            success: function( data ) 
-                            {
-                            	var new_arr=[];
-                            	
-                           	  $.map( data.records, function( item ) 
-                                         {
-                           		          item.date = new Date(item.date); 
-                           		            new_arr.push([item.date, item.start, item.alive, item.end])
-                                             return item
-                                         })
-                                g = new Dygraph(
-                                        document.getElementById("demodiv"),
-                                        new_arr,
-                                        {
-                                          //labelsSeparateLines: true,
-                                          legend: 'always',
-                                          width: 1024,
-                                          height: 200,
-                                          title: 'Текущий график онлайна',
-                                          xlabel: 'Дата',
-                                          ylabel: 'Кол-во',
-                                          labels: ['Дата', "Подключений", "Активно", "Отключений" ],
-                                          drawXGrid: true,
-                                          drawPoints: true,
-                                          showRangeSelector: true,
-                                          rangeSelectorHeight: 30,
-                                          rangeSelectorPlotStrokeColor: 'blue',
-                                          rangeSelectorPlotFillColor: 'lightblue'
-                                        }
-                                    );
-                            }
-                        })
                 
 
                
@@ -366,9 +328,17 @@
   
   </div>
   <div class="tab-pane" id="result">{% if table %}
-  <div class='row-fluid'>
-<div class='span8' id="demodiv"></div>
-<div class='span3'  id="status"></div>
+<div class="navbar navbar-toolbar">
+  <div class="navbar-inner">
+    <div class="btn-toolbar">
+      <div class="btn-group">
+        <a href="{% url  monitoring %}" class="btn btn-danger">Графики загрузки</a>
+      </div>
+
+
+ 
+  </div>
+</div>
 </div>
       <div class="pull-right"><label class="checkbox inline">Автообновление:&nbsp;</label><input type="checkbox" id="id_autorefresh"></div>
 
