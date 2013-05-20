@@ -733,7 +733,7 @@ class MyTimedRotatingFileHandler(BaseRotatingHandler):
            
         BaseRotatingHandler.__init__(self, open_fname, 'a', encoding)
 
-        self.baseFilename = os.path.abspath(filename)
+        self.baseFilename = os.path.abspath(open_fname)
         
 
 
