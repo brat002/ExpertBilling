@@ -35,3 +35,4 @@ django-tagging
 django-autocomplete-light
 celery-with-redis
 django-redis
+openpyxl

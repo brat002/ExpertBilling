@@ -38,10 +38,11 @@ def radiusstat(request):
     
     nas = request.GET.get('nas')
     if not nas:
-        items = RadiusStat.objects.all().values('datetime').order_by('datetime').annotate(active=Sum('active'))[:2000]
+        items = RadiusStat.objects.all().values('datetime').order_by('-datetime').annotate(active=Sum('active'))[:2000]
     else:
-        items = RadiusStat.objects.filter(nas__id=nas).values('datetime').order_by('datetime').annotate(active=Sum('active'))[:2000]
+        items = RadiusStat.objects.filter(nas__id=nas).values('datetime').order_by('-datetime').annotate(active=Sum('active'))[:2000]
 
+    items = sorted(items, key=lambda x: x.get('datetime'))
     res=[]
 
     for item in items:
