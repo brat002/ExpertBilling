@@ -41,22 +41,22 @@ def index(request):
             
             
             if contract:
-                res = res.filter(contract__icontains=contract)
+                res = res.filter(contract__istartswith=contract)
 
             if username:
-                res = res.filter(username__icontains=username)
+                res = res.filter(username__istartswith=username)
 
             if fullname:
-                res = res.filter(fullname__icontains=fullname)
+                res = res.filter(fullname__istartswith=fullname)
     
             if city:
                 res = res.filter(city=city)        
                 
             if street:
-                res = res.filter(street__icontains=street)
+                res = res.filter(street__istartswith=street)
 
             if house:
-                res = res.filter(house__icontains=house)
+                res = res.filter(house__istartswith=house)
                 
 
             
