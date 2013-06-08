@@ -528,6 +528,10 @@ class HandleSAcct(HandleSBase):
             if not res:
                 logger.debug("Creating session %s from accounting packet", (self.packetobject['Acct-Session-Id'][0], ))
                 self.cur.execute(insert_data)
+
+            if ipinuse_id:
+                self.cur.execute("UPDATE billservice_ipinuse SET ack=True where id=%s and ack=False", (ipinuse_id,))
+
             #radiusstatthr.add_alive(nas_id=nas_int_id, timestamp=now)
                             
         elif self.packetobject['Acct-Status-Type']==['Stop']:
