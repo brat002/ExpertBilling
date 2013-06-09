@@ -159,7 +159,7 @@ actions = {
 'mikrotik6':{'user_add_action':'',
                'subacc_add_action':'/ip firewall address-list add list=internet_users address=$subacc_ipn_ip_address disabled=yes comment=$acc_account_id-$subacc_id',
                'user_delete_action':'',
-               'subacc_delete_action':'/ip firewall address-list remove [find comment==$acc_account_id-$subacc_id];/queue simple remove [find comment=$acc_account_id-$subacc_id]',
+               'subacc_delete_action':'/ip firewall address-list remove [find comment=$acc_account_id-$subacc_id];/queue simple remove [find comment=$acc_account_id-$subacc_id]',
                'user_enable_action':'',
                'subacc_enable_action':'/ip firewall address-list set [find comment=$acc_account_id-$subacc_id] address=$subacc_ipn_ip_address disabled=no',
                'user_disable_action': '',
