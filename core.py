@@ -145,7 +145,9 @@ class check_vpn_access(Thread):
                    
                 cur = self.connection.cursor()
                 now = dateAT
-
+                
+                dublicated_ips = {}
+                ips = []
                 cur.connection.commit()
                 cur.execute("""SELECT rs.id,rs.account_id, rs.subaccount_id, rs.sessionid,rs.framed_ip_address, rs.speed_string,
                                     lower(rs.framed_protocol) AS access_type,rs.nas_int_id, extract('epoch' from %s-rs.interrim_update) as last_update, rs.date_start,rs.ipinuse_id, rs.caller_id, ((SELECT pool_id FROM billservice_ipinuse WHERE id=rs.ipinuse_id)=(SELECT vpn_guest_ippool_id FROM billservice_tariff WHERE id=get_tarif(rs.account_id)))::boolean as guest_pool, rs.nas_port_id
@@ -175,6 +177,11 @@ class check_vpn_access(Thread):
                         acstatus = (acstatus or acstatus_guest) and not (acstatus_guest and (((subacc.allow_vpn_with_null and acc.ballance+acc.credit >=0) or (subacc.allow_vpn_with_minus and acc.ballance+acc.credit<=0) or acc.ballance+acc.credit>0)\
                                     and \
                                     (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit))))
+
+                        if rs.framed_ip_address not in dublicated_ips:
+                            dublicated_ips[rs.framed_ip_address]=[]
+                        dublicated_ips[rs.framed_ip_address].append(rs)
+                        
                         if acstatus and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id):
                             #chech whether speed has changed
                             account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
@@ -219,11 +226,23 @@ class check_vpn_access(Thread):
 
                                 logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                         else:
-                            logger.debug("%s: about to send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
+                            logger.debug("%s: Send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                             PoD.delay(acc._asdict(), subacc._asdict(), nas._asdict(), access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, caller_id=str(rs.caller_id), format_string=str(nas.reset_action))
-                            logger.debug("%s: POD over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-                            
+                            logger.debug("%s: POD sended: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
 
+                        for key, value in dublicated_ips.iteritems():
+                            if len(value)<=1: continue
+                            value = sorted(value, lambda k: k.date_start)
+                            first = True
+                            for rs in value:
+                                if first == True:
+                                    first = False
+                                    continue
+                                logger.debug("%s: Send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
+                                PoD.delay(acc._asdict(), subacc._asdict(), nas._asdict(), access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, caller_id=str(rs.caller_id), format_string=str(nas.reset_action))
+                                logger.debug("%s: POD sended: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
+
+                            
                         
                         from_start = (dateAT-rs.date_start).seconds+(dateAT-rs.date_start).days*86400
                             
@@ -238,7 +257,7 @@ class check_vpn_access(Thread):
                     except Exception, ex:
                         logger.error("%s: row exec exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                         if isinstance(ex, vars.db_errors): raise ex
-                #cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE dynamic=Tru3e and disabled is Null and ip::inet not in (SELECT DISTINCT framed_ip_address::inet FROM radius_activesession WHERE ipinuse_id is not NUll and (session_status='ACTIVE'));")    
+                #cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE dynamic=True and disabled is Null and ip::inet not in (SELECT DISTINCT framed_ip_address::inet FROM radius_activesession WHERE ipinuse_id is not NUll and (session_status='ACTIVE'));")    
                 #cur.connection.commit()   
                 cur.close()
                 logger.info("VPNALIVE: VPN thread run time: %s", time.time() - a)
@@ -355,6 +374,7 @@ class periodical_service_bill(Thread):
 
                         cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::numeric, %s::character varying, %s::numeric, %s::timestamp without time zone, %s, %s::numeric) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, acc.credit,  'PS_GRADUAL', cash_summ, chk_date, ps.condition, ps.condition_summ))
                         cash_summ=cur.fetchone()[0]
+                        cur.connection.commit()
                         #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
                         
                         logger.debug('%s: Periodical Service: GRADUAL BATCH iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))                            
@@ -362,6 +382,8 @@ class periodical_service_bill(Thread):
                         cash_summ = Decimal(str(cash_summ)) * susp_per_mlt
                         addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_GRADUAL', cash_summ, chk_date)
                         logger.debug('%s: Addon Service Checkout thread: GRADUAL BATCH iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
+                    else:
+                        return
                     cur.connection.commit()
                     chk_date += self.PER_DAY_DELTA
                     if pss_type == PERIOD and ((next_date and chk_date>=next_date) or (ps.deactivated and ps.deactivated < chk_date)):
