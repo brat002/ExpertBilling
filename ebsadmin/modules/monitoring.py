@@ -46,7 +46,7 @@ def radiusstat(request):
     res=[]
 
     for item in items:
-        res.append({"date":item.get('datetime').strftime('%Y-%m-%d %H:%M:%S'), "active": item.get('active'),})   
+        res.append({"date":item.get('datetime').strftime('%Y/%m/%d %H:%M'), "active": item.get('active'),})   
     return {"records": res, 'status':True, 'totalCount':len(res)}
 
 

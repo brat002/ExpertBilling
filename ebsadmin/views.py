@@ -34,7 +34,7 @@ from django.db.models import Q
 from django.db import transaction
 from django.contrib.auth.models import Group as AuthGroup
 from django.http import HttpResponse
-
+from radius.models import ActiveSession
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from object_log.models import LogItem

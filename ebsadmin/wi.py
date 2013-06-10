@@ -610,7 +610,7 @@ def ipinusereport(request):
 @render_to('ebsadmin/ballancehistory_list.html')
 def ballancehistoryreport(request):
         
-    if  not (request.user.account.has_perm('billservice.view_balancehostory')):
+    if  not (request.user.account.has_perm('billservice.view_balancehistory')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
