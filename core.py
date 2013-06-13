@@ -381,7 +381,9 @@ class periodical_service_bill(Thread):
                     elif pss_type == ADDON:
                         cash_summ = Decimal(str(cash_summ)) * susp_per_mlt
                         addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_GRADUAL', cash_summ, chk_date)
+                        cur.connection.commit()
                         logger.debug('%s: Addon Service Checkout thread: GRADUAL BATCH iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
+                        
                     else:
                         return
                     cur.connection.commit()
@@ -391,7 +393,7 @@ class periodical_service_bill(Thread):
                         cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
                         cur.connection.commit()
                         return
-            cur.connection.commit()
+                cur.connection.commit()
             
         if ps.cash_method == "AT_START":
             """
@@ -503,12 +505,13 @@ class periodical_service_bill(Thread):
 
                 while True:
                     logger.debug('%s: Periodical Service: AT_END  account: %s service:%s type:%s check date: %s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, chk_date, next_date,))
-                    if chk_date >self.NOW:
-                        logger.error('%s: Periodical Service: AT_END %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date))
 
                     mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0
                     cash_summ = mult*ps.cost
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                    if chk_date >self.NOW or chk_date>period_start_ast:
+                        logger.error('%s: Periodical Service: AT_END %s Can not bill future ps account: %s chk_date: %s new period start: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date, period_start_ast))
+
                     if period_start_ast>period_start: break
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
                     if vars.USE_COEFF_FOR_PS==True and ((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)<delta_ast:
@@ -555,6 +558,8 @@ class periodical_service_bill(Thread):
                                 tr_date = ps.deactivated
                             addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', cash_summ, tr_date)
                             logger.debug('%s: Addon Service Checkout thread: AT END checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
+                        else:
+                            return
                     cur.connection.commit()
                     chk_date = period_end_ast
                     if chk_date-SECOND > period_start: break

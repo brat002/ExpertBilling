@@ -146,6 +146,8 @@ class TotalTransactionReportTable(TableReport):
     tariff__name = FormatBlankColumn(verbose_name=_(u'Тариф'))
     id = FormatBlankColumn()
     account = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')}, accessor=A('account__username'))
+    fullname = FormatBlankColumn(verbose_name=_(u'ФИО'), accessor=A('account__fullname'))
+    address =  FormatBlankColumn(verbose_name=_(u'Адреc'), orderable=False, accessor=A('account__house'))
     bill = FormatBlankColumn(verbose_name=_(u'Платёжный документ'))
     description = FormatBlankColumn(verbose_name=_(u'Комментарий'))
     service_id = django_tables.Column(verbose_name=_(u'ID Услуги'))
@@ -163,6 +165,9 @@ class TotalTransactionReportTable(TableReport):
 
         return mark_safe('<input type="checkbox" name="d" value="%s__%s">' % (record.get('table'), value))
     
+    def render_address(self, value, record):
+        return '%s %s %s/%s' % (record.get('account__city__name'), record.get('account__street'), record.get('account__house'), record.get('account__room'))
+    
     def render_service_id(self, value, record):
         item = ''
         if value:
@@ -179,7 +184,7 @@ class TotalTransactionReportTable(TableReport):
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-striped table-bordered table-condensed"'}
         configurable = True
-        available_fields = ("id", "account",  "type", "summ", 'prev_balance', "bill", "description", "end_promise",  "service_id", "created", 'd')
+        available_fields = ("id", "account", "fullname",  'address', "type", "summ", 'prev_balance', "bill", "description", "end_promise",  "service_id", "created", 'd')
         #model = TotalTransactionReport
         #exclude = ( 'table','tariff__name', "tariff", "systemuser")
         
@@ -188,17 +193,22 @@ class TransactionReportTable(TableReport):
 
     id = FormatBlankColumn()
     account = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')}, accessor=A('account__username'))
+    fullname = FormatBlankColumn(verbose_name=_(u'ФИО'), accessor=A('account__fullname'))
+    address =  FormatBlankColumn(verbose_name=_(u'Адреc'), orderable=False, accessor=A('account__house'))
     type = FormatBlankColumn(verbose_name=_(u'Тип'), accessor=A('type__name'))
     prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
     systemuser = FormatBlankColumn(verbose_name=_(u'Выполнил'), accessor=A('systemuser__username'))
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
     
     def render_d(self, value, record):
-
         return mark_safe('<input type="checkbox" name="d" value="billservice_transaction__%s">' % ( value, ))
     
     def render_summ(self, value, record):
         return '%.2f' % value
+    
+    def render_address(self, value, record):
+        return '%s %s %s/%s' % (record.get('account__city__name'), record.get('account__street'), record.get('account__house'), record.get('account__room'))
+
     
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -211,6 +221,8 @@ class AddonServiceTransactionReportTable(TableReport):
 
     id = FormatBlankColumn()
     account = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')}, accessor=A('account__username'))
+    fullname = FormatBlankColumn(verbose_name=_(u'ФИО'), accessor=A('account__fullname'))
+    address =  FormatBlankColumn(verbose_name=_(u'Адреc'), orderable=False, accessor=A('account__house'))
     type = FormatBlankColumn(verbose_name=_(u'Тип'), accessor=A('type__name'))
     prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
@@ -221,6 +233,9 @@ class AddonServiceTransactionReportTable(TableReport):
     
     def render_summ(self, value, record):
         return '%.2f' % value
+
+    def render_address(self, value, record):
+        return '%s %s %s/%s' % (record.get('account__city__name'), record.get('account__street'), record.get('account__house'), record.get('account__room'))
     
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -235,6 +250,8 @@ class PeriodicalServiceTransactionReportTable(TableReport):
 
     id = FormatBlankColumn()
     account__username = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')})
+    fullname = FormatBlankColumn(verbose_name=_(u'ФИО'), accessor=A('account__fullname'))
+    address =  FormatBlankColumn(verbose_name=_(u'Адреc'), orderable=False, accessor=A('account__house'))
     service = django_tables.Column(accessor=A('service__name'))
     prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
     type = django_tables.Column(accessor=A('type__name'))
@@ -243,6 +260,9 @@ class PeriodicalServiceTransactionReportTable(TableReport):
     def render_d(self, value, record):
 
         return mark_safe('<input type="checkbox" name="d" value="billservice_periodicalservicehistory__%s">' % ( value, ))
+    
+    def render_address(self, value, record):
+        return '%s %s %s/%s' % (record.get('account__city__name'), record.get('account__street'), record.get('account__house'), record.get('account__room'))
     
     def render_summ(self, value, record):
         return '%.2f' % value
@@ -260,6 +280,8 @@ class TrafficTransactionReportTable(TableReport):
 
     id = FormatBlankColumn()
     account__username = django_tables.LinkColumn('account_edit', verbose_name=_(u'Аккаунт'), get_params={'id':A('account')})
+    fullname = FormatBlankColumn(verbose_name=_(u'ФИО'), accessor=A('account__fullname'))
+    address =  FormatBlankColumn(verbose_name=_(u'Адреc'), orderable=False, accessor=A('account__house'))
     #type = django_tables.Column(accessor=A('type__name'))
     prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
@@ -267,6 +289,9 @@ class TrafficTransactionReportTable(TableReport):
     def render_d(self, value, record):
 
         return mark_safe('<input type="checkbox" name="d" value="billservice_traffictransaction__%s">' % ( value, ))
+    
+    def render_address(self, value, record):
+        return '%s %s %s/%s' % (record.get('account__city__name'), record.get('account__street'), record.get('account__house'), record.get('account__room'))
     
     def render_summ(self, value, record):
         return '%.2f' % value
@@ -283,8 +308,11 @@ class CashierReportTable(TableReport):
     
     summ = FormatFloatColumn(verbose_name=_(u'Сумма'))
     fullname =django_tables.Column(verbose_name=u'ФИО', accessor=A('account.fullname'))
+    address = django_tables.TemplateColumn(u"{{record.account.street|default:''}} {{record.account.house|default:''}}-{{record.account.room|default:''}}", orderable=False)
     prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
     created = FormatDateTimeColumn(verbose_name=_(u'Создан'))
+    
+
     class Meta:
         model = Transaction
         configurable = True
@@ -331,7 +359,7 @@ class AccountsCashierReportTable(TableReport):
     contract = FormatBlankColumn(verbose_name=_(u'Договор'))
     fullname = FormatBlankColumn()
     tariff  = FormatBlankColumn()
-    address = django_tables.TemplateColumn(u"{{record.street|default:''}} {{record.house|default:''}}-{{record.room|default:''}}")
+    address = django_tables.TemplateColumn(u"{{record.city|default:''}} {{record.street|default:''}} {{record.house|default:''}}-{{record.room|default:''}}", orderable=False)
     entrance = django_tables.Column(verbose_name=_(u'Подъезд'))
     row = django_tables.Column(verbose_name=_(u'Этаж'))
     ballance = FormatFloatColumn()
