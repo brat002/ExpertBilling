@@ -18,18 +18,15 @@
 
 import csv
 
-try:
-    import pyExcelerator
-except ImportError:
-    HAS_PYEXCELERATOR = False
-else:
-    HAS_PYEXCELERATOR = True
+from openpyxl.workbook import Workbook
+from openpyxl.writer.excel import save_virtual_workbook
 
 
+HAS_PYEXCELERATOR = True
 def openExcelSheet():
     """ Opens a reference to an Excel WorkBook and Worksheet objects """
-    workbook = pyExcelerator.Workbook()
-    worksheet = workbook.add_sheet("Sheet 1")
+    workbook = Workbook()
+    worksheet = workbook.create_sheet(0)
     return workbook, worksheet
 
 
@@ -41,25 +38,14 @@ def validateOpts(response):
     return titlePresent, linesPerFile, sepChar
 
 
-def writeExcelHeader(worksheet, titleCols):
-    """ Write the header line into the worksheet """
-    cno = 0
-    for titleCol in titleCols:
-        worksheet.write(0, cno, titleCol)
-        cno = cno + 1
 
-
-def writeExcelRow(worksheet, lno, columns):
-    """ Write a non-header row into the worksheet """
-    cno = 0
-    for column in columns:
-        worksheet.write(lno, cno, column.decode('utf-8'))
-        cno = cno + 1
 
 
 def closeExcelSheet(response, workbook):
     """ Saves the in-memory WorkBook object into the specified file """
-    response.content = workbook.get_biff_data()
+    response.content = save_virtual_workbook(workbook)
+    #response.content_type='application/vnd.ms-excel'
+    #return HttpResponse(save_virtual_workbook(workbook), content_type='application/vnd.ms-excel')
 
 
 def convert_to_excel(response):
@@ -70,15 +56,7 @@ def convert_to_excel(response):
     titleCols = []
     content = response.content.split('\n')
     reader = csv.reader(content)
-    for line in reader:
-        if (lno == 0 and titlePresent):
-            if (len(titleCols) == 0):
-                titleCols = line
-            writeExcelHeader(worksheet, titleCols)
-        else:
-            writeExcelRow(worksheet, lno, line)
-        lno = lno + 1
-        if (linesPerFile != -1 and lno >= linesPerFile):
-            fno = fno + 1
-            lno = 0
+    for row_index, row in enumerate(reader):
+        for col_index, col in enumerate(row):            
+            worksheet.cell(row = row_index, column = col_index).value = col.decode('utf-8')
     closeExcelSheet(response, workbook)

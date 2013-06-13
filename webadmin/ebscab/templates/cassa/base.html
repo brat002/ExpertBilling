@@ -118,6 +118,15 @@ height:100%;
        </a>
 
      </li>
+     <li >
+       <a href="{% url admin_dashboard %}">
+             
+             {% blocktrans %}Интерфейс администратора{% endblocktrans %}
+             
+       </a>
+
+     </li>
+     <li><a href="{% url activesessionreport %}?only_active=on"><i class="cus-connect"></i>&nbsp;{% blocktrans %}Монитор сессий{% endblocktrans %}</a></li>
 
 </ul>
      <ul class="nav pull-right">

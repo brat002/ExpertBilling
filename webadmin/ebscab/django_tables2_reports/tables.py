@@ -36,12 +36,12 @@ class TableReport(tables.Table):
         self.param_report = generate_prefixto_report(self, prefix_param_report)
         self.formats = [(_('CSV Report'), 'csv')]
         if HAS_PYEXCELERATOR:
-            self.formats.append((_('XLS Report'), 'xls'))
+            self.formats.append((_('XLS Report'), 'xlsx'))
 
     def as_report(self, request, format='csv'):
         if format == 'csv':
             return self.as_csv(request)
-        elif format == 'xls':
+        elif format == 'xlsx':
             return self.as_xls(request)
         raise ValueError("This format %s is not accepted" % format)
 
@@ -59,6 +59,6 @@ class TableReport(tables.Table):
         return self.as_csv(request)
 
     def treatement_to_response(self, response, format='csv'):
-        if format == 'xls':
+        if format == 'xlsx':
             convert_to_excel(response)
         return response

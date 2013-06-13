@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
 
 
-from ebsadmin.reportsystem.forms import AccountBallanceForm
+from ebsadmin.reportsystem.forms import AccountBallanceForm, CachierReportForm
 
 from ebscab.lib.decorators import render_to, ajax_request
 from billservice.helpers import systemuser_required
@@ -9,17 +9,23 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
-from billservice.models import Account, AccountAddonService
+from billservice.models import Account, AccountAddonService, Transaction
 from django_tables2_reports.tables import TableReport
 import django_tables2 as django_tables
+from django.db.models import Sum
 #from ebsadmin.tables import AccountsCashierReportTable, CashierReportTable
+import datetime
 
+class FormatFloatColumn(django_tables.Column):
+    def render(self, value):
+        return "%.2f" % float(value) if value else ''
+    
 @systemuser_required
 @render_to("reportsystem/generic.html")
 def render_report(request, slug):
     class AccountTransactionsSumm(TableReport):
         username = django_tables.Column()
-        summ = django_tables.Column()
+        summ = FormatFloatColumn()
         class Meta:
             attrs = {'class': 'table table-striped table-bordered table-condensed"'}
     name = rep.get(slug)[1]
@@ -43,7 +49,7 @@ def render_report(request, slug):
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
             #print res[0].SUMM
-            return {'table': table, 'name': name, 'slug': slug}
+            return {'form': form, 'table': table, 'name': name, 'slug': slug}
             
     form = AccountBallanceForm()
     return {'form': form, 'name': name, 'slug': slug}
@@ -72,14 +78,54 @@ def accountaddonservicereport(request, slug):
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
             #print res[0].SUMM
-            return {'table': table, 'name': name, 'slug': slug}
+            return {'form': form, 'table': table, 'name': name, 'slug': slug}
         else:
             return {'form': form, 'name': name, 'slug': slug}
     form = AccountBallanceForm()
     return {'form': form, 'name': name, 'slug': slug}
 
+@systemuser_required
+@render_to("reportsystem/generic.html")
+def cashierdailyreport(request, slug):
+
+            
+    name = rep.get(slug)[1]
+    if request.GET and request.method=='GET':
+        form = CachierReportForm(request.GET)
+        if form.is_valid():
+            class TypeTransactionsSumm(TableReport):
+                type__name = django_tables.Column()
+                summ = FormatFloatColumn()
+                class Meta:
+                    attrs = {'class': 'table table-striped table-bordered table-condensed"'}
+                    
+            date_start = form.cleaned_data.get('date_start')
+            date_end = form.cleaned_data.get('date_end')
+            systemuser = form.cleaned_data.get('systemuser')
+            res = Transaction.objects.all()
+            if date_start:
+                res = res.filter(created__gte=date_start)
+            if date_end:
+                res = res.filter(created__lte=date_end+datetime.timedelta(days=1))
+            res = res.values('type__name').annotate(summ=Sum('summ')).order_by()
+            if systemuser:
+                res = res.filter(systemuser=systemuser)
+
+            table = TypeTransactionsSumm(res)
+            table_to_report = RequestConfig(request, paginate=False).configure(table)
+            if table_to_report:
+                return create_report_http_response(table_to_report, request)
+
+            return {'form': form, 'table': table, 'name': name, 'slug': slug}
+        else:
+            return {'form': form, 'name': name, 'slug': slug}
+    form = CachierReportForm()
+    return {'form': form, 'name': name, 'slug': slug}
+
 rep = {
        'blabla': (render_report, u'Отчёт по сумме платежей за период'),
        'accountaddonservicereport': (accountaddonservicereport, u'Отчёт по подключенным подключаемым услугам'),
+       'cashierdailyreport': (cashierdailyreport, u'Отчёт по платежам за период'),
+       
        }
 
