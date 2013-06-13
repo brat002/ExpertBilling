@@ -1461,12 +1461,12 @@ class settlement_period_service_dog(Thread):
                         if ex.__class__ in vars.db_errors: raise ex
                 cur.connection.commit()
                 #Делаем проводки по разовым услугам тем, кому их ещё не делали
-                cur.execute("""SELECT DISTINCT tr.id
+                cur.execute("""SELECT tr.id
                                     FROM billservice_transaction as tr
                                     WHERE 
                                     promise_expired = False and type_id='PROMISE_PAYMENT' and
                                     (end_promise<now() or (SELECT max(summ) FROM billservice_transaction WHERE account_id=tr.account_id and type_id!='PROMISE_PAYMENT' and summ>0 and created>tr.created)>=tr.summ)""")
-                promises = cur.fetchall()
+                promises = set(cur.fetchall())
 
                 if promises:
                     cur.execute("""
