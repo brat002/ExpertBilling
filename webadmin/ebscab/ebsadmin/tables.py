@@ -355,7 +355,7 @@ class AccountsCashierReportTable(TableReport):
     d = RadioColumn(verbose_name=' ', orderable=False, accessor=A('pk'))
     row_number = django_tables.Column(verbose_name=u'#', empty_values=(), orderable=False)
     #id = FormatBlankColumn()
-    username = django_tables.Column(verbose_name=_(u'Имя'))
+    username = django_tables.LinkColumn('account_edit', verbose_name=_(u'Логин'), get_params={'id':A('pk')})
     contract = FormatBlankColumn(verbose_name=_(u'Договор'))
     fullname = FormatBlankColumn()
     tariff  = FormatBlankColumn()

@@ -94,7 +94,7 @@ def cashierdailyreport(request, slug):
         form = CachierReportForm(request.GET)
         if form.is_valid():
             class TypeTransactionsSumm(TableReport):
-                type__name = django_tables.Column()
+                type__name = django_tables.Column(verbose_name=u'Тип операции')
                 summ = FormatFloatColumn()
                 class Meta:
                     attrs = {'class': 'table table-striped table-bordered table-condensed"'}
@@ -107,7 +107,10 @@ def cashierdailyreport(request, slug):
                 res = res.filter(created__gte=date_start)
             if date_end:
                 res = res.filter(created__lte=date_end+datetime.timedelta(days=1))
+            total = res.aggregate(sum=Sum('summ'))
+
             res = res.values('type__name').annotate(summ=Sum('summ')).order_by()
+            
             if systemuser:
                 res = res.filter(systemuser=systemuser)
 
@@ -116,7 +119,7 @@ def cashierdailyreport(request, slug):
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
 
-            return {'form': form, 'table': table, 'name': name, 'slug': slug}
+            return {'form': form, 'total':  '%.2f' % total.get('sum', 0), 'table': table, 'name': name, 'slug': slug}
         else:
             return {'form': form, 'name': name, 'slug': slug}
     form = CachierReportForm()
