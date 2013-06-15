@@ -413,7 +413,7 @@ def accountsreport(request):
             if not (date_start and date_end) and created:
                 res = res.filter(created=created)
             if tariff:
-                res = res.extra(where=['billservice_account.id in (SELECT account_id FROM billservice_accounttarif WHERE tarif_id in (%s) and datetime<now())'], params=[ ','.join(['%s' % x.id for x in tariff]) ])
+                res = res.extra(where=['billservice_account.id in (SELECT account_id FROM billservice_accounttarif WHERE id in (SELECT max(id) FROM billservice_accounttarif GROUP BY account_id HAVING account_id IN (SELECT id FROM billservice_account) AND MAX(datetime) <= now()) and tarif_id in %s)'], params=[ tuple(['%s' % x.id for x in tariff]) ])
             
             if city:
                 res = res.filter(city=city)

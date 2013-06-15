@@ -232,6 +232,13 @@ GETPAID_BACKENDS_SETTINGS = {
         'PASSWORD' : '12345',
         'allowed_ip': ('93.183.196.28', '93.183.196.26'),
 
+    },
+    'payments.masterplat' : {
+                          'TYPE': 'backend', 
+        'DEFAULT_CURRENCY' : 'RUB',
+        'DUSER' : '12345',
+        'DPASS': '12345',
+
     }
 }
 
