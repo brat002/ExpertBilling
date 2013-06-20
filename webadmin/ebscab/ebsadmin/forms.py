@@ -79,8 +79,9 @@ class LogViewer(forms.Form):
     full = forms.BooleanField(required=False)
 
 class TrafficNodesUploadForm(forms.Form):
-    traffic_class = forms.ModelChoiceField(queryset = TrafficClass.objects.all())
-    nodes_file = forms.FileField(label=_(u"Файл с сетями"), help_text=_(u'Пример:<br/> 192.168.11.0/24<br/>172.168.0.0/16<br />127.0.0.0/8'))
+    traffic_class = forms.ModelChoiceField(queryset = TrafficClass.objects.all(), label=u'Класс трафика')
+    networks = forms.CharField(required=True, label=u'Наши сети (построчно)', widget = forms.widgets.Textarea, help_text = _(u'Перечислите ваши сети построчно. Последняя строка не должна быть пустой.'))
+    nodes_file = forms.FileField(label=_(u"Файл с сетями назначения"), help_text=_(u'Пример:<br/> 192.168.11.0/24<br/>172.168.0.0/16<br />127.0.0.0/8'))
 
 
 

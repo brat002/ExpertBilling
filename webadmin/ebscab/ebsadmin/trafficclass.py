@@ -50,14 +50,25 @@ def trafficclass_upload(request):
             bulk = []
             for line in nodes_file:
                 line = line.strip()
+                if not line: continue
                 try:
                     IP(line)
 
                 except Exception, e:
-                    print e
+                    messages.error(request, u'Неправильная сеть %s' % line, extra_tags='alert-danger')
                     continue
-                res.append({'dst_net': line})
-                bulk.append(TrafficNode(traffic_class=traffic_class,  dst_ip=line))
+                for network in networks.split('\n'):
+                    network = network.strip()
+                    
+                    if not network: continue
+                    
+                    try:
+                        IP(network)
+    
+                    except Exception, e:
+                        messages.error(request, u'Неправильная сеть %s' % network, extra_tags='alert-danger')
+                        continue
+                    bulk.append(TrafficNode(traffic_class=traffic_class,  dst_ip=line, src_ip=network))
             TrafficNode.objects.bulk_create(bulk)
             return HttpResponseRedirect("%s?id=%s" % (reverse('trafficnode_list'), traffic_class.id))
         else:
