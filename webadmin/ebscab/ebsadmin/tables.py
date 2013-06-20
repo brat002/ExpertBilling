@@ -568,7 +568,7 @@ class TrafficNodeTable(TableReport):
         configurable = True
         exclude = ("traffic_class", )
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
-        available_fields = ('row_number', 'id', 'name',  'protocol', 'src_port', 'in_index', 'dst_ip', 'dst_port', 'out_index', 'src_as', 'dst_as', 'next_hop', 'd')
+        available_fields = ('row_number', 'id', 'name',  'protocol', 'src_port', 'in_index',  'src_ip', 'dst_ip', 'dst_port', 'out_index', 'src_as', 'dst_as', 'next_hop', 'd')
 
 
 class UploadTrafficNodeTable(TableReport):

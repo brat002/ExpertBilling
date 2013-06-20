@@ -1,7 +1,7 @@
 
 nf_sql = {'nas':"SELECT id, ipaddress from nas_nas;",
           'accounts':"SELECT ba.id as account_id, array(SELECT COALESCE(sa.vpn_ip_address, '0.0.0.0'::inet) || '|' || COALESCE(sa.ipn_ip_address, '0.0.0.0'::inet) || '|' || COALESCE(sa.nas_id, 0) FROM billservice_subaccount as sa WHERE sa.account_id=ba.id) as addresses, bacct.id as acctf_id, bacct.tarif_id FROM billservice_account AS ba JOIN billservice_accounttarif AS bacct ON bacct.id=(SELECT max(id) FROM billservice_accounttarif WHERE account_id=ba.id and date_trunc('second', datetime)<%s) WHERE  deleted is Null ;",
-          'nnodes':"SELECT weight, traffic_class_id, passthrough, protocol, in_index, out_index, src_as, dst_as, dst_port, src_port, dst_ip as dst_ip_dst_mask, next_hop FROM nas_trafficnode AS tn JOIN nas_trafficclass AS tc ON tn.traffic_class_id=tc.id ORDER BY tc.weight, tc.passthrough;",
+          'nnodes':"SELECT store, weight, traffic_class_id, passthrough, protocol, in_index, out_index, src_as, dst_as, dst_port, src_port, src_ip as src_ip_src_mask, dst_ip as dst_ip_dst_mask, next_hop FROM nas_trafficnode AS tn JOIN nas_trafficclass AS tc ON tn.traffic_class_id=tc.id ORDER BY tc.weight, tc.passthrough;",
           'groups':"SELECT id, ARRAY(SELECT trafficclass_id from billservice_group_trafficclass as bgtc WHERE bgtc.group_id = bsg.id) AS trafficclass, direction, type FROM billservice_group AS bsg;",
           'tgroups':"SELECT tarif_id, int_array_aggregate(group_id) AS group_ids FROM (SELECT tarif_id, group_id FROM billservice_trafficlimit UNION SELECT bt.id, btn.group_id FROM billservice_tariff AS bt JOIN billservice_traffictransmitnodes AS btn ON bt.traffic_transmit_service_id=btn.traffic_transmit_service_id WHERE btn.group_id IS NOT NULL UNION SELECT bt.id, bpt.group_id FROM billservice_tariff AS bt JOIN billservice_prepaidtraffic AS bpt ON bt.traffic_transmit_service_id=bpt.traffic_transmit_service_id WHERE bpt.group_id IS NOT NULL) AS tarif_group GROUP BY tarif_id;",
           'nas_port':"select account_id, nas_int_id, nas_port_id FROM radius_activesession WHERE nas_port_id is not Null and (session_status='ACTIVE' or (session_status!='ACTIVE' and date_end + interval '5 minutes'>=now()));",}
@@ -16,7 +16,7 @@ nfroutine_sql = \
                                 
                "accounttariffs":"""SELECT act.id, act.account_id, t.id, t.traffic_transmit_service_id FROM billservice_accounttarif as act
                                         JOIN billservice_tariff as t on t.id=act.tarif_id
-                                        WHERE t.traffic_transmit_service_id is not NULL; """,
+                                        ; """,
                'tts'     :"""SELECT id, reset_traffic, cash_method, period_check FROM billservice_traffictransmitservice;""",
                'settlepd':"""SELECT id, time_start, length, length_in, autostart FROM billservice_settlementperiod;""",
                'period'  :"""SELECT date_trunc('seconds', tpn.time_start), tpn.length, tpn.repeat_after, ttns.traffic_transmit_service_id

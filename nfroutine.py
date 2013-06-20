@@ -565,7 +565,9 @@ class statDequeThread(Thread):
                     continue
                 
                 accsdata = self.caches.accounttariff_traf_service_cache.by_accounttariff.get(accounttarif_id)
-                if not accsdata: continue
+                if not accsdata:
+                    logger.info('%s: no accsdata for accounttarif: %s', (self.getName(), accounttarif_id)) 
+                    continue
                 account_id = accsdata.account_id
                 
                 statItems, statInfo = statData

@@ -58,6 +58,20 @@
 
                   <div class="control-group">
                   <div class="control-row">
+                      <label class="control-label"><strong>{{form.src_ip.label}}</strong></label>
+                      <div class="controls">
+                      {{ form.src_ip }}
+                      {% if form.src_ip.errors %}
+                          <span class="help-inline">{% for error in form.src_ip.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.src_ip.help_text%}
+                          <p class="help-block">
+                              {{ form.src_ip.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-row">
                       <label class="control-label"><strong>{{form.dst_ip.label}}</strong></label>
                       <div class="controls">
                       {{ form.dst_ip }}

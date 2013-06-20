@@ -29,15 +29,15 @@ connection.set_isolation_level(1)
 cur = connection.cursor()
 transaction_pattern=u"""
 INSERT INTO billservice_transaction(
-            account_id, type_id, approved, summ,
+            account_id, bill, description, type_id, approved, summ,
             created)
-    VALUES (%(ACC_ID)s, '%(PAYMENT_TYPE)s', True, %(SUM)s,  '%(DATETIME)s');
+    VALUES (%(ACC_ID)s, '%(BILL)s', '%(COMMENT)s', '%(PAYMENT_TYPE)s', True, %(SUM)s,  '%(DATETIME)s');
 """
 reversal_transaction_pattern=u"""
 INSERT INTO billservice_transaction(
-            account_id, type_id, approved, (-1)*summ,
+            account_id, bill, description, type_id, approved, (-1)*summ,
             created)
-    VALUES (%(ACC_ID)s, '%(PAYMENT_TYPE)s', True, (-1)*%(SUM)s,  '%(DATETIME)s');
+    VALUES (%(ACC_ID)s, '%(BILL)s', '%(COMMENT)s', '%(PAYMENT_TYPE)s', True, (-1)*%(SUM)s,  '%(DATETIME)s');
 """
 
 curdir=os.path.dirname(os.path.realpath(__file__))
@@ -72,7 +72,7 @@ def make_dict(lst, fields_list, datetime_fmt, encoding='utf-8', time_fmt='', ):
 
 def check_dublicates(cur, param_dict):
     cur.execute("""SELECT id FROM billservice_transaction 
-    WHERE account_id=%(ACC_ID)s and type_id='%(PAYMENT_TYPE)s' and approved=True and summ=(-1)*%(SUM)s and
+    WHERE account_id=%(ACC_ID)s and bill='%(BILL)s'  and type_id='%(PAYMENT_TYPE)s' and approved=True and summ=(-1)*%(SUM)s and
             created='%(DATETIME)s'
             """ % param_dict)
     

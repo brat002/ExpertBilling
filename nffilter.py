@@ -487,7 +487,8 @@ class FlowDequeThread(Thread):
                                     
                                     if (flow.dst_addr & nnode.dst_mask) != nnode.dst_ip:
                                         continue
-                                    
+                                    if (flow.src_addr & nnode.src_mask) != nnode.src_ip:
+                                        continue                                    
                                     
                                 if ((flow.protocol != nnode.protocol) and nnode.protocol): continue
                                 if ((flow.src_port != nnode.src_port) and nnode.src_port):continue
@@ -510,15 +511,18 @@ class FlowDequeThread(Thread):
                             if not passthr:
 
                                 self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
-                                nfwrite_list.append(flow)
+                                if nnode.store==True:
+                                    nfwrite_list.append(flow)
                                 break                   
                         #traversed all the nodes
                         else:
                             if classLst:
                                 self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
-                                nfwrite_list.append(flow)
+                                if nnode.store==True:
+                                    nfwrite_list.append(flow)
                             else: 
-                                nfwrite_list.append(flow)
+                                if nnode.store==True:
+                                    nfwrite_list.append(flow)
                                 continue
                             
                         #construct a list
