@@ -497,12 +497,12 @@ class HandleSAuth(HandleSBase):
         logger.info("Nas id for user %s: %s ", (user_name, nas_id))
         if self.access_type in ['PPTP','L2TP'] and subacc.associate_pptp_ipn_ip and not (subacc.ipn_ip_address == station_id):
             logger.warning("Unallowed dialed ipn_ip_address for user %s vpn: station_id - %s , ipn_ip - %s; vpn_ip - %s access_type: %s", (user_name, station_id, subacc.ipn_ip_address, subacc.vpn_ip_address, self.access_type))
-            sqlloggerthread.add_message(nas=nas_id, type="AUTH_ASSOC_PPTP_IPN_IP", service=self.access_type, cause=u'Попытка авторизации с неразрешённого IPN IP адреса %s.' % (station_id,), datetime=self.datetime)
+            sqlloggerthread.add_message(nas=nas_id, type="AUTH_ASSOC_PPTP_IPN_IP", service=self.access_type, cause=u'Попытка авторизации %s с неразрешённого IPN IP адреса %s.' % (user_name, station_id,), datetime=self.datetime)
             return self.auth_NA(authobject) 
         
         if self.access_type == 'PPPOE' and subacc.associate_pppoe_ipn_mac and not (subacc.ipn_mac_address == station_id):
             logger.warning("Unallowed dialed mac for user %s: station_id - %s , ipn_ip - %s; ipn_mac - %s access_type: %s", (user_name, station_id, subacc.ipn_ip_address, subacc.ipn_mac_address, self.access_type))
-            sqlloggerthread.add_message(nas=nas_id, type="AUTH_ASSOC_PPTP_IPN_MAC", service=self.access_type, cause=u'Попытка авторизации с неразрешённого IPN MAC адреса %s.' % (station_id), datetime=self.datetime)
+            sqlloggerthread.add_message(nas=nas_id, type="AUTH_ASSOC_PPTP_IPN_MAC", service=self.access_type, cause=u'Попытка авторизации %s с неразрешённого IPN MAC адреса %s.' % (user_name, station_id), datetime=self.datetime)
             return self.auth_NA(authobject) 
           
         
@@ -511,7 +511,7 @@ class HandleSAuth(HandleSBase):
             Если NAS пользователя найден  и нас не в списке доступных и запрещено игнорировать сервера доступа 
             """
             logger.warning("Account nas(%s) is not in sended nasses and IGNORE_NAS_FOR_VPN is False %s", (repr(nas), nasses,))
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_BAD_NAS", service=self.access_type, cause=u'Субаккаунт привязан к конкретному серверу доступа, но запрос на авторизацию поступил с IP %s.' % (self.nasip), datetime=self.datetime)
+            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_BAD_NAS", service=self.access_type, cause=u'Субаккаунт %s привязан к конкретному серверу доступа, но запрос на авторизацию поступил с IP %s.' % (user_name, self.nasip), datetime=self.datetime)
             return self.auth_NA(authobject)
         elif not nas_id and self.access_type!='W802.1x':
             """

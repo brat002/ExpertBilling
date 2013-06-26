@@ -359,7 +359,7 @@ class TrafficClass(models.Model):
     name = models.CharField(verbose_name=u'Навзание класса', max_length=255, unique=True)
     weight = models.IntegerField(verbose_name=u'Вес класа в цепочке классов', blank=True, null=True)
     #color = models.CharField(verbose_name=u'Цвет на графиках', max_length=16, blank=True, default='#FFFFFF')
-    #store    = models.BooleanField(verbose_name=u"Хранить всю статистику по классу", help_text=u"Хранить статистику, если она поступила от сервера доступа но под неё не попал ни один пользователь в базе", blank=True, default=True)
+    store    = models.BooleanField(verbose_name=u"Хранить сырую статистику по классу", help_text=u"Хранить NetFlow статистику в текстовом виде", blank=True, default=True)
     passthrough = models.BooleanField(verbose_name=u"Пометить и продолжить", blank=True, default=False)
     
     def __unicode__(self):

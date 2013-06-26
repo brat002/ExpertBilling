@@ -263,7 +263,9 @@ class check_vpn_access(Thread):
                 logger.info("VPNALIVE: VPN thread run time: %s", time.time() - a)
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                self.connection.rollback()
                 if ex.__class__ in vars.db_errors:
+                    
                     time.sleep(5)
                     try:
                         self.connection = get_connection(vars.db_dsn)
@@ -671,9 +673,11 @@ class periodical_service_bill(Thread):
                 logger.info("PSALIVE: Period. service thread run time: %s", time.time() - a)
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                self.connection.rollback()
                 if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
+                        
                         self.connection = get_connection(vars.db_dsn)
                     except Exception, eex:
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
@@ -1000,6 +1004,7 @@ class RadiusAccessBill(Thread):
                             
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                self.connection.rollback()
                 if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
@@ -1119,6 +1124,7 @@ class limit_checker(Thread):
                 logger.info("LMTALIVE: %s: run time: %s", (self.getName(), time.time() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                self.connection.rollback()
                 if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
@@ -1249,6 +1255,7 @@ class addon_service(Thread):
             except Exception, ex:
                 cur.connection.rollback()
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                self.connection.rollback()
                 if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
@@ -1495,6 +1502,7 @@ class settlement_period_service_dog(Thread):
                 logger.info("SPALIVE: %s run time: %s", (self.getName(), time.time() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                self.connection.rollback()
                 if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
@@ -1682,6 +1690,7 @@ class ipn_service(Thread):
                 logger.info("IPNALIVE: %s: run time: %s", (self.getName(), time.time() - a))
             except Exception, ex:
                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                self.connection.rollback()
                 if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:
@@ -1760,6 +1769,7 @@ class AccountServiceThread(Thread):
                     logger.info("ast time : %s", time.time() - run_time)
             except Exception, ex:
                 logger.error("%s : #30310004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                self.connection.rollback()
                 if ex.__class__ in vars.db_errors:
                     time.sleep(5)
                     try:

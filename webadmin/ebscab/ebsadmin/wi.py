@@ -293,12 +293,12 @@ def transactionreport2(request):
                         
             total_summ = "%.2f" % (res.aggregate(total_summ=Sum('summ')).get('total_summ') or 0)
             if table==TotalTransactionReportTable:
-                table = table(res.prefetch_related('tariff__name',  'type__name').values('id', 'account__username', 'account__city__name', 'account__street', 'account__house', 'account__room', 'account__fullname', 'account', 'summ', 'created', 'tariff__name', 'bill', 'description', 'end_promise', 'promise_expired', 'type__name', 'service_id', 'table', 'prev_balance',))
+                table = table(res.prefetch_related('tariff__name',  'type__name').values('id', 'account__username', 'account__city__name', 'account__street', 'account__house', 'account__room', 'account__fullname', 'account', 'summ', 'created', 'tariff__name', 'bill', 'description', 'end_promise', 'promise_expired', 'type__name', 'service_id', 'table', 'prev_balance', 'is_bonus'))
             elif table == TrafficTransactionReportTable:
                 table = table(res.prefetch_related('account__username').values('id', 'account__username', 'account__city__name', 'account__street', 'account__house', 'account__room', 'account__fullname', 'account', 'summ', 'created', ))
                 
             elif table ==TransactionReportTable:
-                table = table(res.prefetch_related('type__name', 'account__username', 'systemuser__username').values('id', 'account__username', 'account__city__name', 'account__street', 'account__house', 'account__room', 'account__fullname', 'account', 'summ', 'description', 'bill', 'created',  'type__name', 'end_promise', 'promise_expired', 'systemuser__username', 'prev_balance'))
+                table = table(res.prefetch_related('type__name', 'account__username', 'systemuser__username').values('id', 'account__username', 'account__city__name', 'account__street', 'account__house', 'account__room', 'account__fullname', 'account', 'summ', 'description', 'bill', 'created',  'type__name', 'end_promise', 'promise_expired', 'systemuser__username', 'prev_balance', 'is_bonus'))
             elif table in (PeriodicalServiceTransactionReportTable, AddonServiceTransactionReportTable):
                 table = table(res.prefetch_related('type__name', 'account__username', 'service__name').values('id', 'account__username', 'account', 'account__city__name', 'account__street', 'account__house', 'account__room', 'account__fullname', 'summ', 'created', 'service__name', 'type__name', 'prev_balance'))
 
