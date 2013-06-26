@@ -66,6 +66,10 @@ urlpatterns += patterns('ebsadmin.modules.permissiongroup',
     url(r'^permissiongroup/$', 'permissiongroup', name='permissiongroup'),
 )
 
+urlpatterns += patterns('ebsadmin.modules.bonustransaction',
+    url(r'^bonustransaction/edit/$', 'bonus_transaction_edit', name='bonus_transaction_edit'),
+)
+
 urlpatterns += patterns('ebsadmin.transactiontype',
     url(r'^transactiontype/edit/$', 'transactiontype_edit', name='transactiontype_edit'),
     url(r'^transactiontype/delete/$', 'transactiontype_delete', name='transactiontype_delete'),

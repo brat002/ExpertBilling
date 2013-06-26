@@ -152,6 +152,7 @@ class TotalTransactionReportTable(TableReport):
     description = FormatBlankColumn(verbose_name=_(u'Комментарий'))
     service_id = django_tables.Column(verbose_name=_(u'ID Услуги'))
     type = FormatBlankColumn(verbose_name=_(u'Тип'), accessor=A('type__name'))
+    is_bonus = FormatBlankColumn(verbose_name=_(u'Бонус'))
 
     summ = FormatFloatColumn(verbose_name=_(u'Сумма'))
     prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
@@ -304,6 +305,7 @@ class TrafficTransactionReportTable(TableReport):
         configurable = True
         exclude = ('tarif', 'traffictransmitservice', 'accounttarif', 'account')
 
+
 class CashierReportTable(TableReport):
     
     summ = FormatFloatColumn(verbose_name=_(u'Сумма'))
@@ -363,6 +365,7 @@ class AccountsCashierReportTable(TableReport):
     entrance = django_tables.Column(verbose_name=_(u'Подъезд'))
     row = django_tables.Column(verbose_name=_(u'Этаж'))
     ballance = FormatFloatColumn()
+    bonus_ballance = FormatFloatColumn()
     
     
 
@@ -531,7 +534,7 @@ class TransactionTypeTable(TableReport):
     
     class Meta:
         model = TransactionType
-        configurable = True
+        configurable = False
         #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         

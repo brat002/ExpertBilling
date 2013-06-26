@@ -121,6 +121,16 @@
                 event.preventDefault(event);
             });
 
+            $("#modal-bonustransaction-dialog").click(function(event) {
+                $('<div/>').dialog2({
+                    title: "{% blocktrans %}Внести бонусный платёж{% endblocktrans %}", 
+                    content: "{% url bonus_transaction_edit %}?account_id={{account.id}}", 
+                    id: "server-notice"
+                });
+
+                event.preventDefault(event);
+            });
+            
             $("#modal-accounthardware-dialog-table").click(function(event) {
                 $('<div />').dialog2({
                     title: "{% blocktrans %}Прикрепить подключаемую услугу{% endblocktrans %}", 
@@ -1777,11 +1787,22 @@
         <div class="span3">
           <div class="well sidebar-nav">
             <ul class="nav nav-list">
-              <li class="nav-header">{% blocktrans %}Баланс{% endblocktrans %}</li>
+              <li class="nav-header">{% blocktrans %}Итоговый баланс{% endblocktrans %}</li>
               <strong><h2>{{account.ballance|floatformat:2}} {{currency}}</h2></strong>
               <strong>{% blocktrans %}Обещанные платежи:{% endblocktrans %} <a href="{% url transactionreport2 %}?account={{account.id}}&tree=PROMISE_PAYMENT">{{account.get_last_promises_count}}</a></strong>
                 <li>                                    <div class="btn-group">
                                         <a href="#"  class="btn btn-large btn-success" id="modal-transaction-dialog" ><i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}</a>
+
+                                    </div></li>
+            </ul>
+          </div>
+          <div class="well sidebar-nav">
+            <ul class="nav nav-list">
+              <li class="nav-header">{% blocktrans %}Бонусный счёт{% endblocktrans %}</li>
+              <strong><h2>{{account.bonus_ballance|floatformat:2}} {{currency}}</h2></strong>
+              
+                <li>                                    <div class="btn-group">
+                                        <a href="#"  class="btn btn-large btn-success" id="modal-bonustransaction-dialog" ><i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}</a>
 
                                     </div></li>
             </ul>

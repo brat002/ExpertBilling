@@ -346,7 +346,7 @@ class SuspendedPeriodBatchForm(forms.Form):
 class TransactionModelForm(ModelForm):
     #created = forms.DateTimeField(required=True)
     account = forms.ModelChoiceField(queryset=Account.objects.all(), widget = forms.HiddenInput)
-    type = forms.ModelChoiceField(queryset=TransactionType.objects.all(), widget = forms.widgets.Select(attrs={'class': 'input-xlarge'}) )
+    type = forms.ModelChoiceField(queryset=TransactionType.objects.filter(is_bonus=False), widget = forms.widgets.Select(attrs={'class': 'input-xlarge'}) )
 
     def __init__(self, *args, **kwargs):
         super(TransactionModelForm, self).__init__(*args, **kwargs)
@@ -365,7 +365,32 @@ class TransactionModelForm(ModelForm):
         return summ
     class Meta:
         model = Transaction
-        exclude = ('systemuser', 'accounttarif', 'approved', 'tarif', 'promise_expired')
+        exclude = ('systemuser', 'accounttarif', 'approved', 'tarif', 'promise_expired', 'prev_balance', 'is_bonus')
+
+class BonusTransactionModelForm(ModelForm):
+    #created = forms.DateTimeField(required=True)
+    account = forms.ModelChoiceField(queryset=Account.objects.all(), widget = forms.HiddenInput)
+    type = forms.ModelChoiceField(queryset=TransactionType.objects.filter(is_bonus=True), widget = forms.widgets.Select(attrs={'class': 'input-xlarge'}) )
+
+    def __init__(self, *args, **kwargs):
+        super(BonusTransactionModelForm, self).__init__(*args, **kwargs)
+        self.fields['type'].widget.attrs['class'] = 'input-xlarge span5'
+        self.fields['description'].widget = forms.widgets.TextInput(attrs={'class': 'input-xlarge span5'})
+        self.fields['type'].widget.attrs['class'] = 'input-xlarge span5'
+        self.fields['bill'].widget.attrs['class'] = 'input-xlarge span5'
+        self.fields['created'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
+        self.fields['created'].initial = datetime.now()
+
+    def clean_summ(self):
+        summ = self.cleaned_data.get('summ',0)
+        if summ==0:
+            raise forms.ValidationError(_(u'Укажите сумму'))
+        return summ
+
+    class Meta:
+        model = Transaction
+        exclude = ('systemuser', 'prev_balance', 'accounttarif', 'tarif', 'promise_expired', 'approved', 'end_promise', 'is_bonus')
+
         
 class AccountTariffForm(ModelForm):
     account = forms.ModelChoiceField(label=_(u'Аккаунт'), queryset=Account.objects.all(), widget = forms.HiddenInput)
