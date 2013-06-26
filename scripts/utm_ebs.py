@@ -105,7 +105,7 @@ for x in m_cursor.fetchall():
             house_id = p_cursor.fetchone()[0]
                 
         try:
-            p_cursor.execute("""
+            p_cursor.execute(u"""
             INSERT INTO billservice_account(
                      username, "password", fullname, contract, city_id, street, house, entrance, row, room, contactperson, passport, private_passport_number,  passport_given, passport_date, phone_h, phone_m, deleted,
                     created, 

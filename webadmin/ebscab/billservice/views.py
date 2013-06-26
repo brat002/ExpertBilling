@@ -297,7 +297,7 @@ def get_promise(request):
                 error_message = _(u"Проверьте введённые в поля данные")
                 return {'MAX_PROMISE_SUM': promise_summ, 'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'last_promises': last_promises, 'active_class':'promise-img',}
             sum=rf.cleaned_data.get("sum", 0)
-            if sum>settings.MAX_PROMISE_SUM:
+            if sum>promise_summ:
                 last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
                 error_message = _(u"Вы превысили максимальный размер обещанного платежа")
                 return {'MAX_PROMISE_SUM': promise_summ,'error_message': error_message, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': False,  'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'last_promises': last_promises, 'active_class':'promise-img',}

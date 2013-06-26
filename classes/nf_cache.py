@@ -144,10 +144,10 @@ class ClassCache(CacheItem):
             if nnode[1] != tc_id:
                 self.classes.append([0, []])
             nclTmp = self.classes[-1]
-            nclTmp[0] = nnode[1]
+            nclTmp[0] = nnode[2]
             tc_id = nnode[1]
             nlist = list(nnode)
-            n_hp = parseAddress(nlist.pop())[0]
+            n_hp = parseAddress(nlist.pop())[0] #next_hop
             d_ip = IPint(nlist.pop())
             s_ip = IPint(nlist.pop())
             nlist.append(n_hp)

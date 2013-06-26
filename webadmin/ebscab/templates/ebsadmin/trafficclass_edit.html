@@ -21,6 +21,7 @@
 {% if form %}
             <form method="POST" action="{% url trafficclass_edit %}?id={{item.id}}" class="well form-horizontal ajax form-condensed ">
             {{ form.id }}
+            {{ form.weight }}
                 <fieldset>
                   <div class="control-group">
 
@@ -54,7 +55,22 @@
                       </div>
                     </div>
                   </div>             
+                  <div class="control-group">
 
+                      <label class="control-label"><strong>{{form.store.label}}: </strong></label>
+                      <div class="controls">
+                      {{ form.store }}
+                      {% if form.store.errors %}
+                          <span class="help-inline">{% for error in form.store.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.store.help_text%}
+                          <p class="help-block">
+                              {{ form.store.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+
+                  </div> 
                 </fieldset>
                 
                 <div class="form-actions">

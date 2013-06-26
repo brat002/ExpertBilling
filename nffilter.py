@@ -476,19 +476,20 @@ class FlowDequeThread(Thread):
                         #checks classes                    
                         fnode = None; classLst = []                    
                         #Direction is taken from the first approved node
-                        for nclass, nnodes in cacheMaster.cache.class_cache.classes:                    
+                        for nclass, nnodes in cacheMaster.cache.class_cache.classes:        
+                            class_found = False            
                             for nnode in nnodes:
                                 if 0: assert isinstance(nnode, ClassData)
                                 if flow.node_direction == 'INPUT':
                                     
                                     if (flow.src_addr & nnode.dst_mask) != nnode.dst_ip:continue
-                                    
+                                    if (flow.dst_addr & nnode.src_mask) != nnode.src_ip:continue
                                 else:
                                     
                                     if (flow.dst_addr & nnode.dst_mask) != nnode.dst_ip:
                                         continue
                                     if (flow.src_addr & nnode.src_mask) != nnode.src_ip:
-                                        continue                                    
+                                        continue
                                     
                                 if ((flow.protocol != nnode.protocol) and nnode.protocol): continue
                                 if ((flow.src_port != nnode.src_port) and nnode.src_port):continue
@@ -499,6 +500,7 @@ class FlowDequeThread(Thread):
                                 if ((flow.src_as != nnode.src_as) and nnode.src_as):continue
                                 if ((flow.dst_as != nnode.dst_as) and nnode.dst_as):continue
                                 
+                                class_found = True
                                 if not classLst:
                                     fnode = nnode
                                 elif not fnode:
@@ -508,22 +510,22 @@ class FlowDequeThread(Thread):
                                     passthr = False
                                 break
                             #found passthrough=false
-                            if not passthr:
+                            if not passthr and class_found:
 
                                 self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
                                 if nnode.store==True:
                                     nfwrite_list.append(flow)
                                 break                   
-                        #traversed all the nodes
-                        else:
-                            if classLst:
-                                self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
-                                if nnode.store==True:
-                                    nfwrite_list.append(flow)
-                            else: 
-                                if nnode.store==True:
-                                    nfwrite_list.append(flow)
-                                continue
+                            #traversed all the nodes
+                            else:
+                                if classLst:
+                                    self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
+                                    if nnode.store==True:
+                                        nfwrite_list.append(flow)
+                                else: 
+                                    if nnode.store==True:
+                                        nfwrite_list.append(flow)
+                                    continue
                             
                         #construct a list
                         flst.append(tuple(flow)); fcnt += 1            
