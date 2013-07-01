@@ -783,7 +783,7 @@ class Account(DynamicModel):
     created=models.DateTimeField(verbose_name=_(u'Создан'), help_text=_(u'Начало оказания услуг'), default='')
     #NOTE: baLance
     ballance=models.DecimalField(_(u'Баланс'), blank=True, default=0,decimal_places=2,max_digits=20)
-    bonus_ballance=models.DecimalField(_(u'Бонусный баланс'), blank=True, default=0,decimal_places=2,max_digits=20)
+    bonus_ballance=models.DecimalField(_(u'Бсонусный баланс'), blank=True, default=0,decimal_places=2,max_digits=20)
     credit = models.DecimalField(verbose_name=_(u'Размер кредита'), decimal_places=2,max_digits=20, default=0)
     disabled_by_limit = models.BooleanField(blank=True, default=False, editable=False)
     balance_blocked = models.BooleanField(blank=True, default=False)
@@ -990,7 +990,7 @@ class Transaction(models.Model):
     accounttarif=models.ForeignKey('AccountTarif', blank=True, null=True, on_delete = models.CASCADE)
     type = models.ForeignKey(to=TransactionType, null=True, to_field='internal_name', verbose_name=_(u"Тип"), on_delete = models.SET_NULL)
     
-    is_bonus = models.BooleanField(default=True, blank=True, verbose_name=u'Бонус')
+    is_bonus = models.BooleanField(default=False, blank=True, verbose_name=u'Бонус')
     approved = models.BooleanField(default=True)
     tarif=models.ForeignKey(Tariff, blank=True, null=True, on_delete = models.SET_NULL)
     summ=models.DecimalField(default=0, blank=True, verbose_name=_(u"Сумма"), decimal_places=10,max_digits=20)
