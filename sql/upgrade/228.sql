@@ -21,8 +21,10 @@ SELECT INTO has_bonus TRUE FROM pg_attribute WHERE  attrelid = TG_RELNAME::regcl
     bonus_balance := bonus_balance-NEW.summ;
   ELSIF (NEW.summ<0) THEN
     bonus_balance :=0;
-  ELSIF (has_bonus=True AND NEW.is_bonus=True) THEN
-    bonus_balance :=bonus_balance+NEW.summ;
+  ELSIF (has_bonus=True) THEN
+    IF (NEW.is_bonus=True) THEN
+      bonus_balance :=bonus_balance+NEW.summ;
+    END IF;
   END IF;
   
   UPDATE billservice_account SET ballance=COALESCE(ballance, 0)+NEW.summ, bonus_ballance=bonus_balance WHERE id=NEW.account_id;
