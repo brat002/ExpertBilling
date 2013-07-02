@@ -321,11 +321,14 @@ class periodical_service_bill(Thread):
         
         if lc is None and pss_type == PERIOD:
             last_checkout = ps.created if ps.created  and ps.created<acctf_datetime else acctf_datetime
+            first_time = True
             logger.debug('%s: Periodical Service:  last checkout is None set last checkout=%s for account: %s service:%s type:%s', (self.getName(), last_checkout, acc.account_id, ps.ps_id, pss_type))
         elif lc is None and pss_type == ADDON:
             last_checkout = ps.created
+            first_time = True
             logger.debug('%s: Addon Service:  last checkout is None set last checkout=%s for account: %s service:%s type:%s', (self.getName(), last_checkout, acc.account_id, ps.ps_id, pss_type))
         else:
+            first_time = False
             last_checkout = lc
         
         #Расчитываем параметры расчётного периода на момент окончания тарифного плана или сейчас
@@ -409,86 +412,62 @@ class periodical_service_bill(Thread):
 
             
             summ = 0
-            if pss_type == PERIOD:
-                first_time = False
-                if lc is None:
-                    first_time = True
-            elif pss_type == ADDON:
-                #print "addon AT_START"
-                first_time = False
-                if last_checkout is None:
-                    last_checkout = ps.created
-                    first_time = True
-                
-            #if (first_time or (ps.created or last_checkout) <= period_start) or (not first_time and last_checkout < period_start):
-            if first_time or last_checkout <= period_start:
-                cash_summ = ps.cost
-                
-                #Зачем это нужно:
-                # У нас может возникать ситуация, когда первый раз уже снимали и когда не снимали. Если не снимали - первое списание нужно выполнить. Если не снимали - нужно сразу выполнить следующее
+            if first_time==True:
                 period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, last_checkout)
-                last_chk_date = period_start_ast if lc else last_checkout
+                
+            while first_time==True or last_checkout <= period_start:
 
-                if last_chk_date>self.NOW:
-                    logger.error('%s: Periodical Service: AT_START %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, last_chk_date))
+                
+                if first_time==False:
+                    period_start_ast, last_checkout, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, last_checkout)
+                
+                
+                chk_date = last_checkout
+                if chk_date >self.NOW:
+                    logger.error('%s: Periodical Service: AT_START %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date))
                     return 
+                if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
+                    # если указана дата начала перид. услуги и она в будующем - прпускаем её списание
+                    return
 
-                if  pss_type == PERIOD and ((next_date and last_chk_date>=next_date) or (ps.deactivated and ps.deactivated<last_chk_date)):
+                logger.debug('%s: Periodical Service: AT_START  account: %s service:%s type:%s check date: %s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, chk_date, next_date,))
+                
+                                    
+
+                #Если следующее списание произойдёт уже на новом тарифе - отмечаем, что тарификация произведена
+                if  pss_type == PERIOD and ((next_date and chk_date>=next_date) or (ps.deactivated and ps.deactivated < chk_date)):
                     logger.debug('%s: Periodical Service: AT_START last billed is True for account: %s service:%s type:%s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, next_date))  
                     cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
                     cur.connection.commit()
                     return
+                
+                mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0
+                cash_summ = mult*ps.cost # Установить сумму равной нулю, если пользователь в блокировке
+                
+                #if first_time == False:
+                #    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                #    chk_date =  chk_date+datetime.timedelta(seconds=delta_ast)
 
+                delta_coef=1
+                if vars.USE_COEFF_FOR_PS==True and first_time and ((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)<delta_ast:
+                    logger.warning('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
+                    delta_coef=float((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)/float(delta_ast)        
+                    cash_summ=Decimal(str(cash_summ))*Decimal(str(delta_coef))
 
-                while first_time==True or last_chk_date <= period_start:
+                            
 
-                    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
-                    chk_date = period_end_ast
-                    if chk_date >self.NOW:
-                        logger.error('%s: Periodical Service: AT_START %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date))
-                        return 
-                    if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
-                        # если указана дата начала перид. услуги и она в будующем - прпускаем её списание
-                        return
-
-                    logger.debug('%s: Periodical Service: AT_START  account: %s service:%s type:%s check date: %s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, chk_date, next_date,))
-                    
-                                        
-
-                    #Если следующее списание произойдёт уже на новом тарифе - отмечаем, что тарификация произведена
-                    if  pss_type == PERIOD and ((next_date and chk_date>=next_date) or (ps.deactivated and ps.deactivated < chk_date)):
-                        logger.debug('%s: Periodical Service: AT_START last billed is True for account: %s service:%s type:%s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, next_date))  
-                        cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
-                        cur.connection.commit()
-                        return
-                    
-                    mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0
-                    cash_summ = mult*ps.cost # Установить сумму равной нулю, если пользователь в блокировке
-                    
-                    #if first_time == False:
-                    #    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
-                    #    chk_date =  chk_date+datetime.timedelta(seconds=delta_ast)
-
-                    delta_coef=1
-                    if vars.USE_COEFF_FOR_PS==True and first_time and ((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)<delta_ast:
-                        logger.warning('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
-                        delta_coef=float((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)/float(delta_ast)        
-                        cash_summ=Decimal(str(cash_summ))*Decimal(str(delta_coef))
-
-                                
-
-                    if pss_type == PERIOD and (ps.deactivated is None or (ps.deactivated and ps.deactivated > chk_date)):
-                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::numeric, %s::character varying, %s::numeric, %s::timestamp without time zone, %s, %s::numeric) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, acc.credit,  'PS_AT_START', cash_summ, chk_date, ps.condition, ps.condition_summ))
-                        cash_summ=cur.fetchone()[0]
-                        #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
-                        logger.debug('%s: Periodical Service: AT START iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
-                        pass
-                    elif pss_type == ADDON:
-                        cash_summ = Decimal(str(cash_summ)) * susp_per_mlt
-                        addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_START', cash_summ, chk_date)
-                        logger.debug('%s: Addon Service Checkout thread: AT START checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))                        
-                    cur.connection.commit()
-                    first_time=False
+                if pss_type == PERIOD and (ps.deactivated is None or (ps.deactivated and ps.deactivated > chk_date)):
+                    cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::numeric, %s::character varying, %s::numeric, %s::timestamp without time zone, %s, %s::numeric) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, acc.credit,  'PS_AT_START', cash_summ, chk_date, ps.condition, ps.condition_summ))
+                    cash_summ=cur.fetchone()[0]
+                    #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
+                    logger.debug('%s: Periodical Service: AT START iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
+                    pass
+                elif pss_type == ADDON:
+                    cash_summ = Decimal(str(cash_summ)) * susp_per_mlt
+                    addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_START', cash_summ, chk_date)
+                    logger.debug('%s: Addon Service Checkout thread: AT START checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))                        
+                cur.connection.commit()
+                first_time=False
                     
             cur.connection.commit()
         if ps.cash_method=="AT_END":
@@ -498,15 +477,6 @@ class periodical_service_bill(Thread):
             для остальных со статусом False
             """
 
-            if pss_type == PERIOD:
-                first_time = False
-                if lc is None:
-                    first_time = True
-            elif pss_type == ADDON:
-                first_time = False
-                if last_checkout is None:
-                    last_checkout = ps.created
-                    first_time = True
             # Здесь нужно проверить сколько раз прошёл расчётный период    
             # Если с начала текущего периода не было снятий-смотрим сколько их уже не было
             # Для последней проводки ставим статус Approved=True
