@@ -429,7 +429,7 @@ class periodical_service_bill(Thread):
                 period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, last_checkout)
                 last_chk_date = period_end_ast if lc else last_checkout
 
-                if last_chk_date>self.now() or chk_date >self.NOW:
+                if last_chk_date>self.NOW or chk_date >self.NOW:
                     logger.error('%s: Periodical Service: AT_START %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date))
                     return 
 
