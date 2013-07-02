@@ -488,15 +488,19 @@ class periodical_service_bill(Thread):
             if first_time or period_start > last_checkout:
                 cash_summ = ps.cost
                 chk_date = last_checkout
-
+                
                 while True:
+                    if first_time==False:
+                        period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                        chk_date = period_end_ast
                     logger.debug('%s: Periodical Service: AT_END  account: %s service:%s type:%s check date: %s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, chk_date, next_date,))
 
                     mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0
                     cash_summ = mult*ps.cost
-                    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
-                    if chk_date >self.NOW or chk_date>period_start_ast:
+                    
+                    if chk_date >self.NOW or chk_date>=period_start_ast:
                         logger.error('%s: Periodical Service: AT_END %s Can not bill future ps account: %s chk_date: %s new period start: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date, period_start_ast))
+                        break
 
                     if period_start_ast>period_start: break
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
@@ -518,6 +522,8 @@ class periodical_service_bill(Thread):
                         elif pss_type == ADDON:
                             addon_history(cur, ps.addon_id, 'periodical', ps.ps_id, acc.acctf_id, acc.account_id, 'ADDONSERVICE_PERIODICAL_AT_END', ZERO_SUM, tr_date)
                             logger.debug('%s: Addon Service Checkout: AT END First time checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
+                        cur.connection.commit()
+                        return
                     else:
                         if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
                             # если указана дата начала перид. услуги и она в будующем - прпускаем её списание
