@@ -427,10 +427,10 @@ class periodical_service_bill(Thread):
                 #Зачем это нужно:
                 # У нас может возникать ситуация, когда первый раз уже снимали и когда не снимали. Если не снимали - первое списание нужно выполнить. Если не снимали - нужно сразу выполнить следующее
                 period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, last_checkout)
-                last_chk_date = period_end_ast if lc else last_checkout
+                last_chk_date = period_start_ast if lc else last_checkout
 
                 if last_chk_date>self.NOW or chk_date >self.NOW:
-                    logger.error('%s: Periodical Service: AT_START %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date))
+                    logger.error('%s: Periodical Service: AT_START %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, last_chk_date))
                     return 
 
                 if  pss_type == PERIOD and ((next_date and last_chk_date>=next_date) or (ps.deactivated and ps.deactivated<last_chk_date)):
