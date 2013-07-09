@@ -14,7 +14,7 @@ class PayView(View):
 
         if PaymentProcessor.get_backend_setting('SECRET') not in ['', None]:
             if request.GET.get('secret')!=PaymentProcessor.get_backend_setting('SECRET'):
-                return '-100'
+                return HttpResponse('-100')
 
         try:
 
