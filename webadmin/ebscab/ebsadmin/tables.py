@@ -256,6 +256,7 @@ class PeriodicalServiceTransactionReportTable(TableReport):
     service = django_tables.Column(accessor=A('service__name'))
     prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
     type = django_tables.Column(accessor=A('type__name'))
+    real_created = FormatDateTimeColumn()
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
     
     def render_d(self, value, record):
@@ -499,7 +500,7 @@ class SystemUserTable(TableReport):
         model = SystemUser
         configurable = True
         available_fields = ('id', 'username', 'last_login', 'd')
-        #exclude = ("password", 'text_password', 'address', 'passport', 'passport_details', 'passport_number', 'unp', 'im', 'home_phone','mobile_phone', 'created', 'host')
+        exclude = ("password", 'text_password')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class AddonServiceTable(TableReport):

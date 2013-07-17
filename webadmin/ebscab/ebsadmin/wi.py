@@ -299,7 +299,9 @@ def transactionreport2(request):
                 
             elif table ==TransactionReportTable:
                 table = table(res.prefetch_related('type__name', 'account__username', 'systemuser__username').values('id', 'account__username', 'account__city__name', 'account__street', 'account__house', 'account__room', 'account__fullname', 'account', 'summ', 'description', 'bill', 'created',  'type__name', 'end_promise', 'promise_expired', 'systemuser__username', 'prev_balance', 'is_bonus'))
-            elif table in (PeriodicalServiceTransactionReportTable, AddonServiceTransactionReportTable):
+            elif table in (PeriodicalServiceTransactionReportTable,):
+                table = table(res.prefetch_related('type__name', 'account__username', 'service__name').values('id', 'account__username', 'account', 'account__city__name', 'account__street', 'account__house', 'account__room', 'account__fullname', 'summ', 'created', 'service__name', 'type__name', 'prev_balance', 'real_created'))
+            elif table in (AddonServiceTransactionReportTable,):
                 table = table(res.prefetch_related('type__name', 'account__username', 'service__name').values('id', 'account__username', 'account', 'account__city__name', 'account__street', 'account__house', 'account__room', 'account__fullname', 'summ', 'created', 'service__name', 'type__name', 'prev_balance'))
 
             else:
@@ -1177,8 +1179,8 @@ def accountaddonservice_edit(request):
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
-        if  not (request.user.account.has_perm('billservice.view_accountaddonservice')):
-            messages.error(request, _(u'У вас нет прав на просмотр привязок подключаемых услуг'), extra_tags='alert-danger')
+        if  not (request.user.account.has_perm('billservice.view_addonservice')):
+            messages.error(request, _(u'У вас нет прав на просмотр  подключаемых услуг'), extra_tags='alert-danger')
             return {}
         if id:
 
