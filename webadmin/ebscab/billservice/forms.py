@@ -742,10 +742,10 @@ class SystemUserForm(ModelForm):
     created = forms.CharField(label=_(u"Создан"), widget = forms.TextInput(attrs={'readonly':'readonly'}), required=False)
     authgroup = forms.ModelMultipleChoiceField(label=_(u"Группа доступа"), queryset = AuthGroup.objects.all(), required=False)
     is_superuser = forms.BooleanField(label=_(u"Суперадминистратор"),widget=forms.CheckboxInput, required=False)
-    
+    new_password = forms.CharField(label = _(u'Новый пароль '), required=False)
     class Meta:
         model = SystemUser
-        exclude = ('last_ip', 'last_login', 'created')
+        exclude = ('last_ip', 'last_login', 'created', 'text_password', 'password')
         
         
     

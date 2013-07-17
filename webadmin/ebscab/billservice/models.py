@@ -288,6 +288,7 @@ class PeriodicalServiceHistory(models.Model):
     prev_balance = models.DecimalField(verbose_name=(u'Предыдущий баланс'), decimal_places=5, max_digits=20, blank=True, default=0)
     account = models.ForeignKey('Account',on_delete = models.CASCADE)
     type   = models.ForeignKey('TransactionType', to_field='internal_name', null=True, on_delete = models.SET_NULL)
+    real_created = models.DateTimeField(verbose_name=u'Реальная дата списания', auto_now_add=True)
 
     def __unicode__(self):
         return u"%s" % (self.service)

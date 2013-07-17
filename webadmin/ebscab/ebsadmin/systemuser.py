@@ -59,8 +59,10 @@ def systemuser_edit(request):
         if form.is_valid():
             authgroups = form.cleaned_data.get('authgroup')
             model = form.save(commit=False)
-            model.save()
-
+            
+            if request.POST.get('new_password'):
+                model.text_password = request.POST.get('new_password')
+            model.save()    
 
             u = User.objects.filter(username=model.username)
             if not u:

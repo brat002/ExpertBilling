@@ -725,8 +725,10 @@ class NetFlowRoutine(Thread):
                         continue
                     if 0: assert isinstance(acc, AccountData)
 
-                    
-                    stream_date = datetime.datetime.fromtimestamp(flow.datetime)
+                    try:
+                        stream_date = datetime.datetime.fromtimestamp(flow.datetime or 0)
+                    except:
+                        logger.info("Incorrect datetime format %s ",(str(flow),))
 
                     #if no line in cache, or the collection date is younger then accounttarif creation date
                     #get an acct record from teh database
