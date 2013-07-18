@@ -1256,6 +1256,24 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="control-group">
+                                <div class="control-row">
+                                    <label class="control-label" for="input-passport-date">{{form.passportdislocate.label}}:</label>
+                                    <div class="controls">
+                                      {{ form.passportdislocate }}
+                                      {% if form.passportdislocate.errors %}
+                                          <span class="help-inline">{% for error in form.passportdislocate.errors %}{{ error }}<br/> {% endfor %}</span>
+                                      {% endif %}
+                                      {% if form.passportdislocate.help_text%}
+                                          <p class="help-block">
+                                              {{ form.passportdislocate.help_text|safe }}
+                                          </p>
+                                      {% endif %}
+                                    </div>
+                                </div>
+
+
+                            </div>
                         </fieldset>
                         <fieldset>
                             <legend>Адрес</legend>
