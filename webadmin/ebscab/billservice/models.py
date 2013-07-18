@@ -255,7 +255,7 @@ class PeriodicalService(models.Model):
     ps_condition         = models.IntegerField(verbose_name=_(u"Условие списания"), default = 0, choices=ps_condition)
     condition_summ              = models.DecimalField(verbose_name=_(u'Сумма для условия'), default=0, blank=True, decimal_places=2, max_digits=30) 
     
-    deactivated     = models.DateTimeField(verbose_name=_(u"Отключить"), blank=True, null=True)
+    deactivated     = models.DatpassportdislocateeTimeField(verbose_name=_(u"Отключить"), blank=True, null=True)
     created     = models.DateTimeField(verbose_name=_(u"Активировать"), help_text=_(u'Не указывайте, если списания должны начаться с начала расчётного периода'), blank=True, null=True)
     deleted     = models.BooleanField(blank=True, default=False)
     
@@ -784,7 +784,7 @@ class Account(DynamicModel):
     created=models.DateTimeField(verbose_name=_(u'Создан'), help_text=_(u'Начало оказания услуг'), default='')
     #NOTE: baLance
     ballance=models.DecimalField(_(u'Баланс'), blank=True, default=0,decimal_places=2,max_digits=20)
-    bonus_ballance=models.DecimalField(_(u'Бсонусный баланс'), blank=True, default=0,decimal_places=2,max_digits=20)
+    bonus_ballance=models.DecimalField(_(u'Бонусный баланс'), blank=True, default=0,decimal_places=2,max_digits=20)
     credit = models.DecimalField(verbose_name=_(u'Размер кредита'), decimal_places=2,max_digits=20, default=0)
     disabled_by_limit = models.BooleanField(blank=True, default=False, editable=False)
     balance_blocked = models.BooleanField(blank=True, default=False)
@@ -794,6 +794,7 @@ class Account(DynamicModel):
 
     passport = models.CharField(verbose_name=_(u'№ паспорта'), blank=True, max_length=64)
     passport_date = models.CharField(verbose_name=_(u'Выдан'), blank=True, max_length=64)
+    passportdislocate = models.CharField(verbose_name=_(u'Адрес регистрации'), blank=True, max_length=1024)
     phone_h = models.CharField(validators=[validate_phone], verbose_name=_(u'Дом. телефон') ,blank=True, max_length=64)
     phone_m = models.CharField(validators=[validate_phone], verbose_name=_(u'Моб. телефон'), help_text=_(u'В международном формате +71923453333'), blank=True, max_length=64)
     contactperson_phone = models.CharField(validators=[validate_phone], verbose_name=_(u'Тел. контактного лица'), blank=True, max_length=64)
