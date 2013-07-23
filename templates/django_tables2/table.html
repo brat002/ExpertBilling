@@ -79,10 +79,23 @@
         {% endfor %}
     </tbody>
     {% endblock table.tbody %}
-    {% block table.tfoot %}
-    <tfoot>
-    </tfoot>
-    {% endblock table.tfoot %}
+	{% block table.tfoot %}
+	<tfoot>
+	
+	    {% for row in table.footer %}
+	      <tr>  
+	      {% for column, cell in row.items %}
+	          {% if forloop.first %}
+	          <th>Итого: </th>
+	          {% else %}
+	            <th>{{ cell }}</th>
+	          {% endif %}
+	      {% endfor %}
+	      </tr>    
+	    {% endfor %}
+	
+	</tfoot>    
+	{% endblock %}  
 </table>
 {% if total_summ %}
 <strong>Всего на сумму:</strong> {{total_summ|intspace}}<br/>

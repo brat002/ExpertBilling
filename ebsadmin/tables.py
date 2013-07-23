@@ -9,7 +9,7 @@ from billservice.models import AddonService, SheduleLog, TrafficLimit, TimeAcces
 from billservice.models import TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType, TrafficTransaction
 from billservice.models import RadiusAttrs, Manufacturer, HardwareType, Hardware, Model, PermissionGroup, PeriodicalServiceHistory
 from billservice.models import Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode, SubAccount, AddonServiceTransaction
-from billservice.models import News, TPChangeRule, Switch, AccountGroup, GroupStat, AccountPrepaysTrafic, AccountPrepaysRadiusTrafic, AccountPrepaysTime
+from billservice.models import News, TPChangeRule, Switch, AccountGroup, GroupStat, AccountPrepaysTrafic, AccountPrepaysRadiusTrafic, AccountPrepaysTime, ContractTemplate
 from dynamicmodel.models import DynamicSchemaField
 
 import django_tables2 as django_tables
@@ -29,8 +29,8 @@ import itertools
 from django.utils.translation import ugettext_lazy as _
 
 from ebsadmin.transactionreport import servicemodel_by_table
+from django.db.models import Sum
 
-                
 class FormatBlankColumn(django_tables.Column):
     def render(self, value):
         return "" if value is None else value
@@ -341,9 +341,17 @@ class AccountsReportTable(TableReport):
     #credit = FormatFloatColumn()
     #created = FormatDateTimeColumn()
 
-    def __init__(self, *args, **kwargs):
-        super(AccountsReportTable, self).__init__(*args, **kwargs)
+    def __init__(self, form, *args, **kwargs):
+        super(AccountsReportTable, self).__init__(form, *args, **kwargs)
         self.counter = itertools.count()
+
+
+    def paginate(self, *args, **kwargs):
+        super(AccountsReportTable, self).paginate(*args, **kwargs)        
+        print 'pagg', len(self.page.object_list), self.per_page, self.data.queryset.count()
+        self.footer_data = self.TableDataClass(data=[self.data.queryset.filter()[(len(self.page.object_list)/self.per_page)-1:self.per_page].aggregate(ballance=Sum('ballance'))], table=self)
+        self.footer = django_tables.rows.BoundRows(self.footer_data, self)    
+        
 
     def render_row_number(self):
         return '%d' % next(self.counter)
@@ -353,6 +361,7 @@ class AccountsReportTable(TableReport):
         configurable = True
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-bordered table-condensed'}
+        annotations = ('ballance', )
         
 class AccountsCashierReportTable(TableReport):
     d = RadioColumn(verbose_name=' ', orderable=False, accessor=A('pk'))
@@ -766,6 +775,13 @@ class GroupTable(TableReport):
         model = Group
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
+class ContractTemplateTable(TableReport):
+    id = django_tables.LinkColumn('contracttemplate_edit', get_params={'id':A('pk')})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    class Meta:
+        model = ContractTemplate
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+
 class TrafficTransmitNodesTable(TableReport):
     id = django_tables.LinkColumn('tariff_traffictransmitnode_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     group = django_tables.LinkColumn('group_edit', get_params={'id':A('group.id')})
