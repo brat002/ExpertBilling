@@ -113,6 +113,7 @@ class TableData(object):
         Slicing returns a new `.TableData` instance, indexing returns a
         single record.
         """
+        print key
         return self.data[key]
 
     @cached_property
@@ -223,6 +224,7 @@ class TableOptions(object):
         self.per_page = getattr(options, "per_page", 25)
         self.per_page_field = getattr(options, "per_page_field", "per_page")
         self.prefix = getattr(options, "prefix", "")
+        self.annotations = getattr(options, "annotations", "")
         self.sequence = Sequence(getattr(options, "sequence", ()))
         if hasattr(options, "sortable"):
             warnings.warn("`Table.Meta.sortable` is deprecated, use `orderable` instead",
@@ -384,6 +386,7 @@ class Table(StrAndUnicode):
         self.order_by_field = order_by_field
         self.page_field = page_field
         self.per_page_field = per_page_field
+        self.annotations = self._meta.annotations
         # Make a copy so that modifying this will not touch the class
         # definition. Note that this is different from forms, where the
         # copy is made available in a ``fields`` attribute.
@@ -515,6 +518,7 @@ class Table(StrAndUnicode):
         method and should be handled by the caller.
         """
         per_page = per_page or self._meta.per_page
+        self.per_page = per_page
         self.paginator = klass(self.rows, per_page, *args, **kwargs)
         self.page = self.paginator.page(page)
 

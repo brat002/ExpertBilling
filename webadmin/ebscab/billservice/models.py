@@ -2012,8 +2012,11 @@ class RadiusTrafficNode(models.Model):
         return "%s?id=%s" % (reverse('radiustrafficnode_delete'), self.id)
     
 class ContractTemplate(models.Model):
-    template = models.TextField()
+    template = models.CharField(max_length=128, verbose_name=u'Шаблон', help_text=u'''%(contract_num)i - номер заключаемого договора этого типа
+%(account_id)i - идентификатор аккаунта
+%(day)i,%(month)i,%(year)i,%(hour)i,%(minute)i,%(second)i - дата подключения на тариф''')
     counter = models.IntegerField()
+    
     class Meta:
         ordering = ['template']
         verbose_name =_(u"Шаблон номера договора")
@@ -2023,6 +2026,10 @@ class ContractTemplate(models.Model):
            )
     def __unicode__(self):
         return unicode(self.template)
+
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('contracttemplate_delete'), self.id)
+    
     
 class Manufacturer(models.Model):
     name = models.TextField()
