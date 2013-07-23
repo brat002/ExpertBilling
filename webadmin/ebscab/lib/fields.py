@@ -4,6 +4,8 @@ from django.forms import ValidationError as FormValidationError
 from django.core.exceptions import ValidationError
 from django.forms import fields, widgets
 from django.db import models
+from hashlib import md5
+from django.forms.widgets import PasswordInput
 
 class IPNetworkWidget(widgets.TextInput):
     def render(self, name, value, attrs=None):
@@ -136,6 +138,32 @@ class IPAddressField(models.Field):
         }
         defaults.update(kwargs)
         return super(IPAddressField, self).formfield(**defaults)
+ 
+ 
+class PasswordHashField(models.Field):
+    __metaclass__ = models.SubfieldBase
+    description = "Store password as hash"
+    
+    def db_type(self, connection):
+        return 'varchar(128)'
+
+    def to_python(self, value):
+        if not value:
+            return None
+
+
+    def get_prep_value(self, value):
+        if value:
+            value = md5(md5(value).hexdigest()).hexdigest()
+        return value
+      
+    def formfield(self, **kwargs):
+        defaults = {
+            'form_class' : fields.CharField,
+            'widget': PasswordInput,
+        }
+        defaults.update(kwargs)
+        return super(PasswordHashField, self).formfield(**defaults)
  
  
  # django-pgcrypto

@@ -46,7 +46,7 @@ class CoreCaches(CacheCollection):
         self.account_cache = AccountCache(date, crypt_key)
         self.traffictransmitservice_cache = TrafficTransmitServiceCache()
         self.settlementperiod_cache = SettlementPeriodCache()
-        self.nas_cache = NasCache()
+        self.nas_cache = NasCache(crypt_key)
         self.defspeed_cache = DefSpeedParametersCache()
         self.speed_cache = SpeedParametersCache()
         self.periodicaltarif_cache = PeriodicalTarifCache()
@@ -185,6 +185,11 @@ class SettlementPeriodCache(SimpleDictCache):
             
 class NasCache(CacheItem):
     __slots__ = ('by_id','by_ip')
+    
+    def __init__(self, crypt_key):
+        super(NasCache, self).__init__()
+        self.vars = (crypt_key, crypt_key,)
+
     datatype = NasData
     sql = core_sql['nas']
     def reindex(self):
