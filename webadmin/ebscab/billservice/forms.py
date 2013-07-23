@@ -650,8 +650,10 @@ class AddonServiceTarifForm(ModelForm):
         model = AddonServiceTarif  
         
 class ContractTemplateForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     class Meta:
         model = ContractTemplate  
+        exclude =('counter',)
 
 class RadiusAttrsForm(ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)

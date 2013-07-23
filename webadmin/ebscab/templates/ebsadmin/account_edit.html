@@ -663,6 +663,7 @@
                                     
                                 </div>
                             </div>
+                            {% if account.contract %}
                             <div class="control-row">
                                 <label class="control-label"><strong>{{form.contract.label}}</strong></label>
                                 <div class="controls ">
@@ -678,26 +679,28 @@
                                   
                                 </div>
                              </div>
-
-                            </div>
-                            
-                            {% if False %}
-                            <div class="control-group">
-                                <label class="control-label">Выберите шаблон номера:</label>
+                            {% else %}
+                            <div class="control-row">
+                                <label class="control-label">Шаблон договора:</label>
                                 <div class="controls">
-	                                   
-	                                    {{ form.contract_num }}
-	                                    {% if form.contract_num.errors %}
-	                                        <span class="help-inline">{% for error in form.contract_num.errors %}{{ error }}<br/> {% endfor %}</span>
-	                                    {% endif %}
-	                                    {% if form.contract_num.help_text%}
-	                                        <p class="help-block">
-	                                            {{ form.contract_num.help_text|safe }}
-	                                        </p>
-	                                    {% endif %}
+                                       
+                                        {{ form.contract_num }}
+                                        {% if form.contract_num.errors %}
+                                            <span class="help-inline">{% for error in form.contract_num.errors %}{{ error }}<br/> {% endfor %}</span>
+                                        {% endif %}
+                                        {% if form.contract_num.help_text%}
+                                            <p class="help-block">
+                                                {{ form.contract_num.help_text|safe }}
+                                            </p>
+                                        {% endif %}
                                 </div>
                             </div>
                             {% endif %}
+                            </div>
+                            
+
+
+
                             <div class="control-group">
                             <div class="control-row {% if form.password.errors %}error{% endif %}">
                                 <label class="control-label" for="input-password"><strong>{{form.password.label}}</strong></label>

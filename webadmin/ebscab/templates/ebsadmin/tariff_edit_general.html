@@ -214,22 +214,6 @@
                       </div>
                   </div>
                   </div>
-                  <div class="control-group">
-                  <div class="control-row {% if form.contracttemplate.errors %}error{% endif %}">
-                      <label class="control-label">{{form.contracttemplate.label}}: </label>
-                      <div class="controls">
-                      {{ form.contracttemplate }}
-                      {% if form.contracttemplate.errors %}
-                          <span class="help-inline">{% for error in form.contracttemplate.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.contracttemplate.help_text%}
-                          <p class="help-block">
-                              {{ form.contracttemplate.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                  </div>
                   <div class="control-group {% if form.description.errors %}error{% endif %}">
                       <label class="control-label">{{form.description.label}}: </label>
                       <div class="controls">
