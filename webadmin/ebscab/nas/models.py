@@ -6,6 +6,7 @@ from lib.fields import IPNetworkField
 # Create your models here.
 from django.core.urlresolvers import reverse
 from django.db.models import Max
+from lib.fields import EncryptedTextField
 
 NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),
@@ -302,9 +303,9 @@ class Nas(models.Model):
     identify = models.CharField(verbose_name=u'RADIUS имя', max_length=255)
     name = models.CharField(verbose_name=u'Имя',  max_length=255, unique=True)
     ipaddress = models.IPAddressField(verbose_name=u'IP адрес', max_length=255)
-    secret = models.CharField(verbose_name=u'Секретная фраза', help_text=u"Смотрите вывод команды /radius print", max_length=255)
+    secret = EncryptedTextField(verbose_name=u'Секретная фраза', help_text=u"Смотрите вывод команды /radius print", max_length=255)
     login = models.CharField(verbose_name=u'Имя пользователя', max_length=255, blank=True, default='admin')
-    password = models.CharField(verbose_name=u'Пароль', max_length=255, blank=True, default='')
+    password = EncryptedTextField(verbose_name=u'Пароль', max_length=255, blank=True, default='')
     snmp_version = models.CharField(verbose_name=u'Версия SNMP', choices=SNMP_VERSIONS, max_length=10, blank=True, null=True)
     #description = models.TextField(verbose_name=u'Описание', blank=True, default='')
     #allow_pptp = models.BooleanField(verbose_name=u'Разрешить серверу работать с PPTP', default=True)

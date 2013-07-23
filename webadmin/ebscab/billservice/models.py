@@ -255,7 +255,7 @@ class PeriodicalService(models.Model):
     ps_condition         = models.IntegerField(verbose_name=_(u"Условие списания"), default = 0, choices=ps_condition)
     condition_summ              = models.DecimalField(verbose_name=_(u'Сумма для условия'), default=0, blank=True, decimal_places=2, max_digits=30) 
     
-    deactivated     = models.DatpassportdislocateeTimeField(verbose_name=_(u"Отключить"), blank=True, null=True)
+    deactivated     = models.DateTimeField(verbose_name=_(u"Отключить"), blank=True, null=True)
     created     = models.DateTimeField(verbose_name=_(u"Активировать"), help_text=_(u'Не указывайте, если списания должны начаться с начала расчётного периода'), blank=True, null=True)
     deleted     = models.BooleanField(blank=True, default=False)
     
@@ -1121,7 +1121,7 @@ class SystemUser(models.Model):
     host = models.CharField(verbose_name=_(u'Разрешённые IP'), max_length=255, blank=True, null=True, default="0.0.0.0/0")
     #group = models.ManyToManyField(SystemGroup)
     text_password = models.CharField(verbose_name=_(u'Пароль'), max_length=255)
-    passport  = models.CharField(verbose_name=_(u'№ паспорта'), max_length=512, blank=True, default ='')
+    passport  = EncryptedTextField(verbose_name=_(u'№ паспорта'), max_length=512, blank=True, default ='')
     passport_details  = models.CharField(verbose_name=_(u'Паспорт выдан'), max_length=512, blank=True, default ='')
     passport_number  = models.CharField(verbose_name=_(u'Личный номер'), max_length=512, blank=True, default ='')
     unp  = models.CharField(verbose_name=_(u'УНП'), max_length=1024, blank=True, default ='')
