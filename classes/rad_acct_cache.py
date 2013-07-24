@@ -14,7 +14,7 @@ class RadAcctCaches(CacheCollection):
     def __init__(self, date, crypt_key):
         super(RadAcctCaches, self).__init__(date)
         self.account_cache = AccountCache(date)
-        self.nas_cache = NasCache()
+        self.nas_cache = NasCache(crypt_key)
         self.subaccount_cache = SubAccountsCache(crypt_key)
         self.caches = [self.account_cache, self.nas_cache,self.subaccount_cache]
 
@@ -43,8 +43,9 @@ class NasCache(CacheItem):
     datatype = NasData
     sql = rad_sql['nas']
     
-    def __init__(self):
+    def __init__(self, crypt_key):
         super(NasCache, self).__init__()
+        self.vars = (crypt_key, )
         self.by_ip = {}
         self.by_ip_n_identify = {}
         self.by_id = {}
