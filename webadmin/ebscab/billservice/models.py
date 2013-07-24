@@ -1120,7 +1120,7 @@ class SystemUser(models.Model):
     status = models.BooleanField(verbose_name=_(u'Статус'), default=False)
     host = models.CharField(verbose_name=_(u'Разрешённые IP'), max_length=255, blank=True, null=True, default="0.0.0.0/0")
     #group = models.ManyToManyField(SystemGroup)
-    text_password = models.CharField(verbose_name=_(u'Пароль'), max_length=255)
+    text_password = EncryptedTextField(verbose_name=_(u'Пароль'), blank=True, default='')
     passport  = EncryptedTextField(verbose_name=_(u'№ паспорта'), max_length=512, blank=True, default ='')
     passport_details  = models.CharField(verbose_name=_(u'Паспорт выдан'), max_length=512, blank=True, default ='')
     passport_number  = models.CharField(verbose_name=_(u'Личный номер'), max_length=512, blank=True, default ='')

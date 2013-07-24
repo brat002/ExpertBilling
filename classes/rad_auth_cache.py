@@ -26,7 +26,7 @@ class RadAuthCaches(CacheCollection):
         super(RadAuthCaches, self).__init__(date)
         self.account_cache = AccountCache(date)
         self.period_cache  = PeriodCache(date, fMem)
-        self.nas_cache = NasCache()
+        self.nas_cache = NasCache(crypt_key)
         self.defspeed_cache = DefaultSpeedCache()
         self.speed_cache = SpeedCache()
         self.speedlimit_cache = SpeedlimitCache()
@@ -91,8 +91,9 @@ class NasCache(CacheItem):
     datatype = NasData
     sql = rad_sql['nas']
     
-    def __init__(self):
+    def __init__(self, crypt_key):
         super(NasCache, self).__init__()
+        self.vars = (crypt_key, )
         self.by_ip = {}
         self.by_ip_n_identify = {}
         self.by_id = {}
