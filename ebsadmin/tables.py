@@ -349,7 +349,7 @@ class AccountsReportTable(TableReport):
     def paginate(self, *args, **kwargs):
         super(AccountsReportTable, self).paginate(*args, **kwargs)        
         print 'pagg', len(self.page.object_list), self.per_page, self.data.queryset.count()
-        self.footer_data = self.TableDataClass(data=[self.data.queryset.filter()[(len(self.page.object_list)/self.per_page)-1:self.per_page].aggregate(ballance=Sum('ballance'))], table=self)
+        self.footer_data = self.TableDataClass(data=[self.data.queryset.aggregate(ballance=Sum('ballance'))], table=self)
         self.footer = django_tables.rows.BoundRows(self.footer_data, self)    
         
 
