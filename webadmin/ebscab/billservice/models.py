@@ -257,7 +257,7 @@ class PeriodicalService(models.Model):
     
     deactivated     = models.DateTimeField(verbose_name=_(u"Отключить"), blank=True, null=True)
     created     = models.DateTimeField(verbose_name=_(u"Активировать"), help_text=_(u'Не указывайте, если списания должны начаться с начала расчётного периода'), blank=True, null=True)
-    deleted     = models.BooleanField(blank=True, default=False)
+    deleted     = models.BooleanField(blank=True, default=False, db_index=True)
     
     
     def __unicode__(self):
@@ -405,7 +405,7 @@ class TimeAccessNode(models.Model):
 class AccessParameters(models.Model):
     #name              = models.CharField(max_length=255, verbose_name=_(u'Название вида доступа')
     access_type       = models.CharField(max_length=255, choices=ACCESS_TYPE_METHODS, default='PPTP', blank=True, verbose_name=_(u'Способ доступа'))
-    access_time       = models.ForeignKey(to=TimePeriod, verbose_name=_(u'Доступ разрешён'), null=True, on_delete = models.SET_NULL)
+    access_time       = models.ForeignKey(to=TimePeriod, verbose_name=_(u'Доступ разрешён'), null=True, db_index=True, on_delete = models.SET_NULL)
     #ip_address_pool   = models.ForeignKey(to=IPAddressPool, verbose_name=_(u'Пул адресов', blank=True, null=True)
     ipn_for_vpn     = models.BooleanField(verbose_name=_(u'Выполнять IPN действия'), blank=True, default=False)
     #max_limit      = models.CharField(verbose_name=_(u"MAX (kbps)", max_length=64, blank=True, default="")
@@ -812,7 +812,7 @@ class Account(DynamicModel):
     #allow_ipn_with_null = models.BooleanField()
     #allow_ipn_with_minus = models.BooleanField()
     #allow_ipn_with_block = models.BooleanField()
-    deleted = models.DateTimeField(blank=True, null=True)
+    deleted = models.DateTimeField(blank=True, null=True, db_index=True)
     promise_summ = models.IntegerField(_(u'Максимальный обещанный платёж'), blank=True, default=0)
     promise_min_ballance = models.IntegerField(_(u'Минимальный баланс для обещанного платежа'), blank=True, default=0)
     promise_days = models.IntegerField(_(u'Длительность обещанного платежа, дней'), blank=True, default=1)
@@ -1764,6 +1764,8 @@ class SubAccount(models.Model):
     allow_ipn_with_block = models.BooleanField(blank=True, default=False, verbose_name=_(u"Разрешать IPN авторизацию при наличии блокировок по лимитам или балансу"))
     associate_pptp_ipn_ip = models.BooleanField(blank=True, default=False, verbose_name=_(u"Привязать PPTP/L2TP авторизацию к IPN IP"))
     associate_pppoe_ipn_mac = models.BooleanField(blank=True, default=False, verbose_name=_(u"Привязать PPPOE авторизацию к IPN MAC"))
+    
+    
     ipn_speed = models.TextField(blank=True, help_text=_(u"Не менять указанные настройки скорости"))
     vpn_speed = models.TextField(blank=True, help_text=_(u"Не менять указанные настройки скорости"))
     allow_addonservice = models.BooleanField(blank=True, default=False, verbose_name=_(u"Разрешить самостоятельную активацию подключаемых услуг на этот субаккаунт"))

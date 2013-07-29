@@ -490,8 +490,9 @@ class periodical_service_bill(Thread):
                 chk_date = last_checkout
                 
                 while True:
+                    period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
                     if first_time==False:
-                        period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                        
                         chk_date = period_end_ast
                     logger.debug('%s: Periodical Service: AT_END  account: %s service:%s type:%s check date: %s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, chk_date, next_date,))
 

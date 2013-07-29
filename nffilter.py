@@ -401,6 +401,7 @@ class FlowDequeThread(Thread):
         flow.groups = None; flow.has_groups = has_groups
         #add groups, check if any
         #print tarifGroups
+        
         if has_groups:
             dr = 0
             if   flow.node_direction == 'INPUT' : dr = 0
@@ -510,8 +511,8 @@ class FlowDequeThread(Thread):
                                     passthr = False
                                 break
                             #found passthrough=false
-                            if not passthr and class_found:
-
+                            if not passthr and classLst:
+                                #logger.info("flow no pass: %s  classlst:%s nnode: %s tarifGroups: %s", (flow, classLst, nnode, tarifGroups))
                                 self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
                                 if nnode.store==True:
                                     nfwrite_list.append(flow)
@@ -519,6 +520,7 @@ class FlowDequeThread(Thread):
                             #traversed all the nodes
                             else:
                                 if classLst:
+                                    #logger.info("flow pass: %s  classlst:%s nnode: %s tarifGroups: %s", (flow, classLst, nnode, tarifGroups))
                                     self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
                                     if nnode.store==True:
                                         nfwrite_list.append(flow)
