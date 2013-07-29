@@ -926,3 +926,11 @@ def get_radius_stat():
     cur.close()
     conn.close()   
                     
+@periodic_task(run_every=crontab(minute="0"))
+def clear_ipinuse_function():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("delete from billservice_ipinuse where datetime <now()-interval '1 month' and  disabled is not null;")
+    conn.commit()
+    cur.close()
+    conn.close()   
