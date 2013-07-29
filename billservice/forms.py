@@ -1183,7 +1183,7 @@ class SubAccountPartialForm(ModelForm):
     class Meta:
         model = SubAccount
         fields = ['id', 'nas', 'username', 'password', 'ipn_mac_address', 'ipn_ip_address', 'vpn_ip_address', 'vpn_ipv6_ip_address', 'ipv4_vpn_pool', 'ipv6_vpn_pool', 'ipv4_ipn_pool', 'sessionscount', 'switch', 'switch_port', 'vlan']
-        exclude = ('ipn_ipinuse','vpn_ipinuse', 'account')
+        exclude = ('ipn_ipinuse','vpn_ipinuse', 'account', 'allow_dhcp', 'allow_dhcp_with_null', 'allow_dhcp_with_minus', 'allow_dhcp_with_block', 'allow_dhcp_with_block', 'allow_vpn_with_null', 'allow_vpn_with_minus', 'allow_vpn_with_block', 'allow_ipn_with_null', 'allow_ipn_with_minus', 'allow_ipn_with_block', 'associate_pptp_ipn_ip', 'associate_pppoe_ipn_mac')
 
         
 class TemplateSelectForm(forms.Form):
