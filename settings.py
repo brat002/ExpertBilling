@@ -205,6 +205,7 @@ ENABLE_SELECT2_MULTI_PROCESS_SUPPORT = False
 CURRENCY = u' руб'
 
 #GETPAID_BACKENDS = ('getpaid.backends.easypay',
+'getpaid.backends.platezhkaua',
 #                    )
 
 GETPAID_BACKENDS_SETTINGS = {
@@ -238,6 +239,13 @@ GETPAID_BACKENDS_SETTINGS = {
         'DEFAULT_CURRENCY' : 'RUB',
         'DUSER' : '12345',
         'DPASS': '12345',
+
+    },
+    'payments.platezhkaua' : {
+                          'TYPE': 'backend', 
+        'DEFAULT_CURRENCY' : 'UAH',
+        'LOGIN' : '12345',
+        'PASSWORD': '12345',
 
     }
 }

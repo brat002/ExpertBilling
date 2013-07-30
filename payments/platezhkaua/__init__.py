@@ -50,11 +50,11 @@ class PaymentProcessor(PaymentProcessorBase):
         return 'OK'
     
     @staticmethod
-    def check_credentials(ip, request, body):
-        login = PaymentProcessor.get_backend_setting('login')
-        password = PaymentProcessor.get_backend_setting('password')
+    def check_credentials(request, body):
+        login = PaymentProcessor.get_backend_setting('LOGIN')
+        password = PaymentProcessor.get_backend_setting('PASSWORD')
 
-        if login!=body.commandCall.login.text or password!=body.commandCall.password.text:
+        if login!=body.commandcall.login.text or password!=body.commandcall.password.text:
             dt = datetime.datetime.now()
             return PaymentProcessor.error(body, 300, 'Incorrect credentials')
         return 'OK'
@@ -64,11 +64,11 @@ class PaymentProcessor(PaymentProcessorBase):
     
     @staticmethod
     def error(body, text, comment=''):
-        
-        return  ERROR_TEMPLATE % ERROR_TEMPLATE % {
-                                  'TRANSACTION_ID': body.commandCall.transactionID.text,
+
+        return  ERROR_TEMPLATE % {
+                                  'TRANSACTION_ID': body.commandcall.transactionid.text,
                                   'RESULT': text,
-                                  'ACCOUNT': body.commandCall.account.text,
+                                  'ACCOUNT': body.commandcall.account.text,
                                   'COMMENT': comment,
                                   
                                   }
@@ -76,7 +76,7 @@ class PaymentProcessor(PaymentProcessorBase):
     
     @staticmethod
     def check(request, body):
-        acc = body.commandCall.account.text
+        acc = body.commandcall.account.text
 
         try:
             account = Account.objects.get(contract = acc)
@@ -84,9 +84,9 @@ class PaymentProcessor(PaymentProcessorBase):
             return PaymentProcessor.error(body, 5, u'Аккаунт не найден')
         
         ret = ERROR_TEMPLATE % {
-                                  'TRANSACTION_ID': body.commandCall.transactionID.text,
+                                  'TRANSACTION_ID': body.commandcall.transactionid.text,
                                   'RESULT': 0,
-                                  'ACCOUNT': body.commandCall.account.text,
+                                  'ACCOUNT': body.commandcall.account.text,
                                   'COMMENT': 'OK',
                                   
                                   }
@@ -96,10 +96,10 @@ class PaymentProcessor(PaymentProcessorBase):
 
     @staticmethod
     def pay(request, body):
-        acc = body.commandCall.account.text
-        amount = float(body.commandCall.amount.text)
-        orderid = body.commandCall.payID.text
-        timestamp = body.commandCall.payTimestamp.text
+        acc = body.commandcall.account.text
+        amount = float(body.commandcall.amount.text)/100.00
+        orderid = body.commandcall.payid.text
+        timestamp = body.commandcall.paytimestamp.text
 
 
         
@@ -119,9 +119,9 @@ class PaymentProcessor(PaymentProcessorBase):
             payment.save()
             payment.change_status('paid')
             ret = SUCCESS_CHECK_TEMPLATE % {
-                                      'TRANSACTION_ID': body.commandCall.transactionID.text,
+                                      'TRANSACTION_ID': body.commandcall.transactionid.text,
                                       'RESULT': 0,
-                                      'ACCOUNT': body.commandCall.account.text,
+                                      'ACCOUNT': body.commandcall.account.text,
                                       'COMMENT': 'OK',
                                       }
 
