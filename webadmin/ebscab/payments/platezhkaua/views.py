@@ -2,7 +2,7 @@ import logging
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.base import View
-from payments.easypay import PaymentProcessor
+from payments.platezhkaua import PaymentProcessor
 from getpaid.models import Payment
 from django.conf import settings
 from BeautifulSoup import BeautifulSoup
@@ -20,17 +20,17 @@ class PayView(View):
             if settings.DEBUG==False:
                 status = PaymentProcessor.check_allowed_ip(ip, request, body)
                 if status!='OK':
-                    HttpResponse(status)
+                    return HttpResponse(status)
 
-            status = PaymentProcessor.check_credentials(ip, request, body)
+            status = PaymentProcessor.check_credentials(request, body)
             if status!='OK':
-                HttpResponse(status)
+                return HttpResponse(status)
                     
 
             
-            if body.commandCall.command.text=='check':
+            if body.commandcall.command.text=='check':
                 status = PaymentProcessor.check(request, body)
-            elif body.commandCall.command.text=='pay':
+            elif body.commandcall.command.text=='pay':
                 status = PaymentProcessor.pay(request, body)
 
                 
