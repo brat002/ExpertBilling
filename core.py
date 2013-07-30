@@ -499,7 +499,7 @@ class periodical_service_bill(Thread):
                     mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0
                     cash_summ = mult*ps.cost
                     
-                    if chk_date >self.NOW or chk_date>=period_start_ast:
+                    if chk_date >self.NOW:
                         logger.error('%s: Periodical Service: AT_END %s Can not bill future ps account: %s chk_date: %s new period start: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date, period_start_ast))
                         break
 

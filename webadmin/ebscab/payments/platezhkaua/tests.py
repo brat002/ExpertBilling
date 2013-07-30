@@ -18,14 +18,15 @@ class SimpleTest(TestCase):
         acc.created = datetime.datetime.now()
         acc.contract = '010001'
         acc.save()
-        response = c.post(reverse('getpaid-easypay-pay'), """<Request>
-<DateTime>yyyy-MM-ddTHH:mm:ss</DateTime>
-<Sign></Sign>
-<Check>
-<ServiceId>int</ServiceId>
-<Account>010001</Account>
-</Check>
-</Request>""", content_type='text/xml')
+        response = c.post(reverse('getpaid-platezhkaua-pay'), """<?xml version="1.0" encoding="UTF-8"?>
+<commandCall>
+    <login>12345</login>
+    <password>12345</password>
+    <command>check</command>
+    <transactionID>204</transactionID>
+    <payElementID>1</payElementID>
+    <account>010001</account>
+</commandCall>""", content_type='text/xml')
         print response.content
         
 
@@ -38,94 +39,14 @@ class SimpleTest(TestCase):
         acc.created = datetime.datetime.now()
         acc.contract = '010001'
         acc.save()
-        response = c.post(reverse('getpaid-easypay-pay'), """<Request>
-<DateTime>yyyy-MM-ddTHH:mm:ss</DateTime>
-<Sign></Sign>
-<Payment>
-<ServiceId>1</ServiceId>
-<OrderId>1</OrderId>
-<Account>010001</Account>
-<Amount>10.11</Amount>
-</Payment>
-</Request>""", content_type='text/xml')
+        response = c.post(reverse('getpaid-platezhkaua-pay'), """<?xml version="1.0" encoding="UTF-8"?>
+<commandCall>
+    <login>12345</login>
+    <password>12345</password>
+    <command>check</command>
+    <transactionID>204</transactionID>
+    <payElementID>1</payElementID>
+    <account>010001</account>
+</commandCall>""", content_type='text/xml')
         print response.content
         
-    def test_confirm(self):
-        c = Client()
-        acc = Account()
-        acc.username='010001'
-        acc.password='010001'
-        acc.fullname='foouser'
-        acc.created = datetime.datetime.now()
-        acc.contract = '010001'
-        acc.save()
-        TransactionType.objects.create(name='EasyPay', internal_name = 'payments.easypay')
-        
-        response = c.post(reverse('getpaid-easypay-pay'), """<Request>
-<DateTime>yyyy-MM-ddTHH:mm:ss</DateTime>
-<Sign></Sign>
-<Payment>
-<ServiceId>1</ServiceId>
-<OrderId>1</OrderId>
-<Account>010001</Account>
-<Amount>10.11</Amount>
-</Payment>
-</Request>""", content_type='text/xml')
-        print response.content
-        bs = BeautifulSoup(response.content)
-        response = c.post(reverse('getpaid-easypay-pay'), """<Request>
-<DateTime>yyyy-MM-ddTHH:mm:ss</DateTime>
-<Sign></Sign>
-<Confirm>
-<ServiceId>1</ServiceId>
-<PaymentId>%s</PaymentId>
-</Confirm>
-</Request>""" % bs.response.paymentid, content_type='text/xml')
-        
-        print 'TRANSACTION=', Transaction.objects.get(type__internal_name='payments.easypay', bill='1')
-        
-        print response.content
-        
-    def test_cancel(self):
-        c = Client()
-        acc = Account()
-        acc.username='010001'
-        acc.password='010001'
-        acc.fullname='foouser'
-        acc.created = datetime.datetime.now()
-        acc.contract = '010001'
-        acc.save()
-        TransactionType.objects.create(name='EasyPay', internal_name = 'payments.easypay')
-        
-        response = c.post(reverse('getpaid-easypay-pay'), """<Request>
-<DateTime>yyyy-MM-ddTHH:mm:ss</DateTime>
-<Sign></Sign>
-<Payment>
-<ServiceId>1</ServiceId>
-<OrderId>1</OrderId>
-<Account>010001</Account>
-<Amount>10.11</Amount>
-</Payment>
-</Request>""", content_type='text/xml')
-        print response.content
-        bs = BeautifulSoup(response.content)
-        response = c.post(reverse('getpaid-easypay-pay'), """<Request>
-<DateTime>yyyy-MM-ddTHH:mm:ss</DateTime>
-<Sign></Sign>
-<Confirm>
-<ServiceId>1</ServiceId>
-<PaymentId>%s</PaymentId>
-</Confirm>
-</Request>"""  % bs.response.paymentid, content_type='text/xml')
-        
-        response = c.post(reverse('getpaid-easypay-pay'), """<Request>
-<DateTime>yyyy-MM-ddTHH:mm:ss</DateTime>
-<Sign></Sign>
-<Cancel>
-<ServiceId>1</ServiceId>
-<PaymentId>%s</PaymentId>
-</Cancel>
-</Request>""" % bs.response.paymentid, content_type='text/xml')
-        self.assertEqual(Transaction.objects.filter(type__internal_name='payments.easypay', bill='1').count(), 0)
-        
-        print response.content
