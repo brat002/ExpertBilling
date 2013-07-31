@@ -70,7 +70,13 @@ def accountaddonservicereport(request, slug):
             date_end = form.cleaned_data.get('date_end')
             accounts = form.cleaned_data.get('accounts')
             
-            res = AccountAddonService.objects.filter(activated__gte=date_start, deactivated__lte=date_end)
+            res = AccountAddonService.objects.all()
+            if date_start:
+                res = res.filter(activated__gte=date_start)
+                
+            if date_end:
+                res = res.filter(deactivated__lte=date_end)
+                
             if accounts:
                 res = res.filter(account__in=accounts)
             table = AccountAddonServiceReport(res)
@@ -96,8 +102,14 @@ def cashierdailyreport(request, slug):
             class TypeTransactionsSumm(TableReport):
                 type__name = django_tables.Column(verbose_name=u'Тип операции')
                 summ = FormatFloatColumn()
+                
+                def __init__(self, form, *args, **kwargs):
+                    super(TypeTransactionsSumm, self).__init__(form, *args, **kwargs)
+                    self.footer_data = self.TableDataClass(data=[pp.aggregate(summ=Sum('summ'))], table=self)
+                    self.footer = django_tables.rows.BoundRows(self.footer_data, self)    
                 class Meta:
                     attrs = {'class': 'table table-striped table-bordered table-condensed"'}
+                    annotations = ('summ', )
                     
             date_start = form.cleaned_data.get('date_start')
             date_end = form.cleaned_data.get('date_end')
@@ -107,19 +119,22 @@ def cashierdailyreport(request, slug):
                 res = res.filter(created__gte=date_start)
             if date_end:
                 res = res.filter(created__lte=date_end+datetime.timedelta(days=1))
-            total = res.aggregate(sum=Sum('summ'))
-
-            res = res.values('type__name').annotate(summ=Sum('summ')).order_by()
+            
             
             if systemuser:
                 res = res.filter(systemuser=systemuser)
+                
+            pp = res
+            res = res.values('type__name').annotate(summ=Sum('summ')).order_by()
+            
+
 
             table = TypeTransactionsSumm(res)
             table_to_report = RequestConfig(request, paginate=False).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
 
-            return {'form': form, 'total':  '%.2f' % total.get('sum', 0), 'table': table, 'name': name, 'slug': slug}
+            return {'form': form, 'table': table, 'name': name, 'slug': slug}
         else:
             return {'form': form, 'name': name, 'slug': slug}
     form = CachierReportForm()
@@ -172,7 +187,7 @@ def totaltransactionreport(request, slug):
             return {'form': form,  'table': table, 'name': name, 'slug': slug}
         else:
             return {'form': form, 'name': name, 'slug': slug}
-    form = CachierReportForm()
+    form = ReportForm()
     return {'form': form, 'name': name, 'slug': slug}
 
 rep = {
