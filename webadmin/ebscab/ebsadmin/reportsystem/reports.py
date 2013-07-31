@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
 
 
-from ebsadmin.reportsystem.forms import AccountBallanceForm, CachierReportForm
+from ebsadmin.reportsystem.forms import AccountBallanceForm, CachierReportForm, ReportForm
 
 from ebscab.lib.decorators import render_to, ajax_request
 from billservice.helpers import systemuser_required
@@ -9,7 +9,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
-from billservice.models import Account, AccountAddonService, Transaction
+from billservice.models import Account, AccountAddonService, Transaction, TotalTransactionReport
 from django_tables2_reports.tables import TableReport
 import django_tables2 as django_tables
 from django.db.models import Sum
@@ -125,10 +125,62 @@ def cashierdailyreport(request, slug):
     form = CachierReportForm()
     return {'form': form, 'name': name, 'slug': slug}
 
+@systemuser_required
+@render_to("reportsystem/generic.html")
+def totaltransactionreport(request, slug):
+
+            
+    name = rep.get(slug)[1]
+    if request.GET and request.method=='GET':
+        form = ReportForm(request.GET)
+        if form.is_valid():
+            class TotalTransactionsSumm(TableReport):
+                type__name = django_tables.Column(verbose_name=u'Тип операции')
+                summ = FormatFloatColumn()
+                
+                def __init__(self, form, *args, **kwargs):
+                    super(TotalTransactionsSumm, self).__init__(form, *args, **kwargs)
+                    self.footer_data = self.TableDataClass(data=[pp.aggregate(summ=Sum('summ'))], table=self)
+                    self.footer = django_tables.rows.BoundRows(self.footer_data, self)    
+                class Meta:
+                    attrs = {'class': 'table table-striped table-bordered table-condensed"'}
+                    annotations = ('summ', )
+
+            date_start = form.cleaned_data.get('date_start')
+            date_end = form.cleaned_data.get('date_end')
+            transactiontype = form.cleaned_data.get('transactiontype')
+
+
+            res = TotalTransactionReport.objects.all()
+            if date_start:
+                res = res.filter(created__gte=date_start)
+            if date_end:
+                res = res.filter(created__lte=date_end+datetime.timedelta(days=1))
+            if transactiontype:
+                res = res.filter(type__in=[x.internal_name for x in transactiontype])
+            pp = res
+
+
+            res = res.values('type__name').annotate(summ=Sum('summ')).order_by()
+
+
+            table = TotalTransactionsSumm(res)
+            table_to_report = RequestConfig(request, paginate=False).configure(table)
+            if table_to_report:
+                return create_report_http_response(table_to_report, request)
+
+            return {'form': form,  'table': table, 'name': name, 'slug': slug}
+        else:
+            return {'form': form, 'name': name, 'slug': slug}
+    form = CachierReportForm()
+    return {'form': form, 'name': name, 'slug': slug}
+
 rep = {
        'blabla': (render_report, u'Отчёт по сумме платежей за период'),
        'accountaddonservicereport': (accountaddonservicereport, u'Отчёт по подключенным подключаемым услугам'),
        'cashierdailyreport': (cashierdailyreport, u'Отчёт по платежам за период'),
+       'totaltransactionreport': (totaltransactionreport, u'Отчёт по сумме списаний за период'),
+       
        
        }
 

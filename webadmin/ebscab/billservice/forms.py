@@ -27,7 +27,9 @@ from widgets import SplitDateTimeWidget, CheckboxSelectMultipleWithSelectAll
 from django.utils.translation import ugettext as _
 from django_select2 import *
 import IPy, ipaddr
-
+from Crypto.Cipher import ARC4
+from base64 import b64encode, b64decode
+from django.conf import settings
 class HardwareChoices(AutoModelSelect2Field):
     queryset = Hardware.objects#.filter(accounthardware__isnull=True)
     max_results = 20
@@ -38,6 +40,51 @@ class NewHardwareChoices(AutoModelSelect2Field):
     max_results = 20
     search_fields = ['name__icontains', 'model__name__icontains', 'sn__icontains', 'comment__icontains']
 
+class PasswordTextInput(forms.widgets.Input):
+    input_type = 'text'
+    def render(self, name, value, attrs=None):
+        if attrs.get('id'):
+            attrs['id']=attrs['id'].replace('_0', '')
+        return super(PasswordTextInput, self).render(name, value, attrs=attrs)
+        
+class HiddenPasswordInput(forms.widgets.Input):
+    input_type = 'hidden'
+
+    def __init__(self, attrs=None):
+        super(HiddenPasswordInput, self).__init__(attrs)
+
+    def value_from_datadict(self, data, files, name):
+        value = data.get(name, None)
+        if not value: return None
+        obj1 = ARC4.new(settings.PGCRYPTO_DEFAULT_KEY)
+        value = obj1.decrypt(b64decode(value))
+        return value
+    
+    def render(self, name, value, attrs=None):
+        obj1 = ARC4.new(settings.PGCRYPTO_DEFAULT_KEY)
+        value = b64encode(obj1.encrypt(unicode(value)))
+        return super(HiddenPasswordInput, self).render(name, value, attrs)
+    
+class CustomPasswordWidget(forms.widgets.MultiWidget):
+
+    def __init__(self, attrs=None, ):
+        widgets = (PasswordTextInput(attrs=attrs), HiddenPasswordInput(attrs=attrs))
+        super(CustomPasswordWidget, self).__init__(widgets, attrs)
+
+    def value_from_datadict(self, data, files, name):
+        values =  [widget.value_from_datadict(data, files, name + '_%s' % i) for i, widget in enumerate(self.widgets)]
+        value = values[0] or values[1]
+        return value
+    
+    def decompress(self, value):
+        if value:
+            return [None, value]
+        return [None, None]
+
+    def format_output(self, rendered_widgets):
+        rendered_widgets.insert(-1, '')
+        return u''.join(rendered_widgets)
+    
 
 class DateRangeField(forms.DateField):
     def __init__(self, *args, **kwargs):
@@ -432,8 +479,11 @@ class BankDataForm(ModelForm):
         model = BankData
               
 class AccountForm(DynamicForm):
-    username = forms.CharField(label =_(u"Имя пользователя"), required=True, widget = forms.TextInput(attrs={'class': 'input-medium'}))
-    password = forms.CharField(label =_(u"Пароль"), required=True, widget = forms.TextInput(attrs={'class': 'input-medium'}))
+    username = forms.CharField(label =_(u"Имя пользователя"), required=True, widget = forms.widgets.TextInput(attrs={'class': 'input-medium'}))
+    #password = forms.CharField(label = _(u"Пароль") if  settings.HIDE_PASSWORDS==False else _(u"Изменить пароль"), required=False, widget = forms.widgets.PasswordInput(attrs={'class': 'input-medium'}, render_value=False))
+    password = forms.CharField(label = _(u"Пароль") if  settings.HIDE_PASSWORDS==False else _(u"Изменить пароль"), required=False, widget = CustomPasswordWidget(attrs={'class': 'input-medium'})  if  settings.HIDE_PASSWORDS==True else forms.widgets.TextInput(attrs={'class': 'input-medium'}))
+    
+        
     city = forms.ModelChoiceField(label=_(u"Город"),queryset=City.objects.all(), required=False, widget = forms.widgets.Select(attrs={'class': 'input-large',}))
     
     street = forms.CharField(label=_(u"Улица"),  required=False, widget = forms.widgets.TextInput(attrs={'class': 'input-large',}))#AutoCompleteSelectMultipleField('street_name', required = False, label =u"Улица", attrs={'class': 'input-large'})
@@ -449,6 +499,9 @@ class AccountForm(DynamicForm):
 
     
     def __init__(self, *args, **kwargs):
+        #if settings.HIDE_PASSWORDS:
+        #    self.old_password = kwargs['instance'].password
+        #    kwargs['instance'].password=''
         super(AccountForm, self).__init__(*args, **kwargs)
         self.fields['status'].widget.attrs['class'] = 'input-xlarge'
         self.fields['systemuser'].widget.attrs['class'] = 'input-xlarge'
@@ -464,6 +517,9 @@ class AccountForm(DynamicForm):
         self.fields['phone_m'] = PhoneField(required=False)
         self.fields['phone_h'] = PhoneField(required=False)
         self.fields['contactperson_phone'] = PhoneField(required=False)
+
+            
+
         
     
     class Meta:
@@ -484,6 +540,15 @@ class AccountForm(DynamicForm):
             raise forms.ValidationError(_(u"Нельзя создать пользователя с именем существующего администратора."))
         else:
             return self.cleaned_data['username']
+        
+    def clean(self):
+        super(AccountForm, self).clean()
+        data = self.cleaned_data
+
+        if settings.HIDE_PASSWORDS and not data.get('password'):
+            data['password'] = self.instance.password
+
+        return data
         
 class AccountExtraForm(DynamicExtraForm):
     
@@ -744,7 +809,7 @@ class SystemUserForm(ModelForm):
     created = forms.CharField(label=_(u"Создан"), widget = forms.TextInput(attrs={'readonly':'readonly'}), required=False)
     authgroup = forms.ModelMultipleChoiceField(label=_(u"Группа доступа"), queryset = AuthGroup.objects.all(), required=False)
     is_superuser = forms.BooleanField(label=_(u"Суперадминистратор"),widget=forms.CheckboxInput, required=False)
-    new_password = forms.CharField(label = _(u'Новый пароль '), required=False)
+    password = forms.CharField(label = _(u"Пароль") if  settings.HIDE_PASSWORDS==False else _(u"Изменить пароль"), required=False, widget = CustomPasswordWidget()  if  settings.HIDE_PASSWORDS==True else forms.widgets.TextInput())
     class Meta:
         model = SystemUser
         exclude = ('last_ip', 'last_login', 'created', 'text_password', 'password')
@@ -1026,6 +1091,7 @@ class SheduleLogSearchForm(forms.Form):
 #TO-DO: добавить exclude в periodicalservice
 class SubAccountForm(ModelForm):
     account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.HiddenInput)
+    password = forms.CharField(label = _(u"Пароль") if  settings.HIDE_PASSWORDS==False else _(u"Изменить пароль"), required=False, widget = CustomPasswordWidget()  if  settings.HIDE_PASSWORDS==True else forms.widgets.TextInput())
     ipn_speed = forms.CharField(label=_(u'IPN скорость'), help_text=_(u"Не менять указанные настройки скорости"), required = False, widget = forms.TextInput(attrs={'class': 'span6'}))
     vpn_speed = forms.CharField(label=_(u'VPN скорость'), help_text=_(u"Не менять указанные настройки скорости"), required = False, widget = forms.TextInput(attrs={'class': 'span6'}))
     ipv4_vpn_pool = forms.ModelChoiceField(queryset=IPPool.objects.filter(type=0), required=False)
@@ -1098,6 +1164,7 @@ class SubAccountForm(ModelForm):
 class SubAccountPartialForm(ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.widgets.HiddenInput)
+    password = forms.CharField(label = _(u"Пароль") if  settings.HIDE_PASSWORDS==False else _(u"Изменить пароль"), required=False, widget = CustomPasswordWidget()  if  settings.HIDE_PASSWORDS==True else forms.widgets.TextInput())
     ipv4_vpn_pool = forms.ModelChoiceField(queryset=IPPool.objects.filter(type=0), required=False)
     ipv6_vpn_pool = forms.ModelChoiceField(queryset=IPPool.objects.filter(type=2), required=False)
     ipv4_ipn_pool = forms.ModelChoiceField(queryset=IPPool.objects.filter(type=1), required=False)
