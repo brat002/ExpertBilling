@@ -449,7 +449,7 @@ class periodical_service_bill(Thread):
                 #    chk_date =  chk_date+datetime.timedelta(seconds=delta_ast)
 
                 delta_coef=1
-                if vars.USE_COEFF_FOR_PS==True and first_time and ((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)<delta_ast:
+                if vars.USE_COEFF_FOR_PS==True and first_time and ((last_checkout-acctf_datetime).days*86400+(last_checkout-acctf_datetime).seconds)<delta_ast:
                     logger.warning('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
                     delta_coef=float((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)/float(delta_ast)        
                     cash_summ=Decimal(str(cash_summ))*Decimal(str(delta_coef))
@@ -505,9 +505,9 @@ class periodical_service_bill(Thread):
 
                     if period_start_ast>period_start: break
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
-                    if vars.USE_COEFF_FOR_PS==True and ((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)<delta_ast:
+                    if vars.USE_COEFF_FOR_PS==True and first_time and ((chk_date-acctf_datetime).days*86400+(chk_date-acctf_datetime).seconds)<delta_ast:
                         logger.debug('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
-                        delta_coef=float((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)/float(delta_ast)        
+                        delta_coef=float((chk_date-acctf_datetime).days*86400+(chk_date-acctf_datetime).seconds)/float(delta_ast)        
                         cash_summ=Decimal(str(cash_summ))*Decimal(str(delta_coef))
                         
                     if first_time:
