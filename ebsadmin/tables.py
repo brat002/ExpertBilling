@@ -94,6 +94,7 @@ class SubAccountsTable(django_tables.Table):
         model = SubAccount
         configurable=True
         available_fields = ('id', 'username', 'password', 'nas', 'vpn_ip_address', 'ipn_ip_address', 'ipn_mac_address', 'd')
+        exclude = ('password', )
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-disable-hover table-bordered table-condensed'}
 
@@ -344,13 +345,13 @@ class AccountsReportTable(TableReport):
     def __init__(self, form, *args, **kwargs):
         super(AccountsReportTable, self).__init__(form, *args, **kwargs)
         self.counter = itertools.count()
-
+        self.footer_data = self.TableDataClass(data=[self.data.queryset.aggregate(ballance=Sum('ballance'))], table=self)
+        self.footer = django_tables.rows.BoundRows(self.footer_data, self)    
 
     def paginate(self, *args, **kwargs):
         super(AccountsReportTable, self).paginate(*args, **kwargs)        
-        print 'pagg', len(self.page.object_list), self.per_page, self.data.queryset.count()
-        self.footer_data = self.TableDataClass(data=[self.data.queryset.aggregate(ballance=Sum('ballance'))], table=self)
-        self.footer = django_tables.rows.BoundRows(self.footer_data, self)    
+        #print 'pagg', len(self.page.object_list), self.per_page, self.data.queryset.count()
+
         
 
     def render_row_number(self):
@@ -359,6 +360,7 @@ class AccountsReportTable(TableReport):
     class Meta:
         model = Account
         configurable = True
+        exclude = ('password', )
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-bordered table-condensed'}
         annotations = ('ballance', )

@@ -856,6 +856,8 @@ class Account(DynamicModel):
         user.is_active=self.deleted is not None
         user.first_name = self.fullname
         user.save()
+        
+        
         super(Account, self).save(*args, **kwargs)
         
     def get_last_promises_count(self):
@@ -1797,26 +1799,25 @@ class SubAccount(models.Model):
             )
         
     def save(self, *args, **kwargs):
-        print 11
-        print  'START vpn_ipinuse', self.vpn_ipinuse
+        
         if self.vpn_ipinuse:
 
             #vpn_pool = IPPool.objects.get(id=ipv4_vpn_pool)
-            print 222
+
             if  str(self.vpn_ip_address) not in ['0.0.0.0', '0.0.0.0/32','',None]:
                 if self.ipv4_vpn_pool:
 
-                    print 333
+
                     if str(self.vpn_ipinuse.ip)!=str(self.vpn_ip_address):
                         obj = IPInUse.objects.get(id=self.vpn_ipinuse.id)
                         obj.disabled=datetime.datetime.now()
                         obj.save()
-                        print 444
+
      
                         obj = IPInUse(pool=self.ipv4_vpn_pool,ip=self.vpn_ip_address,datetime=datetime.datetime.now())
                         obj.save()
                         self.vpn_ipinuse = obj
-                        print "NEW VPN IPINUSE=", self.vpn_ipinuse
+
 
                 else:
                     obj = self.vpn_ipinuse
@@ -1828,19 +1829,16 @@ class SubAccount(models.Model):
                     
                 
             elif str(self.vpn_ip_address) in ['','0.0.0.0', '0.0.0.0/32','',None]:
-                print 666
                 obj = self.vpn_ipinuse
                 obj.disabled=datetime.datetime.now()
                 obj.save()
 
                 self.vpn_ipinuse=None
         elif str(self.vpn_ip_address) not in ['','0.0.0.0', '0.0.0.0/32','',None] and self.ipv4_vpn_pool:
-            print 777
 
             ip=IPInUse(pool=self.ipv4_vpn_pool, ip=self.vpn_ip_address, datetime=datetime.datetime.now())
             ip.save()
             self.vpn_ipinuse = ip 
-            print 888
             
         #print '1111111', subaccount, vpn_ipinuse, ipn_ipinuse, subaccount.ipv4_vpn_pool
         if self.vpn_ipv6_ipinuse:
@@ -1917,7 +1915,7 @@ class SubAccount(models.Model):
             self.ipn_ipinuse = ip
         self.ipn_ip_address = self.ipn_ip_address or '0.0.0.0'
         self.vpn_ip_address = self.vpn_ip_address or '0.0.0.0'
-        print 'self.vpn_ipinuse', self.vpn_ipinuse
+
         super(SubAccount, self).save(*args, **kwargs)
                 
                 

@@ -64,7 +64,8 @@
             $.getJSON('{% url generate_credentials %}',{action:'password'},function(data,status){
                 if( status=='success' ){
                     if(data.success==true)
-                        $("#id_password").val(data.generated);
+                    	//$("#id_password").val(data.generated);
+                        $("#{{form.password.auto_id}}").val(data.generated);
                     else
                         alert(data.generated)
                 }else{
