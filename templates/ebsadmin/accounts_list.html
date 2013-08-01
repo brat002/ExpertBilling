@@ -217,6 +217,24 @@
             {% if table %}
             $('#tab-control a[href="#result"]').tab('show');
             {% endif %}
+            
+            //$("#accordion2").collapse();
+                var last=$.cookie('activeAccordionGroup');
+                //alert(last);
+                if (last!=null) {
+                    //remove default collapse settings
+                    //$("#accordion2 .collapse").removeClass('in');
+                    //show the last visible group
+                    //alert($("#"+last));
+                    $("#"+last).addClass('in');
+                }
+
+
+            //when a group is shown, save it as the active accordion group
+            $("#accordion2").bind('shown', function() {
+                var active=$("#accordion2 .in").attr('id');
+                $.cookie('activeAccordionGroup', active);
+            });
         });
         </script>
 
@@ -234,27 +252,36 @@
   
   <div class="row-fluid">
         <div class="span12">
-    
-            <form action="{{form.action}}" method="GET" class="well form-horizontal form-condensed">
+<form action="{{form.action}}" method="GET" class="form-horizontal form-condensed">
+
+<div class="accordion" id="accordion2">
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
+        Главное
+      </a>
+    </div>
+    <div id="collapseOne" class="accordion-body collapse">
+      <div class="accordion-inner">
+            
             
             {{ form.non_field_errors }}
-            
-                <fieldset>
-                    <legend>{% blocktrans %}Поиск аккаунта{% endblocktrans %}</legend>
+                <fieldset class='well'>
+                    
                     
                     <div class="control-group">
                         <div class="control-row">
                             <label class="control-label" for="input-agreement-no">{{form.contract.label}}</label>
                             <div class="controls">
-					        {{ form.contract }}
-					        {% if form.contract.errors %}
-					            <span class="help-inline">{% for error in form.contract.errors %}{{ error }}<br/> {% endfor %}</span>
-					        {% endif %}
-					        {% if form.contract.help_text%}
-					            <p class="help-block">
-					                {{ form.contract.help_text|safe }}
-					            </p>
-					        {% endif %}
+                            {{ form.contract }}
+                            {% if form.contract.errors %}
+                                <span class="help-inline">{% for error in form.contract.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.contract.help_text%}
+                                <p class="help-block">
+                                    {{ form.contract.help_text|safe }}
+                                </p>
+                            {% endif %}
                             </div>
                         </div>
 
@@ -382,13 +409,27 @@
                             {% endif %}
                         </div>
                     </div>
-                    <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> {% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
-                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> {% blocktrans %}Очистить форму{% endblocktrans %}</button>
-                    </div>
+
            </fieldset>
-                <fieldset>
-                    <legend>{% blocktrans %}Адрес{% endblocktrans %}</legend>
+
+      </div>
+    </div>
+  </div>
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
+        Адрес
+      </a>
+    </div>
+    <div id="collapseTwo" class="accordion-body collapse">
+      <div class="accordion-inner">
+            
+            
+            {{ form.non_field_errors }}
+            
+
+                <fieldset class='well'>
+                    
 
                     <div class="control-group">
                         <div class="control-row">
@@ -504,14 +545,29 @@
                             {% endif %}
                         </div>
                     </div>
-                    <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> {% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
-                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> {% blocktrans %}Очистить форму{% endblocktrans %}</button>
-                    </div>
+
                 </fieldset>
 
-                <fieldset>
-                    <legend>{% blocktrans %}Персональные данные{% endblocktrans %}</legend>
+      </div>
+    </div>
+  </div>
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseThree">
+        Персональные данные
+      </a>
+    </div>
+    <div id="collapseThree" class="accordion-body collapse">
+      <div class="accordion-inner">
+            
+            
+            {{ form.non_field_errors }}
+            
+
+
+
+                <fieldset class='well'>
+                    
 
                     <div class="control-group">
 
@@ -591,14 +647,26 @@
                             {% endif %}
                             </div>
                         </div>
-                    <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> {% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
-                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> {% blocktrans %}Очистить форму{% endblocktrans %}</button>
-                    </div>
+
                 </fieldset>
-                
-           <fieldset>
-                    <legend>{% blocktrans %}Сетевая идентификация{% endblocktrans %}</legend>
+
+      </div>
+    </div>
+  </div>
+  
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseFour">
+        Сетевые параметры
+      </a>
+    </div>
+    <div id="collapseFour" class="accordion-body collapse">
+      <div class="accordion-inner">
+            
+            
+            {{ form.non_field_errors }}
+           <fieldset class='well'>
+                    
                     <div class="control-group">
                         <div class="control-row">
                             <label class="control-label" for="input-vpn-ip">{{form.vpn_ip_address.label}}</label>
@@ -685,14 +753,29 @@
                         </div>
                     </div>
                     </div>
-                    <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> {% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
-                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> {% blocktrans %}Очистить форму{% endblocktrans %}</button>
-                    </div>
+
                 </fieldset>
 
-                <fieldset>
-                    <legend>{% blocktrans %}Блокировка{% endblocktrans %}</legend>
+
+
+
+      </div>
+    </div>
+  </div>
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseFive">
+        Параметры блокировки
+      </a>
+    </div>
+    <div id="collapseFive" class="accordion-body collapse">
+      <div class="accordion-inner">
+            
+            
+            {{ form.non_field_errors }}
+
+                <fieldset class='well'>
+                    
 
                     <div class="control-group">
                         <div class="control-row">
@@ -725,14 +808,31 @@
                             </div>
                         </div>
                     </div>
-                    <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> {% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
-                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> {% blocktrans %}Очистить форму{% endblocktrans %}</button>
-                    </div>
+
+
                 </fieldset>
 
-                <fieldset>
-                    <legend>{% blocktrans %}Юридическое лицо{% endblocktrans %}</legend>
+
+
+      </div>
+    </div>
+  </div>
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseSix">
+        Юридические лица
+      </a>
+    </div>
+    <div id="collapseSix" class="accordion-body collapse">
+      <div class="accordion-inner">
+            
+            
+            {{ form.non_field_errors }}
+
+
+
+                <fieldset class='well'>
+                    
 
                     <div class="control-group">
                         <label class="control-label">{% blocktrans %}Юрлицо{% endblocktrans %}</label>
@@ -772,20 +872,21 @@
                             </div>
                         </div>
                     </div>
+
+                </fieldset>
+
+
+                
+      </div>
+    </div>
+  </div>
+</div>
                     <div class="form-actions form-actions-center">
                         <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> {% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
                         <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> {% blocktrans %}Очистить форму{% endblocktrans %}</button>
                     </div>
-                </fieldset>
+</form>
 
-
-                <fieldset>
-                    <div class="form-actions form-actions-center">
-                        <button class="btn btn-primary" type="submit"><i class="icon-filter icon-white"></i> {% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
-                        <button class="btn btn-danger" type="reset"><i class="icon-trash icon-white"></i> {% blocktrans %}Очистить форму{% endblocktrans %}</button>
-                    </div>
-                </fieldset>
-            </form>
         </div>
     </div>
   
