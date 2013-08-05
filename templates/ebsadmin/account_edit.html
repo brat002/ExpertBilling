@@ -526,35 +526,12 @@
         });
         </script>
 <style type="text/css">
-.table tbody tr:hover td, .table tbody tr:hover th {
-    background-color: transparent;
-}
+
 .disabled-row {
     background-color: lightgrey;
 }
 
-.modal {
-  position: fixed;
-  top: 5%;
-  left: 50%;
-  z-index: 1050;
-  width: 800px;
-  margin: 0 0 0 -400px; /* -1 * (width / 2) */ 
-  overflow: auto;
-  background-color: #ffffff;
-  border: 1px solid #999;
-  border: 1px solid rgba(0, 0, 0, 0.3);
-  *border: 1px solid #999;
-  -webkit-border-radius: 6px;
-     -moz-border-radius: 6px;
-          border-radius: 6px;
-  -webkit-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
-     -moz-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
-          box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
-  -webkit-background-clip: padding-box;
-     -moz-background-clip: padding-box;
-          background-clip: padding-box;
-}
+
 </style>
 {% endblock %}
  {% load render_table from django_tables2 %}
@@ -562,7 +539,7 @@
 
 <div class="row-fluid">
 
-<div class="span9">
+<div class="{% if account %}span9{% else %}span12{% endif %}">
 <ul class="breadcrumb">
   <li>
     <a href='{% url account_list %}?data=data'>{% blocktrans %}Все аккаунты{% endblocktrans %}</a> / <a href="{% url account_edit%}?id={{account.id}}">{{account.username}}</a> 
@@ -733,7 +710,7 @@
                                 </div>
                             </div>
                             </div>
-                            <hr />
+                            
 
                             <div class="control-group">
                             <div class="control-row {% if form.credit.errors %}error{% endif %}">
@@ -802,22 +779,7 @@
 
 
 
-                            <div class="control-group">
 
-                                <label class="control-label" for="input-comment">{{form.comment.label}}</label>
-                                <div class="controls">
-                                    {{ form.comment }}
-                                    {% if form.comment.errors %}
-                                    <span class="help-inline">{% for error in form.comment.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if form.comment.help_text%}
-                                    <p class="help-block">
-                                        {{ form.comment.help_text|safe }}
-                                    </p>
-                                    {% endif %}
-                                </div>
-
-                            </div>
 {%  comment %} SUBACCOUNT FORM{% endcomment %}
 {% if subaccount_form %}
 {{subaccount_form.id}}
@@ -1021,7 +983,25 @@
                     </div>
 {% endif %}
 {%  comment %} END SUBACCOUNT FORM{% endcomment %}
+<hr />
+                            <div class="control-group">
+
+                                <label class="control-label" for="input-comment">{{form.comment.label}}</label>
+                                <div class="controls">
+                                    {{ form.comment }}
+                                    {% if form.comment.errors %}
+                                    <span class="help-inline">{% for error in form.comment.errors %}{{ error }}<br/> {% endfor %}</span>
+                                    {% endif %}
+                                    {% if form.comment.help_text%}
+                                    <p class="help-block">
+                                        {{ form.comment.help_text|safe }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+
+                            </div>
                         </fieldset>
+                        
                         
                         {% if account %}
                         <fieldset>

@@ -6,6 +6,7 @@ from django.forms import ModelForm
 from billservice.models import Tariff, Account, Group, Tariff
 from nas.models import Nas, TrafficClass
 from django.utils.translation import ugettext as _
+from ebsadmin.models import Comment
 
 from ajax_select.fields import AutoCompleteSelectMultipleField
 from django.conf import settings
@@ -27,7 +28,7 @@ chartdata = {
 'accountsincrease': {'name':_(u'Прирост абонентской базы '),  'yname':_(u'Количество'), 'tabs':[], 'type': 'spline'},
 #'moneydynamic': {'name':u'Динамика прибыли ', 'tabs':[]},
 'disttransactiontypessumm': {'name':_(u'Распределение платежей/списаний по типам (сумма) '), 'units': settings.CURRENCY, 'tabs':[], 'type': 'pie'},
-'disttransactiontypescount': {'name':_(u'Распределение платежей/списаний по типам(кол-во)'), 'units': _('шт.'), 'tabs':[], 'type': 'pie'},
+'disttransactiontypescount': {'name':_(u'Распределение платежей/списаний по типам(кол-во)'), 'units': _(u'шт.'), 'tabs':[], 'type': 'pie'},
 'balancehistory': {'name':_(u'Динамика изменения баланса '),  'yname':u'Баланс', 'tabs':['accountsTab', ], 'yaxis': _(u"Баланс"), "type": "line"},
 }
 
@@ -90,3 +91,7 @@ class TableColumnsForm(forms.Form):
     columns = forms.MultipleChoiceField(choices=(), widget = forms.widgets.SelectMultiple(attrs={'class': 'columns', 'size': 10}))
     
     
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        
