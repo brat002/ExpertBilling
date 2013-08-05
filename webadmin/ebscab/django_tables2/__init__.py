@@ -3,7 +3,7 @@
 from .tables  import Table
 from .columns import (BooleanColumn, Column, CheckBoxColumn, DateColumn,
                       DateTimeColumn, EmailColumn, FileColumn, LinkColumn,
-                      TemplateColumn, URLColumn)
+                      TemplateColumn, URLColumn, TimeColumn)
 from .config  import RequestConfig
 from .utils   import A, Attrs
 try:
@@ -12,4 +12,4 @@ except ImportError:
     pass
 
 
-__version__ = "0.13.0"
+__version__ = "0.14.0.alpha"

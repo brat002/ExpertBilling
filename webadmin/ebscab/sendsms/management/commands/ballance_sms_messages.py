@@ -22,7 +22,7 @@ class Command(BaseCommand):
             item.account = acc
             item.backend = settings.SENDSMS_DEFAULT_BACKEND
             item.to = acc.phone_m
-            item.body = body
+            item.body = body.body
             item.save() 
 
 

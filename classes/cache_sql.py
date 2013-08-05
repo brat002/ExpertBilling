@@ -4,7 +4,9 @@ nf_sql = {'nas':"SELECT id, ipaddress from nas_nas;",
           'nnodes':"SELECT store, weight, traffic_class_id, passthrough, protocol, in_index, out_index, src_as, dst_as, dst_port, src_port, src_ip as src_ip_src_mask, dst_ip as dst_ip_dst_mask, next_hop FROM nas_trafficnode AS tn JOIN nas_trafficclass AS tc ON tn.traffic_class_id=tc.id ORDER BY tc.weight, tc.passthrough;",
           'groups':"SELECT id, ARRAY(SELECT trafficclass_id from billservice_group_trafficclass as bgtc WHERE bgtc.group_id = bsg.id) AS trafficclass, direction, type FROM billservice_group AS bsg;",
           'tgroups':"SELECT tarif_id, int_array_aggregate(group_id) AS group_ids FROM (SELECT tarif_id, group_id FROM billservice_trafficlimit UNION SELECT bt.id, btn.group_id FROM billservice_tariff AS bt JOIN billservice_traffictransmitnodes AS btn ON bt.traffic_transmit_service_id=btn.traffic_transmit_service_id WHERE btn.group_id IS NOT NULL UNION SELECT bt.id, bpt.group_id FROM billservice_tariff AS bt JOIN billservice_prepaidtraffic AS bpt ON bt.traffic_transmit_service_id=bpt.traffic_transmit_service_id WHERE bpt.group_id IS NOT NULL) AS tarif_group GROUP BY tarif_id;",
-          'nas_port':"select account_id, nas_int_id, nas_port_id FROM radius_activesession WHERE nas_port_id is not Null and (session_status='ACTIVE' or (session_status!='ACTIVE' and date_end is not null and date_end + interval '5 minutes'>=now()));",}
+          'nas_port':"select account_id, nas_int_id, nas_port_id FROM radius_activesession WHERE nas_port_id is not Null and (session_status='ACTIVE' or (session_status!='ACTIVE' and date_end is not null and date_end + interval '5 minutes'>=now()));",
+          'active_sessions': "SELECT framed_ip_address, nas_int_id, account_id FROM radius_activesession WHERE session_status='ACTIVE'",
+          }
 #'accounts': "SELECT ba.id as account_id, array[ba.ipn_ip_address || '|' || ba.vpn_ip_address  || '|' || ba.nas_id] ||  array(SELECT ipn_ip_address || '|' || vpn_ip_address || '|' || nas_id FROM billservice_subaccount WHERE account_id=ba.id) addresses, bacct.id as acctf_id, bacct.tarif_id FROM billservice_account AS ba JOIN billservice_accounttarif AS bacct ON bacct.id=(SELECT id FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and att.datetime<%s) ORDER BY datetime DESC LIMIT 1);",
 
 nfroutine_sql = \
@@ -30,7 +32,7 @@ nfroutine_sql = \
                'prepays' :"""SELECT prepais.id, prepais.size, prepais.account_tarif_id, prepaidtraffic.group_id, prepaidtraffic.traffic_transmit_service_id 
                                         FROM billservice_accountprepaystrafic as prepais
                                         JOIN billservice_prepaidtraffic as prepaidtraffic ON prepaidtraffic.id=prepais.prepaid_traffic_id
-                                        WHERE prepais.size>0 AND prepais.current=True and(ARRAY[prepais.account_tarif_id] && get_cur_acct(%s));""",
+                                        WHERE prepais.size>0 AND prepais.current=True and(prepais.account_tarif_id in (SELECT max(id) FROM billservice_accounttarif GROUP BY account_id HAVING account_id IN (SELECT id FROM billservice_account) AND MAX(datetime) <= %s));""",
                'sclasses':"""SELECT int_array_aggregate(id) FROM nas_trafficclass WHERE store=TRUE;""",
                'group_bytes': 
                           """SELECT ba.id AS account_id, bt.id AS tarif_id, act.id AS acctf_id, date_trunc('second', act.datetime) as datetime, ARRAY(SELECT ROW(bgps.group_id, SUM(bgps.bytes))::group_bytes FROM billservice_groupstat AS bgps WHERE (bgps.account_id = act.account_id) AND (bgps.group_id IN (SELECT bttn2.group_id FROM billservice_traffictransmitnodes as bttn2 WHERE bttn2.traffic_transmit_service_id = bt.traffic_transmit_service_id)) AND (date_trunc('second', bgps.datetime) BETWEEN date_trunc('second', act.datetime) AND %s) GROUP BY bgps.group_id ORDER BY bgps.group_id) AS gr_bytes 
@@ -106,7 +108,7 @@ core_sql = \
           'onetimes' :"""SELECT id, tarif_id, cost, date_trunc('second', created) FROM billservice_onetimeservice;""",
           'accpars'  :"""SELECT id, access_type, access_time_id, max_tx, max_rx, burst_tx, burst_rx, burst_treshold_tx, burst_treshold_rx,  burst_time_tx, burst_time_rx, min_tx, min_rx,  priority, ipn_for_vpn FROM billservice_accessparameters;""",
           'ipnspeed' :"""SELECT id, account_id, speed, state, static, date_trunc('second', datetime) FROM billservice_accountipnspeed;""",
-          'otshist'  :"""SELECT id, accounttarif_id, onetimeservice_id FROM billservice_onetimeservicehistory WHERE ARRAY[accounttarif_id] && get_cur_acct(%s);""", 
+          'otshist'  :"""SELECT id, accounttarif_id, onetimeservice_id FROM billservice_onetimeservicehistory WHERE accounttarif_id in (SELECT max(id) FROM billservice_accounttarif GROUP BY account_id HAVING account_id IN (SELECT id FROM billservice_account) AND MAX(datetime) <= %s);""", 
           'suspended':"""SELECT id, account_id, start_date, end_date FROM billservice_suspendedperiod WHERE (%s BETWEEN start_date AND end_date) or (start_date<=%s and end_date is Null);""",
           'tpnaccess':"""SELECT date_trunc('second', tpn.time_start) as time_start, tpn.length as length, tpn.repeat_after as repeat_after, bst.id
                         FROM billservice_timeperiodnode as tpn
@@ -142,7 +144,7 @@ core_sql = \
                            JOIN billservice_addonservice as addons ON addons.id=accs.service_id
                            WHERE (accs.account_id is not NULL and (SELECT True from billservice_account WHERE id=accs.account_id and deleted is NULL)=True) and  (accs.deactivated is Null or (accs.last_checkout<accs.deactivated AND (SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.id)='periodical') or 
                            ((SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.service_id)='onetime' and (accs.action_status=True or accs.last_checkout is Null))) or (accs.action_status=True and accs.deactivated is not Null and addons.action=True);""",
-        'addon_periodical': """SELECT accas.id, ads.name, ads.cost, ads.sp_type, sp.name, date_trunc('second',sp.time_start),
+        'addon_periodical': """SELECT accas.id, ads.name, COALESCE(accas.cost, ads.cost), ads.sp_type, sp.name, date_trunc('second',sp.time_start),
                         sp.length, sp.length_in, sp.autostart,
                         accas.account_id, accas.activated, accas.deactivated, accas.temporary_blocked, accas.last_checkout,ads.id, accas.subaccount_id, ads.tpd
                         FROM billservice_addonservice AS ads 

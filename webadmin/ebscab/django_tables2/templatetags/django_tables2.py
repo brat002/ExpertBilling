@@ -1,6 +1,7 @@
 # coding: utf-8
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 from django import template
+from django.core.exceptions import ImproperlyConfigured
 from django.template import TemplateSyntaxError, Variable, Node
 from django.template.loader import get_template, select_template
 from django.template.defaultfilters import stringfilter, title as old_title
@@ -11,12 +12,17 @@ from django.utils.safestring import mark_safe
 import django_tables2 as tables
 from django_tables2.config import RequestConfig
 import re
-import StringIO
+import six
 import tokenize
 
 
 register = template.Library()
 kwarg_re = re.compile(r"(?:(.+)=)?(.+)")
+context_processor_error_msg = (
+    "{%% %s %%} requires django.core.context_processors.request "
+    "to be in your settings.TEMPLATE_CONTEXT_PROCESSORS in order for "
+    "the included template tags to function correctly."
+)
 
 
 def token_kwargs(bits, parser):
@@ -46,16 +52,16 @@ class SetUrlParamNode(Node):
         self.changes = changes
 
     def render(self, context):
-        request = context.get('request', None)
-        if not request:
-            return ""
-        params = dict(request.GET)
+        if not 'request' in context:
+            raise ImproperlyConfigured(context_processor_error_msg
+                                       % 'set_url_param')
+        params = dict(context['request'].GET)
         for key, newvalue in self.changes.items():
             newvalue = newvalue.resolve(context)
             if newvalue == '' or newvalue is None:
                 params.pop(key, False)
             else:
-                params[key] = unicode(newvalue)
+                params[key] = six.text_type(newvalue)
         return "?" + urlencode(params, doseq=True)
 
 
@@ -79,7 +85,7 @@ def set_url_param(parser, token):
             key, value = i.split('=', 1)
             key = key.strip()
             value = value.strip()
-            key_line_iter = StringIO.StringIO(key).readline
+            key_line_iter = six.StringIO(key).readline
             keys = list(tokenize.generate_tokens(key_line_iter))
             if keys[0][0] == tokenize.NAME:
                 # workaround bug #5270
@@ -100,11 +106,11 @@ class QuerystringNode(Node):
         self.removals = removals
 
     def render(self, context):
-        request = context.get('request', None)
-        if not request:
-            return ""
-        params = dict(request.GET)
-        for key, value in self.updates.iteritems():
+        if not 'request' in context:
+            raise ImproperlyConfigured(context_processor_error_msg
+                                       % 'querystring')
+        params = dict(context['request'].GET)
+        for key, value in self.updates.items():
             key = key.resolve(context)
             value = value.resolve(context)
             if key not in ("", None):
@@ -180,7 +186,7 @@ class RenderTableNode(Node):
         else:
             template = table.template
 
-        if isinstance(template, basestring):
+        if isinstance(template, six.string_types):
             template = get_template(template)
         else:
             # assume some iterable was given
@@ -235,7 +241,7 @@ def render_table(parser, token):
     try:
         tag, table = bits.pop(0), parser.compile_filter(bits.pop(0))
     except ValueError:
-        raise TemplateSyntaxError(u"'%s' must be given a table or queryset."
+        raise TemplateSyntaxError("'%s' must be given a table or queryset."
                                   % bits[0])
     template = parser.compile_filter(bits.pop(0)) if bits else None
     return RenderTableNode(table, template)
@@ -274,3 +280,17 @@ def title(value):
     return re.sub('(\S+)', lambda m: title_word(m.group(0)), value)
 title.is_safe = True
 
+
+# Django 1.2 doesn't include the l10n template tag library (and it's non-
+# trivial to implement) so for Django 1.2 the localize functionality is
+# disabled.
+try:
+    from django.templatetags.l10n import register as l10n_register
+except ImportError:
+    localize = unlocalize = lambda x: x  # no-op
+else:
+    localize = l10n_register.filters['localize']
+    unlocalize = l10n_register.filters['unlocalize']
+
+register.filter('localize', localize)
+register.filter('unlocalize', unlocalize)

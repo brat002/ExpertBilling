@@ -165,7 +165,7 @@ actions = {
                'subacc_enable_action':'/ip firewall address-list set [find comment=$acc_account_id-$subacc_id] address=$subacc_ipn_ip_address disabled=no',
                'user_disable_action': '',
                'subacc_disable_action':'/ip firewall address-list set [find comment=$acc_account_id-$subacc_id] disabled=yes',
-               'vpn_speed_action': '/queue simple set [find interface=<$access_type-$subacc_username>] max-limit=$max_limit_tx/$max_limit_rx burst-limit=$burst_limit_tx/$burst_limit_rx burst-threshold=$burst_treshold_tx/$burst_treshold_rx burst-time=$burst_time_tx/$burst_time_rx priority=$priority limit-at=$min_limit_tx/$min_limit_rx',
+               'vpn_speed_action': '/queue simple set target=<$access_type-$subacc_username> max-limit=$max_limit_tx/$max_limit_rx burst-limit=$burst_limit_tx/$burst_limit_rx burst-threshold=$burst_treshold_tx/$burst_treshold_rx burst-time=$burst_time_tx/$burst_time_rx priority=$priority/$priority limit-at=$min_limit_tx/$min_limit_rx [find target=<$access_type-$subacc_username>]',
                'ipn_speed_action': '',
                'subacc_ipn_speed_action':'/queue simple remove [find name=$subacc_username]; /queue simple add name=$subacc_username max-limit=$max_limit_tx/$max_limit_rx burst-limit=$burst_limit_tx/$burst_limit_rx burst-threshold=$burst_treshold_tx/$burst_treshold_rx burst-time=$burst_time_tx/$burst_time_rx priority=$priority/$priority limit-at=$min_limit_tx/$min_limit_rx target=$subacc_ipn_ip_address/32',
                'reset_action': '/interface $access_type-server remove [find user=$subacc_username]',

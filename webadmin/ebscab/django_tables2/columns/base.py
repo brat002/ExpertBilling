@@ -5,7 +5,8 @@ from django.utils.datastructures import SortedDict
 from django.utils.safestring import SafeData
 from django_tables2.templatetags.django_tables2 import title
 from django_tables2.utils import A, AttributeDict, OrderBy, OrderByTuple
-from itertools import ifilter, islice
+from itertools import islice
+import six
 import warnings
 
 
@@ -75,7 +76,7 @@ class Column(object):  # pylint: disable=R0902
         An accessor that describes how to extract values for this column from
         the :term:`table data`.
 
-        :type: `basestring` or `~.Accessor`
+        :type: string or `~.Accessor`
 
 
     .. attribute:: default
@@ -124,6 +125,22 @@ class Column(object):  # pylint: disable=R0902
         If `True`, this column will be included in the HTML output.
 
         :type: `bool`
+
+
+    .. attribute:: localize
+
+        This attribute doesn't work in Django 1.2
+
+        *   If `True`, cells of this column will be localized in the HTML output
+            by the localize filter.
+
+        *   If `False`, cells of this column will be unlocalized in the HTML output
+            by the unlocalize filter.
+
+        *   If `None` (the default), cell will be rendered as is and localization will depend
+            on ``USE_L10N`` setting.
+
+        :type: `bool`
     """
     #: Tracks each time a Column instance is created. Used to retain order.
     creation_counter = 0
@@ -131,8 +148,8 @@ class Column(object):  # pylint: disable=R0902
 
     def __init__(self, verbose_name=None, accessor=None, default=None,
                  visible=True, orderable=None, attrs=None, order_by=None,
-                 sortable=None, empty_values=None):
-        if not (accessor is None or isinstance(accessor, basestring) or
+                 sortable=None, empty_values=None, localize=None):
+        if not (accessor is None or isinstance(accessor, six.string_types) or
                 callable(accessor)):
             raise TypeError('accessor must be a string or callable, not %s' %
                             type(accessor).__name__)
@@ -151,10 +168,12 @@ class Column(object):  # pylint: disable=R0902
         self.orderable = orderable
         self.attrs = attrs or {}
         # massage order_by into an OrderByTuple or None
-        order_by = (order_by, ) if isinstance(order_by, basestring) else order_by
+        order_by = (order_by, ) if isinstance(order_by, six.string_types) else order_by
         self.order_by = OrderByTuple(order_by) if order_by is not None else None
         if empty_values is not None:
             self.empty_values = empty_values
+
+        self.localize = localize
 
         self.creation_counter = Column.creation_counter
         Column.creation_counter += 1
@@ -251,7 +270,7 @@ class BoundColumn(object):
     :param  table: the table in which this column exists
     :type  column: `.Column` object
     :param column: the type of column
-    :type    name: `basestring` object
+    :type    name: string object
     :param   name: the variable name of the column used to when defining the
                    `.Table`. In this example the name is ``age``:
 
@@ -267,7 +286,7 @@ class BoundColumn(object):
         self.name = name
 
     def __unicode__(self):
-        return unicode(self.header)
+        return six.text_type(self.header)
 
     @property
     def accessor(self):
@@ -479,6 +498,13 @@ class BoundColumn(object):
         """
         return self.column.visible
 
+    @property
+    def localize(self):
+        '''
+        Returns `True`, `False` or `None` as described in ``Column.localize``
+        '''
+        return self.column.localize
+
 
 class BoundColumns(object):
     """
@@ -503,7 +529,7 @@ class BoundColumns(object):
     def __init__(self, table):
         self.table = table
         self.columns = SortedDict()
-        for name, column in table.base_columns.iteritems():
+        for name, column in six.iteritems(table.base_columns):
             self.columns[name] = bc = BoundColumn(table, column, name)
             bc.render = getattr(table, 'render_' + name, column.render)
 
@@ -533,7 +559,7 @@ class BoundColumns(object):
         supports (e.g. `~Table.Meta.exclude` and `~Table.Meta.sequence`).
         """
         for name in self.table.sequence:
-            if name not in self.table.exclude and name in self.columns:
+            if name not in self.table.exclude:
                 yield (name, self.columns[name])
 
     def items(self):
@@ -548,7 +574,7 @@ class BoundColumns(object):
         conjunction with e.g. ``{{ forloop.last }}`` (the last column might not
         be the actual last that is rendered).
         """
-        return ifilter(lambda x: x.orderable, self.iterall())
+        return (x for x in self.iterall() if x.orderable)
 
     def itersortable(self):
         warnings.warn('`itersortable` is deprecated, use `iterorderable` instead.',
@@ -570,7 +596,7 @@ class BoundColumns(object):
 
         This is geared towards table rendering.
         """
-        return ifilter(lambda x: x.visible, self.iterall())
+        return (x for x in self.iterall() if x.visible)
 
     def visible(self):
         return list(self.itervisible())
@@ -587,7 +613,7 @@ class BoundColumns(object):
 
         *item* can either be a `BoundColumn` object, or the name of a column.
         """
-        if isinstance(item, basestring):
+        if isinstance(item, six.string_types):
             return item in self.iternames()
         else:
             # let's assume we were given a column
@@ -616,7 +642,7 @@ class BoundColumns(object):
                 return next(islice(self.iterall(), index, index + 1))
             except StopIteration:
                 raise IndexError
-        elif isinstance(index, basestring):
+        elif isinstance(index, six.string_types):
             for column in self.iterall():
                 if column.name == index:
                     return column

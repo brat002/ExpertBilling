@@ -1673,6 +1673,7 @@ class AccountAddonService(models.Model):
     service = models.ForeignKey(AddonService, null=True, verbose_name=_(u'Услуга'), on_delete = models.CASCADE)    
     account = models.ForeignKey(Account, verbose_name=_(u'Аккаунт'), blank=True, null=True, on_delete = models.CASCADE)   
     subaccount = models.ForeignKey('SubAccount', verbose_name=_(u'Субаккаунт'), blank=True, null=True, on_delete = models.CASCADE) 
+    cost = models.DecimalField(verbose_name=u'Стоимость', help_text=u'Укажите, если хотите задать цену, отличную от указанной в услуге', decimal_places=2, max_digits=15, blank=True, null=True)
     activated = models.DateTimeField(verbose_name=_(u'Активирована'))    
     deactivated = models.DateTimeField(verbose_name=_(u'Отключена'), blank=True, null=True)    
     action_status = models.BooleanField()    

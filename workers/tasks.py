@@ -930,7 +930,7 @@ def get_radius_stat():
 def clear_ipinuse_function():
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("delete from billservice_ipinuse where datetime <now()-interval '1 month' and  disabled is not null;")
+    cur.execute("delete from billservice_ipinuse where datetime <now()-interval '2 days' and  disabled is not null;")
     conn.commit()
     cur.close()
     conn.close()   

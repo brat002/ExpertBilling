@@ -345,6 +345,7 @@ def accountsreport(request):
             date_start, date_end = None, None
             account = form.cleaned_data.get('account')+form.cleaned_data.get('fullname')+form.cleaned_data.get('contactperson')+form.cleaned_data.get('username')+form.cleaned_data.get('contract') # - concatenate tuples
             account_text = request.GET.get('account_text')
+            username_text = request.GET.get('username_text')
             contract_text = request.GET.get('contract_text')
             fullname_text = request.GET.get('fullname_text')
             contactperson_text = request.GET.get('contactperson_text')
@@ -395,6 +396,9 @@ def accountsreport(request):
                 
             if account_text:
                 res = res.filter(username__icontains=account_text)
+                
+            if username_text:
+                res = res.filter(username__icontains=username_text)
                 
             if contract_text:
                 res = res.filter(contract__icontains=contract_text)

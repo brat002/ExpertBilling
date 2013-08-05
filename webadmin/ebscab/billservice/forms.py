@@ -127,6 +127,40 @@ class FloatConditionField(forms.FloatField):
                 return value[0], super(forms.FloatField, self).clean(value[1:])
         return super(forms.FloatField, self).clean(value)
     
+from django.utils.html import escape
+
+class ModelLinkWidget(forms.widgets.HiddenInput):
+
+   
+    def render(self, name, value, attrs=None):
+
+        return super(ModelLinkWidget, self).render(
+                name, value, attrs) + mark_safe('''
+                <a id="objectselect1" href="#" class='dialog11'>%s</a>
+<div id="dialog11" title="Basic dialog" class='hidden'>
+  <p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the 'x' icon.</p>
+</div>
+<script type="text/javascript"> 
+    $(document).ready(function() {
+    
+                
+        $("#objectselect1").click(function(){
+            $( "#dialog11" ).dialog(
+            {
+            modal: false,
+            position: {
+   my: "center",
+   at: "center",
+   of: window
+}
+            });
+            //event.preventDefault(event);
+        })
+    });
+</script>
+                ''' % ( escape(unicode(value))))
+
+        
 from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_unicode
@@ -304,6 +338,9 @@ class AccountAddonForm(forms.Form):
     deactivated = forms.DateTimeField(required=False)
     temporary_blocked = forms.CheckboxInput()
     
+    
+
+    
 class DocumentRenderForm(forms.Form):
     account = forms.IntegerField(required=False)
     transaction = forms.IntegerField(required=False)
@@ -363,10 +400,14 @@ class AccountAddonServiceModelForm(ModelForm):
         self.fields['activated'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
         self.fields['deactivated'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
         self.fields['temporary_blocked'].widget = forms.widgets.DateTimeInput(attrs={'class':'datepicker'})
+        self.fields['service'].widget.attrs['class']='input-xlarge span4'
+        self.fields['cost'].widget.attrs['class']='input-xlarge span4'
+        #self.fields['service'].widget = ModelLinkWidget()
 
 
     class Meta:
         model = AccountAddonService
+        exclude = ('action_status', 'speed_status', 'last_checkout',)
       
 class DocumentModelForm(ModelForm):
     class Meta:
@@ -506,7 +547,8 @@ class AccountForm(DynamicForm):
         self.fields['status'].widget.attrs['class'] = 'input-xlarge'
         self.fields['systemuser'].widget.attrs['class'] = 'input-xlarge'
         self.fields['account_group'].widget.attrs['class'] = 'input-xlarge'
-        self.fields['contract'].widget.attrs['class'] = 'input-medium'
+        self.fields['contract'].widget.attrs['class'] = 'input-large'
+        self.fields['contract_num'].widget.attrs['class'] = 'input-large'
         #self.fields['username'].widget.attrs['class'] = 'input-small'
         #self.fields['password'].widget.attrs['class'] = 'input-small'
         self.fields['credit'].widget.attrs['class'] = 'input-small'
