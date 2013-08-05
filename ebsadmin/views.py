@@ -4212,10 +4212,15 @@ def streets(request):
             items = Street.objects.filter(name__istartswith=term)
         else:
             items = Street.objects.all()
-
     res=[]
-    for item in items:
-        res.append(instance_dict(item))
+    if items.count()>0:
+        for item in items:
+            res.append(instance_dict(item))
+    else:
+        items = Account.objects.filter(street__istartswith=term).values('street')
+        for item in items:
+            res.append({'id':None, 'name': item.get('street')})        
+        
     return {"records": res, 'status':True, 'totalCount':len(items)}
 
 #===============================================================================

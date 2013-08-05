@@ -92,6 +92,15 @@ class TableColumnsForm(forms.Form):
     
     
 class CommentForm(forms.ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    
     class Meta:
         model = Comment
+        widgets={
+                 'content_type': forms.widgets.HiddenInput,
+                 'object_id': forms.widgets.HiddenInput,
+                 'comment': forms.widgets.Textarea(attrs={'rows':5, 'class': 'input-large span5'}),
+                 'due_date': forms.widgets.DateTimeInput(attrs={'class':'datepicker'}),
+                 }
+        exclude = ('deleted', 'done_systemuser', 'done_date')
         
