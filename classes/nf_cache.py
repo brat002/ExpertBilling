@@ -8,13 +8,14 @@ from nf_class.ClassData import ClassData
 from nf_class.GroupsData import GroupsData
 from nf_class.NasData import NasData
 from nf_class.NasPortData import NasPortData
+from nf_class.ActiveSessionData import ActiveSessionData
 from IPy import IP, IPint, parseAddress
 from collections import defaultdict
 
 
 
 class NfCaches(CacheCollection):
-    __slots__ = ('nas_cache', 'account_cache', 'class_cache', 'group_cache', 'tfgroup_cache', 'nas_port_cache')
+    __slots__ = ('nas_cache', 'account_cache', 'class_cache', 'group_cache', 'tfgroup_cache', 'nas_port_cache', 'active_session_cache')
     
     def __init__(self, date):
         super(NfCaches, self).__init__(date)
@@ -24,7 +25,8 @@ class NfCaches(CacheCollection):
         self.group_cache = GroupsCache()
         self.tfgroup_cache = TarifCache(self.group_cache)
         self.nas_port_cache = NasPortCache()
-        self.caches = [self.nas_cache, self.account_cache, self.class_cache, self.group_cache, self.tfgroup_cache, self.nas_port_cache]
+        self.active_session_cache = ActiveSessionCache()
+        self.caches = [self.nas_cache, self.account_cache, self.class_cache, self.group_cache, self.tfgroup_cache, self.nas_port_cache, self.active_session_cache]
     
 class NasCache(CacheItem):
     '''Cache id -> nas.ip'''
@@ -50,6 +52,24 @@ class NasCache(CacheItem):
                 self.by_ip[item.ipaddress] = []
             self.by_ip[item.ipaddress].append(item)
          
+class ActiveSessionCache(CacheItem):
+    __slots__ = ('by_ip',)
+    
+    datatype = ActiveSessionData
+    sql = nf_sql['active_sessions']
+    
+    def __init__(self):
+        super(ActiveSessionCache, self).__init__()
+        self.by_ip = {}
+
+    
+    def reindex(self):
+
+        for item in self.data:
+            self.by_ip[(item.framed_ip_address, item.nas_id)] = item.account_id
+                
+
+            
 class NasPortCache(CacheItem):
     __slots__ = ('by_nas_id',)
     

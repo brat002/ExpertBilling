@@ -14,9 +14,6 @@
 <link href="/media/bootstrap/css/todc-bootstrap.css" rel="stylesheet">
 <link href="/media/datetimepicker/datepicker.css" rel="stylesheet">
 
-
-
-
 <script src="/media/jquery/js/jquery-1.8.2.js"></script>
 <script src="/media/jquery/js/jquery.history.js"></script>
 <script src="/media/jquery/js/jquery.cookie.js"></script>
@@ -100,10 +97,10 @@ $(document).ready(function() {
 }
 
 .table td {
-    padding-top: 1px;
-    padding-bottom: 1px;
+    padding-top: 4px;
+    padding-bottom: 4px;
     /*padding-left: 2px; */ 
-    padding-right: 2px;
+    padding-right: 4px;
     
 }
 
@@ -164,19 +161,22 @@ padding-top:20px;
         $(".timepicker").mask("99:99:99");
         
         $(".daterange").daterangepicker({format:'yyyy-MM-dd'});
+
     });
 </script>
 <style type="text/css">
 .table tbody tr:hover td, .table tbody tr:hover th {
-    background-color: transparent;
+    /*background-color: transparent; */
 }
-
+.dialog11 {
+z-index: 1140;
+}
 
 .modal {
   position: fixed;
   top: 5%;
   left: 50%;
-  z-index: 1050;
+  z-index: 900;
   width: 810px;
   margin: 0 0 0 -400px; /* -1 * (width / 2) */ 
   overflow: auto;
@@ -198,6 +198,15 @@ padding-top:20px;
     margin-top: 4px;
     margin-bottom: 4px;
 }
+.form-horizontal input + .help-block,
+.form-horizontal select + .help-block,
+.form-horizontal textarea + .help-block,
+.form-horizontal .uneditable-input + .help-block,
+.form-horizontal .input-prepend + .help-block,
+.form-horizontal .input-append + .help-block {
+  margin-top: -2px;
+  color: grey;
+}
 </style>
 {% block extra_head %}
 {% endblock %}
@@ -205,6 +214,7 @@ padding-top:20px;
 <body style="padding-top: 60px;" >
 {% load render_table from django_tables2 %}
 {% load charts_menu from ebsadmin_tags %}
+
 
 <div class="navbar  navbar-googlenav navbar-fixed-top">
   <div class="navbar-inner">

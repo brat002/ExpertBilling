@@ -173,6 +173,27 @@ def find_account_by_port(nasses,flow):
         if acc_data_dst and acc_data_src: return caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
     return caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
 
+def find_account_by_activesession(nasses,flow):
+    #global caches
+    caches = cacheMaster.cache
+    if not caches.active_session_cache.by_ip: 
+        #logger.debug("Nas ports cache is empty return", ())
+        return None, None, None
+    acc_data_src,acc_data_dst = None, None
+    for nasitem in nasses:
+        #logger.debug("Checking flow port for nas_id=: %s. Nas-Port. In index=%s, out index=%s. cache len=%s", (nasitem.id, flow.in_index,flow.out_index, len(caches.nas_port_cache.by_nas_id)))
+        if not acc_data_src:
+            acc_data_src = caches.active_session_cache.by_ip.get((flow.src_addr, nasitem.id))
+            #logger.debug("Search for flow src port  account=%s", (acc_data_src, ))
+            nas_id = nasitem.id
+        if not acc_data_dst: 
+            acc_data_dst = caches.active_session_cache.by_ip.get((flow.dst_addr, nasitem.id))
+            #logger.debug("Search for flow dst port account=%s", (acc_data_dst, ))
+            nas_id = nasitem.id
+        if acc_data_dst and acc_data_src: return caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
+    return caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
+
+
 def find_account_by_ip(nasses,flow,src=False, dst=False):
     acc_data_src,acc_data_dst, nas_id = None, None, None
     caches = cacheMaster.cache
@@ -254,7 +275,8 @@ def nfPacketHandle(data, addr, flowCache):
         nas_id = None
         #nasses_list=[nasitem.id for nasitem in nasses]
 
-        acc_data_src,acc_data_dst, nas_id = find_account_by_port(nasses, flow)
+        #acc_data_src,acc_data_dst, nas_id = find_account_by_port(nasses, flow)
+        acc_data_src,acc_data_dst, nas_id = find_account_by_activesession(nasses, flow)
         acc_data_src_ip, acc_data_dst_ip, nas_id_ip=None,None,None
         
         if acc_data_src:

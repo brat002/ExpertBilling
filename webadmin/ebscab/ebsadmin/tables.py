@@ -20,7 +20,7 @@ from nas.models import Nas, TrafficClass, TrafficNode
 from django_tables2_reports.tables import TableReport
 from django.utils.safestring import mark_safe
 from django.utils.html import escape
-from ebsadmin.models import TableSettings
+from ebsadmin.models import TableSettings, Comment
 from getpaid.models import Payment
 from sendsms.models import Message
 
@@ -76,7 +76,7 @@ class RadioColumn(django_tables.Column):
 class SubAccountsTable(django_tables.Table):
     id = django_tables.LinkColumn('subaccount', get_params={'id':A('pk')})
     username = django_tables.LinkColumn('subaccount', get_params={'id':A('pk')})
-    password = FormatBlankColumn()
+    #password = FormatBlankColumn()
     nas = FormatBlankColumn()
     
     vpn_ip_address = FormatBlankColumn()
@@ -93,7 +93,7 @@ class SubAccountsTable(django_tables.Table):
     class Meta:
         model = SubAccount
         configurable=True
-        available_fields = ('id', 'username', 'password', 'nas', 'vpn_ip_address', 'ipn_ip_address', 'ipn_mac_address', 'd')
+        available_fields = ('id', 'username',  'nas', 'vpn_ip_address', 'ipn_ip_address', 'ipn_mac_address', 'd')
         exclude = ('password', )
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-disable-hover table-bordered table-condensed'}
@@ -113,6 +113,7 @@ class AccountAddonServiceTable(django_tables.Table):
     service =  django_tables.Column()
     subaccount =  django_tables.LinkColumn('subaccount', get_params={'id':A('subaccount.id')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     #service = django_tables.LinkColumn('subaccount_detail', args=[A('pk')])
+    cost =  FormatFloatColumn()
     activated = FormatDateTimeColumn()
     deactivated = FormatDateTimeColumn()
     temporary_blocked = FormatDateTimeColumn(verbose_name=_(u'Отключена'))
@@ -353,7 +354,9 @@ class AccountsReportTable(TableReport):
         #print 'pagg', len(self.page.object_list), self.per_page, self.data.queryset.count()
 
         
-
+    #def render_ballance(self, value):
+    #    return mark_safe(value)
+    
     def render_row_number(self):
         return '%d' % next(self.counter)
     
@@ -536,6 +539,16 @@ class IPPoolTable(TableReport):
     class Meta:
         model = IPPool
         configurable = True
+        #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        
+        
+class CommentTable(TableReport):
+    id = django_tables.LinkColumn('ippool_edit', get_params={'id':A('pk')})
+    
+    class Meta:
+        model = Comment
+        configurable = False
         #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         

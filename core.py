@@ -78,7 +78,7 @@ from classes.flags import CoreFlags
 from classes.vars import CoreVars
 from utilites import renewCaches, savepid, get_connection, check_running, getpid, rempid
 
-from psycopg2.extensions import  ISOLATION_LEVEL_SERIALIZABLE
+from psycopg2.extensions import  ISOLATION_LEVEL_SERIALIZABLE, ISOLATION_LEVEL_REPEATABLE_READ
 
 from classes.core_class.RadiusSession import RadiusSession
 from classes.core_class.BillSession import BillSession
@@ -298,7 +298,7 @@ class periodical_service_bill(Thread):
 
     #ps_type - 1 for periodocal service, 2 - for periodical addonservice 
             
-    def iterate_ps(self, cur, caches, acc, ps, dateAT, acctf_id, acctf_datetime, next_date, current, pss_type):
+    def iterate_ps(self, cur, acc, ps, dateAT, acctf_id, acctf_datetime, next_date, current, pss_type):
         account_ballance = (acc.ballance or 0) + (acc.credit or 0)
         susp_per_mlt = 1
         
@@ -341,17 +341,17 @@ class periodical_service_bill(Thread):
 
             logger.debug('%s: Periodical Service: GRADUAL last checkout %s for account: %s service:%s type:%s next date: %s', (self.getName(), last_checkout, acc.account_id, ps.ps_id, pss_type, next_date))                                  
 
-            self.PER_DAY = SECONDS_PER_DAY / (ps.tpd if ps.tpd else vars.TRANSACTIONS_PER_DAY)
-            self.PER_DAY_DELTA = datetime.timedelta(seconds=self.PER_DAY)
+            PER_DAY = SECONDS_PER_DAY / (ps.tpd if ps.tpd else vars.TRANSACTIONS_PER_DAY)
+            PER_DAY_DELTA = datetime.timedelta(seconds=PER_DAY)
                 
-            if (dateAT - last_checkout).seconds + (dateAT - last_checkout).days*SECONDS_PER_DAY >= self.PER_DAY:
+            if (dateAT - last_checkout).seconds + (dateAT - last_checkout).days*SECONDS_PER_DAY >= PER_DAY:
                 #Проверяем наступил ли новый период
                 
                 # Смотрим сколько раз уже должны были снять деньги
                 delta_from_last_checkout = dateAT - last_checkout
                 last_checkout_seconds = delta_from_last_checkout.seconds + delta_from_last_checkout.days*SECONDS_PER_DAY
-                nums,ost = divmod(last_checkout_seconds,self.PER_DAY)                                        
-                chk_date = last_checkout + self.PER_DAY_DELTA
+                nums,ost = divmod(last_checkout_seconds,PER_DAY)                                        
+                chk_date = last_checkout + PER_DAY_DELTA
 
   
                     
@@ -364,15 +364,15 @@ class periodical_service_bill(Thread):
                         logger.error('%s: Periodical Service: GRADUAL %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date))
                         return 
                     delta_coef = Decimal('1.00')
-                    if vars.USE_COEFF_FOR_PS==True and next_date and chk_date+self.PER_DAY_DELTA>next_date:# если следующая проверка будет в новом расчётном периоде - считаем дельту
+                    if vars.USE_COEFF_FOR_PS==True and next_date and chk_date+PER_DAY_DELTA>next_date:# если следующая проверка будет в новом расчётном периоде - считаем дельту
                         
-                        delta_coef=Decimal(str(float((next_date-chk_date).days*86400+(next_date-chk_date).seconds)/float(self.PER_DAY)))
+                        delta_coef=Decimal(str(float((next_date-chk_date).days*86400+(next_date-chk_date).seconds)/float(PER_DAY)))
                         logger.debug('%s: Periodical Service: %s Use coeff %s for ps account: %s', (self.getName(), ps.ps_id, delta_coef, acc.account_id))      
                         
                     logger.debug('%s: Periodical Service: GRADUAL  account: %s service:%s type:%s check date: %s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, chk_date, next_date,))
                     period_start, period_end, delta = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)     
                     mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0                                       
-                    cash_summ = delta_coef*(mult*((self.PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY)))
+                    cash_summ = delta_coef*(mult*((PER_DAY * vars.TRANSACTIONS_PER_DAY * ps.cost) / (delta * vars.TRANSACTIONS_PER_DAY)))
                     if pss_type == PERIOD and (ps.deactivated is None or (ps.deactivated and ps.deactivated > chk_date)):
                         # Если это подключаемая услуга и дата отключения услуги ещё не наступила
                         #cur.execute("UPDATE billservice_account SET ballance=ballance-")
@@ -392,7 +392,7 @@ class periodical_service_bill(Thread):
                     else:
                         return
                     cur.connection.commit()
-                    chk_date += self.PER_DAY_DELTA
+                    chk_date += PER_DAY_DELTA
                     if pss_type == PERIOD and ((next_date and chk_date>=next_date) or (ps.deactivated and ps.deactivated < chk_date)):
                         logger.debug('%s: Periodical Service: GRADUAL last billed is True for account: %s service:%s type:%s', (self.getName(), acc.account_id, ps.ps_id, pss_type))  
                         cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
@@ -572,7 +572,7 @@ class periodical_service_bill(Thread):
         global cacheMaster, fMem, suicideCondition, transaction_number, vars
         self.connection = get_connection(vars.db_dsn)
         
-        self.connection.set_isolation_level(ISOLATION_LEVEL_SERIALIZABLE)
+        self.connection.set_isolation_level(ISOLATION_LEVEL_REPEATABLE_READ)
         dateAT = datetime.datetime(2000, 1, 1)
         caches = None
         while True:
@@ -628,7 +628,7 @@ class periodical_service_bill(Thread):
                                 
                                 dateAT = next_date if next_date else self.NOW
                                 #logger.info("%s : preiter: acctf=%s now=%s dateat=%s current=%s next_date=%s", (self.getName(), acctf_id, self.NOW, dateAT, current, next_date))
-                                self.iterate_ps(cur, caches, acc, ps, dateAT, acctf_id, acctf_datetime, next_date, current, PERIOD)
+                                self.iterate_ps(cur, acc, ps, dateAT, acctf_id, acctf_datetime, next_date, current, PERIOD)
                             
                             except Exception, ex:
                                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -653,7 +653,7 @@ class periodical_service_bill(Thread):
                     dt = dateAT if not addon_ps.deactivated else addon_ps.deactivated
                     try:
                         #self.iterate_ps(cur, caches, acc, addon_ps, mult, dateAT, ADDON)
-                        self.iterate_ps(cur, caches, acc, addon_ps, dt, None, None, None, False, ADDON)
+                        self.iterate_ps(cur, acc, addon_ps, dt, None, None, None, False, ADDON)
                     except Exception, ex:
                         logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                         if ex.__class__ in vars.db_errors: raise ex
@@ -1384,15 +1384,15 @@ class settlement_period_service_dog(Thread):
                         prepaid_traffic_reset = shedl.prepaid_traffic_reset if shedl.prepaid_traffic_reset else acc.datetime
                         prepaid_radius_traffic_reset = shedl.prepaid_radius_traffic_reset if shedl.prepaid_radius_traffic_reset else acc.datetime
                         #if (reset_traffic or acc.traffic_transmit_service_id is None) and (shedl.prepaid_traffic_reset is None or shedl.prepaid_traffic_reset<period_start or acc.acctf_id!= shedl.accounttarif_id):
-                        need_traffic_reset=(reset_traffic and prepaid_traffic_reset<period_start) or not acc.traffic_transmit_service_id is not None or acc.acctf_id != shedl.accounttarif_id
-                        need_radius_traffic_reset=(radius_traffic and prepaid_radius_traffic_reset<period_start) or not acc.radius_traffic_transmit_service_id is not None  or acc.acctf_id != shedl.accounttarif_id
+                        need_traffic_reset=(reset_traffic and shedl.prepaid_traffic_accrued and prepaid_traffic_reset<period_start) or  (shedl.prepaid_traffic_accrued and (acc.traffic_transmit_service_id is  None or acc.acctf_id != shedl.accounttarif_id))
+                        need_radius_traffic_reset=(radius_traffic and radius_traffic.reset_prepaid_traffic and  prepaid_radius_traffic_reset<period_start) or (shedl.prepaid_radius_traffic_accrued and (acc.radius_traffic_transmit_service_id is None  or acc.acctf_id != shedl.accounttarif_id))
 
                         if need_traffic_reset:
                             #(Если нужно сбрасывать трафик или нет услуги доступа по трафику) И
                             #(Никогда не сбрасывали трафик или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)
                             """(Если наступил новый расчётный период и нужно сбрасывать трафик) или если нет услуги с доступом по трафику или если сменился тарифный план"""
                             cur.execute("SELECT shedulelog_tr_reset_fn(%s, %s, %s::timestamp without time zone);", \
-                                        (acc.account_id, acc.acctf_id, now))  
+                                        (acc.account_id, acc.acctf_id, period_start))  
                             cur.connection.commit()
 
                                     
@@ -1404,7 +1404,7 @@ class settlement_period_service_dog(Thread):
                                 delta_coef=float((period_end-acc.datetime).days*86400+(period_end-acc.datetime).seconds)/float(delta)
                                 
                             cur.execute("SELECT shedulelog_tr_credit_fn(%s, %s, %s, %s, %s, %s::timestamp without time zone);", 
-                                    (acc.account_id, acc.acctf_id, acc.traffic_transmit_service_id, need_traffic_reset, delta_coef, now))
+                                    (acc.account_id, acc.acctf_id, acc.traffic_transmit_service_id, need_traffic_reset, delta_coef, period_start))
                             cur.connection.commit()
 
                         if need_radius_traffic_reset:
@@ -1412,7 +1412,7 @@ class settlement_period_service_dog(Thread):
                             #(Никогда не сбрасывали трафик или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)
                             """(Если наступил новый расчётный период и нужно сбрасывать трафик) или если нет услуги с доступом по трафику или если сменился тарифный план"""
                             cur.execute("SELECT shedulelog_radius_tr_reset_fn(%s, %s, %s::timestamp without time zone);", \
-                                        (acc.account_id, acc.acctf_id, now))  
+                                        (acc.account_id, acc.acctf_id, period_start))  
                             cur.connection.commit()
 
                         #Radius prepaid
@@ -1429,7 +1429,8 @@ class settlement_period_service_dog(Thread):
                             cur.connection.commit()
                                                     
                         prepaid_time, reset_time = caches.timeaccessservice_cache.by_id.get(acc.time_access_service_id, (None, 0, None))[1:3]
-                        need_time_reset = (reset_time or acc.time_access_service_id is None) and (shedl.prepaid_time_reset is None or (shedl.prepaid_time_reset if shedl.prepaid_time_reset else period_start<period_start) or acc.acctf_id!=shedl.accounttarif_id)   
+                        need_time_reset = (reset_time and prepaid_time and shedl.prepaid_time_accrued and shedl.prepaid_time_reset<period_start) or (shedl.prepaid_time_accrued and (acc.time_access_service_id is None  or acc.acctf_id != shedl.accounttarif_id))   
+                        
                         if need_time_reset:
                             #(Если нужно сбрасывать время или нет услуги доступа по времени) И                        
                             #(Никогда не сбрасывали время или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)                          

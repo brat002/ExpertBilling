@@ -1,10 +1,11 @@
 # coding: utf-8
 from __future__ import absolute_import, unicode_literals
+from .base import Column, library
 from django.db import models
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django_tables2.utils import AttributeDict
-from .base import Column, library
+import six
 
 
 @library.register
@@ -26,17 +27,17 @@ class BooleanColumn(Column):
     - *span* -- adds attributes to the <span> tag
     """
     def __init__(self, null=False, yesno="✔,✘", **kwargs):
-        self.yesno = (yesno.split(',') if isinstance(yesno, basestring)
-                                       else tuple(yesno))
+        self.yesno = (yesno.split(',') if isinstance(yesno, six.string_types)
+                      else tuple(yesno))
         if null:
-            kwargs[b"empty_values"] = ()
+            kwargs["empty_values"] = ()
         super(BooleanColumn, self).__init__(**kwargs)
 
     def render(self, value):
         value = bool(value)
-        text = '' #self.yesno[int(not value)]
+        text = self.yesno[int(not value)]
         html = '<span %s>%s</span>'
-        attrs = {'style': 'text-align: center;', "class": unicode('cus-tick' if value else 'cus-cancel').lower()}
+        attrs = {"class": six.text_type(value).lower()}
         attrs.update(self.attrs.get("span", {}))
         return mark_safe(html % (AttributeDict(attrs).as_html(), escape(text)))
 

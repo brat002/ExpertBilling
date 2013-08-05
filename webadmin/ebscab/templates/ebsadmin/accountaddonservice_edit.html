@@ -1,6 +1,7 @@
 {% load i18n %}
 {% if not status %}
 {% load ebsadmin_tags %}
+{% load crispy_forms_tags %}
 {{message}}
  <script type="text/javascript"> 
  $(document).ready(function() {
@@ -25,74 +26,8 @@
 {% if form %}
 
             <form method="POST" action="{% url accountaddonservice %}?id={{accountaddonservice.id}}" class="well form-horizontal  form-condensed  ajax">
-            {{ form.account }}
-            {{ form.subaccount }}
-                <fieldset>
-                  <div class="control-group">
-                      <label class="control-label">{% blocktrans %}Подключаемая услуга{% endblocktrans %}</label>
-                      <div class="controls">
-                      {{ form.service }}
-                      {% if form.service.errors %}
-                          <span class="help-inline">{% for error in form.service.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.service.help_text%}
-                          <p class="help-block">
-                              {{ form.service.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                  <div class="control-group">
+               {{form|crispy}}
 
-                      <label class="control-label">{{form.activated.label}}:</label>
-                      <div class="controls">
-                      {{ form.activated }}
-                      {% if form.datetime.errors %}
-                          <span class="help-inline">{% for error in form.activated.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.activated.help_text%}
-                          <p class="help-block">
-                              {{ form.activated.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-
-                  </div>
-                  <div class="control-group">
-
-                      <label class="control-label">{{form.deactivated.label}}:</label>
-                      <div class="controls">
-                      {{ form.deactivated }}
-                      {% if form.deactivated.errors %}
-                          <span class="help-inline">{% for error in form.deactivated.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.deactivated.help_text%}
-                          <p class="help-block">
-                              {{ form.deactivated.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-
-
-                  </div>
-                  <div class="control-group">
-                  
-
-                      <label class="control-label">{{form.temporary_blocked.label}}:</label>
-                      <div class="controls">
-                      {{ form.temporary_blocked }}
-                      {% if form.temporary_blocked.errors %}
-                          <span class="help-inline">{% for error in form.temporary_blocked.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.temporary_blocked.help_text%}
-                          <p class="help-block">
-                              {{ form.temporary_blocked.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-
-                  </div>
-                </fieldset>
                 
                 <div class="form-actions">
                     <input type='submit' class="btn btn-primary" value="Сохранить">
