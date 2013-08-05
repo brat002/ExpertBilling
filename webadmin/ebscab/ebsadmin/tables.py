@@ -113,13 +113,15 @@ class AccountAddonServiceTable(django_tables.Table):
     service =  django_tables.Column()
     subaccount =  django_tables.LinkColumn('subaccount', get_params={'id':A('subaccount.id')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     #service = django_tables.LinkColumn('subaccount_detail', args=[A('pk')])
-    cost =  FormatFloatColumn()
+    cost =  django_tables.TemplateColumn('{{record.cost|default:record.service.cost|floatformat}}')
     activated = FormatDateTimeColumn()
     deactivated = FormatDateTimeColumn()
     temporary_blocked = FormatDateTimeColumn(verbose_name=_(u'Отключена'))
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
-    
+        
     class Meta:
+        model = AccountAddonService
+        #sequence = ('id', 'service', 'cost', 'activated', 'deactivated', 'temporary_blocked', '')
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
             
@@ -544,11 +546,14 @@ class IPPoolTable(TableReport):
         
         
 class CommentTable(TableReport):
-    id = django_tables.LinkColumn('ippool_edit', get_params={'id':A('pk')})
+    id = django_tables.LinkColumn('comment_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-log-custom-dialog"})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    
     
     class Meta:
         model = Comment
         configurable = False
+        fields = ('id', 'comment', 'created', 'due_date', 'd')
         #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         

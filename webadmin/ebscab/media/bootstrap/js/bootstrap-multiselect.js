@@ -25,8 +25,8 @@
 		this.options = this.getOptions(options);
 		this.select = $(select);
 		this.container = $(this.options.container)
-				.append('<button style="width:' + this.options.width + '" class="dropdown-toggle ' + this.options.button + '" data-toggle="dropdown">' + this.options.text($('option:selected', select)) + ' <b class="caret"></b></button>')
-				.append('<ul class="dropdown-menu bottom-up" style="width: 400px; height: 300px; overflow-y: scroll;overflow-x: hidden;"></ul>');
+				//.append('<button style="width:' + this.options.width + '" class="dropdown-toggle ' + this.options.button + '" data-toggle="dropdown">' + this.options.text($('option:selected', select)) + ' <b class="caret"></b></button>')
+				.append('<ul class="" style="border: 1px; width: 100%; height: 300px; overflow-y: scroll;overflow-x: hidden;"></ul>');
 		
 		// Manually add the multiple attribute, if its not already set.
 		if (!this.select.attr('multiple')) {
