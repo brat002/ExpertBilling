@@ -75,6 +75,11 @@ urlpatterns += patterns('ebsadmin.transactiontype',
     url(r'^transactiontype/delete/$', 'transactiontype_delete', name='transactiontype_delete'),
     url(r'^transactiontype/$', 'transactiontype', name='transactiontype'),
 )
+urlpatterns += patterns('ebsadmin.modules.comment',
+    url(r'^comment/edit/$', 'comment_edit', name='comment_edit'),
+    url(r'^comment/delete/$', 'comment_delete', name='comment_delete'),
+    #url(r'^transactiontype/$', 'transactiontype', name='transactiontype'),
+)
 
 urlpatterns += patterns('ebsadmin.systemuser',
     url(r'^systemuser/edit/$', 'systemuser_edit', name='systemuser_edit'),

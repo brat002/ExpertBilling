@@ -4,6 +4,8 @@ from jsonfield import JSONField
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
+from billservice.models import SystemUser
+from django.core.urlresolvers import reverse
 
 class TableSettings(models.Model):
     user = models.ForeignKey(User)
@@ -28,11 +30,17 @@ class Comment(models.Model):
     content_type    = models.ForeignKey(ContentType, related_name="comments_set", null=True, blank=True)
     object_id       = models.PositiveIntegerField(null=True, blank=True)
     object  = generic.GenericForeignKey(ct_field='content_type', fk_field='object_id')
-    comment = models.TextField()
-    notify_date = models.DateTimeField()
-    due_date = models.DateTimeField()
-    deleted = models.DateTimeField()
+    comment = models.TextField(verbose_name=u'Комментарий')
+    created = models.DateTimeField(verbose_name=u'Создан', auto_now_add=True, blank=True, null=True)
+    done_date = models.DateTimeField(verbose_name=u'Когда выполнен', blank=True, null=True)
+    done_systemuser = models.ForeignKey(SystemUser, verbose_name=u'Кем выполнен', on_delete=models.SET_NULL, blank=True, null=True)
+    due_date = models.DateTimeField(verbose_name=u'Выполнить до ', blank=True, null=True)
+    deleted = models.DateTimeField(verbose_name=u'Удалён', blank=True, null=True)
    
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('comment_delete'), self.id)
+
+
 class_prepared.connect(longer_username)
 
 

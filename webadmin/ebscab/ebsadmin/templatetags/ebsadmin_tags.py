@@ -5,6 +5,8 @@ import re
 from ebsadmin.forms import chartdata
 from ebsadmin.reportsystem.reports import rep
 from django.contrib.contenttypes.models import ContentType
+from ebsadmin.tables import CommentTable
+from ebsadmin.models import Comment
 import datetime
 
 register = template.Library()
@@ -53,6 +55,14 @@ def objectlog(o):
         ct_id = ContentType.objects.get_for_model(o).id
     
     return {'ct_id': ct_id, 'item':o}
+
+@register.inclusion_tag('ebsadmin/tags/object_comments.html', takes_context=True)
+def object_comments(context, o):
+    if not o: return {}
+    ct = ContentType.objects.get_for_model(Comment)
+    res = Comment.objects.filter(content_type=ct, object_id = o.id)
+    
+    return {'table': CommentTable(res), 'item':o, 'request': context['request'], 'content_type_id': ct.id}
 
 def permission(parser, token):
     try:

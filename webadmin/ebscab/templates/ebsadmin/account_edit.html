@@ -540,6 +540,7 @@
 <div class="row-fluid">
 
 <div class="{% if account %}span9{% else %}span12{% endif %}">
+
 <ul class="breadcrumb">
   <li>
     <a href='{% url account_list %}?data=data'>{% blocktrans %}Все аккаунты{% endblocktrans %}</a> / <a href="{% url account_edit%}?id={{account.id}}">{{account.username}}</a> 
@@ -573,17 +574,6 @@
               <li><a href="{% url accountprepaystime %}?account={{account.id}}">{% blocktrans %}Время{% endblocktrans %}</a></li>
         </ul>
       </div>
-       <div class="btn-group">
-        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-          {% blocktrans %}Финансовые логи{% endblocktrans %} <span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu">
-               <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_payments=True">{% blocktrans %}Пополнения баланса{% endblocktrans %}</a></li>
-               <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_credits=True">{% blocktrans %}Списания баланса{% endblocktrans %}</a></li>
-              <li><a href="{% url transactionreport2 %}?account={{account.id}}&tree=PROMISE_PAYMENT">{% blocktrans %}Обещанные платежи{% endblocktrans %}</a></li>
-              <li><a href="{% url ballancehistoryreport %}?account={{account.id}}">{% blocktrans %}История изменения баланса{% endblocktrans %}</a></li>
-        </ul>
-      </div>
       <div class="btn-group">
         <a href='{% url news_edit %}?accounts={{account.id}}&private=True' class="btn" ><i class='cus-newspaper'></i> {% blocktrans %}Сообшение{% endblocktrans %}</a>
       </div>
@@ -597,6 +587,10 @@
 
         </ul>
       </div>
+                      <div class="btn-group">
+                     <a href="{% url helpdesk_submit %}?account_id={{account.id}}"  class="btn btn-warning" ><i class="icon-comment icon-white "></i>{% blocktrans %}Подать заявку{% endblocktrans %}</a>
+
+                 </div>
 
     {% endif %}
   </div>
@@ -984,6 +978,8 @@
 {% endif %}
 {%  comment %} END SUBACCOUNT FORM{% endcomment %}
 <hr />
+
+{% object_comments account %}
                             <div class="control-group">
 
                                 <label class="control-label" for="input-comment">{{form.comment.label}}</label>
@@ -1787,28 +1783,6 @@
         </div>
         {% if account %}
         <div class="span3">
-          <div class="well sidebar-nav">
-            <ul class="nav nav-list">
-              <li class="nav-header">{% blocktrans %}Итоговый баланс{% endblocktrans %}</li>
-              <strong><h2>{{account.ballance|floatformat:2}} {{currency}}</h2></strong>
-              <strong>{% blocktrans %}Обещанные платежи:{% endblocktrans %} <a href="{% url transactionreport2 %}?account={{account.id}}&tree=PROMISE_PAYMENT">{{account.get_last_promises_count}}</a></strong>
-                <li>                                    <div class="btn-group">
-                                        <a href="#"  class="btn btn-large btn-success" id="modal-transaction-dialog" ><i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}</a>
-
-                                    </div></li>
-            </ul>
-          </div>
-          <div class="well sidebar-nav">
-            <ul class="nav nav-list">
-              <li class="nav-header">{% blocktrans %}Бонусный счёт{% endblocktrans %}</li>
-              <strong><h2>{{account.bonus_ballance|floatformat:2}} {{currency}}</h2></strong>
-              
-                <li>                                    <div class="btn-group">
-                                        <a href="#"  class="btn btn-large btn-success" id="modal-bonustransaction-dialog" ><i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}</a>
-
-                                    </div></li>
-            </ul>
-          </div>
           <div class="well sidebar-nav alert-success">
             <ul class="nav nav-list">
               <li class="nav-header">{% blocktrans %}Тариф{% endblocktrans %}</li>
@@ -1819,17 +1793,32 @@
                                     </div></li>
             </ul>
           </div>
-          <div class="well sidebar-nav alert">
+          <div class="well sidebar-nav">
             <ul class="nav nav-list">
-              <li class="nav-header">{% blocktrans %}Заявка{% endblocktrans %}</li>
-              
+              <li class="nav-header">{% blocktrans %}Итоговый баланс{% endblocktrans %}</li>
+              <li><strong><h3>{{account.ballance|floatformat:2}} {{currency}}</h3></strong></li>
+              <li><strong>{% blocktrans %}Обещанные платежи:{% endblocktrans %} <a href="{% url transactionreport2 %}?account={{account.id}}&tree=PROMISE_PAYMENT">{{account.get_last_promises_count}}</a></strong></li>
                 <li>                                    
-                <div class="btn-group">
-                     <a href="{% url helpdesk_submit %}?account_id={{account.id}}"  class="btn btn-large btn-warning" ><i class="icon-comment icon-white "></i>{% blocktrans %}Подать заявку{% endblocktrans %}</a>
+	                <div class="btn-group">
+	                    <a href="#"  class="btn btn-success" id="modal-transaction-dialog" ><i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}</a>
+	                </div>
+                </li>
+              <li class="nav-header">{% blocktrans %}Бонусный счёт{% endblocktrans %}</li>
+              <li><strong><h3>{{account.bonus_ballance|floatformat:2}} {{currency}}</h3></strong></li>
+              
+                <li>                                    <div class="btn-group">
+                                        <a href="#"  class="btn btn-success" id="modal-bonustransaction-dialog" ><i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}</a>
 
-                 </div></li>
+                                    </div></li>
+               <li class="divider"></li>
+               <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_payments=True"><i class='icon-list-alt'></i>{% blocktrans %}Пополнения баланса{% endblocktrans %}</a></li>
+               <li><a href="{% url transactionreport2 %}?account={{account.id}}&only_credits=True"><i class='icon-list-alt'></i>{% blocktrans %}Списания баланса{% endblocktrans %}</a></li>
+              <li><a href="{% url transactionreport2 %}?account={{account.id}}&tree=PROMISE_PAYMENT"><i class='icon-list-alt'></i>{% blocktrans %}Обещанные платежи{% endblocktrans %}</a></li>
+              <li><a href="{% url ballancehistoryreport %}?account={{account.id}}"><i class='icon-list-alt'></i>{% blocktrans %}История изменения баланса{% endblocktrans %}</a></li>
+
             </ul>
           </div>
+
     
         </div>
         {% endif %}

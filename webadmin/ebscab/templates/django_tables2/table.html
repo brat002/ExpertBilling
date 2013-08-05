@@ -17,19 +17,21 @@
             })
             $(".columns").multiselect({button:'btn btn-small'}); 
             
-            $(".columns_submit").bind('click', function() {
+            $("#submit{{table.columns_form.table_name.value}}").bind('click', function() {
 
                 var url = "{% url table_settings %}"; // the script where you handle the form input.
                 $(".columns_submit").attr('disabled', 'disabled');
-                var form = $(this).closest("form");
+                var form = $('#{{table.columns_form.table_name.value}}');
+
+                
                 var c = [];
                 var columns = form.find(".columns").serialize();
 
-                var table_name = form.find("input[name=table_name]").val();
+                var table_name = '{{table.columns_form.table_name.value}}';
                 $.ajax({
                        type: "POST",
                        url: url,
-                       data: form.serialize(), // serializes the form's elements.
+                       data: columns+'&table_name='+table_name, // serializes the form's elements.
                        success: function(data)
                        {
                     	   window.location.reload();
@@ -38,10 +40,22 @@
 
                 return false; // avoid to execute the actual submit of the form.
             });
-
+            $('.open-dialog').click(function(){
+            	a=$(this)
+            	$('#'+a.attr('rel')).removeClass('hidden');
+	            $('#'+a.attr('rel')).dialog2({
+	                title: "Настройка таблицы", 
+	                autoOpen: true,
+	                removeOnClose: false
+	            });
         })
+        
+        });
+        
+
+
 </script>
-<br />
+
 <div>
 
 {% block table %}
@@ -52,9 +66,31 @@
         <tr>
         {% for column in table.columns %}
             {% if column.orderable %}
-            <th {{ column.attrs.th.as_html }}><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">{{ column.header }}</a></th>
+            <th {{ column.attrs.th.as_html }}><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">{{ column.header }}</a>{% if table.columns_form %}{% if forloop.last %}
+            <div class="btn-group pull-right">
+  <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">
+    <i class='icon-wrench'></i>
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu">
+    <li><a class='open-dialog  black-text' href="#" style='color:black' rel="dialog{{table.columns_form.table_name.value}}"><i class='icon-wrench'></i>Настроить</a></li>
+  {% block table.report %}
+  {% endblock %}
+  </ul>
+</div>
+{% endif %}{% endif %}</th>
             {% else %}
-            <th {{ column.attrs.th.as_html }}>{{ column.header }}</th>
+            <th {{ column.attrs.th.as_html }}>{{ column.header }}{% if table.columns_form %}{% if forloop.last %}<div class="btn-group pull-right">
+  <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">
+    <i class='icon-wrench'></i>
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu">
+    <li><a class='open-dialog black-text'  href="#" style='color:black' rel="dialog{{table.columns_form.table_name.value}}"><i class='icon-wrench'></i>Настроить</a></li>
+  {% block table.report2 %}
+  {% endblock %}
+  </ul>
+</div>{% endif %}{% endif %}</th>
             {% endif %}
         {% endfor %}
         </tr>
@@ -103,43 +139,24 @@
 {% if onpage_summ %}
 <strong>Сумма на странице:</strong> {{onpage_summ|intspace}}<br/>
 {% endif %}
-
 {% if table.columns_form %}
+<div id="dialog{{table.columns_form.table_name.value}}" class='hidden' title="Настройка внешнего вида таблицы" >
+  
 
-<div class='pull-left'>
-<form method="POST" action=""  class="form pull-left">
+<formset id='{{table.columns_form.table_name.value}}'>
 
-
-    <div class="btn-toolbar">
-      <div class="btn-group">
+<div>
         {{table.columns_form.columns}}&nbsp;{{table.columns_form.table_name}}
-      </div>
-      <div class="btn-group">
-      <input type="button"  class="columns_submit btn btn-small btn-primary" name="save_columns" value="Сохранить настройки">
-      </div>
-  </div>
+</div>
+<div>
+      <input type="button"  id='submit{{table.columns_form.table_name.value}}'  class=" btn btn-small btn-info" name="save_columns" value="Сохранить настройки">
+</div>
 
 
-</form>
-
+</formset>
 
 </div>{% endif %}
-{% if table.page %}
 
-<div class="pull-right">
-        На странице: <select name="per_page" id="id_per_page">
-        <option value="25">25</option>
-        <option value="50"  selected="selected">50</option>
-        <option value="100">100</option>
-        <option value="200">200</option>
-        <option value="500">500</option>
-        <option value="1000">1000</option>
-        <option value="5000">5000</option>
-        <option value="10000">10000</option>
-        </select>
-        </div>
-        {% endif %}
-</div>
 {% endblock table %}
 
 
@@ -166,9 +183,27 @@
     <li><a href="{% querystring table.prefixed_page_field=table.page.next_page_number %}">{% trans "Next" %}</a></li>
     {% endif %}
     <li><a href="{% querystring 'paginate'='False' %}">Все</a></li>
+    <li>
 
-    </ul>
+
+         <select name="per_page" id="id_per_page">
+        <option value="25">25 на странице</option>
+        <option value="50"  selected="selected">50 на странице</option>
+        <option value="100">100 на странице</option>
+        <option value="200">200 на странице</option>
+        <option value="500">500 на странице</option>
+        <option value="1000">1000 на странице</option>
+        <option value="5000">5000 на странице</option>
+        <option value="10000">10000 на странице</option>
+        </select>
+
+       </li>
+        </ul>
 </div>
+</div>
+
+
+
 
 
 {% endif %}
