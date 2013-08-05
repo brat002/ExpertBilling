@@ -23,17 +23,15 @@ def longer_username(sender, *args, **kwargs):
         sender._meta.get_field("last_name").max_length = 256
         sender._meta.get_field("email").max_length = 256
 
-#===============================================================================
-# class Comment(models.Model):
-#  
-#    content_type    = models.ForeignKey(ContentType, related_name="comments_set", null=True, blank=True)
-#    object_id       = models.PositiveIntegerField(null=True, blank=True)
-#    object  = generic.GenericForeignKey(ct_field='content_type', fk_field='object_id')
-#    comment = models.TextField()
-#    notify_date = models.DateTimeField()
-#    due_date = models.DateTimeField()
-#    deleted = models.DateTimeField()
-#===============================================================================
+class Comment(models.Model):
+  
+    content_type    = models.ForeignKey(ContentType, related_name="comments_set", null=True, blank=True)
+    object_id       = models.PositiveIntegerField(null=True, blank=True)
+    object  = generic.GenericForeignKey(ct_field='content_type', fk_field='object_id')
+    comment = models.TextField()
+    notify_date = models.DateTimeField()
+    due_date = models.DateTimeField()
+    deleted = models.DateTimeField()
    
 class_prepared.connect(longer_username)
 
