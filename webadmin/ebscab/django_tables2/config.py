@@ -60,7 +60,8 @@ class RequestConfig(object):
             table.order_by = order_by
         if self.paginate:
             self.paginate = {}
-            self.paginate['per_page']=ts.per_page
+            if table.Meta.__dict__.get("configurable"):
+                self.paginate['per_page']=ts.per_page
             if hasattr(self.paginate, "items"):
                 kwargs = dict(self.paginate)
             else:

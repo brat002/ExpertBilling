@@ -359,7 +359,7 @@ class CashierReportTable(TableReport):
     
     def __init__(self, *args, **argv):
         super(CashierReportTable, self).__init__(*args, **argv)
-        self.name = self.__class__.__name__
+        self.name = 'CashierReportTable'
         
     class Meta:
         model = Transaction
@@ -432,7 +432,7 @@ class AccountsCashierReportTable(TableReport):
     def __init__(self, *args, **kwargs):
         super(AccountsCashierReportTable, self).__init__(*args, **kwargs)
         self.counter = itertools.count()
-        self.name = self.__class__.__name__
+        self.name = 'AccountsCashierReportTable'
         
     def render_row_number(self):
         return '%d' % next(self.counter)
