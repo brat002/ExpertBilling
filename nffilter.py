@@ -190,8 +190,8 @@ def find_account_by_activesession(nasses,flow):
             acc_data_dst = caches.active_session_cache.by_ip.get((flow.dst_addr, nasitem.id))
             #logger.debug("Search for flow dst port account=%s", (acc_data_dst, ))
             nas_id = nasitem.id
-        if acc_data_dst and acc_data_src: return caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
-    return caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
+        if acc_data_dst and acc_data_src: return caches.account_cache.by_id.get(acc_data_src),caches.account_cache.by_id.get(acc_data_dst), nas_id
+    return caches.account_cache.by_id.get(acc_data_src),caches.account_cache.by_id.get(acc_data_dst), nas_id
 
 
 def find_account_by_ip(nasses,flow,src=False, dst=False):

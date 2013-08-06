@@ -66,7 +66,8 @@ class ActiveSessionCache(CacheItem):
     def reindex(self):
 
         for item in self.data:
-            self.by_ip[(item.framed_ip_address, item.nas_id)] = item.account_id
+            if  item.framed_ip_address not in ['0.0.0.0/32', '0.0.0.0', '']:
+                self.by_ip[(IPint(item.framed_ip_address).int(), item.nas_id)] = item.account_id
                 
 
             

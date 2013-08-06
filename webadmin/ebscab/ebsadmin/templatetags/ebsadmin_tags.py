@@ -59,7 +59,7 @@ def objectlog(o):
 @register.inclusion_tag('ebsadmin/tags/object_comments.html', takes_context=True)
 def object_comments(context, o):
     if not o: return {}
-    ct = ContentType.objects.get_for_model(Comment)
+    ct = ContentType.objects.get_for_model(o)
     res = Comment.objects.filter(content_type=ct, object_id = o.id)
     
     comment_table = CommentTable(res)
