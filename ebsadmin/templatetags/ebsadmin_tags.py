@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from ebsadmin.tables import CommentTable
 from ebsadmin.models import Comment
 import datetime
-
+from django_tables2.config import  RequestConfig
 register = template.Library()
 
 @register.filter(name='format_paginator')          
@@ -62,7 +62,10 @@ def object_comments(context, o):
     ct = ContentType.objects.get_for_model(Comment)
     res = Comment.objects.filter(content_type=ct, object_id = o.id)
     
-    return {'table': CommentTable(res), 'item':o, 'request': context['request'], 'content_type_id': ct.id}
+    comment_table = CommentTable(res)
+    RequestConfig(context['request'], paginate=False if context['request'].GET.get('paginate')=='False' else True).configure(comment_table)
+    
+    return {'table': comment_table, 'item':o, 'request': context['request'], 'content_type_id': ct.id}
 
 def permission(parser, token):
     try:

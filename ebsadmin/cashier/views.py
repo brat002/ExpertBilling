@@ -61,7 +61,7 @@ def index(request):
 
             
             table = AccountsCashierReportTable(res)
-            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
+            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
             
@@ -72,7 +72,7 @@ def index(request):
     else:
         res = Account.objects.filter(status=1)
         table = AccountsCashierReportTable(res)
-        table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
+        table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
         if table_to_report:
             return create_report_http_response(table_to_report, request)        
         form = CashierAccountForm()
@@ -90,7 +90,7 @@ def transactionreport(request):
 
             
     table = CashierReportTable(res)
-    table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
+    table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
     if table_to_report:
         return create_report_http_response(table_to_report, request)
     

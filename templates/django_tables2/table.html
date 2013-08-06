@@ -5,15 +5,29 @@
 {% load ebsadmin_tags %}
         <script type="text/javascript"> 
         $(document).ready(function() {
-            var per_page = $.cookie('ebs_per_page');
-            if (per_page){
-            	$("#id_per_page").val(per_page)
-            }else{
-            	$("#id_per_page").val(30)
-            }
-            $("#id_per_page").change(function(){
-            	$.cookie('ebs_per_page',  $("#id_per_page").val());
-            	location.href=location.href.replace(/&?paginate=False/i, "");
+            $("#id_per_page{{table.name}}").change(function(){
+            	//$.cookie('ebs_per_page{{table.name}}',  $("#id_per_page{{table.name}}").val());
+            	
+                var url = "{% url table_settings %}"; // the script where you handle the form input.
+                $(".columns_submit").attr('disabled', 'disabled');
+                var form = $('#{{table.columns_form.table_name.value}}');
+
+                
+                var c = [];
+                var columns = form.find(".columns").serialize();
+
+                var table_name = '{{table.name}}';
+                $.ajax({
+                       type: "POST",
+                       url: url,
+                       data: columns+'&table_name='+table_name+'&per_page='+ $("#id_per_page{{table.name}}").val(), // serializes the form's elements.
+                       success: function(data)
+                       {
+                    	   location.href=location.href.replace(/&?paginate=False/i, "").replace(/#/i, "");
+                       }
+                     });
+                
+            	
             })
             $(".columns").multiselect({button:'btn btn-small'}); 
             
@@ -27,11 +41,11 @@
                 var c = [];
                 var columns = form.find(".columns").serialize();
 
-                var table_name = '{{table.columns_form.table_name.value}}';
+                var table_name = '{{table.name}}';
                 $.ajax({
                        type: "POST",
                        url: url,
-                       data: columns+'&table_name='+table_name, // serializes the form's elements.
+                       data: columns+'&table_name='+table_name+'&per_page='+ $("#id_per_page{{table.name}}").val(), // serializes the form's elements.
                        success: function(data)
                        {
                     	   window.location.reload();
@@ -184,18 +198,7 @@
     {% endif %}
     <li><a href="{% querystring 'paginate'='False' %}">Все</a></li>
     <li>
-
-
-         <select name="per_page" id="id_per_page">
-        <option value="25">25 на странице</option>
-        <option value="50"  selected="selected">50 на странице</option>
-        <option value="100">100 на странице</option>
-        <option value="200">200 на странице</option>
-        <option value="500">500 на странице</option>
-        <option value="1000">1000 на странице</option>
-        <option value="5000">5000 на странице</option>
-        <option value="10000">10000 на странице</option>
-        </select>
+         {{table.per_page_form.per_page}}
 
        </li>
         </ul>

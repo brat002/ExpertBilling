@@ -128,14 +128,14 @@ def card(request):
                 res = res.filter(nominal=nominal)
     
         table = CardTable(res)
-        table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
+        table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
         if table_to_report:
             return create_report_http_response(table_to_report, request)
             
     else:
         form = CardSearchForm()
         table = CardTable(res)
-        table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
+        table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
         if table_to_report:
             return create_report_http_response(table_to_report, request)
     

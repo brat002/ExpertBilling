@@ -90,6 +90,13 @@ class TableColumnsForm(forms.Form):
     table_name = forms.CharField(widget = forms.widgets.HiddenInput)
     columns = forms.MultipleChoiceField(choices=(), widget = forms.widgets.SelectMultiple(attrs={'class': 'columns', 'size': 10}))
     
+class TablePerPageForm(forms.Form):
+    per_page = forms.ChoiceField(choices=((25, 25),(50, 50),(100, 100),(250, 250),(500, 500),(1000, 1000),))
+    
+    def __init__(self, per_page_id=None, *args, ** argv):
+        super(TablePerPageForm, self).__init__(*args, **argv)
+        self.fields['per_page'].widget.attrs['id']=per_page_id
+        
     
 class CommentForm(forms.ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
@@ -99,8 +106,27 @@ class CommentForm(forms.ModelForm):
         widgets={
                  'content_type': forms.widgets.HiddenInput,
                  'object_id': forms.widgets.HiddenInput,
+                 'done_date': forms.widgets.HiddenInput,
+                 'done_systemuser': forms.widgets.HiddenInput,
                  'comment': forms.widgets.Textarea(attrs={'rows':5, 'class': 'input-large span5'}),
                  'due_date': forms.widgets.DateTimeInput(attrs={'class':'datepicker'}),
                  }
-        exclude = ('deleted', 'done_systemuser', 'done_date')
+        exclude = ('deleted', 'done_comment')
+        
+class CommentDoneForm(forms.ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    
+    class Meta:
+        model = Comment
+        widgets={
+                 'content_type': forms.widgets.HiddenInput,
+                 'object_id': forms.widgets.HiddenInput,
+                 'comment': forms.widgets.HiddenInput,
+                 'done_date': forms.widgets.HiddenInput,
+                 'done_systemuser': forms.widgets.HiddenInput,
+                 'comment': forms.widgets.Textarea(attrs={'rows':5, 'class': 'input-large span5'}),
+                 'done_comment': forms.widgets.Textarea(attrs={'rows':5, 'class': 'input-large span5'}),
+                 'due_date': forms.widgets.DateTimeInput(attrs={'class':'datepicker'}),
+                 }
+        exclude = ('deleted',  'due_date')
         

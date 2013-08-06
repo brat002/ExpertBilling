@@ -523,6 +523,15 @@
                     })
                     });
                 /* subacc */
+                
+                $(".comment-done").click(function(event) {
+                    $('<div />').dialog2({
+                        title: "{% blocktrans %}Изменить запись{% endblocktrans %}", 
+                        content: this.href, 
+                    });
+
+                    event.preventDefault(event);
+                });
         });
         </script>
 <style type="text/css">

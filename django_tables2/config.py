@@ -1,7 +1,7 @@
 # coding: utf-8
 from django.core.paginator import EmptyPage, PageNotAnInteger
 from ebsadmin.models import TableSettings
-from ebsadmin.forms import TableColumnsForm 
+from ebsadmin.forms import TableColumnsForm, TablePerPageForm
 
 class RequestConfig(object):
     """
@@ -35,10 +35,10 @@ class RequestConfig(object):
         """
         if table.Meta.__dict__.get("configurable"):
             try:
-                ts = TableSettings.objects.get(name=table.__class__.__name__, user=self.request.user)
+                ts = TableSettings.objects.get(name=table.name, user=self.request.user)
             except:
                 af = table.Meta.__dict__.get('available_fields')
-                ts = TableSettings.objects.create(name=table.__class__.__name__, value={'fields': af if af else table.base_columns.keys()}, user=self.request.user)
+                ts = TableSettings.objects.create(name=table.name, value={'fields': af if af else table.base_columns.keys()}, per_page=50, user=self.request.user)
 
             bc = table.base_columns
             table.sequence = ts.value.get('fields')
@@ -50,13 +50,17 @@ class RequestConfig(object):
             selected_columns = ts.value.get('fields')
             z = [x for x in  table.base_columns if x not in selected_columns]
 
-            table.columns_form = TableColumnsForm(initial={'columns':selected_columns, 'table_name': table.__class__.__name__})
+            table.columns_form = TableColumnsForm(initial={'columns':selected_columns, 'table_name': table.name})
             table.columns_form.fields['columns'].choices=[(x,table.base_columns.get(x).verbose_name or x) for x in  tuple(selected_columns)+tuple(z) if bc.get(x)]
-            
+        
+            table.per_page_form = TablePerPageForm(per_page_id='id_per_page%s' % table.name, initial={'per_page': ts.per_page})
+        
         order_by = self.request.GET.getlist(table.prefixed_order_by_field)
         if order_by:
             table.order_by = order_by
         if self.paginate:
+            self.paginate = {}
+            self.paginate['per_page']=ts.per_page
             if hasattr(self.paginate, "items"):
                 kwargs = dict(self.paginate)
             else:

@@ -3,7 +3,60 @@
 {% load ebsadmin_tags %}
 {% load render_table from django_tables2 %}
 {% block extra_head %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     $("#modal-{{item.id}}-{{content_type_id}}").click(function(event) {
+         a=$(this);
+         $('<div/>').dialog2({
+             title: "{% blocktrans %}Редактировать комментарий{% endblocktrans %}", 
+             content: a.attr('href'), 
+         });
 
+         event.preventDefault(event);
+     });
+     
+     $(".open-log-custom-dialog").click(function(event) {
+         $('<div />').dialog2({
+             title: "{% blocktrans %}Изменить запись{% endblocktrans %}", 
+             content: this.href, 
+         });
+
+         event.preventDefault(event);
+     });
+     $(".comment-done").click(function(event) {
+         $('<div />').dialog2({
+             title: "{% blocktrans %}Изменить запись{% endblocktrans %}", 
+             content: this.href, 
+         });
+
+         event.preventDefault(event);
+     });
+     $(".show-confirm").click(function(event) {
+         a=$(this);
+         $.fn.dialog2.helpers.confirm("{% blocktrans %}Вы действительно хотите удалить?{% endblocktrans %}", {
+             confirm: function() {
+                 $.getJSON(a.attr('href'),{},function(data,status){
+                     if( status=='success' ){
+                         if(data.status==true)
+                             {
+                             location.reload();
+                             }else{
+                                 alert(data.message)
+                             }
+                         
+                     }else{
+                         alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
+                     }
+
+                 })                      
+                 }, 
+             decline: function() {  }
+         });
+
+         event.preventDefault(event);
+     });
+ });
+ </script>
 {% endblock %}
 {% block base %}
 
@@ -12,24 +65,14 @@
 
   <div class="row-fluid">
 
-  <div class="span12">
-  <div class="hero-unit">
-            <h1>Expert Billing 1.5 RC1</h1>
-            <p>{% blocktrans %}Ревизия сервера:{% endblocktrans %} {{  request.server_version }}/
-            {% blocktrans %}Ревизия web-интерфейса:{% endblocktrans %} {{ request.webcab_version }}</p>
-            {% blocktrans %}<p>Добро пожаловать!{% endblocktrans %}</p>
-            <p>{% blocktrans %}Вы попали в интерфейс администратора биллинг-системы ExpertBilling 1.5 RC1. 
-            Обращаем ваше внимание, на то, что это technology preview версия, которая была выложена в целях ознакомления с будущим функционалом. 
-            Она может содержать баги и проблемы, о которых мы можем не знать. Пожалуйста, отнеситесь к этому с пониманием и сообщайте о всех найденных проблемах на нашем форуме http://forum.expertbilling.ru/.
-            {% endblocktrans %}
-            </p>
-            
-            <p><a href="{% url account_list %}" class="btn btn-primary btn-large">{% blocktrans %}Приступить »{% endblocktrans %}</a></p>
-          </div>
-        <div><h5></h5></div>
-        <div><h5></h5></div>
-   <div class="alert alert-danger">{% blocktrans %}В текущей версии HelpDesk находится в альфа-стадии, механизм разделения доступа находится в стадии тестирования.{% endblocktrans %}</div>
+  <div class="span4">
+
+
+
   <div>{% blocktrans %}Количество аккаунтов:{% endblocktrans %} {{accounts_count}}</div>
+  </div>
+  <div class='span8'>
+  {% render_table comment_table %}
   </div>
     </div>
   
