@@ -86,7 +86,9 @@ class SubAccountsTable(django_tables.Table):
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
     
-    
+    def __init__(self, *args, **argv):
+        super(SubAccountsTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
     
 
     
@@ -102,6 +104,11 @@ class SubAccountsTable(django_tables.Table):
 class AccountHardwareTable(django_tables.Table):
     id = django_tables.LinkColumn('accounthardware', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+
+    def __init__(self, *args, **argv):
+        super(AccountHardwareTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = AccountHardware
         fields = ('id', 'hardware','datetime', 'returned', 'comment')
@@ -119,6 +126,10 @@ class AccountAddonServiceTable(django_tables.Table):
     temporary_blocked = FormatDateTimeColumn(verbose_name=_(u'Отключена'))
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
         
+    def __init__(self, *args, **argv):
+        super(AccountAddonServiceTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = AccountAddonService
         #sequence = ('id', 'service', 'cost', 'activated', 'deactivated', 'temporary_blocked', '')
@@ -129,6 +140,11 @@ class AccountAddonServiceTable(django_tables.Table):
 class SuspendedPeriodTable(django_tables.Table):
 
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+
+    def __init__(self, *args, **argv):
+        super(SuspendedPeriodTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+            
     class Meta:
         model = SuspendedPeriod
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -139,7 +155,9 @@ class AccountTarifTable(django_tables.Table):
     datetime = FormatDateTimeColumn()
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
-
+    def __init__(self, *args, **argv):
+        super(AccountTarifTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
     
     class Meta:
         #attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -166,6 +184,10 @@ class TotalTransactionReportTable(TableReport):
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
     
     
+    def __init__(self, *args, **argv):
+        super(TotalTransactionReportTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     def render_d(self, value, record):
 
         return mark_safe('<input type="checkbox" name="d" value="%s__%s">' % (record.get('table'), value))
@@ -205,6 +227,10 @@ class TransactionReportTable(TableReport):
     systemuser = FormatBlankColumn(verbose_name=_(u'Выполнил'), accessor=A('systemuser__username'))
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
     
+    def __init__(self, *args, **argv):
+        super(TransactionReportTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     def render_d(self, value, record):
         return mark_safe('<input type="checkbox" name="d" value="billservice_transaction__%s">' % ( value, ))
     
@@ -232,6 +258,10 @@ class AddonServiceTransactionReportTable(TableReport):
     prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
     
+    def __init__(self, *args, **argv):
+        super(AddonServiceTransactionReportTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     def render_d(self, value, record):
 
         return mark_safe('<input type="checkbox" name="d" value="billservice_addonservicetransaction__%s">' % ( value, ))
@@ -263,6 +293,10 @@ class PeriodicalServiceTransactionReportTable(TableReport):
     real_created = FormatDateTimeColumn()
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
     
+    def __init__(self, *args, **argv):
+        super(PeriodicalServiceTransactionReportTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     def render_d(self, value, record):
 
         return mark_safe('<input type="checkbox" name="d" value="billservice_periodicalservicehistory__%s">' % ( value, ))
@@ -292,6 +326,10 @@ class TrafficTransactionReportTable(TableReport):
     prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
     d = django_tables.CheckBoxColumn(verbose_name=' ', orderable=False, accessor=A('id'))
     
+    def __init__(self, *args, **argv):
+        super(TrafficTransactionReportTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     def render_d(self, value, record):
 
         return mark_safe('<input type="checkbox" name="d" value="billservice_traffictransaction__%s">' % ( value, ))
@@ -319,7 +357,10 @@ class CashierReportTable(TableReport):
     prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
     created = FormatDateTimeColumn(verbose_name=_(u'Создан'))
     
-
+    def __init__(self, *args, **argv):
+        super(CashierReportTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = Transaction
         configurable = True
@@ -349,7 +390,8 @@ class AccountsReportTable(TableReport):
         super(AccountsReportTable, self).__init__(form, *args, **kwargs)
         self.counter = itertools.count()
         self.footer_data = self.TableDataClass(data=[self.data.queryset.aggregate(ballance=Sum('ballance'))], table=self)
-        self.footer = django_tables.rows.BoundRows(self.footer_data, self)    
+        self.footer = django_tables.rows.BoundRows(self.footer_data, self)
+        self.name = self.__class__.__name__    
 
     def paginate(self, *args, **kwargs):
         super(AccountsReportTable, self).paginate(*args, **kwargs)        
@@ -390,7 +432,8 @@ class AccountsCashierReportTable(TableReport):
     def __init__(self, *args, **kwargs):
         super(AccountsCashierReportTable, self).__init__(*args, **kwargs)
         self.counter = itertools.count()
-
+        self.name = self.__class__.__name__
+        
     def render_row_number(self):
         return '%d' % next(self.counter)
     
@@ -420,7 +463,8 @@ class ActiveSessionTable(TableReport):
     def __init__(self, *args, **kwargs):
         super(ActiveSessionTable, self).__init__(*args, **kwargs)
         self.counter = itertools.count()
-
+        self.name = self.__class__.__name__
+        
     def render_row_number(self):
         return '%d' % next(self.counter)
 
@@ -438,6 +482,10 @@ class AuthLogTable(TableReport):
     nas = FormatBlankColumn()
     datetime = FormatDateTimeColumn()
     
+    def __init__(self, *args, **argv):
+        super(AuthLogTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = AuthLog
         exclude = ('type', 'id')
@@ -449,6 +497,10 @@ class BallanceHistoryTable(TableReport):
     summ = FormatBlankColumn(verbose_name=_(u'Сумма'))
     datetime = FormatDateTimeColumn()
     
+    def __init__(self, *args, **argv):
+        super(BallanceHistoryTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
@@ -456,6 +508,10 @@ class IPInUseTable(TableReport):
     datetime = FormatDateTimeColumn()
     disabled = FormatDateTimeColumn()
     
+    def __init__(self, *args, **argv):
+        super(IPInUseTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = IPInUse
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -465,6 +521,10 @@ class LogTable(TableReport):
     user = FormatBlankColumn()
     changed_fields = FormatBlankColumn()
     
+    def __init__(self, *args, **argv):
+        super(LogTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -476,6 +536,10 @@ class NasTable(TableReport):
     id = django_tables.LinkColumn('nas_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(NasTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = Nas
         configurable = True
@@ -488,6 +552,10 @@ class TemplateTable(TableReport):
     name = django_tables.LinkColumn('template_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(TemplateTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = Template
         configurable = False
@@ -502,6 +570,10 @@ class SettlementPeriodTable(TableReport):
     
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(SettlementPeriodTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = SettlementPeriod
         #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
@@ -512,6 +584,10 @@ class SystemUserTable(TableReport):
     username = django_tables.LinkColumn('systemuser_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(SystemUserTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = SystemUser
         configurable = True
@@ -524,6 +600,10 @@ class AddonServiceTable(TableReport):
     name = django_tables.LinkColumn('addonservice_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(AddonServiceTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = AddonService
         configurable = True
@@ -538,30 +618,44 @@ class IPPoolTable(TableReport):
     used_ip =  django_tables.Column(verbose_name=_(u'Используется'), accessor=A('get_used_ip_count'), orderable=False)
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(IPPoolTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = IPPool
         configurable = True
         #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
-        
+
 class CommentTable(TableReport):
+    def __init__(self, *args, **argv):
+        super(CommentTable, self).__init__(*args, **argv)
+        self.name = 'CommentTable'
+
     id = django_tables.LinkColumn('comment_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-log-custom-dialog"})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    done = django_tables.TemplateColumn("<a href='{% url comment_edit %}?id={{record.id}}&done=True' class='btn btn-mini btn-success comment-done'><i class='icon-ok icon-white'></i></a>&nbsp;<a href='{{record.get_remove_url}}' class='btn btn-mini btn-danger show-confirm'><i class='icon-remove icon-white'></i></a>", verbose_name='Действия', orderable=False)
+    #d = django_tables.TemplateColumn("", verbose_name=' ', orderable=False)
     
-    
+        
     class Meta:
         model = Comment
-        configurable = False
-        fields = ('id', 'comment', 'created', 'due_date', 'd')
+        configurable = True
+        available_fields = ('id', 'comment', 'created', 'due_date', 'done')
         #exclude = ("secret", 'username', 'vpn_speed_action', 'ipn_speed_action', 'reset_action', 'subacc_disable_action', 'subacc_enable_action', 'subacc_add_action', 'subacc_delete_action', 'subacc_ipn_speed_action', 'speed_vendor_1', 'speed_vendor_2', 'speed_attr_id1', 'speed_attr_id2', 'speed_value1', 'speed_value2', 'acct_interim_interval', 'user_add_action', 'user_enable_action', 'user_disable_action', 'user_delete_action')
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        
         
 class TransactionTypeTable(TableReport):
     id = django_tables.LinkColumn('transactiontype_edit', get_params={'id':A('pk')})
     name = django_tables.LinkColumn('transactiontype_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(TransactionTypeTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = TransactionType
         configurable = False
@@ -574,6 +668,10 @@ class TrafficClassTable(TableReport):
     directions = django_tables.TemplateColumn(u"<a href='{% url trafficnode_list %}?id={{record.id}}' class='btn btn-primary btn-mini'>Список направлений</a>", verbose_name=_(u'Направления'), orderable=False)
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a><input type='hidden' name='id' value='{{record.id}}'>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(TrafficClassTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = TrafficClass
         configurable = True
@@ -592,7 +690,8 @@ class TrafficNodeTable(TableReport):
     def __init__(self, *args, **kwargs):
         super(TrafficNodeTable, self).__init__(*args, **kwargs)
         self.counter = itertools.count()
-
+        self.name = self.__class__.__name__
+        
     def render_row_number(self):
         return '%d' % next(self.counter)
     
@@ -617,7 +716,8 @@ class UploadTrafficNodeTable(TableReport):
     def __init__(self, *args, **kwargs):
         super(UploadTrafficNodeTable, self).__init__(*args, **kwargs)
         self.counter = itertools.count()
-
+        self.name = self.__class__.__name__
+        
     def render_row_number(self):
         return '%d' % next(self.counter)
     
@@ -629,6 +729,10 @@ class RadiusAttrTable(TableReport):
     id = django_tables.LinkColumn('radiusattr_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(RadiusAttrTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = RadiusAttrs
         exclude = ("tarif", 'nas')
@@ -639,6 +743,10 @@ class ManufacturerTable(TableReport):
     name = django_tables.LinkColumn('manufacturer_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(ManufacturerTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = Manufacturer
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -648,6 +756,10 @@ class ModelTable(TableReport):
     name = django_tables.LinkColumn('model_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(ModelTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = Model
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -657,6 +769,10 @@ class HardwareTypeTable(TableReport):
     name = django_tables.LinkColumn('hardwaretype_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(HardwareTypeTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = HardwareType
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -667,6 +783,10 @@ class HardwareTable(TableReport):
     name = django_tables.LinkColumn('hardware_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(HardwareTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = Hardware
         configurable = True
@@ -677,6 +797,10 @@ class SwitchTable(TableReport):
     name = django_tables.LinkColumn('switch_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(SwitchTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = Switch
         configurable=True
@@ -703,6 +827,7 @@ class CardTable(TableReport):
     def __init__(self, *args, **kwargs):
         super(CardTable, self).__init__(*args, **kwargs)
         self.counter = itertools.count()
+        self.name = self.__class__.__name__
 
     def render_row_number(self):
         return '%d' % next(self.counter)
@@ -725,6 +850,10 @@ class SaleCardsTable(TableReport):
     nas = FormatBlankColumn()
     ippool = FormatBlankColumn()
     
+    def __init__(self, *args, **argv):
+        super(SaleCardsTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     def render_row_number(self):
         value = getattr(self, '_counter', 0)
         self._counter = value + 1
@@ -744,6 +873,10 @@ class SaleCardTable(TableReport):
     id = django_tables.LinkColumn('salecard_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(SaleCardTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = SaleCard
         configurable = True
@@ -753,7 +886,7 @@ class SaleCardTable(TableReport):
 class DealerTable(TableReport):
     def __init__(self,*args, **kwargs):
         super(DealerTable, self).__init__(*args, **kwargs)
-
+        self.name = self.__class__.__name__
         
     id = django_tables.LinkColumn('dealer_edit', get_params={'id':A('pk')})
     organization = django_tables.LinkColumn('dealer_edit', get_params={'id':A('pk')})
@@ -769,6 +902,10 @@ class TariffTable(TableReport):
     radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?tarif={{record.id}}' class='btn btn-mini btn-primary'>Изменить</a>", verbose_name=_(u'RADIUS атрибуты'), orderable=False)
     access_type = FormatBlankColumn(verbose_name=_(u'Тип доступа'), accessor=A('access_parameters.access_type'))
     
+    def __init__(self, *args, **argv):
+        super(TariffTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = Tariff
         configurable = True
@@ -783,6 +920,10 @@ class PeriodicalServiceTable(TableReport):
     deactivated = FormatDateTimeColumn()
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
+    def __init__(self, *args, **argv):
+        super(PeriodicalServiceTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = PeriodicalService
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -791,6 +932,11 @@ class PeriodicalServiceTable(TableReport):
 class GroupTable(TableReport):
     id = django_tables.LinkColumn('group_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+
+    def __init__(self, *args, **argv):
+        super(GroupTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = Group
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -798,6 +944,11 @@ class GroupTable(TableReport):
 class ContractTemplateTable(TableReport):
     id = django_tables.LinkColumn('contracttemplate_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+
+    def __init__(self, *args, **argv):
+        super(ContractTemplateTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = ContractTemplate
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -807,7 +958,9 @@ class TrafficTransmitNodesTable(TableReport):
     group = django_tables.LinkColumn('group_edit', get_params={'id':A('group.id')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
-    
+    def __init__(self, *args, **argv):
+        super(TrafficTransmitNodesTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
     class Meta:
@@ -821,6 +974,10 @@ class PrepaidTrafficTable(TableReport):
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
+    def __init__(self, *args, **argv):
+        super(PrepaidTrafficTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = PrepaidTraffic
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -832,6 +989,10 @@ class TimeSpeedTable(TableReport):
     #group = django_tables.LinkColumn('group_edit', get_params={'id':A('group.id')})
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
+    def __init__(self, *args, **argv):
+        super(TimeSpeedTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = TimeSpeed
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -843,6 +1004,10 @@ class OneTimeServiceTable(TableReport):
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
+    def __init__(self, *args, **argv):
+        super(OneTimeServiceTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = OneTimeService
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -853,6 +1018,10 @@ class RadiusTrafficNodeTable(TableReport):
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
+    def __init__(self, *args, **argv):
+        super(RadiusTrafficNodeTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = RadiusTrafficNode
         fields = ("id", 'value', 'timeperiod', 'cost', 'd')
@@ -865,6 +1034,10 @@ class TrafficLimitTable(TableReport):
     #speed = TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
+    def __init__(self, *args, **argv):
+        super(TrafficLimitTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = TrafficLimit
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -875,6 +1048,10 @@ class TimeAccessNodeTable(TableReport):
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
+    def __init__(self, *args, **argv):
+        super(TimeAccessNodeTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = TimeAccessNode
         fields = ("id", 'time_period', 'cost', 'd')
@@ -885,6 +1062,10 @@ class AddonServiceTarifTable(TableReport):
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
+    def __init__(self, *args, **argv):
+        super(AddonServiceTarifTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = AddonServiceTarif
         fields = ("id", 'service', 'activation_count_period', 'activation_count', 'type', 'd')
@@ -896,6 +1077,10 @@ class PeriodicalServiceLogTable(TableReport):
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     datetime = FormatDateTimeColumn(verbose_name=_(u'Дата'))
     
+    def __init__(self, *args, **argv):
+        super(PeriodicalServiceLogTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = PeriodicalServiceLog
         configurable = True
@@ -914,6 +1099,10 @@ class SheduleLogTable(TableReport):
     prepaid_time_accrued = FormatDateTimeColumn(verbose_name=_(u'Начисление предоплаченного врeмени'))
     balance_blocked = FormatDateTimeColumn(verbose_name=_(u'Блокировка баланса'))
     
+    def __init__(self, *args, **argv):
+        super(SheduleLogTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = SheduleLog
         configurable = True
@@ -927,7 +1116,10 @@ class NewsTable(TableReport):
     created = FormatDateTimeColumn(verbose_name=_(u'Активна с'))
     age = FormatDateTimeColumn(verbose_name=_(u'Активна по'))
 
-    
+    def __init__(self, *args, **argv):
+        super(NewsTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = News
         configurable = True
@@ -943,6 +1135,10 @@ class TPChangeRuleTable(TableReport):
     on_next_sp = django_tables.TemplateColumn("<img src='/media/img/icons/{% if record.on_next_sp %}accept.png{% else %}icon_error.gif{% endif %}'>")
     row_class = django_tables.Column(visible=False)
 
+    def __init__(self, *args, **argv):
+        super(TPChangeRuleTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     def render_row_class(self, value, record):
         return 'error' if record.disabled else ''
     
@@ -959,6 +1155,10 @@ class AccountGroupTable(TableReport):
     cnt = django_tables.TemplateColumn('{{record.account_set.count}}', verbose_name = _(u'Количество'))
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
+    def __init__(self, *args, **argv):
+        super(AccountGroupTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = AccountGroup
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
@@ -966,7 +1166,10 @@ class AccountGroupTable(TableReport):
 class ActionLogTable(TableReport):
     object1 = django_tables.Column(verbose_name=_(u'Объект'), accessor=A('object1'))
     
-    
+    def __init__(self, *args, **argv):
+        super(ActionLogTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = LogItem
         configurable = True
@@ -982,7 +1185,10 @@ class GroupStatTable(TableReport):
     
     #def render_bytes(self, value, record):
     #    return value
-    
+    def __init__(self, *args, **argv):
+        super(GroupStatTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         available_fields = ('account', 'group', 'bytes')
         configurable = True
@@ -997,7 +1203,10 @@ class GlobalStatTable(TableReport):
     #min = django_tables.Column(u'С даты')
     max = django_tables.Column(_(u'Последние данные'))
     
-    
+    def __init__(self, *args, **argv):
+        super(GlobalStatTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         available_fields = ('account', 'group', 'bytes')
         configurable = False
@@ -1017,6 +1226,10 @@ class AccountPrepaysTraficTable(TableReport):
 
     datetime = FormatDateTimeColumn(verbose_name=_(u'Начислен'))
     
+    def __init__(self, *args, **argv):
+        super(AccountPrepaysTraficTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     def render_bytes(self, value, record):
         return value
     
@@ -1038,6 +1251,11 @@ class AccountPrepaysRadiusTraficTable(TableReport):
           <div class="bar" style="width: {{record.in_percents}}%"></div>
         </div>""", verbose_name=_(u'Расходовано'))
     
+    
+    def __init__(self, *args, **argv):
+        super(AccountPrepaysTraficTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     def render_bytes(self, value, record):
         return value
     
@@ -1059,6 +1277,11 @@ class AccountPrepaysTimeTable(TableReport):
           <div class="bar" style="width: {{record.in_percents}}%"></div>
         </div>""", verbose_name=_(u'Расходовано'))
     
+
+    def __init__(self, *args, **argv):
+        super(AccountPrepaysTimeTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     def render_bytes(self, value, record):
         return value
     
@@ -1076,6 +1299,10 @@ class SwitchPortsTable(TableReport):
     monitored_port = django_tables.TemplateColumn("<input type='checkbox'  name='monitored_port' {% if record.monitored_port %} checked{% endif %}>", verbose_name=_(u'Мониторинг'))
     disabled_port = django_tables.TemplateColumn("<input type='checkbox'  name='disabled_port' {% if record.disabled_port %} checked{% endif %}>", verbose_name=_(u'Отключён'))
     
+    def __init__(self, *args, **argv):
+        super(SwitchPortsTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         attrs = {'class': 'table table-bordered table-condensed'}  
         
@@ -1086,7 +1313,9 @@ class TicketTable(TableReport):
     created = FormatDateTimeColumn(verbose_name=_(u'Создан'))
     status = django_tables.Column(verbose_name=_(u'Статус'), accessor=A('_get_status'))
 
-    
+    def __init__(self, *args, **argv):
+        super(TicketTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
     
     class Meta:
         model = Ticket
@@ -1101,7 +1330,10 @@ class PermissionGroupTable(TableReport):
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
 
     
-    
+    def __init__(self, *args, **argv):
+        super(PermissionGroupTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = PermissionGroup
         available_fields = ("id", 'name', 'd', )
@@ -1115,6 +1347,10 @@ class PaymentTable(TableReport):
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
+    def __init__(self, *args, **argv):
+        super(PaymentTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = Payment
         #fields = ("id", 'service', 'activation_count_period', 'activation_count', 'type', 'd')
@@ -1127,6 +1363,10 @@ class DynamicSchemaFieldTable(TableReport):
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
+    def __init__(self, *args, **argv):
+        super(DynamicSchemaFieldTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = DynamicSchemaField
         #fields = ("id", 'service', 'activation_count_period', 'activation_count', 'type', 'd')
@@ -1135,11 +1375,15 @@ class DynamicSchemaFieldTable(TableReport):
 class MessageTable(TableReport):
     #id = django_tables.LinkColumn('sessage_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('pk')})
-    account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('account')})
+    account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('account.id')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
+    def __init__(self, *args, **argv):
+        super(MessageTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     class Meta:
         model = Message
         #fields = ("id", 'service', 'activation_count_period', 'activation_count', 'type', 'd')

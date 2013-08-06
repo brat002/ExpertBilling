@@ -10,6 +10,9 @@ from django.contrib import messages
 
 from billservice.models import Account
 from billservice.helpers import systemuser_required
+from ebsadmin.tables import CommentTable
+from ebsadmin.models import Comment
+
 log = LogItem.objects.log_action
 
     
@@ -17,6 +20,13 @@ log = LogItem.objects.log_action
 @render_to('ebsadmin/admin_dashboard.html')
 def admin_dashboard(request):
  
-    accounts_count = Account.objects.count()
-    return { 'accounts_count':accounts_count, } 
+    accounts_count = Comment.objects.count()
+    res = Comment.objects.all().order_by('-created')
+    table = CommentTable(res)
+
+    table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
+    if table_to_report:
+        return create_report_http_response(table_to_report, request)
+    
+    return { 'accounts_count':accounts_count, 'comment_table': table} 
 

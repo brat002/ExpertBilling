@@ -10,7 +10,7 @@ from object_log.models import LogItem
 
 from ebsadmin.tables import CommentTable
 
-from ebsadmin.forms import CommentForm
+from ebsadmin.forms import CommentForm, CommentDoneForm
 from ebsadmin.models import Comment
 from django.contrib import messages
 
@@ -18,20 +18,27 @@ log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
-    
+import datetime
+
 @systemuser_required
 @render_to('ebsadmin/comment_edit.html')
 def comment_edit(request):
     
 
     id = request.POST.get("id")
+    
     item = None
     if request.method == 'POST': 
         if  not (request.user.account.has_perm('ebsadmin.edit_comment')):
            return {'status':False, 'message': _(u'У вас нет прав на добавление/редактирование комментариев')}
+        print request
         if id:
+            
             model = Comment.objects.get(id=id)
-            form = CommentForm(request.POST, instance=model) 
+            if not request.POST.get('done_comment'):
+                form = CommentForm(request.POST, instance=model)
+            else:
+                 form = CommentDoneForm(request.POST, instance=model)
         else:
             
             form = CommentForm(request.POST) 
@@ -52,13 +59,17 @@ def comment_edit(request):
         object_id = request.GET.get("object_id")
         content_type = request.GET.get("content_type")
         id = request.GET.get("id")
+        done = request.GET.get("done")
         if object_id and content_type:
 
             #item = Comment.objects.get(id=id)
             
             form = CommentForm(initial={'object_id': object_id, 'content_type': ContentType.objects.get(id=content_type)})
         elif id:
-            form = CommentForm(instance = Comment.objects.get(id=id))
+            if done:
+                form = CommentDoneForm(instance = Comment.objects.get(id=id), initial={'done_date': datetime.datetime.now(), 'done_systemuser': request.user.account})
+            else:
+                form = CommentForm(instance = Comment.objects.get(id=id))
         else:
             form = CommentForm()
 

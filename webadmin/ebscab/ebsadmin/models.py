@@ -11,6 +11,7 @@ class TableSettings(models.Model):
     user = models.ForeignKey(User)
     name = models.CharField(max_length=128)
     value = JSONField()
+    per_page = models.IntegerField()
     
     
 from django.db.models.signals import class_prepared
@@ -31,6 +32,7 @@ class Comment(models.Model):
     object_id       = models.PositiveIntegerField(null=True, blank=True)
     object  = generic.GenericForeignKey(ct_field='content_type', fk_field='object_id')
     comment = models.TextField(verbose_name=u'Комментарий')
+    done_comment = models.TextField(verbose_name=u'Финальный комментарий', blank=True, null=True)
     created = models.DateTimeField(verbose_name=u'Создан', auto_now_add=True, blank=True, null=True)
     done_date = models.DateTimeField(verbose_name=u'Когда выполнен', blank=True, null=True)
     done_systemuser = models.ForeignKey(SystemUser, verbose_name=u'Кем выполнен', on_delete=models.SET_NULL, blank=True, null=True)
@@ -40,6 +42,8 @@ class Comment(models.Model):
     def get_remove_url(self):
         return "%s?id=%s" % (reverse('comment_delete'), self.id)
 
+    class Meta:
+        ordering = ('-created', )
 
 class_prepared.connect(longer_username)
 
