@@ -308,7 +308,7 @@ def transactionreport2(request):
                 table = table(res)
                 
 
-            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
+            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
 
@@ -483,7 +483,7 @@ def accountsreport(request):
             res = res.distinct()
             
             table = AccountsReportTable(res)
-            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
+            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
 
@@ -534,7 +534,7 @@ def authlogreport(request):
                 res = res.filter(datetime__lte=end_date)
             
             table = AuthLogTable(res)
-            table_to_report = RequestConfig(request,paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
+            table_to_report = RequestConfig(request,paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
             
@@ -600,7 +600,7 @@ def ipinusereport(request):
                 res = res.filter(pool__in=ippool)
                 
             table = IPInUseTable(res)
-            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
+            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
 
@@ -641,7 +641,7 @@ def ballancehistoryreport(request):
                 res = res.filter(datetime__lte=end_date)
             res = res.values('id', 'account', 'account__username', 'balance', 'summ',  'datetime')
             table = BallanceHistoryTable(res)
-            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
+            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
             
@@ -1256,7 +1256,7 @@ def activesessionreport(request):
                 res = res.filter(nas_int__in=form.cleaned_data.get("nas"))
             res = res.values('id', 'subaccount__username', 'subaccount', 'framed_ip_address', 'interrim_update', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time', 'account__street', 'account__house', 'account__room')
             table = ActiveSessionTable(res)
-            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
+            table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
             if table_to_report:
                 return create_report_http_response(table_to_report, request)
     
@@ -1270,7 +1270,7 @@ def activesessionreport(request):
         res = ActiveSession.objects.filter(session_status='ACTIVE').prefetch_related()
         res = res.values('id', 'subaccount__username', 'subaccount', 'framed_ip_address',  'interrim_update', 'framed_protocol', 'bytes_in', 'bytes_out', 'date_start', 'date_end', 'session_status', 'caller_id', 'nas_int__name', 'session_time', 'account__street', 'account__house', 'account__room')
         table = ActiveSessionTable(res)
-        table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else {"per_page": request.COOKIES.get("ebs_per_page")}).configure(table)
+        table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
         if table_to_report:
             return create_report_http_response(table_to_report, request)
     
