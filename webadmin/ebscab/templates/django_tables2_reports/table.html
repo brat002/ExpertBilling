@@ -6,8 +6,8 @@
     {% block table.report %}
         {% if table.is_configured %}
             {% for label, format in table.formats %}
-                <li><a href="{% querystring table.param_report=format %}">
-                    <img src="{{ MEDIA_URL }}img/{{ format }}_icon.png" title="{{ label }}"/>
+                <li><a href="{% querystring table.param_report=format %}" style='color: black;'>
+                    Экспорт в {{ label }}
                 </a>
                 </li>
             {% endfor %}
@@ -17,8 +17,8 @@
         {% block table.report2 %}
         {% if table.is_configured %}
             {% for label, format in table.formats %}
-                <li><a href="{% querystring table.param_report=format %}">
-                    <img src="{{ MEDIA_URL }}img/{{ format }}_icon.png" title="{{ label }}"/>
+                <li><a href="{% querystring table.param_report=format %}" style='color: black;'>
+                    Экспорт в {{ label }}
                 </a>
                 </li>
             {% endfor %}

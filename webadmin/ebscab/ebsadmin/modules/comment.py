@@ -47,7 +47,6 @@ def comment_edit(request):
 
             model = form.save(commit=False)
             model.save()
-            form.save_m2m()
             log('CREATE', request.user, model) 
                     
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 

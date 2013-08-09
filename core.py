@@ -1053,8 +1053,8 @@ class limit_checker(Thread):
                     if not limits:
                         if acc.disabled_by_limit:
                             cur.execute("""UPDATE billservice_account SET disabled_by_limit=False WHERE id=%s;""", (acc.account_id,))
-                        cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (acc.account_id,))
-                        cur.connection.commit()
+                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (acc.account_id,))
+                            cur.connection.commit()
                         continue
                     block, speed_changed = (False, False)
                     for limit in limits:
@@ -1392,7 +1392,7 @@ class settlement_period_service_dog(Thread):
                             #(Никогда не сбрасывали трафик или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)
                             """(Если наступил новый расчётный период и нужно сбрасывать трафик) или если нет услуги с доступом по трафику или если сменился тарифный план"""
                             cur.execute("SELECT shedulelog_tr_reset_fn(%s, %s, %s::timestamp without time zone);", \
-                                        (acc.account_id, acc.acctf_id, period_start))  
+                                        (acc.account_id, acc.acctf_id, now))  
                             cur.connection.commit()
 
                                     
@@ -1412,7 +1412,7 @@ class settlement_period_service_dog(Thread):
                             #(Никогда не сбрасывали трафик или последний раз сбрасывали в прошлом расчётном периоде или пользователь сменил тариф)
                             """(Если наступил новый расчётный период и нужно сбрасывать трафик) или если нет услуги с доступом по трафику или если сменился тарифный план"""
                             cur.execute("SELECT shedulelog_radius_tr_reset_fn(%s, %s, %s::timestamp without time zone);", \
-                                        (acc.account_id, acc.acctf_id, period_start))  
+                                        (acc.account_id, acc.acctf_id, now))  
                             cur.connection.commit()
 
                         #Radius prepaid
