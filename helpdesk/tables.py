@@ -25,6 +25,10 @@ class TicketTable(TableReport):
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
+    def __init__(self, *args, **argv):
+        super(TicketTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     def render_priority(self, value, record):
         return mark_safe('<span class="label %s">%s</span>' % (prio.get(record.priority), value))
     
@@ -44,6 +48,11 @@ class UnpagedTicketTable(TableReport):
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
+    def __init__(self, *args, **argv):
+        super(UnpagedTicketTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
+        
     def render_priority(self, value, record):
         return mark_safe('<span class="label %s">%s</span>' % (prio.get(record.priority), value))
     
@@ -63,6 +72,10 @@ class UnassignedTicketTable(TableReport):
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
+    def __init__(self, *args, **argv):
+        super(UnassignedTicketTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
     def render_priority(self, value, record):
         return mark_safe('<span class="label %s">%s</span>' % (prio.get(record.priority), value))
     
