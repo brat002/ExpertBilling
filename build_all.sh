@@ -22,8 +22,8 @@ mkdir -p builds/$1/data
 echo "Additional keys: " $5
 
 
-#crypto_build="core rad_auth rad_acct nf nfroutine nffilter"
-simple_build="core rad_auth rad_acct nf nffilter nfroutine"
+#crypto_build="core rad_auth rad_acct nf nfroutine nffilter nfwriter"
+simple_build="core rad_auth rad_acct nf nffilter nfroutine nfwriter"
 total_build="$crypto_build $simple_build"
 
 modules="db utilites dictionary packet auth bidict IPy isdlogger log_adapter logger option_parser period_utilities saver ssh_paramiko ssh_utilities syslog_dummy tools dictfile queues"

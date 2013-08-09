@@ -1042,7 +1042,7 @@ def sql(request):
 @ajax_request
 @systemuser_required
 def session_reset(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('activesessions.session_reset')):
+    if  not request.user.account.has_perm('activesessions.session_reset'):
         return {'status':False, 'message': _(u'У вас нет прав на сброс сессии')}
     
     id = request.POST.get('id',None)
@@ -1080,7 +1080,7 @@ def session_reset(request):
 @ajax_request
 @systemuser_required
 def session_hardreset(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('activesessions.session_reset')):
+    if  not request.user.account.has_perm('activesessions.session_reset'):
         return {'status':False, 'message': _(u'У вас нет прав на сброс сессии')}
     
     id = request.POST.get('id',None)
@@ -1112,10 +1112,14 @@ def session_hardreset(request):
         res = PoD.delay(acc, subacc, nas, access_type=session.framed_protocol, session_id=str(session.sessionid), vpn_ip_address=session.framed_ip_address, caller_id=str(session.caller_id), format_string=str(n.reset_action))
         session.session_status='ACK'
         session.save()
-        if session.ipinuse:
-            ipin = session.ipinuse
-            ipin.disabled=datetime.datetime.now()
-            ipin.save()
+        try:
+            if session.ipinuse:
+                ipin = session.ipinuse
+                ipin.disabled=datetime.datetime.now()
+                ipin.save()
+        except:
+            pass
+
             
         return {'status':True, 'message': _(u'Сессия поставлена в очередь на сброс, IP адрес освобождён')}
     

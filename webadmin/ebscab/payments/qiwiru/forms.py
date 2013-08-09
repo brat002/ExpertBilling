@@ -6,7 +6,7 @@ from getpaid.utils import get_backend_choices
 from getpaid.models import Order
 
 class AdditionalFieldsForm(forms.Form):
-    phone = forms.CharField(required=True, label=u'Номер телефона')
+    phone = forms.CharField(required=True, label=u'Номер телефона без 8-ки в начале')
     summ = forms.FloatField(label=u'Сумма')
     order = forms.ModelChoiceField(widget=forms.widgets.HiddenInput, required=False, queryset=Order.objects.all())
     backend = forms.CharField(initial='payments.qiwiru', widget=forms.widgets.HiddenInput)

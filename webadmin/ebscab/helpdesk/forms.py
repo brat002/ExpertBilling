@@ -202,6 +202,7 @@ class TicketForm(forms.Form):
 
         t = Ticket( title = self.cleaned_data['title'],
                     submitter_email = self.cleaned_data['submitter_email'],
+                    account = self.cleaned_data['account'],
                     created = datetime.now(),
                     status = Ticket.OPEN_STATUS,
                     queue = q,

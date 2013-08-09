@@ -64,6 +64,7 @@ def congratulations():
  * nf (/etc/init.d/ebs_nf) - NetFlow collector
  * nffilter (/etc/init.d/ebs_nffilter) - NetFlow filter
  * nfroutine (/etc/init.d/ebs_nfroutine) - NetFlow tarificator
+ * nfwriter (/etc/init.d/ebs_nfwriter) - NetFlow to disk writer daemon
  * rad_auth (/etc/init.d/ebs_rad_auth) - RADIUS authentication daemon
  * rad_acct (/etc/init.d/ebs_rad_acct) - RADIUS accounting daemon
  * celery (/etc/init.d/ebs_celery) - Asynchronous mechanism for executing tasks

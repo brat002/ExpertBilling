@@ -331,11 +331,12 @@ class NfQueues(object):
                  'databaseQueue','dbLock', 'fnameQueue','fnameLock', 'nfQueue', \
                  'nfqLock', 'packetIndex', 'packetIndexLock', \
                  'getFlowPLZ', 'gotFlowKTX', 'flowFileList',\
-                  'flowSynchroBox')
+                  'flowSynchroBox', 'flowQueueSize')
     def __init__(self, dcacheNum = 10):
         self.nfFlowCache = None
         self.dcaches = [{} for i in xrange(dcacheNum)]; self.dcacheLocks = [Lock() for i in xrange(dcacheNum)]
         self.flowQueue = deque(); self.fqueueLock = Lock()
+        self.flowQueueSize = 0
         #self.databaseQueue = deque(); self.dbLock = Lock()
         self.dbLock = Lock()
         #self.databaseQueue = FileSaveDeque(fsd_name, fsd_dumpdir, fsd_prefix, fsd_filepack, fsd_maxlen, self.dbLock, fsd_logger)

@@ -34,9 +34,9 @@ class TableReport(tables.Table):
         prefix_param_report = kwargs.pop('prefix_param_report', DEFAULT_PARAM_PREFIX)
         super(TableReport, self).__init__(*args, **kwargs)
         self.param_report = generate_prefixto_report(self, prefix_param_report)
-        self.formats = [(_('CSV Report'), 'csv')]
+        self.formats = [(_('CSV'), 'csv')]
         if HAS_PYEXCELERATOR:
-            self.formats.append((_('XLS Report'), 'xlsx'))
+            self.formats.append((_('XLSX'), 'xlsx'))
 
     def as_report(self, request, format='csv'):
         if format == 'csv':
