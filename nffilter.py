@@ -85,11 +85,12 @@ class Worker(ConsumerMixin):
                          callbacks=[self.process_task])]
 
     def process_task(self, body, message):
-        body = body['data']
-        data_bulk = body.split("_|_|_")
-        while queues.flowQueueSize >1000:
+
+        while queues.flowQueueSize >1500:
             time.sleep(1)
             
+        body = body['data']
+        data_bulk = body.split("_|_|_")
         for data in data_bulk:
             try:
                 data, addr = data.split("|<>|")
@@ -497,6 +498,7 @@ class FlowDequeThread(Thread):
                     local = qflow.padding
                     src = True
                     for acc in acc_data:
+                        if not acc : continue
                         flow = copy.copy(qflow) if (local and src) else qflow
                         if 0: assert isinstance(flow, Flow5Data)
                         flow.account_id = acc.account_id
@@ -547,7 +549,7 @@ class FlowDequeThread(Thread):
                                 #logger.info("flow no pass: %s  classlst:%s nnode: %s tarifGroups: %s", (flow, classLst, nnode, tarifGroups))
                                 self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
                                 if nnode.store==True:
-                                    nfwrite_list.append(flow)
+                                    nfwrite_list.append(tuple(flow))
                                 break                   
                             #traversed all the nodes
                             else:
@@ -555,15 +557,15 @@ class FlowDequeThread(Thread):
                                     #logger.info("flow pass: %s  classlst:%s nnode: %s tarifGroups: %s", (flow, classLst, nnode, tarifGroups))
                                     self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
                                     if nnode.store==True:
-                                        nfwrite_list.append(flow)
+                                        nfwrite_list.append(tuple(flow))
                                 else: 
-                                    if nnode.store==True:
-                                        nfwrite_list.append(flow)
+                                    #if nnode.store==True:
+                                    #    nfwrite_list.append(flow)
                                     continue
                             
                         #construct a list
                         flst.append(tuple(flow)); fcnt += 1            
-       
+
                         #append to databaseQueue
                         if fcnt == vars.PACKET_PACK:
                             flpack = marshal.dumps(flst)
@@ -579,15 +581,13 @@ class FlowDequeThread(Thread):
                         queues.databaseQueue.append(flpack)
                     flst = []
                 del keylist
-                if vars.WRITE_FLOW:
-                    for flow in nfwrite_list:
-                        ips = map(lambda ip: IPy.intToIp(ip, 4), flow.getAddrSlice())
-                        #queues.flowSynchroBox.appendData(ips + flow.getBaseSlice())
-                        try:
-                            send_as_task(out_connection, marshal.dumps(ips + flow.getBaseSlice()), 'nf_write')
-                        except Exception, ex:
-                            logger.error("fdqThread exception: Can not write to nfwriter queue \n %s", (repr(ex), traceback.format_exc()))
-                    #queues.flowSynchroBox.checkData()
+                if vars.WRITE_FLOW and nfwrite_list:
+                    #queues.flowSynchroBox.appendData(ips + flow.getBaseSlice())
+                    try:
+                        send_as_task(out_connection, marshal.dumps(nfwrite_list), 'nf_write')
+                    except Exception, ex:
+                        logger.error("fdqThread exception: Can not write to nfwriter queue \n %s %s", (repr(ex), traceback.format_exc()))
+                #queues.flowSynchroBox.checkData()
             except Exception, ex:
                     logger.error("fdqThread exception: %s \n %s", (repr(ex), traceback.format_exc()))
             

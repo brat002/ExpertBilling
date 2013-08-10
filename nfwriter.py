@@ -14,15 +14,14 @@ import copy
 import signal
 import os, sys
 import marshal
-import utilites
-
-import psycopg2
+#import psycopg2ct
+#os.sys.modules['psycopg2']=psycopg2ct
 import threading
 import traceback
 import ConfigParser
 import socket, select, struct, datetime, time
 import string, glob, types
-
+import utilites
 
 try:
     import codecs
@@ -46,8 +45,7 @@ from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfFlags
 from classes.vars import NfFilterVars, NfQueues, install_logger
-from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, \
-                     STATE_NULLIFIED, STATE_OK, NFR_PACKET_HEADER_FMT
+from utilites import savepid, rempid, get_connection, getpid, check_running
 
 #from dirq.QueueSimple import QueueSimple
 #from saver import RedisQueue
@@ -84,10 +82,10 @@ class Worker(ConsumerMixin):
 
         
         try:
-            flow = marshal.loads(body)
-
-#            ips = map(lambda ip: IPy.intToIp(ip, 4), flow.getAddrSlice())
-            queues.flowSynchroBox.appendData(flow)
+            for flow in marshal.loads(body):
+                ips = map(lambda ip: IPy.intToIp(ip, 4), flow[0:3])
+    #            ips = map(lambda ip: IPy.intToIp(ip, 4), flow.getAddrSlice())
+                queues.flowSynchroBox.appendData(ips + flow[3:])
             queues.flowSynchroBox.checkData()
         except Exception, ex:
             logger.error("NFWriter exception: %s \n %s", (repr(ex), traceback.format_exc()))

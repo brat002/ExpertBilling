@@ -903,6 +903,8 @@ class TariffTable(TableReport):
     radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?tarif={{record.id}}' class='btn btn-mini btn-primary'>Изменить</a>", verbose_name=_(u'RADIUS атрибуты'), orderable=False)
     access_type = FormatBlankColumn(verbose_name=_(u'Тип доступа'), accessor=A('access_parameters.access_type'))
     
+    accounts_count = django_tables.TemplateColumn(u"<a href='{% url account_list %}?tariff={{record.id}}' class='btn btn-mini'>{{record.accounts_count}} <i class='icon-arrow-right'></i></a>", verbose_name=_(u'Аккаунтов'))
+    
     def __init__(self, *args, **argv):
         super(TariffTable, self).__init__(*args, **argv)
         self.name = self.__class__.__name__
@@ -911,7 +913,7 @@ class TariffTable(TableReport):
         model = Tariff
         configurable = True
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
-        available_fields = ( 'name', 'settlement_period', 'cost', 'access_type', 'reset_tarif_cost', 'radiusattrs')
+        available_fields = ( 'name', 'settlement_period', 'cost', 'access_type', 'reset_tarif_cost', 'accounts_count', 'radiusattrs')
         
 class PeriodicalServiceTable(TableReport):
     id = django_tables.LinkColumn('tariff_periodicalservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
