@@ -2288,3 +2288,11 @@ class NotificationsSettings(models.Model):
 #    subaccount_vpn_active = models.DateTimeField(blank=True, null=True)
 #===============================================================================
     
+#===============================================================================
+# class SuppAgreement(models.Model):
+#    name = models.CharField(max_length=128, verbose_name=_(u"Название"))
+#    description       = models.TextField(verbose_name=_(u'Описание тарифного плана'), blank=True, default='')
+#    length = models.IntegerField(verbose_name=_(u"Длительность в днях"))
+#    disable_tarff_change = models.BooleanField(blank=True, default=False)
+#===============================================================================
+    
