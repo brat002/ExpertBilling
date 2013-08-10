@@ -614,7 +614,7 @@
                     <li class=""><a href="#tab-address" data-toggle="tab">{% blocktrans %}Персональные данные{% endblocktrans %}</a></li>
                     <li class=""><a href="#tab-second" data-toggle="tab">{% blocktrans %}Юр. лицо{% endblocktrans %}</a></li>
                     <li class=""><a href="#tab-third" data-toggle="tab">{% blocktrans %}Прочее{% endblocktrans %}</a></li>
-                    <li class=""><a href="#tab-helpdesk" data-toggle="tab">{% blocktrans %}Заявки{% endblocktrans %}</a></li>
+                    
 
                 </ul>
 
@@ -987,8 +987,20 @@
 {% endif %}
 {%  comment %} END SUBACCOUNT FORM{% endcomment %}
 <hr />
-
+<fieldset>
+    <legend>{% blocktrans %}Запросы в HelpDesk{% endblocktrans %}</legend>
+       {% if ticket_table %} {% render_table ticket_table %} {% endif %}
+<div>
+<a href="{% url helpdesk_submit %}?account_id={{account.id}}"  class="btn btn-warning align-right" ><i class="icon-comment icon-white "></i>{% blocktrans %}Подать заявку{% endblocktrans %}</a>
+</div>
+</fieldset>
+<hr />
+<fieldset>
+    <legend>{% blocktrans %}Комментарии к аккаунту{% endblocktrans %}</legend>
 {% object_comments account %}
+   
+
+</fieldset>
                             <div class="control-group">
 
                                 <label class="control-label" for="input-comment">{{form.comment.label}}</label>
@@ -1772,14 +1784,7 @@
                         </fieldset>
                     </div>
 
-                    <div class="tab-pane" id="tab-helpdesk">
-                        <fieldset>
-                            <legend>{% blocktrans %}Запросы в HelpDesk{% endblocktrans %}</legend>
-                               {% if ticket_table %} {% render_table ticket_table %} {% endif %}
-                           
 
-                        </fieldset>
-                    </div>
                 <fieldset>
                     <div class="form-actions form-actions-center">
                         <input class="btn btn-primary" type="submit" value="{% blocktrans %}Сохранить{% endblocktrans %}">

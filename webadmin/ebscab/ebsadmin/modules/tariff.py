@@ -26,7 +26,7 @@ def tariff(request):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     
-    res = Tariff.objects.all()
+    res = Tariff.objects.all().extra(select={'accounts_count':'SELECT count(*) FROM billservice_accounttarif WHERE tarif_id=billservice_tariff.id AND  id in (SELECT max(id) FROM billservice_accounttarif WHERE  datetime<now() GROUP BY account_id HAVING max(datetime)<now())'})
     table = TariffTable(res)
     table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
     if table_to_report:
