@@ -85,7 +85,7 @@ class Worker(ConsumerMixin):
             for flow in marshal.loads(body):
                 ips = map(lambda ip: IPy.intToIp(ip, 4), flow[0:3])
     #            ips = map(lambda ip: IPy.intToIp(ip, 4), flow.getAddrSlice())
-                queues.flowSynchroBox.appendData(ips + flow[3:])
+                queues.flowSynchroBox.appendData(list(ips) + list(flow[3:]))
             queues.flowSynchroBox.checkData()
         except Exception, ex:
             logger.error("NFWriter exception: %s \n %s", (repr(ex), traceback.format_exc()))
