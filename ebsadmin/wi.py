@@ -836,7 +836,8 @@ def accountedit(request):
                 d={'account_id':accid,'username':username, 'year':year,'month':month, 'day':day, 'hour':hour, 'minute':minute,'second':second, 'contract_num':contract_counter}
             #d.update(model.__dict__)
 
-                contract = contract_template % d
+                
+                contract = (contract_template % d) if contract_template else '' 
                 model.contract = contract
                 model.save()
 
