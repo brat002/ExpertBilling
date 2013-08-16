@@ -785,7 +785,7 @@ class Account(DynamicModel):
     #NOTE: baLance
     ballance=models.DecimalField(_(u'Баланс'), blank=True, default=0,decimal_places=2,max_digits=20)
     bonus_ballance=models.DecimalField(_(u'Бонусный баланс'), blank=True, default=0,decimal_places=2,max_digits=20)
-    credit = models.DecimalField(verbose_name=_(u'Размер кредита'), decimal_places=2,max_digits=20, default=0)
+    credit = models.DecimalField(verbose_name=_(u'Кредита'), decimal_places=2,max_digits=20, default=0)
     disabled_by_limit = models.BooleanField(blank=True, default=False, editable=False)
     balance_blocked = models.BooleanField(blank=True, default=False)
 
