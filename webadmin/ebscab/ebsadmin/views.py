@@ -1042,7 +1042,7 @@ def sql(request):
 @ajax_request
 @systemuser_required
 def session_reset(request):
-    if  not request.user.account.has_perm('activesessions.session_reset'):
+    if  not request.user.account.has_perm('radius.reset_activesession'):
         return {'status':False, 'message': _(u'У вас нет прав на сброс сессии')}
     
     id = request.POST.get('id',None)
@@ -1080,7 +1080,7 @@ def session_reset(request):
 @ajax_request
 @systemuser_required
 def session_hardreset(request):
-    if  not request.user.account.has_perm('activesessions.session_reset'):
+    if  not request.user.account.has_perm('radius.reset_activesession'):
         return {'status':False, 'message': _(u'У вас нет прав на сброс сессии')}
     
     id = request.POST.get('id',None)

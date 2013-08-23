@@ -2288,11 +2288,43 @@ class NotificationsSettings(models.Model):
 #    subaccount_vpn_active = models.DateTimeField(blank=True, null=True)
 #===============================================================================
     
-#===============================================================================
-# class SuppAgreement(models.Model):
-#    name = models.CharField(max_length=128, verbose_name=_(u"Название"))
-#    description       = models.TextField(verbose_name=_(u'Описание тарифного плана'), blank=True, default='')
-#    length = models.IntegerField(verbose_name=_(u"Длительность в днях"))
-#    disable_tarff_change = models.BooleanField(blank=True, default=False)
-#===============================================================================
+class SuppAgreement(models.Model):
+    name = models.CharField(max_length=128, verbose_name=_(u"Название"))
+    description       = models.TextField(verbose_name=_(u'Комментарий'), blank=True, default='')
+    body = models.TextField(verbose_name=_(u'Текст шаблона'))
+    length = models.IntegerField(verbose_name=_(u"Длительность в днях"))
+    disable_tarff_change = models.BooleanField(verbose_name=_(u"Запретить смену тарифного плана"), blank=True, default=False)
+    
+    def __unicode__(self):
+        return u"%s" % self.name
+    
+    class Meta:
+        ordering = ['name',]
+        verbose_name = _(u"Вид доп. соглашения")
+        verbose_name_plural = _(u"Виды доп. соглашения")
+        
+    #===========================================================================
+    # def get_remove_url(self):
+    #    return "%s?id=%s" % (reverse('permissiongroup_delete'), self.id)
+    #===========================================================================
+    
+class AccountSuppAgreement(models.Model):
+    suppagreement = models.ForeignKey(SuppAgreement, _(u"Дополнительное соглашение"))
+    account = models.ForeignKey(Account, _(u"Аккаунт"))
+    contract = models.CharField(_(u"Номер"))
+    accounthardware = models.ForeignKey(AccountHardware, blank=True, null=True, verbose_name = _(u"Связанное оборудование"))
+    created = models.DateTimeField(_(u"Создано"))
+    closed = models.DateTimeField(_(u"Закрыто"))
+   
+    def __unicode__(self):
+        return u"%s %s" % (self.suppagreement, self.account)
+    
+    class Meta:
+        verbose_name = _(u"Дополнительное соглашение")
+        verbose_name_plural = _(u"Дополнительные соглашения")
+        
+    #===========================================================================
+    # def get_remove_url(self):
+    #    return "%s?id=%s" % (reverse('permissiongroup_delete'), self.id)
+    #===========================================================================
     

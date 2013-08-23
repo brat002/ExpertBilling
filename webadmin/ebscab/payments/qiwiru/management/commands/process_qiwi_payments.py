@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
 
-        a = Payment.objects.filter(status='in_progress')
+        a = Payment.objects.filter(status='in_progress', created_on__gte=datetime.datetime.now()-datetime.timedelta(hours=PaymentProcessor.get_backend_setting('LIFETIME')))
         pattern='<bill txn-id="%s"/>'
         p=''
         for x in a:
