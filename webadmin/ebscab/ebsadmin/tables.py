@@ -1256,7 +1256,7 @@ class AccountPrepaysRadiusTraficTable(TableReport):
     
     
     def __init__(self, *args, **argv):
-        super(AccountPrepaysTraficTable, self).__init__(*args, **argv)
+        super(AccountPrepaysRadiusTraficTable, self).__init__(*args, **argv)
         self.name = self.__class__.__name__
         
     def render_bytes(self, value, record):
