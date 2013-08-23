@@ -80,15 +80,15 @@
 
                  <div class="control-group ">
                      <div class="control-row {% if form.text_password.errors %}error{% endif %}">
-                         <label class="control-label" for="input-floor">{{form.password.label}}</label>
+                         <label class="control-label" for="input-floor">{{form.text_password.label}}</label>
                          <div class="controls">
-                                 {{ form.password }}
-                                 {% if form.new_password.errors %}
-                                     <span class="help-inline error">{% for error in form.password.errors %}{{ error }}<br/> {% endfor %}</span>
+                                 {{ form.text_password }}
+                                 {% if form.text_password.errors %}
+                                     <span class="help-inline error">{% for error in form.text_password.errors %}{{ error }}<br/> {% endfor %}</span>
                                  {% endif %}
-                                 {% if form.password.help_text%}
+                                 {% if form.text_password.help_text%}
                                      <p class="help-block">
-                                         {{ form.password.help_text|safe }}
+                                         {{ form.text_password.help_text|safe }}
                                      </p>
                                  {% endif %}
                          </div>
