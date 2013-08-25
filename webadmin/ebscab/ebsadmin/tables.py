@@ -9,7 +9,7 @@ from billservice.models import AddonService, SheduleLog, TrafficLimit, TimeAcces
 from billservice.models import TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType, TrafficTransaction
 from billservice.models import RadiusAttrs, Manufacturer, HardwareType, Hardware, Model, PermissionGroup, PeriodicalServiceHistory
 from billservice.models import Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode, SubAccount, AddonServiceTransaction
-from billservice.models import News, TPChangeRule, Switch, AccountGroup, GroupStat, AccountPrepaysTrafic, AccountPrepaysRadiusTrafic, AccountPrepaysTime, ContractTemplate
+from billservice.models import AccountSuppAgreement, SuppAgreement, News, TPChangeRule, Switch, AccountGroup, GroupStat, AccountPrepaysTrafic, AccountPrepaysRadiusTrafic, AccountPrepaysTime, ContractTemplate
 from dynamicmodel.models import DynamicSchemaField
 
 import django_tables2 as django_tables
@@ -1390,5 +1390,46 @@ class MessageTable(TableReport):
     class Meta:
         model = Message
         #fields = ("id", 'service', 'activation_count_period', 'activation_count', 'type', 'd')
+        attrs = {'class': 'table table-striped table-bordered table-condensed'} 
+
+class SuppAgreementTable(TableReport):
+    id = django_tables.LinkColumn('suppagreement_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('pk')})
+    #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('account.id')})
+    accounts_count = django_tables.TemplateColumn("<a href='{% url account_list %}?suppagreement={{record.id}}' class='btn btn-mini'>{{record.accounts_count}} <i class='icon-arrow-right'></i></a>", verbose_name=_(u'У аккаунтов'), accessor=A('accounts_count'))
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    
+    #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    
+    def __init__(self, *args, **argv):
+        super(SuppAgreementTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
+    class Meta:
+        model = SuppAgreement
+        configurable = True
+        
+        attrs = {'class': 'table table-striped table-bordered table-condensed'} 
+        #fields = ("id", 'service', 'activation_count_period', 'activation_count', 't
+
+class AccountSuppAgreementTable(TableReport):
+    id = django_tables.LinkColumn('accountsuppagreement_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('pk')})
+    #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('account.id')})
+    #accounts_count = django_tables.TemplateColumn("<a href='{% url account_list %}?suppagreement={{record.id}}' class='btn btn-mini'>{{record.accounts_count}} <i class='icon-arrow-right'></i></a>", verbose_name=_(u'Аккаунтов'), accessor=A('accounts_count'))
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    
+    #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
+    
+    def __init__(self, *args, **argv):
+        super(AccountSuppAgreementTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
+    class Meta:
+        model = AccountSuppAgreement
+        configurable = True
+        
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
 

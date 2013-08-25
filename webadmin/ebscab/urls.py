@@ -16,6 +16,8 @@ autocomplete_light.autodiscover()
 
 admin.autodiscover()
 
+
+
 urlpatterns = patterns('',
     # Example:
     # (r'^ebscab/', include('ebscab.foo.urls')),
@@ -37,7 +39,7 @@ urlpatterns = patterns('',
     #url(r'^webcab/pay/$', PaymentView.as_view(), name='payment-view'),
     url(r'^webcab/pay/$', SelectPaymentView.as_view(), name='payment-view'),
     url(r'^autocomplete/', include('autocomplete_light.urls')),
-    
+    (r'^selectable/', include('selectable.urls')),
 
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
