@@ -31,7 +31,7 @@ from django.contrib.auth.decorators import login_required
 
 from lib.http import JsonResponse
 from billservice.models import Account, AccountTarif, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, SubAccount
-from billservice.models import SystemUser, AccountPrepaysRadiusTrafic, AccountPrepaysTime, SuspendedPeriod, GroupStat
+from billservice.models import AccountSuppAgreement, SystemUser, AccountPrepaysRadiusTrafic, AccountPrepaysTime, SuspendedPeriod, GroupStat
 
 from billservice.forms import LoginForm, PasswordForm, EmailForm, SimplePasswordForm, ActivationCardForm, ChangeTariffForm, PromiseForm, StatististicForm
 from billservice import authenticate, log_in, log_out
@@ -48,6 +48,7 @@ import math
 from ebsadmin.cardlib import add_addonservice, del_addonservice, activate_pay_card
 from ebsadmin.cardlib import activate_card
 from django.utils.translation import ugettext_lazy as _
+from django.db.models import Q
 
 def addon_queryset(request, id_begin, field='datetime', field_to=None):
     if field_to == None:
@@ -367,7 +368,7 @@ def make_payment(request):
         if last_qiwi_invoice:
             qiwi_form = QiwiPaymentRequestForm(initial={'phone':last_qiwi_invoice.phone})
         else:
-             qiwi_form = QiwiPaymentRequestForm(initial={'phone':request.user.account.phone_m})
+             qiwi_form = QiwiPaymentRequestForm(initptial={'phone':request.user.account.phone_m})
     from getpaid.forms import SelectPaymentMethodForm
     form = SelectPaymentMethodForm()
     return {'allow_qiwi':settings.ALLOW_QIWI, 'allow_webmoney':settings.ALLOW_WEBMONEY, 'qiwi_form':qiwi_form, 'payment_form': form}
@@ -766,7 +767,16 @@ def change_tariff(request):
     """
     from django.utils.translation import ugettext as _
     from datetime import datetime
+    
+    
     if request.method == 'POST':
+        now = datetime.now()
+        suppagreements = AccountSuppAgreement.objects.filter(Q(closed__isnull=True) | 
+                               Q(closed__gte=now), account=request.user.account, created__lte=now)
+        if suppagreements:
+            return {
+                    'error_message':_(u'Вы не можете сменить тарифный план в связи с действующим доп. соглашением № %(SUPPAGREEMENT_NO)s.' % {'SUPPAGREEMENT_NO': ', '.join([x.contract for x in suppagreements])}),
+                    }
         rule_id = request.POST.get('id_tariff_id', None)
         if rule_id != None:
             user = request.user.account
