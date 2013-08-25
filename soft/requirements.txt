@@ -36,3 +36,4 @@ django-autocomplete-light
 celery-with-redis
 django-redis
 openpyxl
+django-selectable==0.7.0

@@ -607,7 +607,7 @@ class periodical_service_bill(Thread):
                 for acc_id in caches.account_cache.by_account:
                     
                     acc =  caches.account_cache.by_account.get(acc_id)
-                    if acc.account_status in [3,4, '3', '4']: continue
+                    if acc.account_status in [3, 4, 5,  '3', '4', '5']: continue
                     if acc_id == 6050:
                         pass
                     

@@ -925,7 +925,7 @@ def get_radius_stat():
             conn.commit()
     cur.close()
     conn.close()   
-                    
+
 @periodic_task(run_every=crontab(minute="0"))
 def clear_ipinuse_function():
     conn = get_connection()
@@ -933,4 +933,5 @@ def clear_ipinuse_function():
     cur.execute("delete from billservice_ipinuse where datetime <now()-interval '2 days' and  disabled is not null;")
     conn.commit()
     cur.close()
-    conn.close()   
+    conn.close()
+
