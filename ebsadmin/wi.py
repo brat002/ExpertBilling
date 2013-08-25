@@ -670,6 +670,7 @@ def accountedit(request):
     accounthardware_table = None
     suspendedperiod_table = None
     accountaddonservice_table = None
+    accountsuppagreement_table = None
     account_id = request.GET.get("id")
 
     account = None
