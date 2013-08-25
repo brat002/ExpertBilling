@@ -7,7 +7,7 @@ from billservice.models import Tariff, AddonService, TPChangeRule, Account, SubA
 from billservice.models import PeriodicalService, TimePeriod, SystemUser, TransactionType, SettlementPeriod, RadiusTraffic, RadiusTrafficNode, PeriodicalServiceLog, Switch
 from billservice.models import Organization, BalanceHistory, PrepaidTraffic, TrafficTransmitNodes, BankData, Group, AccessParameters, TimeSpeed, OneTimeService, TrafficTransmitService, SheduleLog
 from billservice.models import RadiusAttrs, AccountPrepaysTrafic, Template, AccountPrepaysRadiusTrafic, TimeAccessService, ContractTemplate, TimeAccessNode, TrafficLimit, SpeedLimit, AddonService, AddonServiceTarif
-from billservice.models import City, Street, Operator, SaleCard, DealerPay, Dealer, News, Card, TPChangeRule, House, TimePeriodNode, IPPool, Manufacturer, AccountHardware, Model, HardwareType, Hardware,AccountGroup,AccountPrepaysTime
+from billservice.models import AccountSuppAgreement, SuppAgreement, City, Street, Operator, SaleCard, DealerPay, Dealer, News, Card, TPChangeRule, House, TimePeriodNode, IPPool, Manufacturer, AccountHardware, Model, HardwareType, Hardware,AccountGroup,AccountPrepaysTime
 
 from dynamicmodel.models import DynamicSchemaField
 from dynamicmodel.models import DynamicForm, DynamicExtraForm
@@ -30,6 +30,10 @@ import IPy, ipaddr
 from Crypto.Cipher import ARC4
 from base64 import b64encode, b64decode
 from django.conf import settings
+
+import selectable.forms as selectable
+from ebscab.lookups import HardwareLookup
+
 class HardwareChoices(AutoModelSelect2Field):
     queryset = Hardware.objects#.filter(accounthardware__isnull=True)
     max_results = 20
@@ -310,6 +314,8 @@ class SearchAccountForm(forms.Form):
     systemuser = forms.ModelChoiceField(queryset=SystemUser.objects.all(),label=_(u'Менеджер'),  required=False)
     elevator_direction = forms.CharField(required=False, label=_(u'Направление от лифта'))
     created = DateRangeField(required=False, label=_(u"Создан"))
+    suppagreement = forms.ModelChoiceField(queryset = SuppAgreement.objects.all(), label=_(u"Доп. соглашение"), required=False)
+    addonservice = forms.ModelChoiceField(queryset = AddonService.objects.all(), label=_(u"Подключаемая услуга"), required=False)
 
 class CashierAccountForm(forms.Form):
 
@@ -833,6 +839,28 @@ class TransactionTypeForm(ModelForm):
         exclude=('is_deletable',)
         model = TransactionType     
 
+class SuppAgreementForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    class Meta:
+        model = SuppAgreement   
+        widgets = {
+          'description': forms.Textarea(attrs={'rows':4, 'cols':15, 'class': 'span8'}),
+          'body': forms.Textarea(attrs={'rows': 10, 'cols':25, 'class': 'span8'}),
+        }
+
+class AccountSuppAgreementForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    
+        
+    class Meta:
+        model = AccountSuppAgreement   
+
+        widgets = {
+          'account': forms.widgets.HiddenInput,
+          'created': forms.widgets.DateTimeInput(attrs={'class':'datepicker'}),
+          'closed': forms.widgets.DateTimeInput(attrs={'class':'datepicker'}),
+        }
+
 class CityForm(ModelForm):
     class Meta:
         model = City     
@@ -904,28 +932,15 @@ class AccountHardwareForm(ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     account = forms.ModelChoiceField(queryset=Account.objects.all(), required=False, widget = forms.widgets.HiddenInput)
     #hardware = AutoCompleteSelectField( 'hardware_fts', label = _(u"Устройство"), required = True, widget = forms.TextInput(attrs={'class': 'input-xlarge'}), help_text=u"Поиск устройства по всем полям")
-    hardware = NewHardwareChoices(required=True,         widget=AutoHeavySelect2Widget(
-            select2_options={
-                'width': '100%',
-                'placeholder': u"Поиск оборудования"
-            }
-        ))
+    hardware = forms.ModelChoiceField(queryset = Hardware.objects.all(), widget=selectable.AutoComboboxSelectWidget(HardwareLookup))
     
     
     comment = forms.CharField(label=_(u'Комментарий'), required=False, widget=forms.widgets.Textarea(attrs={'rows':5, 'class': 'input-large span5'}))
     
     def __init__(self, *args, **kwargs):
         super(AccountHardwareForm, self).__init__(*args, **kwargs)
-        print NewHardwareChoices
-        if not self.fields['id'].initial:
-            self.fields['hardware'] = HardwareChoices(required=True,
-                    queryset = Hardware.objects.filter(accounthardware__isnull=True),         
-                    widget=AutoHeavySelect2Widget(
-                    select2_options={
-                        'width': '100%',
-                        'placeholder': u"Поиск оборудования"
-                    }
-                ))
+
+
     
     class Meta:
         model = AccountHardware

@@ -15,7 +15,7 @@ from django.core.urlresolvers import reverse
 from tables import TemplateTable, TicketTable, AccountAddonServiceTable, IPInUseTable,  LogTable, BallanceHistoryTable, \
                           SubAccountsTable, AccountHardwareTable, SuspendedPeriodTable, AccountTarifTable, TotalTransactionReportTable, \
                           AccountsReportTable, AuthLogTable, ActiveSessionTable, NasTable, TransactionReportTable, AddonServiceTransactionReportTable, PeriodicalServiceTransactionReportTable, \
-                          TrafficTransactionReportTable
+                          TrafficTransactionReportTable, AccountSuppAgreementTable
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
@@ -29,8 +29,8 @@ from billservice.models import Account, Transaction, TransactionType, Periodical
 from billservice.forms import SubAccountForm, SubAccountPartialForm, AccountAddonService, TransactionModelForm
 from billservice.models import SubAccount, AddonService, BalanceHistory, IPInUse
 from billservice.forms import TransactionReportForm, TransactionModelForm, AddonServiceForm, BallanceHistoryForm, TemplateSelectForm
-from billservice.forms import AccountAddonServiceModelForm, AccountHardwareForm
-from billservice.models import TotalTransactionReport, AccountHardware, SuspendedPeriod, Organization, BankData, TrafficTransaction, Template, AccountPrepaysRadiusTrafic, AccountPrepaysTime, AccountPrepaysTrafic
+from billservice.forms import AccountSuppAgreementForm, AccountAddonServiceModelForm, AccountHardwareForm
+from billservice.models import AccountSuppAgreement, TotalTransactionReport, AccountHardware, SuspendedPeriod, Organization, BankData, TrafficTransaction, Template, AccountPrepaysRadiusTrafic, AccountPrepaysTime, AccountPrepaysTrafic
 from billservice.forms import AccountTariffForm, AccountForm, SuspendedPeriodModelForm, OrganizationForm, BankDataForm, IpInUseLogForm, TemplateForm
 from helpdesk.models import Ticket
 from radius.forms import SessionFilterForm
@@ -370,6 +370,8 @@ def accountsreport(request):
             ipn_status = form.cleaned_data.get('ipn_status')
             organization = form.cleaned_data.get('organization')
             phone = form.cleaned_data.get('phone')
+            suppagreement = form.cleaned_data.get('suppagreement')
+            addonservice = form.cleaned_data.get('addonservice')
 
             credit = form.cleaned_data.get('credit')
             #credit_exp = form.cleaned_data.get('credit_exp')
@@ -411,6 +413,11 @@ def accountsreport(request):
             if systemuser:
                 res = res.filter(systemuser=systemuser)
             
+            if suppagreement:
+                res = res.filter(accountsuppagreement__suppagreement=suppagreement)
+                
+            if addonservice:
+                res = res.filter(accountaddonservice__service=addonservice)
             if date_start:
                 res = res.filter(created__gte=date_start)
             if date_end:
@@ -705,6 +712,9 @@ def accountedit(request):
         accountaddonservice_table = AccountAddonServiceTable(res)
         DTRequestConfig(request, paginate = False).configure(accountaddonservice_table)
         
+        res = AccountSuppAgreement.objects.filter(account=account)
+        accountsuppagreement_table = AccountSuppAgreementTable(res)
+        DTRequestConfig(request, paginate = False).configure(AccountSuppAgreementTable(res))
         try:
             res = Ticket.objects.filter(Q(owner=User.objects.get(username=account.username)) | Q(account=account)) 
             ticket_table = TicketTable(res)
@@ -780,7 +790,21 @@ def accountedit(request):
             print 10
             if not org_form.is_valid():
 
-                return {'subaccount_form': subaccount_form, 'extra_form': extra_form, 'org_form':org_form, 'prepaidtraffic':prepaidtraffic,  'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime, 'bank_form': bank_form, "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
+                return {'subaccount_form': subaccount_form, 
+                        'extra_form': extra_form, 
+                        'org_form':org_form, 
+                        'prepaidtraffic':prepaidtraffic,  
+                        'prepaidradiustraffic':prepaidradiustraffic, 
+                        'prepaidradiustime':prepaidradiustime, 
+                        'bank_form': bank_form, 
+                        "accounttarif_table": accounttarif_table, 
+                        'accountaddonservice_table':accountaddonservice_table, 
+                        "account":account, 
+                        'subaccounts_table':subaccounts_table, 
+                        'accounthardware_table': accounthardware_table, 
+                        'suspendedperiod_table': suspendedperiod_table,  
+                        'accountsuppagreement_table': accountsuppagreement_table,
+                        'form':form}
             
             print 11
             model =form.save(commit=False)
@@ -816,7 +840,21 @@ def accountedit(request):
                     if subaccount_form.errors:
                         for k, v in subaccount_form._errors.items():
                             messages.error(request, '%s=>%s' % (k, ','.join(v)), extra_tags='alert-danger')
-                    return {'subaccount_form': subaccount_form, 'extra_form': extra_form, 'org_form':org_form, 'prepaidtraffic':prepaidtraffic,  'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime, 'bank_form': bank_form, "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
+                    return {'subaccount_form': subaccount_form, 
+                            'extra_form': extra_form, 
+                            'org_form':org_form, 
+                            'prepaidtraffic':prepaidtraffic,  
+                            'prepaidradiustraffic':prepaidradiustraffic, 
+                            'prepaidradiustime':prepaidradiustime, 
+                            'bank_form': bank_form, 
+                            "accounttarif_table": accounttarif_table, 
+                            'accountaddonservice_table':accountaddonservice_table, 
+                            "account":account, 
+                            'subaccounts_table':subaccounts_table, 
+                            'accounthardware_table': accounthardware_table, 
+                            'suspendedperiod_table': suspendedperiod_table,  
+                            'accountsuppagreement_table': accountsuppagreement_table,
+                            'form':form}
 
             print 12       
             if not model.contract and contract_num:
@@ -881,7 +919,22 @@ def accountedit(request):
                 for k, v in bank_form._errors.items():
                     messages.error(request, '%s=>%s' % (k, ','.join(v)), extra_tags='alert-danger')
                 
-            return {'subaccount_form': subaccount_form,'extra_form': extra_form, 'ticket_table': ticket_table, 'org_form':org_form, 'bank_form': bank_form,  'prepaidtraffic':prepaidtraffic, 'prepaidradiustraffic':prepaidradiustraffic, 'prepaidradiustime':prepaidradiustime,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table,  'form':form}
+            return {'subaccount_form': subaccount_form,
+                    'extra_form': extra_form, 
+                    'ticket_table': ticket_table, 
+                    'org_form':org_form, 
+                    'bank_form': bank_form,  
+                    'prepaidtraffic':prepaidtraffic, 
+                    'prepaidradiustraffic':prepaidradiustraffic,
+                    'prepaidradiustime':prepaidradiustime,  
+                    "accounttarif_table": accounttarif_table, 
+                    'accountaddonservice_table':accountaddonservice_table, 
+                    "account":account, 
+                    'subaccounts_table':subaccounts_table, 
+                    'accounthardware_table': accounthardware_table, 
+                    'suspendedperiod_table': suspendedperiod_table,  
+                    'accountsuppagreement_table': accountsuppagreement_table,
+                    'form':form}
     if account:
         
         
@@ -908,7 +961,7 @@ def accountedit(request):
     if not subaccount_form and subaccounts_count==0:
         subaccount_form = SubAccountPartialForm(request.POST, prefix='subacc')
     return { 'form':form, 'subaccount_form': subaccount_form, 'extra_form': extra_form, 'org_form':org_form, 'bank_form': bank_form,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table, 
-            'ticket_table': ticket_table} 
+            'accountsuppagreement_table': accountsuppagreement_table, 'ticket_table': ticket_table} 
 
 @systemuser_required
 @render_to('ebsadmin/subaccount_edit.html')
@@ -1012,16 +1065,17 @@ def accounthardware(request):
     id = request.POST.get("id")
     item = None
     if request.method == 'POST': 
-
-        form = AccountHardwareForm(request.POST) 
+        id = request.POST.get('id')
         if id:
-            if  not (request.user.account.has_perm('billservice.change_accounthardware')):
-                messages.error(request, _(u'У вас нет прав на редактирование связок тарифных планов'), extra_tags='alert-danger')
-                return HttpResponseRedirect(request.path)
+            item = AccountHardware.objects.get(id=id)
+            form = AccountHardwareForm(request.POST, instance=item)
         else:
-            if  not (request.user.account.has_perm('billservice.add_accounthardware')):
-                messages.error(request, _(u'У вас нет прав на создание связок тарифных планов'), extra_tags='alert-danger')
-                return HttpResponseRedirect(request.path)
+            form = AccountHardwareForm(request.POST)
+        
+        if  not (request.user.account.has_perm('billservice.change_account')):
+            messages.error(request, _(u'У вас нет прав на редактирование аккаунтов'), extra_tags='alert-danger')
+            return HttpResponseRedirect(request.path)
+
 
         
         

@@ -396,6 +396,7 @@
                     </div>
                     </div>
                     <div class="control-group">
+                    <div class="control-row">
                         <label class="control-label" for="input-server-access">{{form.tariff.label}}</label>
                         <div class="controls">
                              {{ form.tariff }}
@@ -408,8 +409,38 @@
                                 </p>
                             {% endif %}
                         </div>
+                        </div>
+                    <div class="control-row">
+                        <label class="control-label" for="input-server-access">{{form.suppagreement.label}}</label>
+                        <div class="controls">
+                             {{ form.suppagreement }}
+                            {% if form.suppagreement.errors %}
+                                <span class="help-inline">{% for error in form.suppagreement.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.suppagreement.help_text%}
+                                <p class="help-block">
+                                    {{ form.suppagreement.help_text|safe }}
+                                </p>
+                            {% endif %}
+                        </div>
+                        </div>
                     </div>
-
+                    <div class="control-group">
+                    <div class="control-row">
+                        <label class="control-label" for="input-server-access">{{form.addonservice.label}}</label>
+                        <div class="controls">
+                             {{ form.addonservice }}
+                            {% if form.addonservice.errors %}
+                                <span class="help-inline">{% for error in form.addonservice.errors %}{{ error }}<br/> {% endfor %}</span>
+                            {% endif %}
+                            {% if form.addonservice.help_text%}
+                                <p class="help-block">
+                                    {{ form.addonservice.help_text|safe }}
+                                </p>
+                            {% endif %}
+                        </div>
+                        </div>
+                    </div>
            </fieldset>
 
       </div>
