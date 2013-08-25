@@ -134,7 +134,7 @@
             
             $("#modal-accounthardware-dialog-table").click(function(event) {
                 $('<div />').dialog2({
-                    title: "{% blocktrans %}Прикрепить подключаемую услугу{% endblocktrans %}", 
+                    title: "{% blocktrans %}Прикрепить оборудование{% endblocktrans %}", 
                     content: "{% url accounthardware %}?account_id={{account.id}}", 
                     id: "accounthardware-modal"
                 });
@@ -994,6 +994,16 @@
 <a href="{% url helpdesk_submit %}?account_id={{account.id}}"  class="btn btn-warning align-right" ><i class="icon-comment icon-white "></i>{% blocktrans %}Подать заявку{% endblocktrans %}</a>
 </div>
 </fieldset>
+{% if account %}
+<hr />
+<fieldset>
+    <legend>{% blocktrans %}Доп. соглашения{% endblocktrans %}</legend>
+       {% if ticket_table %} {% render_table accountsuppagreement_table %} {% endif %}
+<div>
+<a href="{% url accountsuppagreement_edit %}?account_id={{account.id}}"  class="btn btn-success align-right" ><i class="icon-plus icon-white "></i>{% blocktrans %}Добавить соглашение{% endblocktrans %}</a>
+</div>
+</fieldset>
+{% endif %}
 <hr />
 <fieldset>
     <legend>{% blocktrans %}Комментарии к аккаунту{% endblocktrans %}</legend>

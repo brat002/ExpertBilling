@@ -135,6 +135,7 @@ INSTALLED_APPS = (
     'getpaid',
     'sendsms',
     'autocomplete_light',
+    'selectable',
 )
 
 

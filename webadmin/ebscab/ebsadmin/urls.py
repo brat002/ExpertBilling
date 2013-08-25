@@ -120,6 +120,17 @@ urlpatterns += patterns('ebsadmin.ippool',
     url(r'^ippool/delete/$', "ippool_delete", name="ippool_delete"),
 )
 
+urlpatterns += patterns('ebsadmin.suppagreement',
+    url(r'^suppagreement/edit/$', 'suppagreement_edit', name='suppagreement_edit'),
+    url(r'^suppagreement/$', 'suppagreement', name='suppagreement'),
+    url(r'^suppagreement/delete/$', "suppagreement_delete", name="suppagreement_delete"),
+)
+
+urlpatterns += patterns('ebsadmin.accountsuppagreement',
+    url(r'^accountsuppagreement/edit/$', 'accountsuppagreement_edit', name='accountsuppagreement_edit'),
+    url(r'^accountsuppagreement/delete/$', "accountsuppagreement_delete", name="accountsuppagreement_delete"),
+)
+
 urlpatterns += patterns('ebsadmin.timeperiod',
     url(r'^timeperiod/edit/$', 'timeperiod_edit', name='timeperiod_edit'),
     url(r'^timeperiodnode/edit/$', 'timeperiodnode_edit', name='timeperiodnode_edit'),
