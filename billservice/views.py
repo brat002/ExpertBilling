@@ -772,7 +772,7 @@ def change_tariff(request):
     if request.method == 'POST':
         now = datetime.now()
         suppagreements = AccountSuppAgreement.objects.filter(Q(closed__isnull=True) | 
-                               Q(closed__gte=now), account=request.user.account, created__lte=now)
+                               Q(closed__gte=now), account=request.user.account, created__lte=now, disable_tarff_change=True)
         if suppagreements:
             return {
                     'error_message':_(u'Вы не можете сменить тарифный план в связи с действующим доп. соглашением № %(SUPPAGREEMENT_NO)s.' % {'SUPPAGREEMENT_NO': ', '.join([x.contract for x in suppagreements])}),
