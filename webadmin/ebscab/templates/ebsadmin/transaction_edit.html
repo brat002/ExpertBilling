@@ -34,7 +34,7 @@ $(document).ready(function() {
       {% endfor %}
            
 {% if form %}
-                <form action='{% url transaction_edit %}?account_id={{account.id}}' method="POST" class="well form-horizontal ajax form-condensed ">
+                <form action='{% url 'transaction_edit' %}?account_id={{account.id}}' method="POST" class="well form-horizontal ajax form-condensed ">
                 <fieldset>
                 {{ form.account }}
                 
@@ -44,7 +44,7 @@ $(document).ready(function() {
 
                       {{ form.type }}
                       {% if form.type.errors %}
-                      <div class="alert alert-error">{% blocktrans %}Возможно для вас не выбрано ни одного способа пополнения. <br />Настройте доступные вам способы{% endblocktrans %} <a href="{% url transactiontype %}">{% blocktrans %}здесь{% endblocktrans %}</a>.</div>
+                      <div class="alert alert-error">{% blocktrans %}Возможно для вас не выбрано ни одного способа пополнения. <br />Настройте доступные вам способы{% endblocktrans %} <a href="{% url 'transactiontype' %}">{% blocktrans %}здесь{% endblocktrans %}</a>.</div>
                           <span class="help-inline">{% for error in form.type.errors %}{{ error }}<br/> {% endfor %}</span>
                       {% endif %}
                       {% if form.type.help_text%}
@@ -155,7 +155,7 @@ $(document).ready(function() {
 
         var data = {transaction:{{transaction.id}}, template:7};
 
-        var $form = $('<form target="_blank" method="POST" action="{% url documentrender %}">');
+        var $form = $('<form target="_blank" method="POST" action="{% url 'documentrender' %}">');
         $.each(data, function(k,v){
             $form.append('<input type="hidden" name="' + k + '" value="' + v + '">');
         });

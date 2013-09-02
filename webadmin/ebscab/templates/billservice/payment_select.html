@@ -4,7 +4,7 @@
 
 
 <h2>{% blocktrans %}Укажите параметры платежа:{% endblocktrans %}</h2>
-<form action="{% url getpaid-select-payment %}" method="POST">
+<form action="{% url 'getpaid-select-payment' %}" method="POST">
     {% csrf_token %}
     {{ payment_form.as_table }}
     <input type="submit" value="Continue">

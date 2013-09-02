@@ -11,7 +11,7 @@
         	$("#id_button_city").click(function(){
                 $.fn.dialog2.helpers.prompt("{% blocktrans %}Название{% endblocktrans %}", {
                     ok: function(event, value) {
-                        $.getJSON('{% url city_edit %}',{value:value},function(data,status){
+                        $.getJSON('{% url 'city_edit' %}',{value:value},function(data,status){
                             if( status=='success' ){
                                 if(data.status==true)
                                    $("#tree").dynatree("getRoot").addChild({
@@ -41,7 +41,7 @@
             	}
                 $.fn.dialog2.helpers.prompt("Название", {
                     ok: function(event, value) {
-                        $.getJSON('{% url street_edit %}',{parent:node.data.key, value:value},function(data,status){
+                        $.getJSON('{% url 'street_edit' %}',{parent:node.data.key, value:value},function(data,status){
                             if( status=='success' ){
                                 if(data.status==true)
                                 	$("#tree").dynatree("getActiveNode").addChild({
@@ -80,7 +80,7 @@
                 
                 $.fn.dialog2.helpers.prompt("{% blocktrans %}Название{% endblocktrans %}", {
                     ok: function(event, value) {
-                        $.getJSON('{% url house_edit %}',{parent:parent.data.key, value:value},function(data,status){
+                        $.getJSON('{% url 'house_edit' %}',{parent:parent.data.key, value:value},function(data,status){
                             if( status=='success' ){
                                 if(data.status==true)
                                     parent.addChild({
@@ -106,7 +106,7 @@
              	var node = $("#tree").dynatree("getActiveNode");
                  $.fn.dialog2.helpers.confirm("{% blocktrans %}Вы уверены, что хотите удалить запись?{% endblocktrans %}", {
                      confirm: function() { 
-                         $.getJSON('{% url address_delete %}',{key:node.data.key},function(data,status){
+                         $.getJSON('{% url 'address_delete' %}',{key:node.data.key},function(data,status){
                              if( status=='success' ){
                                  if(data.status==true)
                                  	node.remove()
@@ -140,7 +140,7 @@
                         ok: function(event, value) {
                         	
                         	if (node.data.key.indexOf("CITY__")==0){
-                            $.getJSON('{% url city_edit %}',{key:node.data.key, value:value},function(data,status){
+                            $.getJSON('{% url 'city_edit' %}',{key:node.data.key, value:value},function(data,status){
                                 if( status=='success' ){
                                     if(data.status==true)
                                     	node.setTitle(value)
@@ -153,7 +153,7 @@
                                 return
                             })};
                             if (node.data.key.indexOf("STREET__")==0){
-                                $.getJSON('{% url street_edit %}',{key:node.data.key, value:value},function(data,status){
+                                $.getJSON('{% url 'street_edit' %}',{key:node.data.key, value:value},function(data,status){
                                     if( status=='success' ){
                                         if(data.status==true)
                                         	node.setTitle(value)
@@ -166,7 +166,7 @@
                                     return
                                 })};
                             if (node.data.key.indexOf("HOUSE__")==0){
-                                $.getJSON('{% url house_edit %}',{key:node.data.key, value:value},function(data,status){
+                                $.getJSON('{% url 'house_edit' %}',{key:node.data.key, value:value},function(data,status){
                                     if( status=='success' ){
                                         if(data.status==true)
                                            node.setTitle(value)

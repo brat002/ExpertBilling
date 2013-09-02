@@ -17,12 +17,12 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    <a href="{% url tariff %}">Тарифные планы</a> <span class="divider">/</span>
+    <a href="{% url 'tariff' %}">Тарифные планы</a> <span class="divider">/</span>
   </li>
 </ul>
 </div>
 
-<div class="btn-toolbar pull-right"><a href="{% url tariff_edit %}" id="id_btn_add" class="btn btn-success">Добавить</a>&nbsp;</div>
+<div class="btn-toolbar pull-right"><a href="{% url 'tariff_edit' %}" id="id_btn_add" class="btn btn-success">Добавить</a>&nbsp;</div>
 <div>
   {% render_table table %}
 </div>

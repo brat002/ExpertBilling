@@ -19,7 +19,7 @@
 
       {% endfor %}
 {% if form %}
-                <form action='{% url accountprepaystime_edit %}?id={{item.id}}'' method="POST" class="well  form-condensed form-horizontal ajax">
+                <form action='{% url 'accountprepaystime_edit' %}?id={{item.id}}'' method="POST" class="well  form-condensed form-horizontal ajax">
                 <legend>{% blocktrans %}Предоплаченное время{% endblocktrans %}</legend>
                 <fieldset>
                   {{ form.id }}

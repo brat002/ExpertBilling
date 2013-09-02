@@ -21,7 +21,7 @@
             $("#id_button_tp").click(function(){
                 $.fn.dialog2.helpers.prompt("{% blocktrans %}Название{% endblocktrans %}", {
                     ok: function(event, value) {
-                        $.getJSON('{% url timeperiod_edit %}',{value:value},function(data,status){
+                        $.getJSON('{% url 'timeperiod_edit' %}',{value:value},function(data,status){
                             if( status=='success' ){
                                 if(data.status==true)
                                    $("#tree").dynatree("getRoot").addChild({
@@ -59,7 +59,7 @@
                 }
 
                 $.ajax({
-                    url: "{% url timeperiodnode_edit %}",
+                    url: "{% url 'timeperiodnode_edit' %}",
                     type: "POST",
                     cache:false,
                     dataType: "json",
@@ -89,7 +89,7 @@
                         ok: function(event, value) {
                             
                             if (node.data.key.indexOf("TP__")==0){
-                            $.getJSON('{% url timeperiod_edit %}',{key:node.data.key, value:value},function(data,status){
+                            $.getJSON('{% url 'timeperiod_edit' %}',{key:node.data.key, value:value},function(data,status){
                                 if( status=='success' ){
                                     if(data.status==true)
                                         node.setTitle(value)
@@ -121,7 +121,7 @@
                 //$("#id_text_edit").val(prevTitle);
 
                 $.ajax({
-                	  url: "{% url timeperiodnode_edit %}",
+                	  url: "{% url 'timeperiodnode_edit' %}",
                 	  type: "GET",
                 	  cache:false,
                 	  dataType: "json",
@@ -174,7 +174,7 @@
                 var node = $("#tree").dynatree("getActiveNode");
                  $.fn.dialog2.helpers.confirm("{% blocktrans %}Вы уверены, что хотите удалить запись?{% endblocktrans %}", {
                      confirm: function() { 
-                         $.getJSON('{% url timeperiod_delete %}',{key:node.data.key},function(data,status){
+                         $.getJSON('{% url 'timeperiod_delete' %}',{key:node.data.key},function(data,status){
                              if( status=='success' ){
                                  if(data.status==true)
                                     node.remove()

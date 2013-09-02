@@ -2,7 +2,7 @@
 
 
 {% block helpdesk_body %}
-<form method='get' action='{% url helpdesk_public_view %}'>
+<form method='get' action='{% url 'helpdesk_public_view' %}'>
 
 {% if error_message %}<p><strong>{% trans "Error:" %}</strong> {{ error_message }}</p>{% endif %}
 

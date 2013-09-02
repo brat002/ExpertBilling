@@ -15,13 +15,13 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url group %}">{% blocktrans %}Группы трафика{% endblocktrans %}</a> <span class="divider">/</span>
+    <a href="{% url 'group' %}">{% blocktrans %}Группы трафика{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.name.value}}</li>
 </ul>
 
-<form method="POST" action="{% url group_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
+<form method="POST" action="{% url 'group_edit' %}?id={{item.id}}"class="well form-horizontal form-condensed ">
             <legend>{% blocktrans %}Параметры группы трафика{% endblocktrans %}{% objectlog item %}</legend>
 <div class="alert alert-danger">
 {% blocktrans %}Внимание, изменение настроек группы трафика автоматически отразится на всех связанных тарифных планах{% endblocktrans %}

@@ -47,7 +47,7 @@
      $("#modal-radiustrafficnode-dialog").click(function(event) {
          $('<div />').dialog2({
              title: "{% blocktrans %}Добавить параметры тарификации{% endblocktrans %}", 
-             content: "{% url tariff_radiustrafficnode_edit %}?radius_traffic_id={{item.id}}&tariff_id={{tariff.id}}", 
+             content: "{% url 'tariff_radiustrafficnode_edit' %}?radius_traffic_id={{item.id}}&tariff_id={{tariff.id}}", 
              id: "traffictransmitnode-modal"
          });
 
@@ -57,7 +57,7 @@
  </script>
 {% endblock %}
 {% block tariff_content %}
-<form method="POST" action="{% url tariff_radiustraffic %}?id={{item.id}}&tariff_id={{tariff.id}}"class="well form-horizontal form-condensed ">
+<form method="POST" action="{% url 'tariff_radiustraffic' %}?id={{item.id}}&tariff_id={{tariff.id}}"class="well form-horizontal form-condensed ">
 {{form.id}}
 <div class="btn-toolbar"><a href="{{item.get_remove_url}}" class="btn btn-danger align-right show-confirm">{% blocktrans %}Удалить услугу{% endblocktrans %}</a></div>
             <legend>{% blocktrans %}Тарификация трафика по RADIUS{% endblocktrans %}</legend>

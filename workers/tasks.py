@@ -215,9 +215,22 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
     access_type = access_type.lower()
     if (nas.get('speed_value1') or nas.get('speed_value2')) and ((format_string=='' and access_type in ['pptp', 'l2tp', 'pppoe', 'lisg'] ) or access_type=='hotspot' or nas.get('type')=='cisco'):
         logger.info("Send PoD")
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT ap.access_type FROM billservice_account as a
+            JOIN billservice_tariff as t ON t.id=get_tarif(a.id)
+            JOIN billservice_accessparameters as ap ON ap.id=t.access_parameters_id
+            WHERE a.id=%s
+        """, (account.account_id,))
+        conn.commit()
+        tariff_access_type = cur.fetchone()[0]
+        cur.close()
+        conn.close()
+    
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.settimeout(20)
-        #sock.bind(('0.0.0.0',))
+        sock.bind(('0.0.0.0', 0))
         doc = packet.AcctPacket(code=40, secret=str(nas.get('secret')), dict=DICT)
         doc.AddAttribute('NAS-IP-Address', str(nas.get('ipaddress')))
         if nas.get('type')!='cisco' and nas.get('identify'):
@@ -225,7 +238,7 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
             
         if access_type=='lisg':
             doc.AddAttribute('User-Name', str(subacc.get('ipn_ip_address')))
-        elif subacc.get('username'):
+        elif subacc.get('username') and tariff_access_type not in ['HotSpotIp+Mac', 'HotSpotIp+Password', 'HotSpotMac', 'HotSpotMac+Password']:
             doc.AddAttribute('User-Name', unicode(subacc.get('username')))
             
         if nas.get('type')=='cisco':
@@ -234,7 +247,7 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
         else:
             doc.AddAttribute('Acct-Session-Id', str(session_id))
             
-        if access_type=='hotspot' and vpn_ip_address:
+        if access_type=='hotspot' and vpn_ip_address and  tariff_access_type not in [ 'HotSpotMac', ]:
             doc.AddAttribute('Framed-IP-Address', str(vpn_ip_address))
         elif access_type not in ('hotspot', 'lisg') and vpn_ip_address:
             doc.AddAttribute('Framed-IP-Address', str(vpn_ip_address))
@@ -245,7 +258,7 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
         doc_data=doc.RequestPacket()
         sock.sendto(doc_data,(str(nas.get('ipaddress')), 1700))
         (data, addrport) = sock.recvfrom(8192)
-        doc=packet.AcctPacket(secret=nas.get('secret'), dict=dict, packet=data)
+        doc=packet.AcctPacket(secret=str(nas.get('secret')), dict=dict, packet=data)
         sock.close()
             
         return doc.get("Error-Cause")
@@ -317,7 +330,7 @@ def change_speed(account, subacc ,nas, session_id='', vpn_ip_address='', access_
         logger.info('send CoA')
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.settimeout(20)
-        sock.bind(('0.0.0.0'))
+        sock.bind(('0.0.0.0', 0))
         doc = packet.AcctPacket(code=43, secret=str(nas.get('secret')), dict=DICT)
         doc.AddAttribute('NAS-IP-Address', str(nas.get('ipaddress')))
         if nas.get('type')!='cisco' and nas.get('identify'):

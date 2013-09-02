@@ -353,10 +353,6 @@ class periodical_service_bill(Thread):
                 nums,ost = divmod(last_checkout_seconds,PER_DAY)                                        
                 chk_date = last_checkout + PER_DAY_DELTA
 
-  
-                    
-                        
-
                 #Добавить проверку на окончание периода
                 #Смотрим на какую сумму должны были снять денег и снимаем её
                 while chk_date <= dateAT:    
@@ -364,7 +360,7 @@ class periodical_service_bill(Thread):
                         logger.error('%s: Periodical Service: GRADUAL %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date))
                         return 
                     delta_coef = Decimal('1.00')
-                    if vars.USE_COEFF_FOR_PS==True and next_date and chk_date+PER_DAY_DELTA>next_date:# если следующая проверка будет в новом расчётном периоде - считаем дельту
+                    if pss_type == PERIOD and vars.USE_COEFF_FOR_PS==True and next_date and chk_date+PER_DAY_DELTA>next_date:# если следующая проверка будет в новом расчётном периоде - считаем дельту
                         
                         delta_coef=Decimal(str(float((next_date-chk_date).days*86400+(next_date-chk_date).seconds)/float(PER_DAY)))
                         logger.debug('%s: Periodical Service: %s Use coeff %s for ps account: %s', (self.getName(), ps.ps_id, delta_coef, acc.account_id))      
@@ -449,7 +445,7 @@ class periodical_service_bill(Thread):
                 #    chk_date =  chk_date+datetime.timedelta(seconds=delta_ast)
 
                 delta_coef=1
-                if vars.USE_COEFF_FOR_PS==True and first_time and ((last_checkout-acctf_datetime).days*86400+(last_checkout-acctf_datetime).seconds)<delta_ast:
+                if pss_type == PERIOD and vars.USE_COEFF_FOR_PS==True and first_time and ((last_checkout-acctf_datetime).days*86400+(last_checkout-acctf_datetime).seconds)<delta_ast:
                     logger.warning('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
                     delta_coef=float((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)/float(delta_ast)        
                     cash_summ=Decimal(str(cash_summ))*Decimal(str(delta_coef))
@@ -505,7 +501,7 @@ class periodical_service_bill(Thread):
 
                     if period_start_ast>period_start: break
                     s_delta_ast = datetime.timedelta(seconds=delta_ast)
-                    if vars.USE_COEFF_FOR_PS==True and first_time and ((chk_date-acctf_datetime).days*86400+(chk_date-acctf_datetime).seconds)<delta_ast:
+                    if pss_type == PERIOD and vars.USE_COEFF_FOR_PS==True and first_time and ((chk_date-acctf_datetime).days*86400+(chk_date-acctf_datetime).seconds)<delta_ast:
                         logger.debug('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
                         delta_coef=float((chk_date-acctf_datetime).days*86400+(chk_date-acctf_datetime).seconds)/float(delta_ast)        
                         cash_summ=Decimal(str(cash_summ))*Decimal(str(delta_coef))
@@ -653,7 +649,7 @@ class periodical_service_bill(Thread):
                     dt = dateAT if not addon_ps.deactivated else addon_ps.deactivated
                     try:
                         #self.iterate_ps(cur, caches, acc, addon_ps, mult, dateAT, ADDON)
-                        self.iterate_ps(cur, acc, addon_ps, dt, None, None, None, False, ADDON)
+                        self.iterate_ps(cur, acc, addon_ps, dt, addon_ps.created, None, None, False, ADDON)
                     except Exception, ex:
                         logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                         if ex.__class__ in vars.db_errors: raise ex
@@ -697,10 +693,10 @@ class RadiusAccessBill(Thread):
     
     def valued_prices(self, value, radtrafficnodes):
         d = {}
-        
+
         for x in radtrafficnodes:
             d[value]=x
-            
+
         keys = d.keys()
         keys.sort()
         keys.append(sys.maxint)
@@ -762,8 +758,7 @@ class RadiusAccessBill(Thread):
                 for r in rows:
                     if r[9]:
                         acctfs.append(str(r[9]))
-                
-                
+
                 if acctfs:
                     cur.execute("""
                         select acct.id, t.radius_traffic_transmit_service_id, t.time_access_service_id FROM billservice_accounttarif as acct

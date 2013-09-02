@@ -16,12 +16,12 @@
 			</div>
 			<div class="tcnt" style="margin-left: 70px;">
 				<h3>
-				<a href="{% url helpdesk_account_tickets_view ticket_id=ticket.id %}">#{{ ticket.id }}. <strong>{{ ticket.title }}</strong></a>
+				<a href="{% url 'helpdesk_account_tickets_view' ticket_id=ticket.id %}">#{{ ticket.id }}. <strong>{{ ticket.title }}</strong></a>
 				</h3>
 				<div class="blankslate">
 				    <span style="color:{{ ticket.get_status_color }}">{{ ticket.get_status_display }}</span>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
 				    {% trans "Last changed" %}: {{ ticket.modified|date:"d.m.Y H:i" }}&nbsp;&nbsp;&bull;&nbsp;&nbsp;
-				    <a class="comments_link" href="{% url helpdesk_account_tickets_view ticket_id=ticket.id %}#comments">{% trans 'Comments' %}:{{ ticket.public_comments_count }}</a>
+				    <a class="comments_link" href="{% url 'helpdesk_account_tickets_view ticket_id'=ticket.id %}#comments">{% trans 'Comments' %}:{{ ticket.public_comments_count }}</a>
 				</div>
 				<div class="proj-desc">
 				   {{ ticket.description }}
@@ -40,4 +40,4 @@
     {% endfor %}
   </ul>
 {% endblock %}
-{% block side_bar %}<form action="{% url helpdesk_account_tickets_add %}"><input type="submit" id="create-ticket-button" value="{% trans 'Add ticket' %}"></input></form>{% endblock %}
+{% block side_bar %}<form action="{% url 'helpdesk_account_tickets_add' %}"><input type="submit" id="create-ticket-button" value="{% trans 'Add ticket' %}"></input></form>{% endblock %}

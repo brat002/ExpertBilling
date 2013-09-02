@@ -23,7 +23,7 @@
  </script>
 {% if form %}
             
-                <form action='{% url account_management_suspendedperiod %}' method="POST" class="well form-horizontal ajax form-condensed ">
+                <form action='{% url 'account_management_suspendedperiod' %}' method="POST" class="well form-horizontal ajax form-condensed ">
                 <fieldset>
                 {{form.accounts}}
                   <div class="control-group">

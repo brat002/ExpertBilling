@@ -36,7 +36,7 @@
  </script>
 
 {% if form %}
-            <form method="POST" action="{% url tariff_periodicalservice_edit %}?id={{item.id}}" class="well form-horizontal form-condensed ajax">
+            <form method="POST" action="{% url 'tariff_periodicalservice_edit' %}?id={{item.id}}" class="well form-horizontal form-condensed ajax">
             {{form|crispy}}
                 
                 <div class="form-actions">

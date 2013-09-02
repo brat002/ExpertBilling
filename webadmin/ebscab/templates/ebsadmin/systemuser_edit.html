@@ -39,12 +39,12 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url systemuser %}">{% blocktrans %}Системные пользователи{% endblocktrans %}</a> <span class="divider">/</span>
+    <a href="{% url 'systemuser' %}">{% blocktrans %}Системные пользователи{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.username.value}}</li>
 </ul>
-<form method="POST" action="{% url systemuser_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
+<form method="POST" action="{% url 'systemuser_edit' %}?id={{item.id}}"class="well form-horizontal form-condensed ">
             <legend>{% blocktrans %}Параметры учётной записи{% endblocktrans %}{% objectlog item %}</legend>
              <fieldset>
                  <div class="control-group ">

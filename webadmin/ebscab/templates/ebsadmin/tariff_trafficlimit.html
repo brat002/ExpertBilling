@@ -84,7 +84,7 @@
      $("#modal-trafficlimit-dialog").click(function(event) {
          $('<div />').dialog2({
              title: "{% blocktrans %}Добавить лимит трафика{% endblocktrans %}", 
-             content: "{% url tariff_trafficlimit_edit %}?tariff_id={{tariff.id}}", 
+             content: "{% url 'tariff_trafficlimit_edit' %}?tariff_id={{tariff.id}}", 
              id: "ps-modal"
          });
 

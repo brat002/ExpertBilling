@@ -10,7 +10,7 @@
             $("#id_btn_add").click(function(event) {
                 $('<div/>').dialog2({
                     title: "{% blocktrans %}Добавление RADIUS атрибутов{% endblocktrans %}", 
-                    content: "{% url radiusattr_edit %}?nas={{nas.id}}&tarif={{tariff.id}}", 
+                    content: "{% url 'radiusattr_edit' %}?nas={{nas.id}}&tarif={{tariff.id}}", 
                     id: "server-notice"
                 });
 
@@ -63,7 +63,7 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    {% blocktrans %}Дополнительные RADIUS атрибуты{% endblocktrans %}<span class="divider">/</span>{{model_name}}: <a href="{% if nas %}{% url nas %}{% else %}{% url tariff %}{% endif %}">{{nas.name}}{{tariff.name}}</a>
+    {% blocktrans %}Дополнительные RADIUS атрибуты{% endblocktrans %}<span class="divider">/</span>{{model_name}}: <a href="{% if nas %}{% url 'nas' %}{% else %}{% url 'tariff' %}{% endif %}">{{nas.name}}{{tariff.name}}</a>
   </li>
 </ul>
 </div>

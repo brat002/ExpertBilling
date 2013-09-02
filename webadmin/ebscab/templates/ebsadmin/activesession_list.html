@@ -9,7 +9,7 @@
             $(".ping").live('click', function(event) {
                 $('<div />').dialog2({
                     title: "Ping", 
-                    content: "{% url tools_ping %}?ip="+ $(this).attr('data')
+                    content: "{% url 'tools_ping' %}?ip="+ $(this).attr('data')
                 });
 
                 event.preventDefault(event);
@@ -19,7 +19,7 @@
                 {                      
                     $.ajax(
                     { 
-                        url: "{% url house %}",
+                        url: "{% url 'house' %}",
                         data: {
                                 term: request.term, 
                                 street_name: $('#id_street').val(),    //Pass the selected country to php
@@ -48,7 +48,7 @@
                 {                      
                     $.ajax(
                     { 
-                        url: "{% url street %}",
+                        url: "{% url 'street' %}",
                         data: {
                                 term: request.term, 
                                 city_id: $('#id_city').val()
@@ -77,7 +77,7 @@
 
                 $.ajax({
                        type: "POST",
-                       url: "{% url session_reset %}",
+                       url: "{% url 'session_reset' %}",
                        data: {id: $(this).attr('data')},
                        async: false,
                        success: function(msg){
@@ -107,7 +107,7 @@
 
                 $.ajax({
                        type: "POST",
-                       url: "{% url session_hardreset %}",
+                       url: "{% url 'session_hardreset' %}",
                        data: {id: $(this).attr('data')},
                        async: false,
                        success: function(msg){
@@ -332,7 +332,7 @@
   <div class="navbar-inner">
     <div class="btn-toolbar">
       <div class="btn-group">
-        <a href="{% url  monitoring %}" class="btn btn-danger">Графики загрузки</a>
+        <a href="{% url 'monitoring' %}" class="btn btn-danger">Графики загрузки</a>
       </div>
 
 

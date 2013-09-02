@@ -26,12 +26,12 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url news %}">{% blocktrans %}Новости{% endblocktrans %}</a> <span class="divider">/</span>
+    <a href="{% url 'news' %}">{% blocktrans %}Новости{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.id.value}}</li>
 </ul>
-<form method="POST" action="{% url news_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
+<form method="POST" action="{% url 'news_edit' %}?id={{item.id}}"class="well form-horizontal form-condensed ">
             <legend>{% blocktrans %}Параметры новости{% endblocktrans %}{% objectlog item %}</legend>
              <fieldset>
                   {{ form.id }}

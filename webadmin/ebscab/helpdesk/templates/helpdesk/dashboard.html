@@ -9,7 +9,7 @@
         		var el=$(this);
         		el.unbind("hover");
         		$.ajax({
-        		  url: '{% url ticket_info %}',
+        		  url: '{% url 'ticket_info' %}',
         		  data: {id: el.attr('data')},
         		  method: 'GET',
         		  success: function(d){
@@ -28,9 +28,9 @@
 <tr><th>{% trans "Queue" %}</th><th>{% trans "Open" %}</th><th>{% trans "Resolved" %}</th></tr>
 {% for queue in dash_tickets %}
 <tr>
-<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href='{% url helpdesk_list %}?queue={{ queue.queue }}&status=1&status=2'>{{ queue.name }}</a></th>
-<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if queue.open %}<a href='{% url helpdesk_list %}?queue={{ queue.queue }}&status=1&status=2'>{% endif %}{{ queue.open }}{% if queue.open %}</a>{% endif %}</td>
-<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if queue.resolved %}<a href='{% url helpdesk_list %}?queue={{ queue.queue }}&status=3'>{% endif %}{{ queue.resolved }}{% if queue.resolved %}</a>{% endif %}</td>
+<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href='{% url 'helpdesk_list' %}?queue={{ queue.queue }}&status=1&status=2'>{{ queue.name }}</a></th>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if queue.open %}<a href='{% url 'helpdesk_list' %}?queue={{ queue.queue }}&status=1&status=2'>{% endif %}{{ queue.open }}{% if queue.open %}</a>{% endif %}</td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if queue.resolved %}<a href='{% url 'helpdesk_list' %}?queue={{ queue.queue }}&status=3'>{% endif %}{{ queue.resolved }}{% if queue.resolved %}</a>{% endif %}</td>
 </tr>
 {% endfor %}
 </table>

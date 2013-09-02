@@ -19,7 +19,7 @@
 
       {% endfor %}
 {% if form %}
-                <form action='{% url radiusattr_edit %}?nas={{nas.id}}&tarif={{tariff.id}}'' method="POST" class="well form-horizontal ajax form-condensed ">
+                <form action='{% url 'radiusattr_edit' %}?nas={{nas.id}}&tarif={{tariff.id}}'' method="POST" class="well form-horizontal ajax form-condensed ">
                 {{form|crispy}}
                 <div class="form-actions">
                     <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">

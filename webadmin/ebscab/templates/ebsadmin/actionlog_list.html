@@ -31,7 +31,7 @@
   
   <div class="row-fluid">
         <div class="span12">
-            <form action="{% url actionlog %}" method="GET" class="well form-horizontal form-condensed ">
+            <form action="{% url 'actionlog' %}" method="GET" class="well form-horizontal form-condensed ">
             {{ form.non_field_errors }}
                 <fieldset>
                     <legend>{% blocktrans %}Поиск по логу действий{% endblocktrans %}</legend>

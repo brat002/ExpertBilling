@@ -124,7 +124,7 @@ for x in m_cursor.fetchall():
             p_cursor.connection.rollback()
             continue
             
-        
+        print  username
         m_cursor.execute("""select l.login, l.password from dialup_service_links as l  JOIN service_links as sl ON sl.id=l.id WHERE l.is_deleted=0 and sl.service_id not in (23, 88) and sl.is_deleted=0 and sl.user_id=%s;""", (user_id, ))
         d = m_cursor.fetchall()
         

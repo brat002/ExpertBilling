@@ -46,7 +46,7 @@
      $("#modal-timeaccessnode-dialog").click(function(event) {
          $('<div />').dialog2({
              title: "{% blocktrans %}Добавить параметры тарификации{% endblocktrans %}", 
-             content: "{% url tariff_timeaccessnode_edit %}?time_access_service_id={{item.id}}&tariff_id={{tariff.id}}", 
+             content: "{% url 'tariff_timeaccessnode_edit' %}?time_access_service_id={{item.id}}&tariff_id={{tariff.id}}", 
              id: "timeaccessnode-modal"
          });
 
@@ -56,7 +56,7 @@
  </script>
 {% endblock %}
 {% block tariff_content %}
-<form method="POST" action="{% url tariff_timeaccessservice %}?id={{item.id}}&tariff_id={{tariff.id}}"class="well form-horizontal form-condensed ">
+<form method="POST" action="{% url 'tariff_timeaccessservice' %}?id={{item.id}}&tariff_id={{tariff.id}}"class="well form-horizontal form-condensed ">
 {{form.id}}
 <div class="btn-toolbar"><a href="{{item.get_remove_url}}" class="btn btn-danger align-right show-confirm">{% blocktrans %}Удалить услугу{% endblocktrans %}</a></div>
             <legend>{% blocktrans %}Тарификация времени по RADIUS{% endblocktrans %}</legend>

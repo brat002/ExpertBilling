@@ -7,7 +7,7 @@
      $('#id_preset_reply').change(function() {
          preset = $('#id_preset_reply').val();
          if (preset != '') {
-             $.get("{% url helpdesk_raw "preset" %}?id=" + preset, function(data) {
+             $.get("{% url 'helpdesk_raw' "preset" %}?id=" + preset, function(data) {
                  $("#id_comment").val(data)
              });
          }
@@ -27,7 +27,7 @@
 
       {% endfor %}
 {% if form %}
-                <form action='{% url followup_edit %}?id={{item.id}}'' method="POST" class="well form-horizontal ajax form-condensed ">
+                <form action='{% url 'followup_edit' %}?id={{item.id}}'' method="POST" class="well form-horizontal ajax form-condensed ">
 
                 {% crispy form %}             
 

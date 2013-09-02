@@ -5,7 +5,7 @@
 {% block base %}
 <div class="span12">
 <div class="row-fluid">
-<form method="POST" action="{% url operator_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
+<form method="POST" action="{% url 'operator_edit' %}?id={{item.id}}"class="well form-horizontal form-condensed ">
             <legend>{% blocktrans %}Информация о провайдере{% endblocktrans %}{% objectlog item %}</legend>
              <fieldset>
              

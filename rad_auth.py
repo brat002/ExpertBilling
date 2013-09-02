@@ -864,7 +864,7 @@ class HandleHotSpotAuth(HandleSAuth):
         self.replypacket=packet.Packet(secret=str(nas.secret),dict=vars.DICT)
 
         user_name = str(self.packetobject['User-Name'][0])
-        mac=str(self.packetobject['Calling-Station-Id'][0]).lower() or str(self.packetobject['User-Name'][0]).lower()
+        mac=str(self.packetobject['User-Name'][0]).lower() if str(self.packetobject['User-Name'][0]).lower().count(':')==5 else str(self.packetobject['Calling-Station-Id'][0]).lower() 
         ip=str(self.packetobject['Mikrotik-Host-IP'][0])
         self.cursor.execute("SELECT pin FROM billservice_card WHERE activated is NULL and salecard_id IS NOT NULL AND login = %s AND now() BETWEEN start_date AND end_date;", (user_name,))
         pin = self.cursor.fetchone()
@@ -914,7 +914,7 @@ class HandleHotSpotAuth(HandleSAuth):
                     
                 if acc.access_type=='HotSpotIp+Mac' and subacc.ipn_ip_address!=ip:
                     acc=None
-                logger.info("Subacc %s access type=%s for username %s", (subacc, acc.access_type, user_name, ))
+                logger.info("Subacc %s access type=%s for username %s", (subacc, acc.access_type if acc else 'acc not found', user_name, ))
 
         if not acc and ip:
             subacc = self.caches.subaccount_cache.by_ipn_ip.get(ip)

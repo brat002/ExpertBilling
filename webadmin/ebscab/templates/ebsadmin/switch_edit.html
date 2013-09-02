@@ -11,7 +11,7 @@
                 {                      
                     $.ajax(
                     { 
-                        url: "{% url house %}",
+                        url: "{% url 'house' %}",
                         data: {
                                 term: request.term, 
                                 street_name: $('#id_street').val(),    //Pass the selected country to php
@@ -40,7 +40,7 @@
                 {                      
                     $.ajax(
                     { 
-                        url: "{% url street %}",
+                        url: "{% url 'street' %}",
                         data: {
                                 term: request.term, 
                                 city_id: $('#id_city').val()
@@ -67,7 +67,7 @@
             $("#id_main_table input[type=checkbox]").change(function(){
                 $.ajax(
                         { 
-                            url: "{% url switch_port_status %}",
+                            url: "{% url 'switch_port_status' %}",
                             data: {
                                     port_type: $(this).attr('name'), 
                                     port: $(this).closest('tr').find('td:first').find('input[type=hidden]').val(),
@@ -95,7 +95,7 @@
 
 <ul class="breadcrumb">
   <li>
-    <a href="{% url switch %}">{% blocktrans %}Коммутаторы{% endblocktrans %}</a> <span class="divider">/</span>
+    <a href="{% url 'switch' %}">{% blocktrans %}Коммутаторы{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.name.value}}</li>
@@ -106,7 +106,7 @@
   <li><a href="#general" class='active' data-toggle="tab">{% blocktrans %}Общее{% endblocktrans %}</a></li>
   <li><a href="#ports" data-toggle="tab">{% blocktrans %}Порты{% endblocktrans %}</a></li>
 </ul>
-<form method="POST" action="{% url switch_edit %}?id={{item.id}}"class="well form-horizontal form-condensed">
+<form method="POST" action="{% url 'switch_edit' %}?id={{item.id}}"class="well form-horizontal form-condensed">
 <div class="tab-content">
   <div class="tab-pane active" id="general">
   <div>{% objectlog item %}</div>
