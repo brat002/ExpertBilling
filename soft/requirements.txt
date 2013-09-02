@@ -1,5 +1,5 @@
 BeautifulSoup
-Django==1.4.3
+Django==1.5.2
 IPy
 Mako
 MarkupSafe
