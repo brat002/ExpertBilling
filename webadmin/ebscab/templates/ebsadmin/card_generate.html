@@ -21,7 +21,7 @@
  </script>
 
 
-            <form method="POST" action="{% url card_generate %}" class="well form-horizontal  form-condensed ajax">
+            <form method="POST" action="{% url 'card_generate' %}" class="well form-horizontal  form-condensed ajax">
                 <fieldset>
                       {{ form.card_type }}
                       {% if form.card_type.errors %}

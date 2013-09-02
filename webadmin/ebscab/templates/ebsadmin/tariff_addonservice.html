@@ -47,7 +47,7 @@
      $("#modal-addonservicetariff-dialog").click(function(event) {
          $('<div />').dialog2({
              title: "{% blocktrans %}Добавить правило активации подключаемой услуги{% endblocktrans %}", 
-             content: "{% url tariff_addonservicetariff_edit %}?tariff_id={{tariff.id}}", 
+             content: "{% url 'tariff_addonservicetariff_edit' %}?tariff_id={{tariff.id}}", 
              id: "ps-modal"
          });
 

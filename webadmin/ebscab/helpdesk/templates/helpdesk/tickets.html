@@ -26,7 +26,7 @@
 </ul>
 <div class="tab-content">
   <div class="tab-pane" id="filter">
-  <form id="id_form" method="GET" action="{% url helpdesk_list %}" class="well form-horizontal form-condensed ">
+  <form id="id_form" method="GET" action="{% url 'helpdesk_list' %}" class="well form-horizontal form-condensed ">
   
   {% crispy form %}
   </form>

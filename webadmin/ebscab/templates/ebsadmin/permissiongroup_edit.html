@@ -16,12 +16,12 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url permissiongroup %}">{% blocktrans %}Группы доступа{% endblocktrans %}</a> <span class="divider">/</span>
+    <a href="{% url 'permissiongroup' %}">{% blocktrans %}Группы доступа{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.name.value}}</li>
 </ul>
-<form method="POST" action="{% url permissiongroup_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
+<form method="POST" action="{% url 'permissiongroup_edit' %}?id={{item.id}}"class="well form-horizontal form-condensed ">
             <legend>{% blocktrans %}Параметры группы доступа{% endblocktrans %}</legend>
              <fieldset>
                 {{form|crispy}}

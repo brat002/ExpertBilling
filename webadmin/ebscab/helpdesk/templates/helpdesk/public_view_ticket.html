@@ -120,7 +120,7 @@
 <br/>
 <h4>{% trans "Respond to this ticket" %}</h4>
 
-<form method='post' action='{% url helpdesk_updatepublicticket ticket.id %}' enctype='multipart/form-data'>
+<form method='post' action='{% url 'helpdesk_updatepublicticket' ticket.id %}' enctype='multipart/form-data'>
 
 <fieldset>
     <dl>

@@ -18,14 +18,14 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url trafficclass %}">{% blocktrans %}Классы трафика{% endblocktrans %}</a> <span class="divider">/</span>{% blocktrans %}Загрузка сетей в класс{% endblocktrans %}
+    <a href="{% url 'trafficclass' %}">{% blocktrans %}Классы трафика{% endblocktrans %}</a> <span class="divider">/</span>{% blocktrans %}Загрузка сетей в класс{% endblocktrans %}
   </li>
 
 </ul>
 <div class="alert">{% blocktrans %}<h3>Внимание!</h3>
 Предварительно убедитесь в том, что вы не создадите дубликатов и, при необходимости, очистите класс от предыдущих подсетей.{% endblocktrans %}
 </div>
-<form method="POST" action="{% url trafficclass_upload %}" class="well form-horizontal form-condensed " enctype="multipart/form-data" >
+<form method="POST" action="{% url 'trafficclass_upload' %}" class="well form-horizontal form-condensed " enctype="multipart/form-data" >
             <legend>{% blocktrans %}Параметры{% endblocktrans %}</legend>
              <fieldset>
                   {{form|crispy}}

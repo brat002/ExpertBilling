@@ -20,7 +20,7 @@
 
       {% endfor %}
 {% if form %}
-                <form action='{% url ticket_assign %}'' method="POST" class="well form-horizontal ajax form-condensed ">
+                <form action='{% url 'ticket_assign' %}'' method="POST" class="well form-horizontal ajax form-condensed ">
 
                 {{ form|crispy }}             
 

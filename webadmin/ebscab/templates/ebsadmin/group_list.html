@@ -49,12 +49,12 @@
 <div class="span12">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url group %}">{% blocktrans %}Группы трафика{% endblocktrans %}</a> <span class="divider">/</span>
+    <a href="{% url 'group' %}">{% blocktrans %}Группы трафика{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 </ul>
   <div class="row-fluid">
   
-<div class="btn-toolbar pull-right"><a href="{% url group_edit %}" id="id_btn_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a>&nbsp;</div>
+<div class="btn-toolbar pull-right"><a href="{% url 'group_edit' %}" id="id_btn_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a>&nbsp;</div>
 <div>
   {% render_table table %}
 </div>

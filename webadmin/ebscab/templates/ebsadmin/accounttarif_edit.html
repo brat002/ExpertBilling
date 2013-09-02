@@ -22,7 +22,7 @@
  </script>
            
 {% if form %}
-                <form action='{% url accounttariff_edit %}?account_id={{account.id}}' method="POST" class="well form-horizontal  form-condensed ajax">
+                <form action='{% url 'accounttariff_edit' %}?account_id={{account.id}}' method="POST" class="well form-horizontal  form-condensed ajax">
                 {{form.account}}
                 <fieldset>
                   <div class="control-group">

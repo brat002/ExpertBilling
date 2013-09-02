@@ -30,6 +30,6 @@
 {% render_table table %}
 </div>
 <div>
-<a href="{% url comment_edit %}?object_id={{item.id}}&content_type={{content_type_id}}" class="btn btn-success align-right" id='modal-{{item.id}}-{{content_type_id}}'>Добавить</a>
+<a href="{% url 'comment_edit' %}?object_id={{item.id}}&content_type={{content_type_id}}" class="btn btn-success align-right" id='modal-{{item.id}}-{{content_type_id}}'>Добавить</a>
 </div>
 {% endif %}

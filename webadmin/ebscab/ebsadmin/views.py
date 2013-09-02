@@ -5159,7 +5159,7 @@ def actions_set(request):
 
 @systemuser_required 
 def documentrender(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.documentrender')):
+    if  not request.user.has_perm('billservice.documentrender'):
         return {'status':False, 'message': u'У вас нет прав на рендеринг документов'}
     from django.utils.safestring import mark_safe
     form = DocumentRenderForm(request.POST)
@@ -5192,7 +5192,7 @@ def documentrender(request):
 @ajax_request
 @systemuser_required 
 def templaterender(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.documentrender')):
+    if  not request.user.has_perm('billservice.documentrender'):
         return {'status':False, 'message': _(u'У вас нет прав на рендеринг документов')}
     form = TemplateForm(request.POST)
     if form.is_valid():
@@ -5234,7 +5234,7 @@ def templaterender(request):
 @ajax_request
 @systemuser_required 
 def cheque_render(request):
-    if  not (request.user.is_staff==True and request.user.has_perm('billservice.documentrender')):
+    if  not request.user.account.has_perm('billservice.documentrender'):
         return {'status':False, 'message': _(u'У вас нет прав на рендеринг документов')}
     id = request.POST.get('id')#transaction_id
     transaction = Transaction.objects.get(id=id)
@@ -5504,7 +5504,7 @@ def table_settings(request):
             ts = TableSettings.objects.get(name=table_name, user=request.user)
             #print ts.value['fields']
             ts.value = {'fields': form.cleaned_data.get('columns', [])}
-            ts.per_page = per_page
+            ts.per_page = per_page if per_page not in ['undefined', ''] else  25
             ts.save()
         except Exception, e:
             ts = TableSettings.objects.create(name=table_name, value={'fields': form.cleaned_data.get('columns', [])}, per_page = per_page, user=request.user)

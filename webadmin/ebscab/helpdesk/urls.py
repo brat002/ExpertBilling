@@ -169,6 +169,7 @@ urlpatterns += patterns('helpdesk.views.kb',
         'vote', name='helpdesk_kb_vote'),
 )
 
+"""
 urlpatterns += patterns('',
     url(r'^api/$',
         'django.views.generic.simple.direct_to_template',
@@ -190,3 +191,4 @@ urlpatterns += patterns('',
         },
         name='helpdesk_system_settings'),
 )
+"""

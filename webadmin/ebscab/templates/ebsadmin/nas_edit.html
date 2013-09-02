@@ -18,7 +18,7 @@
 
         	$.ajax({
         		   type: "POST",
-        		   url: "{% url nas_test_credentials %}",
+        		   url: "{% url 'nas_test_credentials' %}",
         		   data: {login: $("#id_login").val(),password: $("#id_password").val(), host: $("#id_ipaddress").val()},
         		   async: false,
         		   success: function(msg){
@@ -69,14 +69,14 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url nas %}">{% blocktrans %}Серверы доступа{% endblocktrans %}</a> <span class="divider">/</span>{{item.name}}
+    <a href="{% url 'nas' %}">{% blocktrans %}Серверы доступа{% endblocktrans %}</a> <span class="divider">/</span>{{item.name}}
   </li>
 </ul>
 <ul class="nav nav-tabs" id="tab-panel">
   <li><a href="#general" data-toggle="tab">{% blocktrans %}Общее{% endblocktrans %}</a></li>
   <li><a href="#commands" data-toggle="tab">{% blocktrans %}Команды{% endblocktrans %}</a></li>
 </ul>
-<form id="id_form" method="POST" action="{% url nas_edit %}?id={{item.id}}" class="well form-horizontal form-condensed ">
+<form id="id_form" method="POST" action="{% url 'nas_edit' %}?id={{item.id}}" class="well form-horizontal form-condensed ">
 {{ form.id }}
 <div class="tab-content">
   <div class="tab-pane active" id="general">

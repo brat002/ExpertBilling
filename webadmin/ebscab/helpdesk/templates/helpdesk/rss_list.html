@@ -12,7 +12,7 @@
     <dt><a href='{% url helpdesk_rss "recent_activity" %}'><img src='{{ MEDIA_URL }}helpdesk/rss_icon.png' width='14' height='14' alt='{% trans "RSS Icon" %}' title='{% trans "Latest Activity" %}' border='0' />{% trans "Latest Activity" %}</a></dt>
     <dd>{% trans "A summary of all helpdesk activity - including comments, emails, attachments, and more" %}</dd>
 
-    <dt><a href='{% url helpdesk_rss "unassigned" %}'><img src='{{ MEDIA_URL }}helpdesk/rss_icon.png' width='14' height='14' alt='{% trans "RSS Icon" %}' title='{% trans "Unassigned Tickets" %}' border='0' />{% trans "Unassigned Tickets" %}</a></dt>
+    <dt><a href='{% url 'helpdesk_rss' "unassigned" %}'><img src='{{ MEDIA_URL }}helpdesk/rss_icon.png' width='14' height='14' alt='{% trans "RSS Icon" %}' title='{% trans "Unassigned Tickets" %}' border='0' />{% trans "Unassigned Tickets" %}</a></dt>
     <dd>{% trans "All unassigned tickets - useful for being alerted to new tickets opened by the public via the web or via e-mail" %}</dd>
 </dl>
 
@@ -24,8 +24,8 @@
 {% for queue in queues %}
 <tr>
     <td>{{ queue.title }}</td>
-    <td align='center'><a href='{% url helpdesk_rss "queue" %}{{ queue.slug }}/'><img src='{{ MEDIA_URL }}helpdesk/rss_icon.png' width='14' height='14' alt='{% trans "RSS Icon" %}' title='{% trans "Open Tickets" %}' border='0' /></a></td>
-    <td align='center'><a href='{% url helpdesk_rss "user" %}{{ user.username }}/{{ queue.slug }}/'><img src='{{ MEDIA_URL }}helpdesk/rss_icon.png' width='14' height='14' alt='{% trans "RSS Icon" %}' title='{% trans "My Open Tickets" %}' border='0' /></a></td>
+    <td align='center'><a href='{% url 'helpdesk_rss' "queue" %}{{ queue.slug }}/'><img src='{{ MEDIA_URL }}helpdesk/rss_icon.png' width='14' height='14' alt='{% trans "RSS Icon" %}' title='{% trans "Open Tickets" %}' border='0' /></a></td>
+    <td align='center'><a href='{% url 'helpdesk_rss' "user" %}{{ user.username }}/{{ queue.slug }}/'><img src='{{ MEDIA_URL }}helpdesk/rss_icon.png' width='14' height='14' alt='{% trans "RSS Icon" %}' title='{% trans "My Open Tickets" %}' border='0' /></a></td>
 {% endfor %}
 </table>
 {% endblock %}

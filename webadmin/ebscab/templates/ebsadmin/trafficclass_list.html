@@ -42,7 +42,7 @@
             $("#id_btn_add").click(function(event) {
                 $('<div />').dialog2({
                     title: "{% blocktrans %}Добавить класс{% endblocktrans %}", 
-                    content: "{% url trafficclass_edit %}", 
+                    content: "{% url 'trafficclass_edit' %}", 
                     id: "trafficclass-modal"
                 });
 
@@ -54,7 +54,7 @@
                 $.each(values, function(key, value) { 
                      js.push({name:'id', value:value.value})
                     });
-                    $.post("{% url trafficclass_weight %}", js, function(data, status){
+                    $.post("{% url 'trafficclass_weight' %}", js, function(data, status){
                         if( status=='success' ){
                             if(data.status==true)
                                 {
@@ -107,7 +107,7 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    <a href="{% url trafficclass %}">{% blocktrans %}Классы трафика{% endblocktrans %}</a> <span class="divider">/</span>
+    <a href="{% url 'trafficclass' %}">{% blocktrans %}Классы трафика{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 </ul>
 </div>
