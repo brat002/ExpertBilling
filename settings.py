@@ -27,12 +27,9 @@ DATABASES = {
 }
 
 CACHES = {
-    "default": {
-        "BACKEND": "redis_cache.cache.RedisCache",
-        "LOCATION": "127.0.0.1:6379:2",
-        "OPTIONS": {
-            "CLIENT_CLASS": "redis_cache.client.DefaultClient",
-        }
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'djangocache'
     }
 }
 

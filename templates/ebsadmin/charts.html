@@ -39,7 +39,7 @@
   <li><a href="#general" data-toggle="tab">{% blocktrans %}Настройки{% endblocktrans %}</a></li>
   <li><a href="#result" data-toggle="tab">{% blocktrans %}Отчёт{% endblocktrans %}</a></li>
 </ul>
-<form id="id_form" method="GET" action="{% url charts %}?report={{form.report.value}}" class="well form-horizontal form-condensed ">
+<form id="id_form" method="GET" action="{% url 'charts' %}?report={{form.report.value}}" class="well form-horizontal form-condensed ">
 
 <div class="tab-content">
   <div class="tab-pane" id="general">

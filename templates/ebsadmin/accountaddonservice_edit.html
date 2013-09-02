@@ -25,7 +25,7 @@
       {% endfor %}
 {% if form %}
 
-            <form method="POST" action="{% url accountaddonservice %}?id={{accountaddonservice.id}}" class="well form-horizontal  form-condensed  ajax">
+            <form method="POST" action="{% url 'accountaddonservice' %}?id={{accountaddonservice.id}}" class="well form-horizontal  form-condensed  ajax">
                {{form|crispy}}
 
                 

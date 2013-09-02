@@ -43,7 +43,7 @@
      $("#modal-periodicalservice-dialog").click(function(event) {
          $('<div />').dialog2({
              title: "{% blocktrans %}Добавить периодическую услугу{% endblocktrans %}", 
-             content: "{% url tariff_periodicalservice_edit %}?tariff_id={{tariff.id}}", 
+             content: "{% url 'tariff_periodicalservice_edit' %}?tariff_id={{tariff.id}}", 
              id: "ps-modal"
          });
 

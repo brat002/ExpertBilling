@@ -27,7 +27,7 @@
 
                         $.ajax(
                                 { 
-                                    url: '{% url totaltransaction_delete %}',
+                                    url: '{% url 'totaltransaction_delete' %}',
                                     data: arr,        
                                     type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
                                     dataType: "json",   //return data in json format                                                                                                                                       

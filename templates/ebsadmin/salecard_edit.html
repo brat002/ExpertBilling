@@ -30,12 +30,12 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url card %}">{% blocktrans %}Карты{% endblocktrans %}</a> <span class="divider">/</span>
+    <a href="{% url 'card' %}">{% blocktrans %}Карты{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 
   <li class="active">{{form.name.value}}</li>
 </ul>
-<form method="POST" action="{% url salecard_edit %}?id={{item.id}}"class="well form-horizontal form-condensed ">
+<form method="POST" action="{% url 'salecard_edit' %}?id={{item.id}}"class="well form-horizontal form-condensed ">
             <legend>{% blocktrans %}Накладная на передачу карт дилеру{% endblocktrans %}</legend>
              <fieldset>
              {{form.cards}}
@@ -43,7 +43,7 @@
                     <div class="control-row">
                       <label class="control-label">{{form.dealer.label}}:</label>
                       <div class="controls">
-                      {{ form.dealer }}<a href="{% url dealer_edit %}?id={{form.dealer.value}}">{{dealer.organization}}</a>
+                      {{ form.dealer }}<a href="{% url 'dealer_edit' %}?id={{form.dealer.value}}">{{dealer.organization}}</a>
                       {% if form.dealer.errors %}
                           <span class="help-inline">{% for error in form.dealer.errors %}{{ error }}<br/> {% endfor %}</span>
                       {% endif %}

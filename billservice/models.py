@@ -632,7 +632,7 @@ class AccountPrepaysTime(models.Model):
     reseted=models.BooleanField(default=False)
 
     def in_percents(self):
-        a = self.size*100/self.prepaid_time_service.size
+        a = self.size*100/self.prepaid_time_service.prepaid_time
         return a
     
     class Admin:

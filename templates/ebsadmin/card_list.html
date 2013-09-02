@@ -40,7 +40,7 @@
                     confirm: function() {
                         values = jQuery("#id_main_table input[type=checkbox]:checked").serializeArray();
 
-                        $.getJSON('{% url card_delete %}',values,function(data,status){
+                        $.getJSON('{% url 'card_delete' %}',values,function(data,status){
                             if( status=='success' ){
                                 if(data.status==true)
                                     {
@@ -65,7 +65,7 @@
 
                         values = jQuery("#id_main_table tbody input[type=checkbox]:checked").serializeArray();
 
-                        $.getJSON('{% url card_manage %}?action=enable',values,function(data,status){
+                        $.getJSON('{% url 'card_manage' %}?action=enable',values,function(data,status){
                             if( status=='success' ){
                                 if(data.status==true)
                                     {
@@ -89,7 +89,7 @@
 
                         values = jQuery("#id_main_table input[type=checkbox]:checked").serializeArray();
 
-                        $.getJSON('{% url card_manage %}?action=disable',values,function(data,status){
+                        $.getJSON('{% url 'card_manage' %}?action=disable',values,function(data,status){
                             if( status=='success' ){
                                 if(data.status==true)
                                     {
@@ -112,7 +112,7 @@
                 a=$(this);
                 $('<div />').dialog2({
                     title: "{% blocktrans %}Выберите дилера{% endblocktrans %}", 
-                    content: "{% url dealer_select %}", 
+                    content: "{% url 'dealer_select' %}", 
                     id: "dealerselect-modal",
                     buttons: {
                         'Выбрать': {
@@ -139,7 +139,7 @@
             $("#id_btn_print").click(function(event) {
                 $('<div />').dialog2({
                     title: "{% blocktrans %}Выберите шаблон карты{% endblocktrans %}", 
-                    content: "{% url templateselect %}?type=7", 
+                    content: "{% url 'templateselect' %}?type=7", 
                     id: "templateselect-modal",
                 });
 
@@ -151,7 +151,7 @@
             	values = jQuery("#id_main_table tbody input[type=checkbox]:checked");
                 var data = {template:e.message, cards: values};
 
-                var $form = $('<form target="_blank" method="POST" action="{% url documentrender %}">');
+                var $form = $('<form target="_blank" method="POST" action="{% url 'documentrender' %}">');
                 $form.append('<input type="hidden" name="template" value="' + e.message + '">');
                 $.each(values, function(k, v){
                     $form.append('<input type="hidden" name="cards" value="' + v.value + '">');
@@ -204,7 +204,7 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    <a href="{% url card %}">{% blocktrans %}Карточная система{% endblocktrans %}</a> <span class="divider">/</span>
+    <a href="{% url 'card' %}">{% blocktrans %}Карточная система{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 </ul>
 </div>
@@ -222,7 +222,7 @@
   <div class="tab-pane" id="filter">
   
 
-            <form action="{% url card %}" method="GET" class="well form-horizontal form-condensed ">
+            <form action="{% url 'card' %}" method="GET" class="well form-horizontal form-condensed ">
             {{ form.non_field_errors }}
                 <fieldset>
                     <legend>Поиск картам</legend>
@@ -491,10 +491,10 @@
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu">
-    <li><a class="btn_add" href="{% url card_generate %}?card_type=0">{% blocktrans %}Экспресс-оплата{% endblocktrans %}</a></li>
-    <li><a class="btn_add" href="{% url card_generate %}?card_type=1">{% blocktrans %}HotSpot{% endblocktrans %}</a></li>
-    <li><a class="btn_add" href="{% url card_generate %}?card_type=2">{% blocktrans %}Карты VPN доступа{% endblocktrans %}</a></li>
-    <li><a class="btn_add" href="{% url card_generate %}?card_type=3">{% blocktrans %}Карты телефонии{% endblocktrans %}</a></li>
+    <li><a class="btn_add" href="{% url 'card_generate' %}?card_type=0">{% blocktrans %}Экспресс-оплата{% endblocktrans %}</a></li>
+    <li><a class="btn_add" href="{% url 'card_generate' %}?card_type=1">{% blocktrans %}HotSpot{% endblocktrans %}</a></li>
+    <li><a class="btn_add" href="{% url 'card_generate' %}?card_type=2">{% blocktrans %}Карты VPN доступа{% endblocktrans %}</a></li>
+    <li><a class="btn_add" href="{% url 'card_generate' %}?card_type=3">{% blocktrans %}Карты телефонии{% endblocktrans %}</a></li>
   </ul>
   </div>
   <div class="btn-group">
@@ -509,7 +509,7 @@
   </ul>
 </div>
   <div class="btn-group">
-  <a id="id_btn_update" class="btn btn-success" href="{% url card_update %}">
+  <a id="id_btn_update" class="btn btn-success" href="{% url 'card_update' %}">
     <i class="icon-edit icon-white"></i>&nbsp;{% blocktrans %}Изменить выбранные{% endblocktrans %}
   </a>
 </div>

@@ -45,11 +45,11 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    <a href="{% url template %}">{% blocktrans %}Шаблоны документов{% endblocktrans %}</a> <span class="divider">/</span>
+    <a href="{% url 'template' %}">{% blocktrans %}Шаблоны документов{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 </ul>
 </div>
-<div class="btn-toolbar pull-right"><a href="{% url template_edit %}" class="btn btn-success align-right">{% blocktrans %}Добавить{% endblocktrans %}</a> </div>
+<div class="btn-toolbar pull-right"><a href="{% url 'template_edit' %}" class="btn btn-success align-right">{% blocktrans %}Добавить{% endblocktrans %}</a> </div>
 <div>
   {% render_table table %}
 </div>

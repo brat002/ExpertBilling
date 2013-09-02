@@ -46,7 +46,7 @@
      $("#modal-periodicalservice-dialog").click(function(event) {
          $('<div />').dialog2({
              title: "{% blocktrans %}Добавить разовую услугу{% endblocktrans %}", 
-             content: "{% url onetimeservice_edit %}?tariff_id={{item.id}}", 
+             content: "{% url 'onetimeservice_edit' %}?tariff_id={{item.id}}", 
              id: "ps-modal"
          });
 

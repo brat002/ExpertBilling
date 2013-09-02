@@ -9,7 +9,7 @@
             $("#id_btn_add").click(function(event) {
                 $('<div/>').dialog2({
                     title: "{% blocktrans %}Добавление группы абонентов{% endblocktrans %}", 
-                    content: "{% url accountgroup_edit %}", 
+                    content: "{% url 'accountgroup_edit' %}", 
                     id: "server-notice"
                 });
 
@@ -62,11 +62,11 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    <a href="{% url accountgroup %}">{% blocktrans %}Группы абонентов{% endblocktrans %}</a> <span class="divider">/</span>
+    <a href="{% url 'accountgroup' %}">{% blocktrans %}Группы абонентов{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 </ul>
 </div>
-<div class="btn-toolbar pull-right"><a href="{% url accountgroup_edit %}" id="id_btn_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a></div>
+<div class="btn-toolbar pull-right"><a href="{% url 'accountgroup_edit' %}" id="id_btn_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a></div>
 <div>
   {% render_table table %}
 </div>

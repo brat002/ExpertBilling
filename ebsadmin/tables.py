@@ -532,7 +532,7 @@ class LogTable(TableReport):
 class NasTable(TableReport):
     #row_number = django_tables.Column(verbose_name="#")
     name = django_tables.LinkColumn('nas_edit', verbose_name=_(u"Имя"), get_params={'id':A('pk')})
-    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?nas={{record.id}}' class='btn btn-mini btn-primary'>Изменить</a>", verbose_name=_(u'RADIUS атрибуты'), orderable=False)
+    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url 'radiusattr' %}?nas={{record.id}}' class='btn btn-mini btn-primary'>Изменить</a>", verbose_name=_(u'RADIUS атрибуты'), orderable=False)
     id = django_tables.LinkColumn('nas_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
@@ -635,7 +635,7 @@ class CommentTable(TableReport):
         self.name = 'CommentTable'
 
     id = django_tables.LinkColumn('comment_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-log-custom-dialog"})
-    done = django_tables.TemplateColumn("<a href='{% url comment_edit %}?id={{record.id}}&done=True' class='btn btn-mini btn-success comment-done'><i class='icon-ok icon-white'></i></a>&nbsp;<a href='{{record.get_remove_url}}' class='btn btn-mini btn-danger show-confirm'><i class='icon-remove icon-white'></i></a>", verbose_name='Действия', orderable=False)
+    done = django_tables.TemplateColumn("<a href='{% url 'comment_edit' %}?id={{record.id}}&done=True' class='btn btn-mini btn-success comment-done'><i class='icon-ok icon-white'></i></a>&nbsp;<a href='{{record.get_remove_url}}' class='btn btn-mini btn-danger show-confirm'><i class='icon-remove icon-white'></i></a>", verbose_name='Действия', orderable=False)
     object = django_tables.Column(verbose_name=u'Объект')
     #d = django_tables.TemplateColumn("", verbose_name=' ', orderable=False)
     
@@ -666,7 +666,7 @@ class TransactionTypeTable(TableReport):
 class TrafficClassTable(TableReport):
     id = django_tables.LinkColumn('trafficclass_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     name = django_tables.LinkColumn('trafficclass_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    directions = django_tables.TemplateColumn(u"<a href='{% url trafficnode_list %}?id={{record.id}}' class='btn btn-primary btn-mini'>Список направлений</a>", verbose_name=_(u'Направления'), orderable=False)
+    directions = django_tables.TemplateColumn(u"<a href='{% url 'trafficnode_list' %}?id={{record.id}}' class='btn btn-primary btn-mini'>Список направлений</a>", verbose_name=_(u'Направления'), orderable=False)
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a><input type='hidden' name='id' value='{{record.id}}'>", verbose_name=' ', orderable=False)
     
     def __init__(self, *args, **argv):
@@ -900,10 +900,10 @@ class DealerTable(TableReport):
         
 class TariffTable(TableReport):
     name = django_tables.LinkColumn('tariff_edit', get_params={'id':A('pk')})
-    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url radiusattr %}?tarif={{record.id}}' class='btn btn-mini btn-primary'>Изменить</a>", verbose_name=_(u'RADIUS атрибуты'), orderable=False)
+    radiusattrs = django_tables.TemplateColumn(u"<a href='{% url 'radiusattr' %}?tarif={{record.id}}' class='btn btn-mini btn-primary'>Изменить</a>", verbose_name=_(u'RADIUS атрибуты'), orderable=False)
     access_type = FormatBlankColumn(verbose_name=_(u'Тип доступа'), accessor=A('access_parameters.access_type'))
     
-    accounts_count = django_tables.TemplateColumn(u"<a href='{% url account_list %}?tariff={{record.id}}' class='btn btn-mini'>{{record.accounts_count}} <i class='icon-arrow-right'></i></a>", verbose_name=_(u'Аккаунтов'))
+    accounts_count = django_tables.TemplateColumn(u"<a href='{% url 'account_list' %}?tariff={{record.id}}' class='btn btn-mini'>{{record.accounts_count}} <i class='icon-arrow-right'></i></a>", verbose_name=_(u'Аккаунтов'))
     
     def __init__(self, *args, **argv):
         super(TariffTable, self).__init__(*args, **argv)
@@ -1033,7 +1033,7 @@ class RadiusTrafficNodeTable(TableReport):
 class TrafficLimitTable(TableReport):
     id = django_tables.LinkColumn('tariff_trafficlimit_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
-    speedlimit = django_tables.TemplateColumn("<a href='{% url tariff_speedlimit_edit %}?trafficlimit_id={{record.id}}' class='open-speedlimit-dialog'>{% if record.speedlimit %}{{record.speedlimit}}<a href='{{record.speedlimit.get_remove_url}}' class='show-speedlimit-confirm'><i class='icon-remove'></i></a>{% else %}Указать{% endif %}</a>", verbose_name='Изменить скорость', orderable=False)
+    speedlimit = django_tables.TemplateColumn("<a href='{% url 'tariff_speedlimit_edit' %}?trafficlimit_id={{record.id}}' class='open-speedlimit-dialog'>{% if record.speedlimit %}{{record.speedlimit}}<a href='{{record.speedlimit.get_remove_url}}' class='show-speedlimit-confirm'><i class='icon-remove'></i></a>{% else %}Указать{% endif %}</a>", verbose_name='Изменить скорость', orderable=False)
     #speed = TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
@@ -1396,7 +1396,7 @@ class SuppAgreementTable(TableReport):
     id = django_tables.LinkColumn('suppagreement_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('pk')})
     #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('account.id')})
-    accounts_count = django_tables.TemplateColumn("<a href='{% url account_list %}?suppagreement={{record.id}}' class='btn btn-mini'>{{record.accounts_count}} <i class='icon-arrow-right'></i></a>", verbose_name=_(u'У аккаунтов'), accessor=A('accounts_count'))
+    accounts_count = django_tables.TemplateColumn("<a href='{% url 'account_list' %}?suppagreement={{record.id}}' class='btn btn-mini'>{{record.accounts_count}} <i class='icon-arrow-right'></i></a>", verbose_name=_(u'У аккаунтов'), accessor=A('accounts_count'))
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
@@ -1417,7 +1417,7 @@ class AccountSuppAgreementTable(TableReport):
     id = django_tables.LinkColumn('accountsuppagreement_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('pk')})
     #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('account.id')})
-    #accounts_count = django_tables.TemplateColumn("<a href='{% url account_list %}?suppagreement={{record.id}}' class='btn btn-mini'>{{record.accounts_count}} <i class='icon-arrow-right'></i></a>", verbose_name=_(u'Аккаунтов'), accessor=A('accounts_count'))
+    #accounts_count = django_tables.TemplateColumn("<a href='{% url 'account_list' %}?suppagreement={{record.id}}' class='btn btn-mini'>{{record.accounts_count}} <i class='icon-arrow-right'></i></a>", verbose_name=_(u'Аккаунтов'), accessor=A('accounts_count'))
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)

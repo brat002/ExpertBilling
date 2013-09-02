@@ -41,7 +41,7 @@
 }
 </style>
 {% if form %}
-            <form method="POST" action="{% url tariff_speedlimit_edit %}?trafficlimit_id={{trafficlimit.id}}" class="well form-horizontal ajax form-condensed ">
+            <form method="POST" action="{% url 'tariff_speedlimit_edit' %}?trafficlimit_id={{trafficlimit.id}}" class="well form-horizontal ajax form-condensed ">
             {{form.id}}
                 <fieldset>
                   <div class="control-group">

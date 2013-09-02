@@ -28,7 +28,7 @@
 
       {% endfor %}
 {%  if form %}
-                <form action='{% url bonus_transaction_edit %}?id={{item.id}}'' method="POST" class="well form-horizontal ajax form-condensed ">
+                <form action='{% url 'bonus_transaction_edit' %}?id={{item.id}}'' method="POST" class="well form-horizontal ajax form-condensed ">
                 {{form|crispy}}
                 <div class="form-actions">
                     <input type='submit' class="btn btn-primary" value="{% blocktrans %}Добавить{% endblocktrans %}">

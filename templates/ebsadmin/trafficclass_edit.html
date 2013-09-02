@@ -19,7 +19,7 @@
  </script>
 
 {% if form %}
-            <form method="POST" action="{% url trafficclass_edit %}?id={{item.id}}" class="well form-horizontal ajax form-condensed ">
+            <form method="POST" action="{% url 'trafficclass_edit' %}?id={{item.id}}" class="well form-horizontal ajax form-condensed ">
             {{ form.id }}
             {{ form.weight }}
                 <fieldset>

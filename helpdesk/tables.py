@@ -68,7 +68,7 @@ class UnassignedTicketTable(TableReport):
     #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('pk')})
     ticket = django_tables.TemplateColumn("<a href='{{record.get_absolute_url}}'>{{record.ticket}}</a>", verbose_name='Заявка')
     title = django_tables.TemplateColumn("<a href='{{record.get_absolute_url}}' data='{{record.id}}' class='title-tooltip'>{{record.title}}</a>", verbose_name='Тема')
-    action = django_tables.TemplateColumn("<a href='{{record.get_absolute_url}}?take'  class='btn btn-primary btn-mini'>Принять</a>&nbsp;<a class='btn btn-danger btn-mini' href='{% url helpdesk_delete record.id %}'>Удалить</a>", verbose_name=' ', orderable=False)
+    action = django_tables.TemplateColumn("<a href='{{record.get_absolute_url}}?take'  class='btn btn-primary btn-mini'>Принять</a>&nbsp;<a class='btn btn-danger btn-mini' href='{% url 'helpdesk_delete' record.id %}'>Удалить</a>", verbose_name=' ', orderable=False)
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     

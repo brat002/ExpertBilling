@@ -8,7 +8,7 @@
             $("#id_btn_add").click(function(event) {
                 $('<div/>').dialog2({
                     title: "{% blocktrans %}Добавление типа оборудования{% endblocktrans %}", 
-                    content: "{% url hardwaretype_edit %}", 
+                    content: "{% url 'hardwaretype_edit' %}", 
                     id: "server-notice"
                 });
 
@@ -61,11 +61,11 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    <a href="{% url hardwaretype %}">{% blocktrans %}Типы оборудования{% endblocktrans %}</a> <span class="divider">/</span>
+    <a href="{% url 'hardwaretype' %}">{% blocktrans %}Типы оборудования{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 </ul>
 </div>
-<div class="btn-toolbar pull-right"><a href="{% url hardwaretype_edit %}" id="id_btn_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a>&nbsp;</div>
+<div class="btn-toolbar pull-right"><a href="{% url 'hardwaretype_edit' %}" id="id_btn_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a>&nbsp;</div>
 <div>
   {% render_table table %}
 </div>

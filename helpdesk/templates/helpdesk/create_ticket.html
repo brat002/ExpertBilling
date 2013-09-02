@@ -41,7 +41,7 @@ $(document).ready(function() {
   </div>
 </div>
 
-<form method='post' id='id_form' action='{% url helpdesk_submit %}' enctype='multipart/form-data' class="well form-horizontal  form-condensed">
+<form method='post' id='id_form' action='{% url 'helpdesk_submit' %}' enctype='multipart/form-data' class="well form-horizontal  form-condensed">
 
 {% crispy form %}
 

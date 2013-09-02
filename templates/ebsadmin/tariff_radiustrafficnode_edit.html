@@ -17,7 +17,7 @@
  </script>
 
 {% if form %}
-            <form method="POST" action="{% url tariff_radiustrafficnode_edit %}" class="well form-horizontal ajax form-condensed ">
+            <form method="POST" action="{% url 'tariff_radiustrafficnode_edit' %}" class="well form-horizontal ajax form-condensed ">
             {{form.id}}
             {{form.radiustraffic}}
                 <fieldset>

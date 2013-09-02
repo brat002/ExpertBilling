@@ -30,7 +30,7 @@
             <button type="button" class="close" data-dismiss="alert">×</button>
             {% blocktrans %}Внимание. Вы редактируете данные, которые могут повлиять на целостность связанных объектов. Не меняйте эти значения, если для этого нет веских причин.{% endblocktrans %}
           </div>
-                <form action='{% url payment_edit %}?id={{item.id}}'' method="POST" class="well form-horizontal ajax form-condensed ">
+                <form action='{% url 'payment_edit' %}?id={{item.id}}'' method="POST" class="well form-horizontal ajax form-condensed ">
                 <fieldset>
                   {{form|crispy}}
                

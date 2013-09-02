@@ -1040,15 +1040,16 @@ def run_report(request, report):
     priority_sql = []
     priority_columns = []
     for p in Ticket.PRIORITY_CHOICES:
-        priority_sql.append("COUNT(CASE t.priority WHEN '%s' THEN t.id END) AS \"%s\"" % (p[0], p[1]._proxy____unicode_cast()))
-        priority_columns.append("%s" % p[1]._proxy____unicode_cast())
+        print dir(p[1])
+        priority_sql.append("COUNT(CASE t.priority WHEN '%s' THEN t.id END) AS \"%s\"" % (p[0], p[1]._proxy____cast()))
+        priority_columns.append("%s" % p[1]._proxy____cast())
     priority_sql = ", ".join(priority_sql)
 
     status_sql = []
     status_columns = []
     for s in Ticket.STATUS_CHOICES:
-        status_sql.append("COUNT(CASE t.status WHEN '%s' THEN t.id END) AS \"%s\"" % (s[0], s[1]._proxy____unicode_cast()))
-        status_columns.append("%s" % s[1]._proxy____unicode_cast())
+        status_sql.append("COUNT(CASE t.status WHEN '%s' THEN t.id END) AS \"%s\"" % (s[0], s[1]._proxy____cast()))
+        status_columns.append("%s" % s[1]._proxy____cast())
     status_sql = ", ".join(status_sql)
 
     queue_sql = []

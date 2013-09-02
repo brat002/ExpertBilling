@@ -18,7 +18,7 @@
 
       {% endfor %}
 {% if form %}
-                <form action='{% url accountgroup_edit %}?id={{item.id}}'' method="POST" class="well form-horizontal  form-condensed  ajax">
+                <form action='{% url 'accountgroup_edit' %}?id={{item.id}}'' method="POST" class="well form-horizontal  form-condensed  ajax">
                 <legend>{% blocktrans %}Группа абонентов{% endblocktrans %}{% objectlog item %}</legend>
                 <fieldset>
                   {{ form.id }}

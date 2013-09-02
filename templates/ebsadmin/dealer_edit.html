@@ -36,11 +36,11 @@
 <div class="row-fluid">
 <ul class="breadcrumb">
   <li>
-    <a href="{% url dealer %}">{% blocktrans %}Дилеры{% endblocktrans %}</a> <span class="divider">/</span>{{item.name}}
+    <a href="{% url 'dealer' %}">{% blocktrans %}Дилеры{% endblocktrans %}</a> <span class="divider">/</span>{{item.name}}
   </li>
 </ul>
 
-<form id="id_form" method="POST" action="{% url dealer_edit %}?id={{item.id}}" class="well form-horizontal form-condensed ">
+<form id="id_form" method="POST" action="{% url 'dealer_edit' %}?id={{item.id}}" class="well form-horizontal form-condensed ">
 {{form.id}}
             <legend>{% blocktrans %}Профиль дилера{% endblocktrans %}{% objectlog item %}</legend>
              <fieldset>

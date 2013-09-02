@@ -61,17 +61,17 @@
     {% if request.user.username != ticket.assigned_to.username %}
         <div class="btn-group">
         
-        <a href='{% url ticket_assign %}?ticket_id={{ticket.id}}&systemuser_id={{request.user.account.id}}' class='btn reassign_dialog' ><i class='cus-accept'></i>&nbsp;{% trans "Take" %}</a>
+        <a href='{% url 'ticket_assign' %}?ticket_id={{ticket.id}}&systemuser_id={{request.user.account.id}}' class='btn reassign_dialog' ><i class='cus-accept'></i>&nbsp;{% trans "Take" %}</a>
         
       </div>
       {% endif %}
         <div class="btn-group">
 
-        <a href='{% url ticket_assign %}?ticket_id={{ticket.id}}' class='btn reassign_dialog' ><i class=' cus-arrow-right'></i>&nbsp;{% trans "Перевести" %}</a>
+        <a href='{% url 'ticket_assign' %}?ticket_id={{ticket.id}}' class='btn reassign_dialog' ><i class=' cus-arrow-right'></i>&nbsp;{% trans "Перевести" %}</a>
 
       </div>
       <div class="btn-group">
-        <a  href='{% url helpdesk_submit %}?id={{ticket.id}}' class='btn'><i class='icon-edit'></i>&nbsp;Изменить</a>
+        <a  href='{% url 'helpdesk_submit' %}?id={{ticket.id}}' class='btn'><i class='icon-edit'></i>&nbsp;Изменить</a>
       </div>
 
  
@@ -84,24 +84,24 @@
       </div>
  
     <div class="btn-group">
-    <a href='{% url followup_edit %}?ticket_id={{ticket.id}}&followup_type=comment' class="btn btn_followup_add"><i class='cus-comments-add'></i>&nbsp;{% blocktrans %}Комментарий{% endblocktrans %}</a>
+    <a href='{% url 'followup_edit' %}?ticket_id={{ticket.id}}&followup_type=comment' class="btn btn_followup_add"><i class='cus-comments-add'></i>&nbsp;{% blocktrans %}Комментарий{% endblocktrans %}</a>
     </div>
     
       <div class="btn-group">
-        <a  href='{% url followup_edit %}?ticket_id={{ticket.id}}&followup_type=files' class='btn btn_followup_add'><i class='cus-attach'></i>&nbsp;Прикрепить файл</a>
+        <a  href='{% url 'followup_edit' %}?ticket_id={{ticket.id}}&followup_type=files' class='btn btn_followup_add'><i class='cus-attach'></i>&nbsp;Прикрепить файл</a>
       </div>
       {% if ticket.status == 1 or ticket.status == 2 %}
       <div class="btn-group">
-        <a  href='{% url followup_edit %}?ticket_id={{ticket.id}}&followup_type=new_status' class='btn btn_followup_add'><i class='cus-cross'></i>&nbsp;Закрыть заявку</a>
+        <a  href='{% url 'followup_edit' %}?ticket_id={{ticket.id}}&followup_type=new_status' class='btn btn_followup_add'><i class='cus-cross'></i>&nbsp;Закрыть заявку</a>
       </div>
        {% endif %}
        {% if ticket.status == 3 or ticket.status == 4 %}
       <div class="btn-group">
-        <a  href='{% url followup_edit %}?ticket_id={{ticket.id}}&followup_type=new_status&new_status=2' class='btn btn_followup_add'><i class='cus-arrow-redo'></i>&nbsp;Переоткрыть заявку</a>
+        <a  href='{% url 'followup_edit' %}?ticket_id={{ticket.id}}&followup_type=new_status&new_status=2' class='btn btn_followup_add'><i class='cus-arrow-redo'></i>&nbsp;Переоткрыть заявку</a>
       </div>
       {% endif %}
       <div class="btn-group pull-right">
-        <a  href='{% url helpdesk_delete ticket.id %}' class='btn btn-danger'>Удалить</a>
+        <a  href='{% url 'helpdesk_delete' ticket.id %}' class='btn btn-danger'>Удалить</a>
       </div>
  
   </div>
@@ -158,7 +158,7 @@
     <td>{% for ticketcc in ticket.ticketcc_set.all %}
         {{ ticketcc.display }}{% if not forloop.last %}, {% endif %}
          {% endfor %}
-         <strong><a class="change_link" href='{% url helpdesk_ticket_cc ticket.id %}'>Настроить</a></strong>
+         <strong><a class="change_link" href='{% url 'helpdesk_ticket_cc' ticket.id %}'>Настроить</a></strong>
     </td>
 </tr>
 
@@ -237,7 +237,7 @@
 
 {% endif %}
 </div>
-<a href='{% url followup_edit %}?ticket_id={{ticket.id}}&followup_type=comment' class="btn btn_followup_add"><i class='cus-comments-add'></i>&nbsp;{% blocktrans %}Комментарий{% endblocktrans %}</a>
+<a href='{% url 'followup_edit' %}?ticket_id={{ticket.id}}&followup_type=comment' class="btn btn_followup_add"><i class='cus-comments-add'></i>&nbsp;{% blocktrans %}Комментарий{% endblocktrans %}</a>
 
 
 

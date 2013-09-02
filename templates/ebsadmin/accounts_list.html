@@ -18,7 +18,7 @@
                 {                      
                     $.ajax(
                     { 
-                        url: "{% url house %}",
+                        url: "{% url 'house' %}",
                         data: {
                                 term: request.term, 
                                 street_name: $('#id_street').val(),    //Pass the selected country to php
@@ -47,7 +47,7 @@
                 {                      
                     $.ajax(
                     { 
-                        url: "{% url street %}",
+                        url: "{% url 'street' %}",
                         data: {
                                 term: request.term, 
                                 city_id: $('#id_city').val()
@@ -208,7 +208,7 @@
                     arr.push(data); 
                   
                 });
-                window.location='{% url news_edit %}?'+$.param(arr);
+                window.location='{% url 'news_edit' %}?'+$.param(arr);
             	event.preventDefault(event);
             	
             }
@@ -926,7 +926,7 @@
           <div class="navbar navbar-googlenav">
                 <div class="navbar-inner">
                 <div class="btn-group">
-                <a href="{% url account_edit %}" class="btn btn-success"><i class="cus-user-add"></i>&nbsp;{% blocktrans %}Новый аккаунт{% endblocktrans %}</a>
+                <a href="{% url 'account_edit' %}" class="btn btn-success"><i class="cus-user-add"></i>&nbsp;{% blocktrans %}Новый аккаунт{% endblocktrans %}</a>
                 </div>
                 <div class="btn-group">
                 <a class="btn dropdown-toggle btn-info " data-toggle="dropdown" href="#">
@@ -934,36 +934,36 @@
 				    <span class="caret"></span>
 				  </a>
 				  <ul class="dropdown-menu">
-				    <li><a href="{% url account_management_status %}?status=1" class='management'>{% blocktrans %}Активен{% endblocktrans %}</a></li>
-				    <li><a href="{% url account_management_status %}?status=3" class='management'>{% blocktrans %}Не активен{% endblocktrans %}</a></li>
+				    <li><a href="{% url 'account_management_status' %}?status=1" class='management'>{% blocktrans %}Активен{% endblocktrans %}</a></li>
+				    <li><a href="{% url 'account_management_status' %}?status=3" class='management'>{% blocktrans %}Не активен{% endblocktrans %}</a></li>
 				  </ul>
 				  </div>
 				<div class="btn-group">
-                    <a href="{% url account_management_accounttariff %}" id="modal-accounttariff-dialog-table" class=" btn btn-success"><i class=' icon-share icon-white'></i> {% blocktrans %}Изменить ТП{% endblocktrans %}</a>
+                    <a href="{% url 'account_management_accounttariff' %}" id="modal-accounttariff-dialog-table" class=" btn btn-success"><i class=' icon-share icon-white'></i> {% blocktrans %}Изменить ТП{% endblocktrans %}</a>
                 </div>
                 
                 {% if form.deleted.value %}
                 <div class="btn-group">
-                    <a class=" btn btn-danger show-confirm" href="{% url account_management_delete %}"><i class=' icon-trash icon-white'></i> {% blocktrans %}Удалить из системы{% endblocktrans %}</a>
+                    <a class=" btn btn-danger show-confirm" href="{% url 'account_management_delete' %}"><i class=' icon-trash icon-white'></i> {% blocktrans %}Удалить из системы{% endblocktrans %}</a>
                 </div>
                 <div class="btn-group">
-                    <a class=" btn btn-success show-confirm" href="{% url account_management_restore %}"><i class='icon-share-alt icon-white'></i> {% blocktrans %}Восстановить из архива{% endblocktrans %}</a>
+                    <a class=" btn btn-success show-confirm" href="{% url 'account_management_restore' %}"><i class='icon-share-alt icon-white'></i> {% blocktrans %}Восстановить из архива{% endblocktrans %}</a>
                 </div>
                 {% else %}
                 <div class="btn-group">
-                    <a class="btn btn-danger show-confirm" href="{% url account_management_delete %}"><i class=' icon-trash icon-white'></i> {% blocktrans %}В архив{% endblocktrans %}</a>
+                    <a class="btn btn-danger show-confirm" href="{% url 'account_management_delete' %}"><i class=' icon-trash icon-white'></i> {% blocktrans %}В архив{% endblocktrans %}</a>
                 </div>
                 {% endif %}
                 
                 
                 <div class="btn-group">
-                <a href="{% url account_management_suspendedperiod %}"  id="modal-suspendedperiod-dialog-table" class="btn btn-danger"><i class=' icon-calendar icon-white'></i> {% blocktrans %}Период без ПУ{% endblocktrans %}</a>
+                <a href="{% url 'account_management_suspendedperiod' %}"  id="modal-suspendedperiod-dialog-table" class="btn btn-danger"><i class=' icon-calendar icon-white'></i> {% blocktrans %}Период без ПУ{% endblocktrans %}</a>
                 </div>
                 <div class="btn-group">
                 <a href="#"  id="id-modal-add-news" class="btn"><i class='cus-newspaper'></i> {% blocktrans %}Сообщение{% endblocktrans %}</a>
                 </div>
                 <div class="btn-group">
-                <a href="{% url sendsms %}"  id="modal-sendsms-dialog-table" class="btn">{% blocktrans %}SMS{% endblocktrans %}</a>
+                <a href="{% url 'sendsms' %}"  id="modal-sendsms-dialog-table" class="btn">{% blocktrans %}SMS{% endblocktrans %}</a>
                 </div>
                 {% comment %}
                 <div class="btn-group">

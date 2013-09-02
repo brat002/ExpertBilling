@@ -44,7 +44,7 @@
      $("#modal-timespeed-dialog").click(function(event) {
          $('<div />').dialog2({
              title: "{% blocktrans %}Добавить параметры изменения скорости{% endblocktrans %}", 
-             content: "{% url tariff_timespeed_edit %}?tariff={{tariff.id}}&access_parameters={{item.id}}", 
+             content: "{% url 'tariff_timespeed_edit' %}?tariff={{tariff.id}}&access_parameters={{item.id}}", 
              id: "traffictransmitnode-modal"
          });
 
@@ -55,7 +55,7 @@
  
 {% endblock %}
 {% block tariff_content %}
-<form method="POST" action="{% url tariff_accessparameters %}?tariff_id={{tariff.id}}"class="well form-horizontal form-condensed ">
+<form method="POST" action="{% url 'tariff_accessparameters' %}?tariff_id={{tariff.id}}"class="well form-horizontal form-condensed ">
 {{form.id}}
                   <div class="control-group">
 

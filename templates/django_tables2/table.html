@@ -8,7 +8,7 @@
             $("#id_per_page{{table.name}}").change(function(){
             	//$.cookie('ebs_per_page{{table.name}}',  $("#id_per_page{{table.name}}").val());
             	
-                var url = "{% url table_settings %}"; // the script where you handle the form input.
+                var url = "{% url 'table_settings' %}"; // the script where you handle the form input.
                 $(".columns_submit").attr('disabled', 'disabled');
                 var form = $('#{{table.columns_form.table_name.value}}');
 
@@ -33,7 +33,7 @@
             
             $("#submit{{table.columns_form.table_name.value}}").bind('click', function() {
 
-                var url = "{% url table_settings %}"; // the script where you handle the form input.
+                var url = "{% url 'table_settings' %}"; // the script where you handle the form input.
                 $(".columns_submit").attr('disabled', 'disabled');
                 var form = $('#{{table.columns_form.table_name.value}}');
 
@@ -208,7 +208,8 @@
 
 
 
-
+{% else %}
+<input type='hidden' value='25' name='id_per_page{{table.name}}'>
 {% endif %}
 </div>
 {% endspaceless %}

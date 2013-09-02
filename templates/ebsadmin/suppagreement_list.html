@@ -45,11 +45,11 @@
 <div>
 <ul class="breadcrumb">
   <li>
-    <a href="{% url suppagreement %}">{% blocktrans %}Вид дополнительного соглашения{% endblocktrans %}</a> <span class="divider">/</span>
+    <a href="{% url 'suppagreement' %}">{% blocktrans %}Вид дополнительного соглашения{% endblocktrans %}</a> <span class="divider">/</span>
   </li>
 </ul>
 </div>
-<div class="btn-toolbar pull-right"><a href="{% url suppagreement_edit %}" class="btn btn-success align-right">{% blocktrans %}Добавить{% endblocktrans %}</a> </div>
+<div class="btn-toolbar pull-right"><a href="{% url 'suppagreement_edit' %}" class="btn btn-success align-right">{% blocktrans %}Добавить{% endblocktrans %}</a> </div>
 <div>
   {% render_table table %}
 </div>

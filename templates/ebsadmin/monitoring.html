@@ -33,7 +33,7 @@
                 
                 $.ajax(
                         {
-                            url: "{% url radiusstat %}",     
+                            url: "{% url 'radiusstat' %}",     
                             type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
                             dataType: "json",   //return data in json format                                                                                                                                       
                             success: function( data ) 
@@ -74,7 +74,7 @@
                 {% for nas_id, nas_name in radiusstat_nasses %}
                 $.ajax(
                         {
-                            url: "{% url radiusstat %}?nas={{nas_id}}",     
+                            url: "{% url 'radiusstat' %}?nas={{nas_id}}",     
                             type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
                             dataType: "json",   //return data in json format                                                                                                                                       
                             success: function( data ) 
