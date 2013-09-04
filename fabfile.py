@@ -245,6 +245,7 @@ def stop():
         local("billing force-stop")
         local("billing force-stop")
         local("/etc/init.d/apache2 stop")
+        local("killall -9 python")
 
 
 def init_scripts():
