@@ -450,8 +450,8 @@ class HandleSAcct(HandleSBase):
         self.replypacket.code = packet.AccountingResponse
         
         self.reply()
-        now = datetime.datetime.now()
-        now=datetime.datetime(now.year, now.day, now.hour, now.minute, now.second)
+        now = datetime.datetime.now().replace(microsecond=0)
+        #now=datetime.datetime(now.year, now.day, now.hour, now.minute, now.second)
         #print self.packetobject
         #packet_session = self.packetobject['Acct-Session-Id'][0]
         logger.warning("Session %s", (repr(self.packetobject),))
