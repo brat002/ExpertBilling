@@ -104,13 +104,13 @@ def charts(request):
             print report
             if report=='distnassestraffic':
                 print "distnassestraffic"
-                cur.execute("""select (select name from nas_nas WHERE id=gst.nas_id) as nas,  sum(bytes_in+bytes_out)/(1024*1024) FROM billservice_globalstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by nas_id;""" \
+                cur.execute("""select (select name from nas_nas WHERE id=gst.nas_id) as nas,  sum(bytes_in+bytes_out)/1024 FROM billservice_globalstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by nas_id;""" \
                             % (nasses_str, groups_str), ( start_date, end_date))
                 res = cur.fetchall()
                 return render_to_response('ebsadmin/charts_pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
             if report=='nassestraffic':
 
-                cur.execute("""select (select name from nas_nas WHERE id=gst.nas_id) as nas,  date_trunc(%%s, gst.datetime) as dt, sum(bytes_in+bytes_out)/(1024*1024) FROM billservice_globalstat as gst WHERE True %s %s and gst.datetime between %%s and %%s GROUP by nas_id, date_trunc(%%s, gst.datetime) order by nas,dt;""" \
+                cur.execute("""select (select name from nas_nas WHERE id=gst.nas_id) as nas,  date_trunc(%%s, gst.datetime) as dt, sum(bytes_in+bytes_out)/1024 FROM billservice_globalstat as gst WHERE True %s %s and gst.datetime between %%s and %%s GROUP by nas_id, date_trunc(%%s, gst.datetime) order by nas,dt;""" \
                             % (nasses_str, groups_str), (grouping, start_date, end_date, grouping))
                 res = []
                 subitems = []
@@ -126,7 +126,7 @@ def charts(request):
                 return render_to_response('ebsadmin/charts_multiline.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
             
             if report=='distrtrafficgroups':
-                cur.execute("""select (select name from billservice_group WHERE id=gst.group_id) as group,  sum(bytes)/(1024*1024) FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by group_id;""" \
+                cur.execute("""select (select name from billservice_group WHERE id=gst.group_id) as group,  sum(bytes)/1024 FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by group_id;""" \
                             % (accounts_str, groups_str), ( start_date, end_date))
                 res = cur.fetchall()
                 return render_to_response('ebsadmin/charts_pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
@@ -160,12 +160,12 @@ def charts(request):
                 return render_to_response('ebsadmin/charts_pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
             
             if report=='distraccountstraffic':
-                cur.execute("""select (select username from billservice_account WHERE id=gst.account_id) as username,  sum(bytes)/(1024*1024) FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by account_id;""" \
+                cur.execute("""select (select username from billservice_account WHERE id=gst.account_id) as username,  sum(bytes)/1024 FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by account_id;""" \
                             % (accounts_str, groups_str), ( start_date, end_date))
                 res = cur.fetchall()
                 return render_to_response('ebsadmin/charts_pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
             if report=='distraccountstoptraffic':
-                cur.execute("""select (select username from billservice_account WHERE id=gst.account_id) as username,  sum(bytes)/(1024*1024) as b FROM billservice_groupstat as gst WHERE True %s and datetime between %%s and %%s GROUP by account_id ORDER BY b desc limit 10;""" \
+                cur.execute("""select (select username from billservice_account WHERE id=gst.account_id) as username,  sum(bytes)/1024 as b FROM billservice_groupstat as gst WHERE True %s and datetime between %%s and %%s GROUP by account_id ORDER BY b desc limit 10;""" \
                             % (groups_str,), ( start_date, end_date))
                 res = cur.fetchall()
                 return render_to_response('ebsadmin/charts_pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
@@ -188,13 +188,13 @@ def charts(request):
                 return render_to_response('ebsadmin/charts_multiline.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
     
             if report=='accountstraffic':
-                cur.execute("""select date_trunc(%%s, datetime) as dt,  sum(bytes)/(1024*1024) FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by date_trunc(%%s, datetime) ORDER BY dt ASC;""" \
+                cur.execute("""select date_trunc(%%s, datetime) as dt,  sum(bytes)/1024 FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by date_trunc(%%s, datetime) ORDER BY dt ASC;""" \
                             % (accounts_str, groups_str), ( grouping, start_date, end_date, grouping))
                 res = cur.fetchall()
                 return render_to_response('ebsadmin/charts_line.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
             
             if report=='selectedaccountstraffic':
-                cur.execute("""select (select username from billservice_account WHERE id=gst.account_id) as username, date_trunc(%%s, datetime) as dt,  sum(bytes)/(1024*1024) FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by account_id, date_trunc(%%s, datetime) ORDER BY username, dt ASC;""" \
+                cur.execute("""select (select username from billservice_account WHERE id=gst.account_id) as username, date_trunc(%%s, datetime) as dt,  sum(bytes)/1024 FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by account_id, date_trunc(%%s, datetime) ORDER BY username, dt ASC;""" \
                             % (accounts_str, groups_str), ( grouping, start_date, end_date, grouping))
                 res = []
                 subitems = []
@@ -211,10 +211,10 @@ def charts(request):
 
 
             if report=='accountsincrease':
-                cur.execute(""" select date_trunc(%s, created),  (SELECT count(*) FROM billservice_account WHERE id<=acc.id and deleted is null)-(SELECT count(*) FROM billservice_account WHERE id<=acc.id and deleted is not null) FROM billservice_account as acc
+                cur.execute(""" select date_trunc(%s, acc.created),  (SELECT count(*) FROM billservice_account WHERE created<=date_trunc(%s, acc.created) and deleted is null)-(SELECT count(*) FROM billservice_account WHERE created<=date_trunc(%s, acc.created)  and deleted is not null) FROM billservice_account as acc
                                 WHERE created between %s and %s ORDER BY  created ASC;
                 ;""" \
-                            , (grouping,  start_date, end_date,))
+                            , (grouping,  grouping, grouping, start_date, end_date,))
                 res = cur.fetchall()
     
                 return render_to_response('ebsadmin/charts_line.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form,  'report_name':report_name, 'reporttype':reporttype})
