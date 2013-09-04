@@ -222,7 +222,7 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
             JOIN billservice_tariff as t ON t.id=get_tarif(a.id)
             JOIN billservice_accessparameters as ap ON ap.id=t.access_parameters_id
             WHERE a.id=%s
-        """, (account.account_id,))
+        """, (account.get('account_id'),))
         conn.commit()
         tariff_access_type = cur.fetchone()[0]
         cur.close()

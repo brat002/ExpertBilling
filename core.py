@@ -1191,7 +1191,7 @@ class addon_service(Thread):
                                         accounttarif_id, type_id, summ, created)
                                 VALUES (%s, 'onetime', %s, %s, 
                                         %s, %s, (-1)*%s,%s)
-                            """,  (service.id, acc.account_id, accountaddonservice.id, acc.acctf_id, "ADDONSERVICE_ONETIME", service.cost, dateAT,))
+                            """,  (service.id, acc.account_id, accountaddonservice.id, acc.acctf_id, "ADDONSERVICE_ONETIME", accountaddonservice.cost, dateAT,))
                             cur.execute("UPDATE billservice_accountaddonservice SET last_checkout = %s WHERE id=%s", (dateAT, accountaddonservice.id))
 
                             
