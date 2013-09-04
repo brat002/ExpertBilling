@@ -25,7 +25,7 @@ chartdata = {
 'distraccountstraffic': {'name':_(u'Распределение трафика по аккаунтам '), 'tabs':['accountsTab', 'groupsTab'], 'type': 'pie'},
 'distnassestraffic': {'name':_(u'Распределение трафика по серверам доступа'), 'tabs':['nassesTab', 'groupsTab'], 'type': 'pie'},
 'distraccountstoptraffic': {'name':_(u'ТОП 10 по потреблению трафика '), 'tabs':[ 'groupsTab'], 'type': 'pie'},
-'accountsincrease': {'name':_(u'Прирост абонентской базы '),  'yname':_(u'Количество'), 'tabs':[], 'type': 'spline'},
+'accountsincrease': {'name':_(u'Прирост абонентской базы '),  'yname':_(u'Количество'), 'utins': u'Аккаунтов', 'tabs':[], 'type': 'spline'},
 #'moneydynamic': {'name':u'Динамика прибыли ', 'tabs':[]},
 'disttransactiontypessumm': {'name':_(u'Распределение платежей/списаний по типам (сумма) '), 'units': settings.CURRENCY, 'tabs':[], 'type': 'pie'},
 'disttransactiontypescount': {'name':_(u'Распределение платежей/списаний по типам(кол-во)'), 'units': _(u'шт.'), 'tabs':[], 'type': 'pie'},

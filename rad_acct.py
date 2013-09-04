@@ -197,9 +197,9 @@ class PacketSender(Thread):
             if suicideCondition[self.__class__.__name__]: 
                 break
             try:
-                d = acct_output_queue.get(timeout=0.1)
+                d = acct_output_queue.get(timeout=0.01)
                 if not d:
-                    time.sleep(0.5)
+                    time.sleep(0.01)
                     continue
                 data,addrport, transport = d
                 transport.write(data, addrport)
