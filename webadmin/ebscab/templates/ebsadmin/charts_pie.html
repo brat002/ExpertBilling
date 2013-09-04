@@ -16,7 +16,7 @@ $(document).ready(function() {
         },
         tooltip: {
             formatter: function() {
-                return '<b>'+ this.point.name +'</b>: '+ this.y.toFixed(2) + {% if rep.units %}' {{rep.units}}'{% else %}' МБ'{% endif %};
+                return '<b>'+ this.point.name +'</b>: '+ this.y.toFixed(4) + {% if rep.units %}' {{rep.units}}'{% else %}' МБ'{% endif %};
             }
         },
 
@@ -32,7 +32,7 @@ $(document).ready(function() {
                     color: '#000000',
                     connectorColor: '#000000',
                     formatter: function() {
-                        return '<b>'+ this.point.name +'</b>: '+ this.y.toFixed(2) +{% if rep.units %}' {{rep.units}}'{% else %}' МБ'{% endif %};
+                        return '<b>'+ this.point.name +'</b>: '+ this.y.toFixed(4) +{% if rep.units %}' {{rep.units}}'{% else %}' МБ'{% endif %};
                     }
                 }
             }
