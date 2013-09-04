@@ -47,7 +47,7 @@
             	if (account_id) {
 	                $('<div/>').dialog2({
 	                    title: "{% blocktrans %}Внести платёж{% endblocktrans %}", 
-	                    content: "{% url transaction_edit %}?account_id="+account_id, 
+	                    content: "{% url 'transaction_edit' %}?account_id="+account_id, 
 	                    id: "server-notice"
 	                });
 	                
@@ -61,7 +61,7 @@
             	if (account_id) {
 	                $('<div/>').dialog2({
 	                    title: "{% blocktrans %}Внести бонусный платёж{% endblocktrans %}", 
-	                    content: "{% url bonus_transaction_edit %}?account_id="+account_id, 
+	                    content: "{% url 'bonus_transaction_edit' %}?account_id="+account_id, 
 	                    id: "server-notice"
 	                });
             	}
@@ -85,7 +85,7 @@
                 {                      
                     $.ajax(
                     { 
-                        url: "{% url house %}",
+                        url: "{% url 'house' %}",
                         data: {
                                 term: request.term, 
                                 street_name: $('#id_street').val(),    //Pass the selected country to php
@@ -114,7 +114,7 @@
                 {                      
                     $.ajax(
                     { 
-                        url: "{% url street %}",
+                        url: "{% url 'street' %}",
                         data: {
                                 term: request.term, 
                                 city_id: $('#id_city').val()
@@ -178,7 +178,7 @@
 </div>
 <div class="btn-toolbar">
   <div class="btn-group">
-        <a href="{% url account_edit %}" class='btn'><i class="cus-user-add"></i>&nbsp;{% blocktrans %}Новый аккаунт{% endblocktrans %}</a>
+        <a href="{% url 'account_edit' %}" class='btn'><i class="cus-user-add"></i>&nbsp;{% blocktrans %}Новый аккаунт{% endblocktrans %}</a>
   </div>
   <div class="btn-group">
     <button id="modal-transaction-dialog" class="btn btn-primary"><i class='icon-plus icon-white'></i> {% blocktrans %}Пополнить баланс{% endblocktrans %}</button>
@@ -193,7 +193,7 @@
   </div>
 
   <div class="btn-group">
-    <a href="{% url cashier_transactionreport %}" class="btn btn-info">{% blocktrans %}Мои операции с балансом{% endblocktrans %}</a>
+    <a href="{% url 'cashier_transactionreport' %}" class="btn btn-info">{% blocktrans %}Мои операции с балансом{% endblocktrans %}</a>
   </div>
   
   <div class="btn-group">

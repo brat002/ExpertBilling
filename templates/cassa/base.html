@@ -103,7 +103,7 @@ height:100%;
 <div class="navbar  navbar-googlenav navbar-fixed-top">
   <div class="navbar-inner">
   <div class="container">
-<a class="brand" href="{% url admin_dashboard %}">
+<a class="brand" href="{% url 'admin_dashboard' %}">
   {% blocktrans %}ExpertBiling кассир{% endblocktrans %}
 </a>  
     
@@ -111,7 +111,7 @@ height:100%;
 <ul class="nav">
 
      <li >
-       <a href="{% url cashier_index %}">
+       <a href="{% url 'cashier_index' %}">
              
              {% blocktrans %}Главная{% endblocktrans %}
              
@@ -119,14 +119,14 @@ height:100%;
 
      </li>
      <li >
-       <a href="{% url admin_dashboard %}">
+       <a href="{% url 'admin_dashboard' %}">
              
              {% blocktrans %}Интерфейс администратора{% endblocktrans %}
              
        </a>
 
      </li>
-     <li><a href="{% url activesessionreport %}?only_active=on"><i class="cus-connect"></i>&nbsp;{% blocktrans %}Монитор сессий{% endblocktrans %}</a></li>
+     <li><a href="{% url 'activesessionreport' %}?only_active=on"><i class="cus-connect"></i>&nbsp;{% blocktrans %}Монитор сессий{% endblocktrans %}</a></li>
 
 </ul>
      <ul class="nav pull-right">
