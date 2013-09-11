@@ -60,7 +60,7 @@ class PaymentProcessor(PaymentProcessorBase):
             payment.amount_paid = payment.amount
             payment.save()
             payment.change_status('paid')
-        return '0'
+        return ''
     
     
 import listeners
