@@ -44,12 +44,12 @@ def suppagreement_edit(request):
         else:
             form = SuppAgreementForm(request.POST)
         if id:
-            if  not (request.user.account.has_perm('billservice.change_suppagreement')):
+            if  not (request.user.account.has_perm('billservice.edit_suppagreement')):
                 messages.error(request, _(u'У вас нет прав на редактирование видов дополнительных соглашений'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
             
-            if  not (request.user.account.has_perm('billservice.add_suppagreement')):
+            if  not (request.user.account.has_perm('billservice.edit_suppagreement')):
                 messages.error(request, _(u'У вас нет прав на создание видов дополнительных соглашений'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
