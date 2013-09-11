@@ -55,7 +55,7 @@ def accountsuppagreement_edit(request):
             return {'form':form,  'status': False} 
     else:
         id = request.GET.get("id")
-        if  not (request.user.account.has_perm('billservice.view_accountsuppagreement')):
+        if  not (request.user.account.has_perm('billservice.view_account')):
             messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return HttpResponseRedirect('/ebsadmin/')
         if id:
