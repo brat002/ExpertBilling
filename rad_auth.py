@@ -364,7 +364,7 @@ class HandleSAuth(HandleSBase):
             else:
                 self.replypacket.AddAttribute(attr.attrid, str(attr.value))
                 
-    def find_free_ip(self,id):
+    def find_free_ip(self,id, acct_interval):
         def next(id):
             pool= self.caches.ippool_cache.by_id.get(id)
             if not pool: return None
@@ -382,7 +382,7 @@ class HandleSAuth(HandleSBase):
             
             processed_pools.append(id)
 
-            self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (id,))
+            self.cursor.execute('SELECT get_free_ip_from_pool(%s, %s);', (id, acct_interval))
             framed_ip_address = self.cursor.fetchone()[0]
             if framed_ip_address: return id, framed_ip_address
 
@@ -623,11 +623,11 @@ class HandleSAuth(HandleSBase):
                         if acstatus==False:
                             pool_id=acc.vpn_guest_ippool_id
                             logger.debug("Searching free ip for subaccount %s in vpn guest pool with id %s ", (str(user_name), acc.vpn_guest_ippool_id))
-                            self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
+                            self.cursor.execute('SELECT get_free_ip_from_pool(%s, %s);', (pool_id, nas.acct_interim_interval))
                             self.cursor.connection.commit()
                             vpn_ip_address = self.cursor.fetchone()[0]
                         else:
-                            pool_id, vpn_ip_address = self.find_free_ip(pool_id)
+                            pool_id, vpn_ip_address = self.find_free_ip(pool_id, nas.acct_interim_interval)
 
                         #self.cursor.connection.commit()
                         if vpn_ip_address in ['0.0.0.0', '', None]:
@@ -988,10 +988,10 @@ class HandleHotSpotAuth(HandleSAuth):
                 try:
                     #self.create_cursor()
                     pool_id=acc.ipv4_vpn_pool_id if acc.ipv4_vpn_pool_id else acc.vpn_ippool_id
-                    self.cursor.execute('SELECT get_free_ip_from_pool(%s);', (pool_id,))
+                    self.cursor.execute('SELECT get_free_ip_from_pool(%s, %s);', (pool_id, nas.acct_interim_interval))
                     vpn_ip_address = self.cursor.fetchone()[0]
                     if not vpn_ip_address:
-                        pool_id, vpn_ip_address = self.find_free_ip(pool_id)
+                        pool_id, vpn_ip_address = self.find_free_ip(pool_id, nas.acct_interim_interval)
 
                     #self.cursor.connection.commit()
                     if not vpn_ip_address:
@@ -1243,7 +1243,7 @@ class CacheRoutine(Thread):
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
                         time.sleep(10)
             gc.collect()
-            time.sleep(5)
+            time.sleep(60)
 
 
 def SIGTERM_handler(signum, frame):
