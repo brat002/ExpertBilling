@@ -1515,6 +1515,7 @@ class IPInUse(models.Model):
     disabled = models.DateTimeField(blank=True, null=True, verbose_name=_(u'Дата освобождения'))
     dynamic = models.BooleanField(default=False, verbose_name=_(u'Выдан динамически'))
     ack  = models.BooleanField(default=False, blank=True, verbose_name=_(u'Подтверждён'))
+    lost = models.DateTimeField(blank=True, null=True, verbose_name=_(u'Сессия сброшена'))
 
     class Meta:
         ordering = ['ip']

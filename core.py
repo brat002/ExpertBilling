@@ -246,11 +246,11 @@ class check_vpn_access(Thread):
                         
                         from_start = (dateAT-rs.date_start).seconds+(dateAT-rs.date_start).days*86400
                             
-                        if (rs.time_from_last_update and rs.time_from_last_update+15>=nas.acct_interim_interval*10+3) or (not rs.time_from_last_update and from_start>=nas.acct_interim_interval*10+3):
+                        if (rs.time_from_last_update and rs.time_from_last_update+15>=nas.acct_interim_interval*3+3) or (not rs.time_from_last_update and from_start>=nas.acct_interim_interval*3+3):
                             cur.execute("""UPDATE radius_activesession SET session_status='ACK' WHERE id=%s;
                                         """, (rs.id,))
                             cur.execute("""
-                            UPDATE billservice_ipinuse SET disabled=now() WHERE id=%s
+                            UPDATE billservice_ipinuse SET lost=now() WHERE id=%s
                             """, (rs.ipinuse_id, ))
                         cur.connection.commit()               
                     

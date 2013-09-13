@@ -339,12 +339,13 @@ class HandleSAcct(HandleSBase):
         """Deny access"""
         # Access denided
         self.replypacket.code = packet.AccessReject
-        acct_output_queue.put((self.replypacket.ReplyPacket(), self.addrport, self.transport))
+        #acct_output_queue.put((self.replypacket.ReplyPacket(), self.addrport, self.transport))
+        self.transport.write(self.replypacket.ReplyPacket(), self.addrport)
     
     def reply(self):
-        #self.transport.write(self.replypacket.ReplyPacket(), self.addrport)
+        self.transport.write(self.replypacket.ReplyPacket(), self.addrport)
         
-        acct_output_queue.put((self.replypacket.ReplyPacket(), self.addrport, self.transport))
+        #acct_output_queue.put((self.replypacket.ReplyPacket(), self.addrport, self.transport))
         
     def handle(self):
         # TODO: Прикрутить корректное определение НАС-а
@@ -490,7 +491,7 @@ class HandleSAcct(HandleSBase):
                                         self.packetobject.get('Framed-IP-Address',[''])[0],
                                         self.nasip, self.access_type, nas_int_id, session_speed, self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None ,ipinuse_id if ipinuse_id else None ))
                 if ipinuse_id:
-                    self.cur.execute("UPDATE billservice_ipinuse SET ack=True,disabled=NULL where id=%s", (ipinuse_id,))
+                    self.cur.execute("UPDATE billservice_ipinuse SET ack=True, lost=NULL, disabled=NULL where id=%s", (ipinuse_id,))
                     
                 #radiusstatthr.add_start(nas_id=nas_int_id, timestamp=now)
         elif self.packetobject['Acct-Status-Type']==['Alive']:
@@ -531,7 +532,7 @@ class HandleSAcct(HandleSBase):
                 self.cur.execute(insert_data)
 
             if ipinuse_id:
-                self.cur.execute("UPDATE billservice_ipinuse SET ack=True,disabled=NULL where id=%s and (ack=False or disabled is not null)", (ipinuse_id,))
+                self.cur.execute("UPDATE billservice_ipinuse SET ack=True,lost=NULL, disabled=NULL where id=%s and (ack=False or disabled is not null)", (ipinuse_id,))
 
             #radiusstatthr.add_alive(nas_id=nas_int_id, timestamp=now)
                             
@@ -550,7 +551,7 @@ class HandleSAcct(HandleSBase):
                 
             #radiusstatthr.add_stop(nas_id=nas_int_id, timestamp=now)                
             if ipinuse_id:
-                self.cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE id=%s", (ipinuse_id,))
+                self.cur.execute("UPDATE billservice_ipinuse SET disabled=now(), lost=NULL WHERE id=%s", (ipinuse_id,))
         self.cur.connection.commit()
         #self.cur.close()       
         
@@ -594,8 +595,8 @@ class CacheRoutine(Thread):
                     except Exception, eex:
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
                         time.sleep(10)
-            gc.collect()
-            time.sleep(5)
+            #gc.collect()
+            time.sleep(60)
 
 
 def SIGTERM_handler(signum, frame):
