@@ -1752,7 +1752,7 @@ class SubAccount(models.Model):
     ipn_added = models.BooleanField(verbose_name=_(u'Добавлен на NAS'))
     ipn_enabled = models.BooleanField(verbose_name=_(u'Включен на NAS'))
     ipn_sleep = models.BooleanField(verbose_name=_(u'Не менять IPN статус'))
-    ipn_queued = models.DateTimeField(blank=True, null=True, verbose_name=_('Поставлен в очередь на изменение статуса'))
+    ipn_queued = models.DateTimeField(blank=True, null=True, verbose_name=_(u'Поставлен в очередь на изменение статуса'))
     need_resync = models.BooleanField()
     speed = models.TextField(blank=True)
     switch = models.ForeignKey("Switch", blank=True, null=True, on_delete = models.SET_NULL)
