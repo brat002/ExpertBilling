@@ -47,7 +47,7 @@ from ctypes import Structure
 from hashlib import md5
 import commands
 from base64 import b64decode
-
+from operator import itemgetter, attrgetter
 #===============================================================================
 # from importlib import import_module ##DONT REMOVE
 # import contextlib
@@ -65,7 +65,7 @@ sys.path.append("/opt/ebs/data/workers/")
 sys.path.append("workers/")
 sys.path.append("celery/")
 
-from tasks import PoD, change_speed, cred, update_vpn_speed_state, update_ipn_speed_state
+from tasks import PoD, change_speed, cred, update_vpn_speed_state, update_ipn_speed_state, update_pod_state
 import tasks
 
 from db import transaction, get_last_checkout, get_acctf_history, radiustraffictransaction
@@ -150,7 +150,8 @@ class check_vpn_access(Thread):
                 ips = []
                 cur.connection.commit()
                 cur.execute("""SELECT rs.id,rs.account_id, rs.subaccount_id, rs.sessionid,rs.framed_ip_address, rs.speed_string,
-                                    lower(rs.framed_protocol) AS access_type,rs.nas_int_id, extract('epoch' from %s-rs.interrim_update) as last_update, rs.date_start,rs.ipinuse_id, rs.caller_id, ((SELECT pool_id FROM billservice_ipinuse WHERE id=rs.ipinuse_id)=(SELECT vpn_guest_ippool_id FROM billservice_tariff WHERE id=get_tarif(rs.account_id)))::boolean as guest_pool, rs.nas_port_id
+                                    lower(rs.framed_protocol) AS access_type,rs.nas_int_id, extract('epoch' from %s-rs.interrim_update) as last_update, rs.date_start,rs.ipinuse_id, rs.caller_id, ((SELECT pool_id FROM billservice_ipinuse WHERE id=rs.ipinuse_id)=(SELECT vpn_guest_ippool_id FROM billservice_tariff WHERE id=get_tarif(rs.account_id)))::boolean as guest_pool, rs.nas_port_id,
+                                    rs.speed_change_queued, rs.pod_queued,
                                     FROM radius_activesession AS rs WHERE rs.date_end IS NULL AND rs.date_start <= %s and session_status='ACTIVE';""", (dateAT, dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
@@ -182,7 +183,7 @@ class check_vpn_access(Thread):
                             dublicated_ips[rs.framed_ip_address]=[]
                         dublicated_ips[rs.framed_ip_address].append(rs)
                         
-                        if acstatus and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id):
+                        if acstatus and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id) and not rs.speed_change_queued:
                             #chech whether speed has changed
                             account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
                             
@@ -225,22 +226,24 @@ class check_vpn_access(Thread):
                                                     speed=speed, cb=tasks.update_vpn_speed_state.s(nas_id=rs.nas_id, nas_port_id=rs.nas_port_id, session_id=rs.id, newspeed=newspeed))
 
                                 logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-                        else:
+                        elif not (acstatus and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id) and rs.pod_queued) :
                             logger.debug("%s: Send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-                            PoD.delay(acc._asdict(), subacc._asdict(), nas._asdict(), access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, caller_id=str(rs.caller_id), format_string=str(nas.reset_action))
+                            PoD.delay(acc._asdict(), subacc._asdict(), nas._asdict(), access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, caller_id=str(rs.caller_id), format_string=str(nas.reset_action), cb=tasks.update_pod_state.s(nas_id=rs.nas_id, nas_port_id=rs.nas_port_id, session_id=rs.id))
                             logger.debug("%s: POD sended: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-
+                        else:
+                            continue
                         for key, value in dublicated_ips.iteritems():
                             if len(value)<=1: continue
-                            value = sorted(value, lambda k: k.date_start)
+                            logger.debug("%s: Dublicated IP detected %s %s", (self.getName(), key, value))
+                            value = sorted(value, key=attrgetter('date_start'))
                             first = True
                             for rs in value:
                                 if first == True:
                                     first = False
                                     continue
-                                logger.debug("%s: Send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
+                                logger.debug("%s: Send dublicates remove POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                                 PoD.delay(acc._asdict(), subacc._asdict(), nas._asdict(), access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, caller_id=str(rs.caller_id), format_string=str(nas.reset_action))
-                                logger.debug("%s: POD sended: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
+                                logger.debug("%s: dublicates remove POD sended: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
 
                             
                         
@@ -1555,6 +1558,8 @@ class ipn_service(Thread):
                         access_list = []
                             
                         for subacc in subaccounts:
+                            if subacc.ipn_queued:
+                                logger.info("IPNALIVE: %s: Queued IPN command for subaccount %s is not empty", (self.getName(), subacc.id))
                             if not subacc.nas_id or (subacc.ipn_ip_address=='0.0.0.0' and subacc.ipn_mac_address==''): continue
                             access_list.append((subacc.id, subacc.ipn_ip_address,  subacc.ipn_mac_address, subacc.vpn_ip_address, subacc.nas_id, subacc))
                         #if not acc.tarif_active or acc.ipn_ip_address == '0.0.0.0' and '0.0.0.0' in [[x.ipn_ip_address, x.nas_id] if x is not '0.0.0.0' else 1 for x in subaccounts]: continue
@@ -1635,6 +1640,7 @@ class ipn_service(Thread):
                             ipnsp = caches.ipnspeed_cache.by_id.get(acc.account_id, IpnSpeedData(*(None,)*6))
                             if 0: assert isinstance(ipnsp, IpnSpeedData)
                             cs = None
+                            cb = None
                             if newspeed!=subacc.speed or recreate_speed:
                                 #отправляем на сервер доступа новые настройки скорости, помечаем state=True
 
@@ -1650,7 +1656,7 @@ class ipn_service(Thread):
    
                                     subacc = subacc._replace(speed=newspeed)
                                                           
-                                cur.connection.commit()
+
                                 
                             logger.info("IPNALIVE: %s: new status for subaccount/service %s/%s ipn_add=%s ipn_enable=%s ipn_disable=%s change_speed=%s", (self.getName(), repr(acc), repr(subacc), ipn_add, ipn_enable, ipn_disable, newspeed))
                             if ipn_add:
@@ -1667,6 +1673,9 @@ class ipn_service(Thread):
                                 elif cs:
                                     #Просто сменить скорость
                                     cs.apply_async()
+                            if cb or cs:
+                                cur.execute('UPDATE billservice_subaccount SET ipn_queued=now() WHERE id=%s', (subacc.id,))
+                            cur.connection.commit()
                     except Exception, ex:
                         if ex.__class__ in vars.db_errors: raise ex
                         else:

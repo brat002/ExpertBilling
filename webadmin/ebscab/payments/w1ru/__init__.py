@@ -141,7 +141,7 @@ class PaymentProcessor(PaymentProcessorBase):
             print form._errors
             return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=%s' % urllib.quote_plus(u'Не все поля заполнены или заполнены неверно')
         payment.external_id = data['WMI_ORDER_ID']
-        payment.description = u'Оплачено с %s' % data['WMI_TO_USER_ID']
+        p#ayment.description = u'Оплачено с %s' % data['WMI_TO_USER_ID']
         
         if data['WMI_ORDER_STATE']=='Accepted':
             payment.on_success(amount=data['WMI_PAYMENT_AMOUNT'])
