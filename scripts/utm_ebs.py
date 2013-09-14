@@ -29,12 +29,12 @@ start_date = datetime.datetime(year=2011, month=1, day=1, hour=0, minute=0, seco
 m_cursor=db.cursor()
 
 m_cursor.execute("""
-SELECT a.id, u.id, u.login, u.password, u.ic_status, u.passport, u.comments, u.full_name, u.is_deleted, u.actual_address, u.work_telephone, u.home_telephone,
+SELECT a.id, u.id, u.login, u.password, a.is_blocked, u.passport, u.comments, u.full_name, u.is_deleted, u.actual_address, u.work_telephone, u.home_telephone,
 u.mobile_telephone,u.flat_number, u.connect_date, u.entrance, u.floor,a.balance,atl.tariff_id, atl.link_date,
 h.city, h.street, h.number, h.building
  FROM users as u
 JOIN accounts as a ON a.id=u.basic_account
-JOIN account_tariff_link as atl ON atl.account_id=u.basic_account
+JOIN account_tariff_link as atl ON atl.account_id=u.basic_account and atl.is_deleted=False
 LEFT JOIN houses as h ON h.id=u.house_id
 WHERE atl.is_deleted=0
 """)

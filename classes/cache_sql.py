@@ -151,7 +151,7 @@ core_sql = \
                         JOIN billservice_settlementperiod AS sp ON ads.sp_period_id = sp.id 
                         JOIN billservice_accountaddonservice AS accas ON accas.service_id = ads.id 
                         WHERE ads.service_type = 'periodical' AND (accas.deactivated ISNULL OR accas.last_checkout ISNULL OR NOT accas.last_checkout >= accas.deactivated);""",
-        'subaccounts'    :"""SELECT id, account_id, username, decrypt_pw(password, %s)::text, vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, ipn_added, ipn_enabled, need_resync, speed, switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip, associate_pppoe_ipn_mac, ipn_speed, vpn_speed, allow_addonservice, allow_ipn_with_null, allow_ipn_with_minus, allow_ipn_with_block, vlan, vpn_ipv6_ip_address,ipv4_ipn_pool_id,ipv4_vpn_pool_id FROM billservice_subaccount;""",
+        'subaccounts'    :"""SELECT id, account_id, username, decrypt_pw(password, %s)::text, vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, ipn_added, ipn_enabled, need_resync, speed, switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip, associate_pppoe_ipn_mac, ipn_speed, vpn_speed, allow_addonservice, allow_ipn_with_null, allow_ipn_with_minus, allow_ipn_with_block, vlan, vpn_ipv6_ip_address,ipv4_ipn_pool_id,ipv4_vpn_pool_id, ipn_queued FROM billservice_subaccount;""",
                         }
 rad_sql = \
         {'accounts'  :"""SELECT ba.id, ba.username,  bt.time_access_service_id, 

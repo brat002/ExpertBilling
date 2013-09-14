@@ -91,7 +91,7 @@ def update_vpn_speed_state(nas_id, nas_port_id, session_id, newspeed):
 
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("""UPDATE radius_activesession SET speed_string=%s WHERE id=%s and nas_int_id=%s and nas_port_id=%s;
+    cur.execute("""UPDATE radius_activesession SET speed_string=%s, speed_change_queued=NULL WHERE id=%s and nas_int_id=%s and nas_port_id=%s;
                 """ , (newspeed, session_id, nas_id, nas_port_id))
     conn.commit()
     cur.close()
@@ -102,7 +102,7 @@ def update_ipn_speed_state(subaccount_id, newspeed):
 
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("UPDATE billservice_subaccount SET speed=%s WHERE id=%s;", (newspeed, subaccount_id))
+    cur.execute("UPDATE billservice_subaccount SET speed=%s, ipn_queued=NULL WHERE id=%s;", (newspeed, subaccount_id))
     conn.commit()
     cur.close()
     conn.close()
@@ -112,7 +112,7 @@ def ipn_add_state(subaccount_id, cb):
 
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("UPDATE billservice_subaccount SET ipn_added=%s WHERE id=%s",  (True, subaccount_id))
+    cur.execute("UPDATE billservice_subaccount SET ipn_added=%s, ipn_queued=NULL WHERE id=%s",  (True, subaccount_id))
     conn.commit()
     cur.close()
     conn.close()
@@ -122,7 +122,7 @@ def ipn_del_state(subaccount_id, cb):
 
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("UPDATE billservice_subaccount SET ipn_added=%s WHERE id=%s",  (False, subaccount_id))
+    cur.execute("UPDATE billservice_subaccount SET ipn_added=%s, ipn_queued=NULL WHERE id=%s",  (False, subaccount_id))
     conn.commit()
     cur.close()
     conn.close()
@@ -158,7 +158,7 @@ def ipn_enable_state(subaccount_id, cb):
 
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s",  (True, subaccount_id))
+    cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s, ipn_queued=NULL WHERE id=%s",  (True, subaccount_id))
     conn.commit()
     cur.close()
     conn.close()
@@ -170,13 +170,25 @@ def ipn_disable_state(subaccount_id, cb):
 
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s WHERE id=%s",  (False, subaccount_id))
+    cur.execute("UPDATE billservice_subaccount SET ipn_enabled=%s, ipn_queued=NULL WHERE id=%s",  (False, subaccount_id))
     conn.commit()
     cur.close()
     conn.close()
     if cb:
         cb.apply()
-        
+
+
+@task
+def update_pod_state(nas_id, nas_port_id, session_id):
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""UPDATE radius_activesession SET pod_queued=NULL WHERE id=%s and nas_int_id=%s and nas_port_id=%s;
+                """ , ( session_id, nas_id, nas_port_id))
+    conn.commit()
+    cur.close()
+    conn.close()
+
 
 def get_decimals_speeds(params):
     #print "before", params
@@ -193,7 +205,7 @@ def speed_list_to_dict(spList):
 
 
 @task
-def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', caller_id='', format_string=''):
+def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', caller_id='', format_string='', cb=None):
     """
     @param account_id: ID of account
     @param account_name: name of account
@@ -260,7 +272,9 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
         (data, addrport) = sock.recvfrom(8192)
         doc=packet.AcctPacket(secret=str(nas.get('secret')), dict=dict, packet=data)
         sock.close()
-            
+
+        if cb:
+            cb.apply()
         return doc.get("Error-Cause")
     elif format_string!='' and access_type in ['pptp', 'l2tp', 'pppoe']:
         #ssh
@@ -298,6 +312,9 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
                 status, output = commands.getstatusoutput(command_string)
                 logger.info('Local command %s was executed with status %s and output %s' % (command_string, status, output))
                 if status!=0:return False
+
+            if cb:
+                cb.apply()
             logger.info('POD SSH')
             return True
         except Exception, e:
