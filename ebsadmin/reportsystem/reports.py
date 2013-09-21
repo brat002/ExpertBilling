@@ -190,6 +190,8 @@ def totaltransactionreport(request, slug):
     form = ReportForm()
     return {'form': form, 'name': name, 'slug': slug}
 
+class A:
+    res = Tariff.objects.all().extra(select={'accounts_count':'SELECT count(*) FROM billservice_accounttarif WHERE tarif_id=billservice_tariff.id AND  id in (SELECT max(id) FROM billservice_accounttarif WHERE  datetime<now() GROUP BY account_id HAVING max(datetime)<now())'})
 rep = {
        'blabla': (render_report, u'Отчёт по сумме платежей за период'),
        'accountaddonservicereport': (accountaddonservicereport, u'Отчёт по подключенным подключаемым услугам'),
