@@ -39,7 +39,7 @@ from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
 from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running
 import Queue
-
+import cjson
 
 
 w32Import = False
@@ -54,7 +54,7 @@ except:
     print 'No poll(). Using select() instead.'
 
 from twisted.internet import reactor
-
+from twisted.web import server, resource
 
 NAME = 'radius'
 DB_NAME = 'db'
@@ -63,6 +63,21 @@ DB_NAME = 'db'
 SOCKTYPE_AUTH = 12
 SOCKTYPE_ACCT = 13
 MAX_PACKET_SIZE = 8192
+
+class HelloResource(resource.Resource):
+    isLeaf = True
+    numberRequests = 0
+
+    def render_POST(self, request):
+        self.numberRequests += 1
+        request.setHeader("content-type", "text/plain")
+        try:
+            print request.args['packet'][0]
+            data = cjson.decode(request.args['packet'][0])
+        except Exception as e:
+            return "{'error': '%s'}" % e
+
+        return "I am request #" + str(self.numberRequests) + "\n"
 
         
 def show_packet(packetobject):
@@ -148,9 +163,9 @@ class AcctHandler(Thread):
                     raise Exception("Caches were not ready!")
                 
                 packetobject = None
-                d = acct_queue.get(timeout=0.1)
+                d = acct_queue.get(timeout=0.01)
                 if not d:
-                    time.sleep(0.1)
+                    time.sleep(0.01)
                     continue
                 data,addrport, transport = d
                 if data:
@@ -159,7 +174,7 @@ class AcctHandler(Thread):
                     continue
                             
                 if not packetobject:
-                    time.sleep(0.15)
+                    time.sleep(0.01)
                     continue
                 
                 if False: assert isinstance(packetobject, packet.AcctPacket)
@@ -596,7 +611,7 @@ class CacheRoutine(Thread):
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
                         time.sleep(10)
             #gc.collect()
-            time.sleep(60)
+            time.sleep(5)
 
 
 def SIGTERM_handler(signum, frame):
@@ -721,6 +736,7 @@ def main():
     print "ebs: rad_acct: started"
     savepid(vars.piddir, vars.name)
     reactor.listenUDP(1813, Reception_UDP())
+    reactor.listenTCP(8002, server.Site(HelloResource()))
     reactor.run(installSignalHandlers=False)
 
 if __name__ == "__main__":

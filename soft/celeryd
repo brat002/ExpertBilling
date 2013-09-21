@@ -21,5 +21,5 @@ CELERYD_OPTS="--time-limit=300 --concurrency=6 -B"
 CELERY_CONFIG_MODULE="celeryconfig"
 
 # %n will be replaced with the nodename.
-CELERYD_LOG_FILE="/opt/ebs/data/log/%n.log"
+CELERYD_LOG_FILE="/opt/ebs/data/log/celery_%n.log"
 CELERYD_PID_FILE="/var/run/celery/%n.pid"

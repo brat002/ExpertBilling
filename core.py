@@ -761,7 +761,7 @@ class RadiusAccessBill(Thread):
                 for r in rows:
                     if r[9]:
                         acctfs.append(str(r[9]))
-
+                data=[]
                 if acctfs:
                     cur.execute("""
                         select acct.id, t.radius_traffic_transmit_service_id, t.time_access_service_id FROM billservice_accounttarif as acct
@@ -771,7 +771,7 @@ class RadiusAccessBill(Thread):
                     """ % ','.join(acctfs) )
                     data = cur.fetchall()
                     cur.connection.commit()
-                data=[]
+                
                 acctf_cache = {}
                 for acct_id, radius_traffic_transmit_service_id, time_access_service_id in data:
                     acctf_cache[acct_id] = (radius_traffic_transmit_service_id, time_access_service_id)
