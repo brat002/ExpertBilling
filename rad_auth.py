@@ -151,7 +151,7 @@ class AuthHandler(Thread):
                 packetobject = None
                 d = auth_queue.get(timeout=0.1)
                 if not d:
-                    time.sleep(0.1)
+                    time.sleep(0.01)
                     continue
                 data,addrport, transport = d
                 if data:
@@ -160,7 +160,7 @@ class AuthHandler(Thread):
                     continue
                             
                 if not packetobject:
-                    time.sleep(0.15)
+                    time.sleep(0.01)
                     continue
 
                 auth_time = time.time()
