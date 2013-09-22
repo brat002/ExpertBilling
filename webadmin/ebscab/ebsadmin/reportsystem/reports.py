@@ -9,7 +9,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
-from billservice.models import Account, AccountAddonService, Transaction, TotalTransactionReport
+from billservice.models import Account, AccountAddonService, Transaction, TotalTransactionReport, Tariff
 from django_tables2_reports.tables import TableReport
 import django_tables2 as django_tables
 from django.db.models import Sum
@@ -191,7 +191,20 @@ def totaltransactionreport(request, slug):
     return {'form': form, 'name': name, 'slug': slug}
 
 class A:
-    res = Tariff.objects.all().extra(select={'accounts_count':'SELECT count(*) FROM billservice_accounttarif WHERE tarif_id=billservice_tariff.id AND  id in (SELECT max(id) FROM billservice_accounttarif WHERE  datetime<now() GROUP BY account_id HAVING max(datetime)<now())'})
+    res = Tariff.objects.all().extra(select={'accounts_count':
+                                             '''SELECT count(*) FROM billservice_accounttarif 
+                                             WHERE tarif_id=billservice_tariff.id AND  id in 
+                                             (SELECT max(id) FROM billservice_accounttarif WHERE  datetime<now() GROUP BY account_id HAVING max(datetime)<now())''',
+                                             'accounts_now_count':
+                                             '''SELECT count(*) FROM billservice_accounttarif as at
+                                             JOIN billservice_account as a ON a.id=at.id 
+                                             WHERE at.tarif_id=billservice_tariff.id AND  id in 
+                                             (SELECT max(id) FROM billservice_accounttarif WHERE  datetime<now() GROUP BY account_id HAVING max(datetime)<now())
+                                             AND
+                                             
+                                             ''',
+ 
+                                             })
 rep = {
        'blabla': (render_report, u'Отчёт по сумме платежей за период'),
        'accountaddonservicereport': (accountaddonservicereport, u'Отчёт по подключенным подключаемым услугам'),

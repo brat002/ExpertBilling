@@ -2,6 +2,7 @@
 {% if form %}
 <script>
 	function activate_car() {
+		$('#id_button_send').hide();
 		var pin=document.getElementById("id_pin");
 		var message=document.getElementById("message_in_form");
         var card_id=document.getElementById("id_card_id");
@@ -22,11 +23,13 @@
 				pin.value='';
                 card_id.value='';
 				//window.location.reload();	
+                $('#id_button_send').show();
 			},
         	error: function(data, status){
 				var ret = eval('('+data+')'); 
 				message.innerHTML = ret['error_message'];
 				pin.value='';
+				$('#id_button_send').show();
 			 },
         	complete: function(data, status){  }
     	});
@@ -58,7 +61,7 @@
 					<tr>
 						<td colspan="2">
 							<div class="f-right">
-								<input type="submit" value="Активировать" class="pass_button f-right" onclick="activate_car()">
+								<input type="submit" value="Активировать" id='id_button_send' class="pass_button f-right" onclick="activate_car()">
 							</div>	
 						</td>
 					</tr>
