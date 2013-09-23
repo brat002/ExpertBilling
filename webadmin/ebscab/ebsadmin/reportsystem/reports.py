@@ -190,6 +190,79 @@ def totaltransactionreport(request, slug):
     form = ReportForm()
     return {'form': form, 'name': name, 'slug': slug}
 
+
+@systemuser_required
+@render_to("reportsystem/generic.html")
+def accountperiodreport(request, slug):
+
+            
+    name = rep.get(slug)[1]
+    if request.GET and request.method=='GET':
+        form = AccountBallanceForm(request.GET)
+        if form.is_valid():
+            class AccountPeriodReportTable(TableReport):
+                username = django_tables.Column()
+                balance = django_tables.Column()
+                balance_start = django_tables.Column()
+                balance_end = django_tables.Column()
+                #summ = FormatFloatColumn()
+                
+                #===============================================================
+                # def __init__(self, form, *args, **kwargs):
+                #    super(TotalTransactionsSumm, self).__init__(form, *args, **kwargs)
+                #    self.footer_data = self.TableDataClass(data=[pp.aggregate(summ=Sum('summ'))], table=self)
+                #    self.footer = django_tables.rows.BoundRows(self.footer_data, self)    
+                class Meta:
+                    attrs = {'class': 'table table-striped table-bordered table-condensed"'}
+                    #annotations = ('summ', )
+                #===============================================================
+                pass
+
+            date_start = form.cleaned_data.get('date_start')
+            date_end = form.cleaned_data.get('date_end')
+            accounts = form.cleaned_data.get('accounts')
+            #transactiontype = form.cleaned_data.get('transactiontype')
+
+            res = Account.objects.all()
+            if accounts:
+                res = Account.objects.filter(id__in =accounts)
+            res = res.extra(select={'balance_start':
+                                             '''SELECT balance as balance_start FROM billservice_balancehistory 
+                                             WHERE   id = 
+                                             (SELECT max(id) FROM billservice_balancehistory WHERE  account_id=billservice_account.id and datetime<='%(START_DATE)s')'''
+
+ 
+                                              % {
+                                                 'START_DATE': date_start
+                                                 },
+                                            'balance_end':
+                                             '''SELECT balance as balance_end FROM billservice_balancehistory 
+                                             WHERE   id =
+                                             (SELECT max(id) FROM billservice_balancehistory WHERE  account_id=billservice_account.id and datetime<='%(END_DATE)s') '''
+
+ 
+                                              % {
+                                                 'END_DATE': date_end
+                                                 }
+                                              })
+            
+            pp = res
+
+
+            #res = res.values('type__name').annotate(summ=Sum('summ')).order_by()
+
+
+            table = AccountPeriodReportTable(res)
+            table_to_report = RequestConfig(request, paginate=False).configure(table)
+            if table_to_report:
+                return create_report_http_response(table_to_report, request)
+
+            return {'form': form,  'table': table, 'name': name, 'slug': slug}
+        else:
+            return {'form': form, 'name': name, 'slug': slug}
+    form = AccountBallanceForm()
+    return {'form': form, 'name': name, 'slug': slug}
+
 class A:
     res = Tariff.objects.all().extra(select={'accounts_count':
                                              '''SELECT count(*) FROM billservice_accounttarif 
@@ -210,6 +283,7 @@ rep = {
        'accountaddonservicereport': (accountaddonservicereport, u'Отчёт по подключенным подключаемым услугам'),
        'cashierdailyreport': (cashierdailyreport, u'Отчёт по платежам за период'),
        'totaltransactionreport': (totaltransactionreport, u'Отчёт по сумме списаний за период'),
+       'accountperiodreport': (accountperiodreport, u'Отчёт за период')
        
        
        }
