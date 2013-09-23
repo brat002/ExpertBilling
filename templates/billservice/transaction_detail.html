@@ -4,7 +4,7 @@
 
 
 <h2>{% blocktrans %}Укажите параметры платежа:{% endblocktrans %}</h2>
-<form action="{% url getpaid-new-payment %}?backend={{payment_form.backend.value}}" method="POST">
+<form action="{% url 'getpaid-new-payment' %}?backend={{payment_form.backend.value}}" method="POST">
     {% csrf_token %}
     <table>
     {{ payment_form.as_table }}
