@@ -229,7 +229,7 @@ def accountperiodreport(request, slug):
             res = res.extra(select={'balance_start':
                                              '''SELECT balance as balance_start FROM billservice_balancehistory 
                                              WHERE   id = 
-                                             (SELECT max(id) FROM billservice_balancehistory WHERE  account_id=billservice_account.id and datetime<='%(START_DATE)s')'''
+                                             (SELECT min(id) FROM billservice_balancehistory WHERE  account_id=billservice_account.id and datetime>='%(START_DATE)s')'''
 
  
                                               % {
@@ -238,7 +238,7 @@ def accountperiodreport(request, slug):
                                             'balance_end':
                                              '''SELECT balance as balance_end FROM billservice_balancehistory 
                                              WHERE   id =
-                                             (SELECT max(id) FROM billservice_balancehistory WHERE  account_id=billservice_account.id and datetime<='%(END_DATE)s') '''
+                                             (SELECT min(id) FROM billservice_balancehistory WHERE  account_id=billservice_account.id and datetime>='%(END_DATE)s') '''
 
  
                                               % {
