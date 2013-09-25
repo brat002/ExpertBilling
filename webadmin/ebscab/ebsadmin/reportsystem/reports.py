@@ -264,10 +264,41 @@ def accountperiodreport(request, slug):
     return {'form': form, 'name': name, 'slug': slug}
 
 class A:
-    res = Tariff.objects.all().extra(select={'accounts_count':
+
+            
+    name = rep.get(slug)[1]
+    if request.GET and request.method=='GET':
+        form = AccountBallanceForm(request.GET)
+        if form.is_valid():
+            class TariffStatReportTable(TableReport):
+                name = django_tables.Column()
+                
+                accounts_count = django_tables.Column()
+                
+                #summ = FormatFloatColumn()
+                
+                #===============================================================
+                # def __init__(self, form, *args, **kwargs):
+                #    super(TotalTransactionsSumm, self).__init__(form, *args, **kwargs)
+                #    self.footer_data = self.TableDataClass(data=[pp.aggregate(summ=Sum('summ'))], table=self)
+                #    self.footer = django_tables.rows.BoundRows(self.footer_data, self)    
+                class Meta:
+                    attrs = {'class': 'table table-striped table-bordered table-condensed"'}
+                    #annotations = ('summ', )
+                #===============================================================
+                pass
+
+            date_start = form.cleaned_data.get('date_start')
+            date_end = form.cleaned_data.get('date_end')
+
+            #transactiontype = form.cleaned_data.get('transactiontype')
+
+            res = Tariff.objects.all()
+            res = res.extra(select={'accounts_count':
                                              '''SELECT count(*) FROM billservice_accounttarif 
                                              WHERE tarif_id=billservice_tariff.id AND  id in 
                                              (SELECT max(id) FROM billservice_accounttarif WHERE  datetime<now() GROUP BY account_id HAVING max(datetime)<now())''',
+                                             
                                              'accounts_now_count':
                                              '''SELECT count(*) FROM billservice_accounttarif as at
                                              JOIN billservice_account as a ON a.id=at.id 
@@ -278,6 +309,24 @@ class A:
                                              ''',
  
                                              })
+            
+            pp = res
+
+
+            #res = res.values('type__name').annotate(summ=Sum('summ')).order_by()
+
+
+            table = AccountPeriodReportTable(res)
+            table_to_report = RequestConfig(request, paginate=False).configure(table)
+            if table_to_report:
+                return create_report_http_response(table_to_report, request)
+
+            return {'form': form,  'table': table, 'name': name, 'slug': slug}
+        else:
+            return {'form': form, 'name': name, 'slug': slug}
+    form = AccountBallanceForm()
+    return {'form': form, 'name': name, 'slug': slug}
+
 rep = {
        'blabla': (render_report, u'Отчёт по сумме платежей за период'),
        'accountaddonservicereport': (accountaddonservicereport, u'Отчёт по подключенным подключаемым услугам'),
