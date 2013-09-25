@@ -58,7 +58,7 @@ import commands
 
 from django.contrib.auth.decorators import permission_required
 from django.utils.translation import ugettext as _
-
+from django.utils.safestring import mark_safe
 
 class Object(object):
     def __init__(self, result=[], *args, **kwargs):
@@ -5161,7 +5161,7 @@ def actions_set(request):
 def documentrender(request):
     if  not request.user.has_perm('billservice.documentrender'):
         return {'status':False, 'message': u'У вас нет прав на рендеринг документов'}
-    from django.utils.safestring import mark_safe
+    
     form = DocumentRenderForm(request.POST)
 
     if form.is_valid():
@@ -5197,8 +5197,8 @@ def templaterender(request):
     form = TemplateForm(request.POST)
     if form.is_valid():
         templatetype = form.cleaned_data.get('type')
-        print form.cleaned_data.get('body')
-        templ = mako_template(unicode(form.cleaned_data.get('body')), input_encoding='utf-8')
+        
+        t = DjangoTemplate(mark_safe(unicode(unicode(form.cleaned_data.get('body')))))
         data=''
         from django.db import connection
         cur = connection.cursor()
@@ -5208,23 +5208,26 @@ def templaterender(request):
             account = Account.objects.all()[0]
 
             #tarif = self.connection.get("SELECT name FROM billservice_tariff WHERE id=get_tarif(%s)" % account.id)
-            try:
-                data=templ.render_unicode(account=account,  connection=cur)
-            except Exception, e:
-                data=u"Error %s" % str(e)
+            c = Context({'account': account, 'connection': cur})
         if templatetype.id==2:
             account = Account.objects.all()[0]
             #organization = self.connection.sql("SELECT * FROM billservice_organization LIMIT 1" )[0]
             #bank = self.connection.sql("SELECT * FROM billservice_bankdata LIMIT 1" )[0]
             operator = Organization.objects.all()[0]
-            try:
-                data=templ.render_unicode(account=account, operator=operator,  connection=cur)
-            except Exception, e:
-                data=u"Error %s" % str(e)
+            c = Context({'account': account, 'operator': operator, 'connection': cur})
     
+        if templatetype.id==5:
+            transaction = Transaction.objects.all()[0]
 
+            operator = Organization.objects.all()[0]
+            c = Context({'transaction': transaction, 'operator': operator, 'connection': cur})
                        
-
+        try:
+            data=t.render(c)
+        except Exception, e:
+            data=u"Error %s" % str(e)
+    
+        
         res = {'success': True, 'body':data.encode("utf-8", 'replace')}
     else:
         res={"success": False, "errors": form._errors}

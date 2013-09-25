@@ -133,6 +133,7 @@ INSTALLED_APPS = (
     'sendsms',
     'autocomplete_light',
     'selectable',
+    'mathfilters'
 )
 
 
