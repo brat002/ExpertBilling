@@ -150,9 +150,9 @@ class check_vpn_access(Thread):
                 ips = []
                 cur.connection.commit()
                 cur.execute("""SELECT rs.id,rs.account_id, rs.subaccount_id, rs.sessionid,rs.framed_ip_address, rs.speed_string,
-                                    lower(rs.framed_protocol) AS access_type,rs.nas_int_id, extract('epoch' from %s-rs.interrim_update) as last_update, rs.date_start,rs.ipinuse_id, rs.caller_id, ((SELECT pool_id FROM billservice_ipinuse WHERE id=rs.ipinuse_id)=(SELECT vpn_guest_ippool_id FROM billservice_tariff WHERE id=get_tarif(rs.account_id)))::boolean as guest_pool, rs.nas_port_id,
+                                    lower(rs.framed_protocol) AS access_type,rs.nas_int_id, extract('epoch' from now()-rs.interrim_update) as last_update, rs.date_start,rs.ipinuse_id, rs.caller_id, ((SELECT pool_id FROM billservice_ipinuse WHERE id=rs.ipinuse_id)=(SELECT vpn_guest_ippool_id FROM billservice_tariff WHERE id=get_tarif(rs.account_id)))::boolean as guest_pool, rs.nas_port_id,
                                     rs.speed_change_queued, rs.pod_queued
-                                    FROM radius_activesession AS rs WHERE rs.date_end IS NULL AND rs.date_start <= %s and session_status='ACTIVE';""", (dateAT, dateAT,))
+                                    FROM radius_activesession AS rs WHERE rs.date_end IS NULL AND rs.date_start <= %s and session_status='ACTIVE';""", ( dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
                 #try:
