@@ -135,14 +135,14 @@ class AuthHandler(Thread):
             if suicideCondition[self.__class__.__name__]: break
             try:  
                 if cacheMaster.date > self.dateCache:
-                    cacheMaster.lock.acquire()
+
                     try:
                         self.caches = cacheMaster.cache
                         dateAT = deepcopy(cacheMaster.date)
                     except Exception, ex:
                         logger.error("%s: cache exception: %s", (self.getName(), repr(ex)))
                     finally:
-                        cacheMaster.lock.release()
+                        
                         if 0: assert isinstance(self.caches, RadAuthCaches)
 
                 if not self.caches:
@@ -592,7 +592,7 @@ class HandleSAuth(HandleSBase):
             
             if not acc.sessionscount==subacc.sessionscount==0:
                 sc = subacc.sessionscount if subacc.sessionscount else acc.sessionscount #Переопределение на дефолтное значение
-                vars.cursor_lock.acquire()
+
                 self.create_cursor()
                 try:
                     self.cursor.execute("""SELECT count(*) from radius_activesession WHERE account_id=%s and (date_end is null and (interrim_update is not Null or extract('epoch' from now()-date_start)<=%s)) and session_status='ACTIVE';""", (acc.account_id, nas.acct_interim_interval))
@@ -600,13 +600,10 @@ class HandleSAuth(HandleSBase):
                     cnt = self.cursor.fetchone()
                     if cnt and sc:
                         if cnt[0]>=sc:
-                            vars.cursor_lock.release()
                             logger.warning("Max sessions count %s reached for username %s. If this error persist - check your nas settings and perform maintance radius_activesession table", (sc, username,))
                             sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_SESSIONS_COUNT_REACHED", service=self.access_type, cause=u'Превышено количество одновременных сессий для аккаунта', datetime=self.datetime)
                             return self.auth_NA(authobject)                      
-                    vars.cursor_lock.release()    
                 except Exception, ex:
-                    vars.cursor_lock.release()
                     logger.error("Couldn't check session dublicates for user %s account=%s because %s", (str(user_name), acc.account_id, repr(ex)))
                     return self.auth_NA(authobject) 
             
