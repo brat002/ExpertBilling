@@ -149,14 +149,14 @@ class AcctHandler(Thread):
             if suicideCondition[self.__class__.__name__]: break
             try:  
                 if cacheMaster.date > self.dateCache:
-                    cacheMaster.lock.acquire()
+
                     try:
                         self.caches = cacheMaster.cache
                         dateAT = deepcopy(cacheMaster.date)
                     except Exception, ex:
                         logger.error("%s: cache exception: %s", (self.getName(), repr(ex)))
                     finally:
-                        cacheMaster.lock.release()
+
                         if 0: assert isinstance(self.caches, RadAcctCaches)
 
                 if not self.caches:
