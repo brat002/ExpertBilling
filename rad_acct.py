@@ -549,8 +549,8 @@ class HandleSAcct(HandleSBase):
                 self.cur.execute(insert_data)
 
             if ipinuse_id:
-                self.cur.execute("UPDATE billservice_ipinuse SET ack=True,lost=NULL, disabled=NULL where id=%s and (ack=False or disabled is not null)", (ipinuse_id,))
-
+                self.cur.execute("UPDATE billservice_ipinuse SET ack=True,lost=NULL, disabled=NULL where id=%s and (ack=False or disabled is not null) RETURNING ID", (ipinuse_id,))
+                
             #radiusstatthr.add_alive(nas_id=nas_int_id, timestamp=now)
                             
         elif self.packetobject['Acct-Status-Type']==['Stop']:

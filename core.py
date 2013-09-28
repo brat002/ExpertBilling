@@ -228,7 +228,7 @@ class check_vpn_access(Thread):
                                 logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                         elif not (acstatus and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id) and rs.pod_queued) :
                             logger.debug("%s: Send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-                            PoD.delay(acc._asdict(), subacc._asdict(), nas._asdict(), access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, caller_id=str(rs.caller_id), format_string=str(nas.reset_action), cb=tasks.update_pod_state.s(nas_id=rs.nas_id, nas_port_id=rs.nas_port_id, session_id=rs.id))
+                            PoD.delay(acc._asdict(), subacc._asdict(), nas._asdict(), access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, nas_port_id=rs.nas_port_id, caller_id=str(rs.caller_id), format_string=str(nas.reset_action), cb=tasks.update_pod_state.s(nas_id=rs.nas_id, nas_port_id=rs.nas_port_id, session_id=rs.id))
                             logger.debug("%s: POD sended: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
 
                         for key, value in dublicated_ips.iteritems():

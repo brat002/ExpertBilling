@@ -346,6 +346,7 @@ class HandleSAuth(HandleSBase):
 
         
     def add_values(self, tarif_id, nas_id, account_status):
+        # CREATE ONE SECTION
         attrs = self.caches.radattrs_cache.by_tarif_id.get(tarif_id, [])
         for attr in attrs:
             if attr.account_status != 0 and attr.account_status!=account_status: continue
@@ -606,8 +607,6 @@ class HandleSAuth(HandleSBase):
                 except Exception, ex:
                     logger.error("Couldn't check session dublicates for user %s account=%s because %s", (str(user_name), acc.account_id, repr(ex)))
                     return self.auth_NA(authobject) 
-            
-            
 
             ipinuse_id=''
             if (subacc.vpn_ip_address in ('0.0.0.0','', None) and (subacc.ipv4_vpn_pool_id or acc.vpn_ippool_id)) or (acstatus==False and acc.vpn_guest_ippool_id) :
