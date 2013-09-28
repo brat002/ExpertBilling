@@ -1135,6 +1135,7 @@ class Transaction(models.Model):
 
 class AccountTarif(models.Model):
     account = models.ForeignKey(verbose_name=_(u'Пользователь'), to=Account, related_name='related_accounttarif')
+    prev_tarif = models.ForeignKey(to=Tariff, verbose_name=_(u'Предыдущий тарифный план'), blank=True, null=True, related_name="account_prev_tarif")
     tarif = models.ForeignKey(to=Tariff, verbose_name=_(u'Тарифный план'), related_name="account_tarif")
     datetime = models.DateTimeField(verbose_name=_(u'C даты'), default='', blank=True)
     periodical_billed = models.BooleanField(blank=True)
@@ -1149,6 +1150,12 @@ class AccountTarif(models.Model):
     def __unicode__(self):
         return u"%s, %s" % (self.account, self.tarif)
 
+    def save(self, *args, **kwargs):
+        if not self.id:
+            at = AccountTarif.objects.filter(account=self.account).order_by('-id')
+            if at:
+                self.prev_tarif = at[0]
+        super(AccountTarif, self).save(*args, **kwargs)
     class Meta:
         ordering = ['-datetime']
         verbose_name = _(u"Тариф аккаунта")
