@@ -472,9 +472,9 @@ class HandleSAcct(HandleSBase):
         #now=datetime.datetime(now.year, now.day, now.hour, now.minute, now.second)
         #print self.packetobject
         #packet_session = self.packetobject['Acct-Session-Id'][0]
-        logger.warning("Session %s", (repr(self.packetobject),))
+        logger.info("Session %s", (repr(self.packetobject),))
         if self.packetobject['Acct-Status-Type']==['Start']:
-            logger.warning("Starting session %s", (repr(self.packetobject),))
+            logger.info("Starting session %s", (repr(self.packetobject),))
             if nas_int_id:
                 self.cur.execute("""SELECT id FROM radius_activesession
                                WHERE account_id=%s AND sessionid=%s AND
