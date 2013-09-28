@@ -263,7 +263,7 @@ def accountperiodreport(request, slug):
     form = AccountBallanceForm()
     return {'form': form, 'name': name, 'slug': slug}
 
-class A:
+def A():
 
             
     name = rep.get(slug)[1]
@@ -292,24 +292,32 @@ class A:
             date_end = form.cleaned_data.get('date_end')
 
             #transactiontype = form.cleaned_data.get('transactiontype')
-
+            from django.db import connection
+            cursor = connection.cursor()
             res = Tariff.objects.all()
-            res = res.extra(select={'accounts_count':
-                                             '''SELECT count(*) FROM billservice_accounttarif 
-                                             WHERE tarif_id=billservice_tariff.id AND  id in 
-                                             (SELECT max(id) FROM billservice_accounttarif WHERE  datetime<now() GROUP BY account_id HAVING max(datetime)<now())''',
+            now = datetime.datetime.now()
+            now_day = datetime.datetime(now.year, now.month, now.day())
+            for item in res:
+                
+                cursor.execute('''SELECT count(*) FROM billservice_accounttarif 
+                                     WHERE tarif_id=%s AND  id in 
+                                     (SELECT max(id) FROM billservice_accounttarif WHERE  datetime<now() GROUP BY account_id HAVING max(datetime)<now())'''
+                , (item.id, ))
+                accounts_count = cursor.fetchone()[0] 
+                cursor.execute('''SELECT count(*) FROM billservice_accounttarif as at
+                                             WHERE at.tarif_id=%s AND  date_trunc(datetime, 'hours')=%s
                                              
-                                             'accounts_now_count':
-                                             '''SELECT count(*) FROM billservice_accounttarif as at
-                                             JOIN billservice_account as a ON a.id=at.id 
-                                             WHERE at.tarif_id=billservice_tariff.id AND  id in 
-                                             (SELECT max(id) FROM billservice_accounttarif WHERE  datetime<now() GROUP BY account_id HAVING max(datetime)<now())
-                                             AND
-                                             
-                                             ''',
- 
-                                             })
+                                             ''', (item.id, now_day))
+                account_now = cursor.fetchone()[0]
             
+                cursor.execute('''SELECT count(*) FROM billservice_accounttarif as at
+                                             WHERE at.prev_tarif_id=%s AND  date_trunc(datetime, 'hours')=%s
+                                             
+                                             ''', (item.id, now_day))
+                account_leave_now = cursor.fetchone()[0]
+                
+                cursor.execute('SELECT account_id FROM billservice_account WHERE tariff_id=%s', (item.id, ))
+                
             pp = res
 
 
