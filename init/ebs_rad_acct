@@ -28,7 +28,7 @@ start)
         echo "Starting ebs rad acct"
 		olddir=`pwd`
         cd $DPATH
-        $DAEMON &
+        nice -n -3 $DAEMON &
         cd $olddir
 
 		;;

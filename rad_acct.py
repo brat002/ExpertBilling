@@ -54,7 +54,7 @@ except:
     print 'No poll(). Using select() instead.'
 
 from twisted.internet import reactor
-from twisted.web import server, resource
+#from twisted.web import server, resource
 
 NAME = 'radius'
 DB_NAME = 'db'
@@ -64,20 +64,22 @@ SOCKTYPE_AUTH = 12
 SOCKTYPE_ACCT = 13
 MAX_PACKET_SIZE = 8192
 
-class HelloResource(resource.Resource):
-    isLeaf = True
-    numberRequests = 0
-
-    def render_POST(self, request):
-        self.numberRequests += 1
-        request.setHeader("content-type", "text/plain")
-        try:
-            print request.args['packet'][0]
-            data = cjson.decode(request.args['packet'][0])
-        except Exception as e:
-            return "{'error': '%s'}" % e
-
-        return "I am request #" + str(self.numberRequests) + "\n"
+#===============================================================================
+# class HelloResource(resource.Resource):
+#    isLeaf = True
+#    numberRequests = 0
+# 
+#    def render_POST(self, request):
+#        self.numberRequests += 1
+#        request.setHeader("content-type", "text/plain")
+#        try:
+#            print request.args['packet'][0]
+#            data = cjson.decode(request.args['packet'][0])
+#        except Exception as e:
+#            return "{'error': '%s'}" % e
+# 
+#        return "I am request #" + str(self.numberRequests) + "\n"
+#===============================================================================
 
         
 def show_packet(packetobject):
@@ -736,7 +738,7 @@ def main():
     print "ebs: rad_acct: started"
     savepid(vars.piddir, vars.name)
     reactor.listenUDP(1813, Reception_UDP())
-    reactor.listenTCP(8002, server.Site(HelloResource()))
+    #reactor.listenTCP(8002, server.Site(HelloResource()))
     reactor.run(installSignalHandlers=False)
 
 if __name__ == "__main__":
