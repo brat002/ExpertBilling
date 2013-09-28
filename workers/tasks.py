@@ -205,7 +205,7 @@ def speed_list_to_dict(spList):
 
 
 @task
-def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', caller_id='', format_string='', cb=None):
+def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', caller_id='', nas_port_id='', format_string='', cb=None):
     """
     @param account_id: ID of account
     @param account_name: name of account
@@ -281,7 +281,7 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
         
         logger.info('POD ROS')
         
-        command_dict={'access_type': access_type, 'session': session_id}
+        command_dict={'access_type': access_type, 'session': session_id, 'nas_port_id': nas_port_id}
 
         for x in nas.keys():
             
