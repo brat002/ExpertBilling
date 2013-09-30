@@ -29,7 +29,7 @@ from copy import deepcopy
 from threading import Thread, Lock
 
 from collections import defaultdict, deque
-
+from cacherouter import Cache
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
@@ -141,9 +141,11 @@ class Reception_UDP(DatagramProtocol):
 class AcctHandler(Thread):
     def __init__(self):
         Thread.__init__(self)
+        global vars
         self.dbconn = get_connection(vars.db_dsn)
         self.dateCache = datetime.datetime(2000, 1, 1)
         self.caches = None
+        self.cache = Cache(self.dbconn, vars.memcached_host, vars.CRYPT_KEY)
 
     def run(self):
         global cacheMaster, vars, suicideCondition
@@ -165,18 +167,14 @@ class AcctHandler(Thread):
                     raise Exception("Caches were not ready!")
                 
                 packetobject = None
-                d = acct_queue.get(timeout=0.01)
+                d = acct_queue.get(block=True, timeout=0.05)
                 if not d:
-                    time.sleep(0.01)
+                    time.sleep(0.03)
                     continue
                 data,addrport, transport = d
                 if data:
                     packetobject = packet.Packet(dict = vars.DICT, packet = data)
                 else:
-                    continue
-                            
-                if not packetobject:
-                    time.sleep(0.01)
                     continue
                 
                 if False: assert isinstance(packetobject, packet.AcctPacket)
@@ -184,7 +182,7 @@ class AcctHandler(Thread):
                 acct_time = time.time()
                 dbCur = self.dbconn.cursor()
                 coreconnect = HandleSAcct(packetobject=packetobject, dbCur=dbCur, transport = transport, addrport = addrport)
-                coreconnect.caches = self.caches          
+                coreconnect.cache = self.cache        
 
                 coreconnect.handle()
        
@@ -308,7 +306,7 @@ class PacketSender(Thread):
             
                         
 class HandleSBase(object):
-    __slots__ = ('packetobject', 'cacheDate', 'nasip', 'caches', 'replypacket', 'userName', 'transport', 'addrport')
+    __slots__ = ('packetobject', 'cacheDate', 'nasip', 'caches', 'replypacket', 'userName', 'transport', 'addrport', 'cache')
 
     def auth_NA(self):
         """
@@ -346,6 +344,7 @@ class HandleSAcct(HandleSBase):
         self.userName = ''
         self.transport = transport
         self.addrport = addrport
+        self.cache = None
 
     def get_bytes(self):
         bytes_in  = self.packetobject['Acct-Input-Octets'][0]  + self.packetobject.get('Acct-Input-Gigawords', (0,))[0]  * vars.GIGAWORD
@@ -376,10 +375,10 @@ class HandleSAcct(HandleSBase):
         nas=None
         if self.packetobject.has_key('NAS-Identifier'):
             nas_name = self.packetobject['NAS-Identifier'][0]
-            nasses = self.caches.nas_cache.by_ip_n_identify.get((self.nasip,nas_name))
+            nasses = self.cache.get_nas_by_identify(self.nasip, nas_name)
             nas_by_int_id = True
         else:
-            nasses = self.caches.nas_cache.by_ip.get(self.nasip)
+            nasses = self.cache.get_nas_by_ip(self.nasip)
         if not nasses:
             logger.info('ACCT: unknown NAS: %s', (self.nasip,))
             return None
@@ -412,22 +411,24 @@ class HandleSAcct(HandleSBase):
         #if self.packetobject['User-Name'][0] not in account_timeaccess_cache or account_timeaccess_cache[self.packetobject['User-Name'][0]][2]%10==0:
         self.userName = str(self.packetobject['User-Name'][0])
         #subacc = SubAccount()
+        
         if self.access_type=='lISG':
-            subacc = self.caches.subaccount_cache.by_ipn_ip.get(self.userName)
+            subacc = self.cache.get_subaccount_by_ipn_ip(self.userName)
         if self.access_type=='Wireless':
             logger.info('ACCT: Searching subaccount by mac %s', (self.userName,))
-            subacc = self.caches.subaccount_cache.by_mac.get(self.userName)
+            subacc = self.cache.get_subaccount_by_mac(self.userName)
         elif not subacc_id:
             logger.info('ACCT: Searching subaccount by username %s', (self.userName,))
-            subacc = self.caches.subaccount_cache.by_username.get(self.userName)
+            subacc = self.cache.get_subaccount_by_username(self.userName)
         elif subacc_id:
             logger.info('ACCT: Searching subaccount by id %s', (subacc_id,))
-            subacc = self.caches.subaccount_cache.by_id.get(int(subacc_id))
-
+            subacc = self.cache.get_subaccount_by_id(int(subacc_id))
+        
         if subacc:
-            acc = self.caches.account_cache.by_id.get(subacc.account_id)
+            #print subacc
+            acc = self.cache.get_account_by_id(subacc.account_id)
         elif self.access_type=='HotSpot':
-            acc = self.caches.account_cache.by_username.get(self.userName)
+            acc = self.cache.get_account_by_username(self.userName)
         
         if not acc:        
             logger.info('ACCT: Account for subaccount %s not found. HotSpot user not found', (subacc_id,))
@@ -440,12 +441,12 @@ class HandleSAcct(HandleSBase):
             return self.acct_NA()
         if 0: assert isinstance(acc, AccountData)
         if nas_int_id:
-            nas = self.caches.nas_cache.by_id.get(nas_int_id)
+            nas = self.cache.get_nas_by_id(nas_int_id)
             if not nas:
                 logger.warning("Nas, presented in Class attribute %s not found in system. Settings nas_int_id to Null and search real nas", (nas_int_id, ))
                 nas_int_id=None
         if not nas:
-            nas = self.caches.nas_cache.by_id.get(subacc.nas_id)
+            nas = self.cache.get_nas_by_id(subacc.nas_id)
         if (nas and nas not in nasses) and (vars.IGNORE_NAS_FOR_VPN is False):
             """
             Если NAS пользователя найден  и нас не в списке доступных и запрещено игнорировать сервера доступа 
@@ -464,7 +465,7 @@ class HandleSAcct(HandleSBase):
             
         if not vars.IGNORE_NAS_FOR_VPN:
             nas_by_int_id = False
-            
+
         self.replypacket.code = packet.AccountingResponse
         
         self.reply()
@@ -473,6 +474,7 @@ class HandleSAcct(HandleSBase):
         #print self.packetobject
         #packet_session = self.packetobject['Acct-Session-Id'][0]
         logger.info("Session %s", (repr(self.packetobject),))
+
         if self.packetobject['Acct-Status-Type']==['Start']:
             logger.info("Starting session %s", (repr(self.packetobject),))
             if nas_int_id:
@@ -480,7 +482,7 @@ class HandleSAcct(HandleSBase):
                                WHERE account_id=%s AND sessionid=%s AND
                                caller_id=%s AND called_id=%s AND 
                                nas_int_id=%s AND framed_protocol=%s and session_status='ACTIVE' and interrim_update is Null;
-                            """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],\
+                            """, (acc.id, self.packetobject['Acct-Session-Id'][0],\
                                    self.packetobject.get('Calling-Station-Id', [''])[0],
                                    self.packetobject.get('Called-Station-Id',[''])[0], \
                                    nas_int_id, self.access_type,))
@@ -489,7 +491,7 @@ class HandleSAcct(HandleSBase):
                                    WHERE account_id=%s AND sessionid=%s AND
                                    caller_id=%s AND called_id=%s AND 
                                    nas_id=%s AND framed_protocol=%s and session_status='ACTIVE' and interrim_update is Null;
-                                """, (acc.account_id, self.packetobject['Acct-Session-Id'][0],\
+                                """, (acc.id, self.packetobject['Acct-Session-Id'][0],\
                                        self.packetobject.get('Calling-Station-Id', [''])[0],
                                        self.packetobject.get('Called-Station-Id',[''])[0], \
                                        self.nasip, self.access_type,))
@@ -502,14 +504,13 @@ class HandleSAcct(HandleSBase):
                                  caller_id, called_id, framed_ip_address, nas_id, 
                                  framed_protocol, session_status, nas_int_id, speed_string,nas_port_id,ipinuse_id)
                                  VALUES (%s, %s, %s,%s,%s, %s, %s, %s, %s, 'ACTIVE', %s, %s, %s, %s);
-                                 """, (acc.account_id, subacc.id, self.packetobject['Acct-Session-Id'][0], now,
+                                 """, (acc.id, subacc.id, self.packetobject['Acct-Session-Id'][0], now,
                                         self.packetobject.get('Calling-Station-Id', [''])[0], 
                                         self.packetobject.get('Called-Station-Id',[''])[0], 
                                         self.packetobject.get('Framed-IP-Address',[''])[0],
                                         self.nasip, self.access_type, nas_int_id, session_speed, self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None ,ipinuse_id if ipinuse_id else None ))
                 if ipinuse_id:
                     self.cur.execute("UPDATE billservice_ipinuse SET ack=True, lost=NULL, disabled=NULL where id=%s", (ipinuse_id,))
-                    
                 #radiusstatthr.add_start(nas_id=nas_int_id, timestamp=now)
         elif self.packetobject['Acct-Status-Type']==['Alive']:
             bytes_in, bytes_out = self.get_bytes()
@@ -560,11 +561,11 @@ class HandleSAcct(HandleSBase):
             if nas_int_id:
                 self.cur.execute("""UPDATE radius_activesession SET date_end=%s, session_status='ACK', acct_terminate_cause=%s
                              WHERE sessionid=%s and nas_int_id=%s and account_id=%s and framed_protocol=%s and nas_port_id=%s and date_end is Null;;
-                             """, (now, self.packetobject.get('Acct-Terminate-Cause', [''])[0], self.packetobject['Acct-Session-Id'][0], nas_int_id, acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None,))
+                             """, (now, self.packetobject.get('Acct-Terminate-Cause', [''])[0], self.packetobject['Acct-Session-Id'][0], nas_int_id, acc.id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None,))
             else:
                 self.cur.execute("""UPDATE radius_activesession SET date_end=%s, session_status='ACK', acct_terminate_cause=%s
                              WHERE sessionid=%s and nas_id=%s and account_id=%s and framed_protocol=%s and nas_port_id=%s and date_end is Null;;
-                             """, (now, self.packetobject.get('Acct-Terminate-Cause', [''])[0], self.packetobject['Acct-Session-Id'][0], self.nasip, acc.account_id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None,))
+                             """, (now, self.packetobject.get('Acct-Terminate-Cause', [''])[0], self.packetobject['Acct-Session-Id'][0], self.nasip, acc.id, self.access_type,self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None,))
                 
             #radiusstatthr.add_stop(nas_id=nas_int_id, timestamp=now)                
             if ipinuse_id:

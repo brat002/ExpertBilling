@@ -13,10 +13,11 @@ class RadAcctCaches(CacheCollection):
     
     def __init__(self, date, crypt_key):
         super(RadAcctCaches, self).__init__(date)
-        self.account_cache = AccountCache(date)
-        self.nas_cache = NasCache(crypt_key)
-        self.subaccount_cache = SubAccountsCache(crypt_key)
-        self.caches = [self.account_cache, self.nas_cache,self.subaccount_cache]
+        #self.account_cache = AccountCache(date)
+        #self.nas_cache = NasCache(crypt_key)
+        #self.subaccount_cache = SubAccountsCache(crypt_key)
+        #self.caches = [self.account_cache, self.nas_cache,self.subaccount_cache]
+        self.caches = []
 
 
 class AccountCache(CacheItem):
