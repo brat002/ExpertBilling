@@ -1104,6 +1104,10 @@ class Transaction(models.Model):
     #def update_ballance(self):
     #    Account.objects.filter(id=self.account_id).update(ballance=F('ballance')+self.summ)
 
+    def save(self, *args, **kwargs):
+        from django.db import connection
+        connection.features.can_return_id_from_insert = False
+        super(Transaction, self).save(*args, **kwargs)
 
     class Admin:
         list_display = ('account', 'tarif', 'summ', 'description', 'created')
@@ -1151,10 +1155,14 @@ class AccountTarif(models.Model):
         return u"%s, %s" % (self.account, self.tarif)
 
     def save(self, *args, **kwargs):
+       # custom save method #pdb.set_trace() 
+
+
         if not self.id:
             at = AccountTarif.objects.filter(account=self.account).order_by('-id')
             if at:
-                self.prev_tarif = at[0]
+                print at[0]
+                self.prev_tarif = at[0].tarif
         super(AccountTarif, self).save(*args, **kwargs)
     class Meta:
         ordering = ['-datetime']

@@ -41,7 +41,7 @@ from option_parser import parse
 from utilites import in_period_info
 import auth
 from auth import Auth, get_eap_handlers
-
+from cacherouter import Cache
 w32Import = False
 
 from twisted.internet.protocol import DatagramProtocol
@@ -128,6 +128,7 @@ class AuthHandler(Thread):
         self.dbconn = get_connection(vars.db_dsn)
         self.dateCache = datetime.datetime(2000, 1, 1)
         self.caches = None
+        self.cache = Cache(self.dbconn, vars.memcached_host, vars.CRYPT_KEY)
 
     def run(self):
         global cacheMaster, vars, suicideCondition
@@ -149,7 +150,7 @@ class AuthHandler(Thread):
                     raise Exception("Caches were not ready!")
                 
                 packetobject = None
-                d = auth_queue.get(timeout=0.1)
+                d = auth_queue.get(block=True, timeout=0.03)
                 if not d:
                     time.sleep(0.01)
                     continue
@@ -158,10 +159,7 @@ class AuthHandler(Thread):
                     packetobject = packet.Packet(dict = vars.DICT, packet = data)
                 else:
                     continue
-                            
-                if not packetobject:
-                    time.sleep(0.01)
-                    continue
+
 
                 auth_time = time.time()
                 returndata = ''
@@ -179,52 +177,39 @@ class AuthHandler(Thread):
                     coreconnect = HandleHotSpotAuth(packetobject=packetobject, access_type=access_type, dbCur=self.dbconn.cursor(), transport = transport, addrport = addrport)
                     coreconnect.nasip = nas_ip
                     coreconnect.fMem = fMem; coreconnect.caches = self.caches
-                    authobject, packetfromcore=coreconnect.handle()
+                    coreconnect.cache = self.cache
+                    coreconnect.handle()
 
-                    if packetfromcore is None: 
-                        logger.info("Unknown NAS %s", str(nas_ip))
-                        continue
-
-                    logger.info("%s: Password check: %s", (self.getName(), authobject.code))
-                    returndata, replypacket=authobject.ReturnPacket(packetfromcore, mppe_support=vars.MPPE_SUPPORT) 
 
                 elif access_type in ['DHCP', 'Wireless'] :
                     coreconnect = HandleSDHCP(packetobject=packetobject, transport = transport, addrport = addrport)
                     coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
-                    authobject, packetfromcore = coreconnect.handle()
-                    if packetfromcore is None: 
-                        logger.info("Unknown NAS %s", str(nas_ip))
-                        continue
+                    coreconnect.cache = self.cache
+                    coreconnect.handle()
 
-                    returndata, replypacket=authobject.ReturnPacket(packetfromcore)
                     
                 elif access_type in ['lISG'] :
                     coreconnect = HandlelISGAuth(packetobject=packetobject, access_type=access_type, transport = transport, addrport = addrport)
                     coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
+                    coreconnect.cache = self.cache
                     authobject, packetfromcore = coreconnect.handle()
                     if packetfromcore is None: 
                         logger.info("Unknown NAS or Account %s", str(nas_ip))
                         continue
 
-                    returndata, replypacket=authobject.ReturnPacket(packetfromcore)                    
+                    authobject.ReturnPacket(packetfromcore)                    
                     
                 else:
+                    a = time.time()
                     coreconnect = HandleSAuth(packetobject=packetobject, access_type=access_type, dbconn=self.dbconn, transport = transport, addrport = addrport)
                     coreconnect.nasip = nas_ip
                     coreconnect.fMem = fMem; coreconnect.caches = self.caches
-                    authobject, packetfromcore=coreconnect.handle()
+                    coreconnect.cache = self.cache
+                    coreconnect.handle()
                     
-                    if packetfromcore is None: 
-                        logger.info("Unknown NAS %s", str(nas_ip))
-                        continue
-
-                    logger.info("Password check: %s", authobject.code)
                     #logger.debug("AUTH packet: %s", show_packet(packetfromcore))
-                    returndata, replypacket = authobject.ReturnPacket(packetfromcore, mppe_support=vars.MPPE_SUPPORT) 
-                    logger.debug("REPLY packet: %s", repr(replypacket))               
 
-                transport.write(returndata, addrport)
-                 
+                print time.time()-a
                 logger.info("AUTH: %s, USER: %s, NAS: %s, ACCESS TYPE: %s", (time.time()-auth_time, user_name, nas_ip, access_type))
                 #dbCur.connection.commit()
 
@@ -285,7 +270,7 @@ class SQLLoggerThread(Thread):
 
             
 class HandleSBase(object):
-    __slots__ = ('packetobject', 'cacheDate', 'nasip', 'caches', 'replypacket', 'userName', 'transport', 'addrport')
+    __slots__ = ('packetobject', 'cacheDate', 'nasip', 'caches', 'replypacket', 'userName', 'transport', 'addrport', 'cache', 'authobject')
 
     def auth_NA(self):
         """
@@ -298,11 +283,15 @@ class HandleSBase(object):
         self.transport = None
         # Access denided
         self.packetobject.code = packet.AccessReject
+        self.cache = None
         return self.packetobject
 
     def reply(self):
         #self.transport.write(self.replypacket.ReplyPacket(), self.addrport)
-        auth_output_queue.put((self.replypacket.ReplyPacket(), self.addrport, self.transport))
+        returndata, replypacket = self.authobject.ReturnPacket(self.replypacket, mppe_support=vars.MPPE_SUPPORT) 
+        logger.debug("REPLY packet: %s", repr(replypacket))               
+
+        self.transport.write(returndata, self.addrport)
         
     # Main
     def handle(self):
@@ -317,17 +306,18 @@ class HandleSNA(HandleSBase):
         #self.cur = dbCur
 
     def handle(self):
-        nas = self.caches.nas_cache.by_ip.get(self.nasip)       
+        nas = self.cache.get_nas_by_ip(self.nasip)       
 
         if nas is not None:
             self.packetobject.secret = str(nas.secret)
             return "", self.auth_NA()
+        
 
 class HandleSAuth(HandleSBase):
     __slots__ = () + ('access_type', 'secret', 'speed','session_speed','nas_id', 'nas_type', 'multilink', 'fMem', 'datetime','dbconn','cursor', 'transport', 'addrport')
     def __init__(self,  packetobject, access_type, dbconn, transport, addrport):
         self.packetobject = packetobject
-        self.access_type=access_type
+        self.access_type=access_type or 'UNKNOWN'
         self.secret = ''     
         self.session_speed = ''   
         self.dbconn=dbconn
@@ -341,13 +331,17 @@ class HandleSAuth(HandleSBase):
         """
         Deny access
         """
-        authobject.set_code(3)
-        return authobject, self.packetobject.CreateReply()
+        self.authobject.set_code(3)
+
+        returndata, replypacket = self.authobject.ReturnPacket(self.packetobject.CreateReply()) 
+        logger.debug("REPLY packet: %s", repr(replypacket))               
+
+        self.transport.write(returndata, self.addrport)
 
         
     def add_values(self, tarif_id, nas_id, account_status):
         # CREATE ONE SECTION
-        attrs = self.caches.radattrs_cache.by_tarif_id.get(tarif_id, [])
+        attrs = self.cache.get_radiusattr_by_tarif_id(tarif_id) or []
         for attr in attrs:
             if attr.account_status != 0 and attr.account_status!=account_status: continue
             if 0: assert isinstance(attr, RadiusAttrsData)
@@ -356,7 +350,7 @@ class HandleSAuth(HandleSBase):
             else:
                 self.replypacket.AddAttribute(attr.attrid, str(attr.value))
     
-        attrs = self.caches.radattrs_cache.by_nas_id.get(nas_id, [])
+        attrs = self.cache.get_radiusattr_by_nas_id(nas_id) or []
         for attr in attrs:
             if attr.account_status != 0 and attr.account_status!=account_status: continue
             if 0: assert isinstance(attr, RadiusAttrsData)
@@ -367,7 +361,7 @@ class HandleSAuth(HandleSBase):
                 
     def find_free_ip(self,id, acct_interval):
         def next(id):
-            pool= self.caches.ippool_cache.by_id.get(id)
+            pool= self.cache.get_ippool_by_id(id)
             if not pool: return None
             return pool.next_pool_id
         
@@ -389,17 +383,17 @@ class HandleSAuth(HandleSBase):
 
     def create_speed(self, nas, subacc_id, tarif_id, account_id, speed=''):
         if not (nas.speed_value1 or nas.speed_value2): return
-        defaults = self.caches.defspeed_cache.by_id.get(tarif_id)
-        speeds   = self.caches.speed_cache.by_id.get(tarif_id, [])
-        correction = self.caches.speedlimit_cache.by_account_id.get(account_id)
+        defaults = self.cache.get_defspeed_by_tarif_id(tarif_id)
+        speeds   = self.cache.get_speed_by_tarif_id(tarif_id) or []
+        correction = self.cache.get_speedlimit_by_account_id(account_id)
         now=datetime.datetime.now()
         addonservicespeed=[]  
         br = False
         if subacc_id:
-            accservices = self.caches.accountaddonservice_cache.by_subaccount.get(subacc_id, [])    
+            accservices = self.cache.get_accountaddonservice_by_subaccount_id(subacc_id) or []
             for accservice in accservices:                                 
-                service = self.caches.addonservice_cache.by_id.get(accservice.service_id)     
-                for pnode in self.caches.timeperiodnode_cache.by_id.get(service.timeperiod_id, []):                                       
+                service = self.cache.get_addonservice_by_id(accservice.service_id)     
+                for pnode in self.cache.get_timeperiodnode_by_timeperiod_id(service.timeperiod_id) or []:                                       
                     if not accservice.deactivated  and service.change_speed and fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, now)[3]:                                                                        
                         addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
                         br = True
@@ -407,10 +401,10 @@ class HandleSAuth(HandleSBase):
                 if br: break
         br = False
         if not addonservicespeed: 
-            accservices = self.caches.accountaddonservice_cache.by_account.get(account_id, [])    
+            accservices = self.cache.get_accountaddonservice_by_account_id(account_id) or []
             for accservice in accservices:                                 
-                service = self.caches.addonservice_cache.by_id.get(accservice.service_id)           
-                for pnode in self.caches.timeperiodnode_cache.by_id.get(service.timeperiod_id, []):                     
+                service = self.cache.get_addonservice_by_id(accservice.service_id)           
+                for pnode in self.cache.get_timeperiodnode_by_timeperiod_id(service.timeperiod_id) or []:                     
                     if not accservice.deactivated  and service.change_speed and fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, now)[3]:                                                                        
                         addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
                         br = True
@@ -448,7 +442,10 @@ class HandleSAuth(HandleSBase):
     def handle(self):
         global sqlloggerthread
         self.datetime = datetime.datetime.now()
-        nasses = self.caches.nas_cache.by_ip.get(self.nasip)
+        #nasses = self.cache.get_nas_by_ip(self.nasip)
+        a = time.time()
+        nasses = self.cache.get_nas_by_ip(self.nasip)
+        print '1', time.time()-a
         if not nasses:
             logger.warning("Requested NAS IP (%s) not found in nasses %s", (self.nasip, str(nasses),))
             sqlloggerthread.add_message(type="AUTH_NAS_NOT_FOUND", service=self.access_type, cause=u'Сервер доступа с IP %s не найден ' % self.nasip, datetime=self.datetime) 
@@ -457,7 +454,7 @@ class HandleSAuth(HandleSBase):
         logger.info("NAS or NASSES Found %s", (str(nasses),))
         #if 0: assert isinstance(nas, NasData)
 
-        
+        print '2', time.time()-a
         
         station_id = self.packetobject.get('Calling-Station-Id', [''])[0]
         if self.access_type == 'PPPOE'  and nasses[0].type=='cisco':
@@ -466,114 +463,114 @@ class HandleSAuth(HandleSBase):
 
 
         logger.warning("Searching account username=%s in subaccounts with pptp-ipn_ip or pppoe-ipn_mac link %s", (user_name, station_id))
-        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)
+        self.authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)
         
-        subacc = self.caches.subaccount_cache.by_username_w_ipn_vpn_link.get((user_name, station_id))
+        subacc = self.cache.get_subaccount_by_username_w_ipn_vpn_link(user_name, station_id)
         if not subacc:
             logger.warning("Searching account username=%s in subaccounts witouth pptp-ipn_ip or pppoe-ipn_mac link", (user_name, ))
-            subacc = self.caches.subaccount_cache.by_username.get(user_name)
+            subacc = self.cache.get_subaccount_by_username(user_name)
         if not subacc:
             logger.warning("Subaccount with username  %s not found", (user_name,))   
             sqlloggerthread.add_message(nas=nasses[0].id,type="AUTH_SUBACC_NOT_FOUND", service=self.access_type, cause=u'Субаккаунт с логином %s и ip/mac %s в системе не найден.' % (user_name, station_id), datetime=self.datetime) 
-            return self.auth_NA(authobject)     
-
-        acc = self.caches.account_cache.by_id.get(subacc.account_id)
+            return self.auth_NA(self.authobject)     
+        print '3', time.time()-a
+        acc = self.cache.get_account_by_id(subacc.account_id)
         
         if not acc:
             logger.warning("Account with username  %s not found", (user_name,))
             sqlloggerthread.add_message(nas=nasses[0].id, type="AUTH_ACC_NOT_FOUND", service=self.access_type, cause=u'Аккаунт для субаккаунта с логином %s в системе не найден.' % (user_name, ), datetime=self.datetime)
-            return self.auth_NA(authobject)
+            return self.auth_NA(self.authobject)
             
         username = subacc.username 
         password = subacc.password
         vpn_ip_address = subacc.vpn_ip_address
         # Сервер доступа может быть не указан 
         nas_id = subacc.nas_id
-
+        print '4', time.time()-a
         if self.access_type=='W802.1x':
-            #nas = self.caches.nas_cache.by_id.get(subacc.switch_id, None) # Пока не реализована нужна логика на стороне интерфейса
-            nas = self.caches.nas_cache.by_id.get(nas_id)
+            #nas = self.cache.get_nas_by_id(subacc.switch_id, None) # Пока не реализована нужна логика на стороне интерфейса
+            nas = self.cache.get_nas_by_id(nas_id)
         else:
-            nas = self.caches.nas_cache.by_id.get(nas_id)
+            nas = self.cache.get_nas_by_id(nas_id)
         logger.info("Nas id for user %s: %s ", (user_name, nas_id))
         if self.access_type in ['PPTP','L2TP'] and subacc.associate_pptp_ipn_ip and not (subacc.ipn_ip_address == station_id):
             logger.warning("Unallowed dialed ipn_ip_address for user %s vpn: station_id - %s , ipn_ip - %s; vpn_ip - %s access_type: %s", (user_name, station_id, subacc.ipn_ip_address, subacc.vpn_ip_address, self.access_type))
             sqlloggerthread.add_message(nas=nas_id, type="AUTH_ASSOC_PPTP_IPN_IP", service=self.access_type, cause=u'Попытка авторизации %s с неразрешённого IPN IP адреса %s.' % (user_name, station_id,), datetime=self.datetime)
-            return self.auth_NA(authobject) 
+            return self.auth_NA(self.authobject) 
         
         if self.access_type == 'PPPOE' and subacc.associate_pppoe_ipn_mac and not (subacc.ipn_mac_address == station_id):
             logger.warning("Unallowed dialed mac for user %s: station_id - %s , ipn_ip - %s; ipn_mac - %s access_type: %s", (user_name, station_id, subacc.ipn_ip_address, subacc.ipn_mac_address, self.access_type))
             sqlloggerthread.add_message(nas=nas_id, type="AUTH_ASSOC_PPTP_IPN_MAC", service=self.access_type, cause=u'Попытка авторизации %s с неразрешённого IPN MAC адреса %s.' % (user_name, station_id), datetime=self.datetime)
-            return self.auth_NA(authobject) 
+            return self.auth_NA(self.authobject) 
           
-        
+        print '5', time.time()-a
         if (nas and nas not in nasses) and vars.IGNORE_NAS_FOR_VPN is False and self.access_type in ['PPTP', 'PPPOE']:
             """
             Если NAS пользователя найден  и нас не в списке доступных и запрещено игнорировать сервера доступа 
             """
             logger.warning("Account nas(%s) is not in sended nasses and IGNORE_NAS_FOR_VPN is False %s", (repr(nas), nasses,))
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_BAD_NAS", service=self.access_type, cause=u'Субаккаунт %s привязан к конкретному серверу доступа, но запрос на авторизацию поступил с IP %s.' % (user_name, self.nasip), datetime=self.datetime)
-            return self.auth_NA(authobject)
+            sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_BAD_NAS", service=self.access_type, cause=u'Субаккаунт %s привязан к конкретному серверу доступа, но запрос на авторизацию поступил с IP %s.' % (user_name, self.nasip), datetime=self.datetime)
+            return self.auth_NA(self.authobject)
         elif not nas_id and self.access_type!='W802.1x':
             """
             Иначе, если указан любой NAS - берём первый из списка совпавших по IP
             """
             nas = nasses[0]
         elif (nas and nas not in nasses)  and self.access_type=='W802.1x':
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_8021x_NAS", service=self.access_type, cause=u'Для 802.1x авторизации должен быть указан коммутатор. Запрос на авторизацию поступил с IP %s.' % (self.nasip), datetime=self.datetime)
+            sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_8021x_NAS", service=self.access_type, cause=u'Для 802.1x авторизации должен быть указан коммутатор. Запрос на авторизацию поступил с IP %s.' % (self.nasip), datetime=self.datetime)
             logger.warning("Requested 802.1x authorization nas(%s) not assigned to user %s", (repr(nas), repr(subacc),))
-            return self.auth_NA(authobject)            
+            return self.auth_NA(self.authobject)            
             
 
         self.nas_type = nas.type
         self.replypacket = packet.Packet(secret=str(nas.secret),dict=vars.DICT)         
-        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = queues.challenges, logger = logger)
+        self.authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = queues.challenges, logger = logger)
 
-
+        print '6', time.time()-a
         if 0: assert isinstance(acc, AccountData)
-        authobject.plainusername = str(username)
-        authobject.plainpassword = str(password)
+        self.authobject.plainusername = str(username)
+        self.authobject.plainpassword = str(password)
 
         
         logger.debug("Account data : %s", repr(acc))
         logger.debug("SubAccount data : %s", repr(subacc))
 
-        process, ok, left = authobject._HandlePacket()
+        process, ok, left = self.authobject._HandlePacket()
         if not process:
             logger.warning(left, ())
-            logger.debug("Auth object : %s" , authobject)
+            logger.debug("Auth object : %s" , self.authobject)
             #self.cur.close()
             if ok:
-                return authobject, self.replypacket
+                self.reply()
             else:
-                return self.auth_NA(authobject)
+                return self.auth_NA(self.authobject)
 
 
-        process, ok, left = authobject._ProcessPacket()
+        process, ok, left = self.authobject._ProcessPacket()
         if not process:
             logger.warning(left, ())
-            logger.debug("Auth object : %s" , authobject)
+            logger.debug("Auth object : %s" , self.authobject)
             if ok:
-                return authobject, self.replypacket
+                return self.reply()
             else:
-                return self.auth_NA(authobject)
+                return self.auth_NA(self.authobject)
 
-        check_auth, left = authobject.check_auth()
-        logger.debug("Auth object : %s" , authobject)
+        check_auth, left = self.authobject.check_auth()
+        logger.debug("Auth object : %s" , self.authobject)
         if not check_auth:
             logger.warning(left, ())
-            sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_BAD_PASSWORD", service=self.access_type, cause=u'Ошибка авторизации. Необходимо проверить указанный пароль.', datetime=self.datetime)
-            return self.auth_NA(authobject) 
+            sqlloggerthread.add_message(account=acc.id, subaccount=subacc.id, type="AUTH_BAD_PASSWORD", service=self.access_type, cause=u'Ошибка авторизации. Необходимо проверить указанный пароль.', datetime=self.datetime)
+            return self.auth_NA(self.authobject) 
 
         #print common_vpn,access_type,self.access_type
         if acc.access_type not in ['PPTP', 'L2TP', 'PPPOE'] and (not vars.COMMON_VPN) and (acc.access_type != self.access_type) :
             logger.warning("Unallowed Tarif Access Type for user %s. Account access type - %s; packet access type - %s", (username, acc.access_type, self.access_type))
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_WRONG_ACCESS_TYPE", service=self.access_type, cause=u'Способ доступа %s не совпадает с разрешённым в параметрах тарифного плана %s.' % (self.access_type, acc.access_type), datetime=self.datetime)
-            return self.auth_NA(authobject)
-
-        if acc.account_status != 1:
-            sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_ACCOUNT_DISABLED", service=self.access_type, cause=u'Аккаунт отключен', datetime=self.datetime)
-            return self.auth_NA(authobject)  
+            sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_WRONG_ACCESS_TYPE", service=self.access_type, cause=u'Способ доступа %s не совпадает с разрешённым в параметрах тарифного плана %s.' % (self.access_type, acc.access_type), datetime=self.datetime)
+            return self.auth_NA(self.authobject)
+        print '7', time.time()-a
+        if acc.status != 1:
+            sqlloggerthread.add_message(account=acc.id, subaccount=subacc.id, type="AUTH_ACCOUNT_DISABLED", service=self.access_type, cause=u'Аккаунт отключен', datetime=self.datetime)
+            return self.auth_NA(self.authobject)  
         
         acstatus = (((subacc.allow_vpn_with_null and acc.ballance >=0) or (subacc.allow_vpn_with_minus and acc.ballance<=0) or acc.ballance>0)\
                     and \
@@ -582,13 +579,13 @@ class HandleSAuth(HandleSBase):
 
         
         if not acstatus and not acc.vpn_guest_ippool_id:
-            logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (username,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_VPN_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
-            return self.auth_NA(authobject)
+            logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (username,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.status))
+            sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_VPN_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
+            return self.auth_NA(self.authobject)
 
         allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
 
-        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.account_status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tariff_active))
+        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tariff_active))
         if allow_dial and acc.tariff_active:
             
             if not acc.sessionscount==subacc.sessionscount==0:
@@ -596,19 +593,20 @@ class HandleSAuth(HandleSBase):
 
                 self.create_cursor()
                 try:
-                    self.cursor.execute("""SELECT count(*) from radius_activesession WHERE account_id=%s and (date_end is null and (interrim_update is not Null or extract('epoch' from now()-date_start)<=%s)) and session_status='ACTIVE';""", (acc.account_id, nas.acct_interim_interval))
+                    self.cursor.execute("""SELECT count(*) from radius_activesession WHERE account_id=%s and (date_end is null and (interrim_update is not Null or extract('epoch' from now()-date_start)<=%s)) and session_status='ACTIVE';""", (acc.id, nas.acct_interim_interval))
                     self.cursor.connection.commit()
                     cnt = self.cursor.fetchone()
                     if cnt and sc:
                         if cnt[0]>=sc:
                             logger.warning("Max sessions count %s reached for username %s. If this error persist - check your nas settings and perform maintance radius_activesession table", (sc, username,))
-                            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_SESSIONS_COUNT_REACHED", service=self.access_type, cause=u'Превышено количество одновременных сессий для аккаунта', datetime=self.datetime)
-                            return self.auth_NA(authobject)                      
+                            sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_SESSIONS_COUNT_REACHED", service=self.access_type, cause=u'Превышено количество одновременных сессий для аккаунта', datetime=self.datetime)
+                            return self.auth_NA(self.authobject)                      
                 except Exception, ex:
-                    logger.error("Couldn't check session dublicates for user %s account=%s because %s", (str(user_name), acc.account_id, repr(ex)))
-                    return self.auth_NA(authobject) 
+                    logger.error("Couldn't check session dublicates for user %s account=%s because %s", (str(user_name), acc.id, repr(ex)))
+                    return self.auth_NA(self.authobject) 
 
             ipinuse_id=''
+            address_requested = False
             if (subacc.vpn_ip_address in ('0.0.0.0','', None) and (subacc.ipv4_vpn_pool_id or acc.vpn_ippool_id)) or (acstatus==False and acc.vpn_guest_ippool_id) :
                
                 with vars.cursor_lock:
@@ -624,37 +622,24 @@ class HandleSAuth(HandleSBase):
                             vpn_ip_address = self.cursor.fetchone()[0]
                         else:
                             pool_id, vpn_ip_address = self.find_free_ip(pool_id, nas.acct_interim_interval)
-
+                        address_requested = True
                         #self.cursor.connection.commit()
                         if vpn_ip_address in ['0.0.0.0', '', None]:
                             logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc.id, pool_id))
-                            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
+                            sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
                             #vars.cursor_lock.release()
-                            return self.auth_NA(authobject)
-                       
-                        self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id, ip, datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
-                        ipinuse_id=self.cursor.fetchone()[0]
-                        self.cursor.connection.commit()
+                            return self.auth_NA(self.authobject)
+                        #self.cursor.connection.commit()
                     except Exception, ex:
                         logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id, repr(ex)))
-                        sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
-                        return self.auth_NA(authobject) 
+                        sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
+                        return self.auth_NA(self.authobject) 
             else:
                 vpn_ip_address = subacc.vpn_ip_address
+            print '8', time.time()-a
 
-            if self.access_type=='PPPOE' and vars.GET_MAC_FROM_PPPOE==True:
-                logger.debug("Trying to update subaccount %s with id %s ipn mac address to: %s ", (str(user_name), subacc.id, station_id))
-                with vars.cursor_lock:
-                    try:
-                        self.create_cursor()
-                        self.cursor.execute("UPDATE billservice_subaccount SET ipn_mac_address=%s WHERE id=%s", (station_id, subacc.id,))
-                        self.cursor.connection.commit()
-                        logger.debug("Update subaccount %s with id %s ipn mac address to: %s was succefull", (str(user_name), subacc.id, station_id))
-                    except Exception, ex:
-                        logger.error("Error update subaccount %s with id %s ipn mac address to: %s %s", (str(user_name), subacc.id, station_id, repr(ex)))
-                        
-                       
-            authobject.set_code(2)
+             
+            self.authobject.set_code(2)
             self.replypacket.username = str(username) #Нельзя юникод
             self.replypacket.password = str(password) #Нельзя юникод
             self.replypacket.AddAttribute('Service-Type', 2)
@@ -667,17 +652,35 @@ class HandleSAuth(HandleSBase):
                 #self.replypacket.AddAttribute('Framed-Interface-Id', str(subacc.vpn_ipv6_ip_address))
                 self.replypacket.AddAttribute('Framed-IPv6-Prefix', str(subacc.vpn_ipv6_ip_address))
             #account_speed_limit_cache
-            self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
+            
+            self.create_speed(nas, subacc.id, acc.tarif_id, acc.id, speed=subacc.vpn_speed)
             if self.session_speed:
                 self.replypacket.AddAttribute('Class', str("%s,%s,%s,%s" % (subacc.id,ipinuse_id,nas.id,str(self.session_speed))))
             self.add_values(acc.tarif_id, nas.id, acstatus)
+            print '10', time.time()-a
             #print "Setting Speed For User" , self.speed
             if vars.SQLLOG_SUCCESS:
-                sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)
-            return authobject, self.replypacket
+                sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)
+            #return self.authobject, self.replypacket
+            self.reply()
+            if self.access_type=='PPPOE' and vars.GET_MAC_FROM_PPPOE==True:
+                logger.debug("Trying to update subaccount %s with id %s ipn mac address to: %s ", (str(user_name), subacc.id, station_id))
+                with vars.cursor_lock:
+                    try:
+                        self.create_cursor()
+                        self.cursor.execute("UPDATE billservice_subaccount SET ipn_mac_address=%s WHERE id=%s", (station_id, subacc.id,))
+                        self.cursor.connection.commit()
+                        logger.debug("Update subaccount %s with id %s ipn mac address to: %s was succefull", (str(user_name), subacc.id, station_id))
+                    except Exception, ex:
+                        logger.error("Error update subaccount %s with id %s ipn mac address to: %s %s", (str(user_name), subacc.id, station_id, repr(ex)))
+                        
+            if address_requested:
+                self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id, ip, datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
+                ipinuse_id=self.cursor.fetchone()[0]
+                self.cursor.connection.commit()
         else:
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)
-            return self.auth_NA(authobject)
+            sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)
+            return self.auth_NA(self.authobject)
 
 
 class HandlelISGAuth(HandleSAuth):
@@ -685,7 +688,7 @@ class HandlelISGAuth(HandleSAuth):
     def handle(self):
         global sqlloggerthread
         self.datetime = datetime.datetime.now()
-        nasses = self.caches.nas_cache.by_ip.get(self.nasip)
+        nasses = self.cache.get_nas_by_ip(self.nasip)
         if not nasses:
             logger.warning("Requested NAS IP (%s) not found in nasses %s", (self.nasip, str(nasses),))
             sqlloggerthread.add_message(type="AUTH_NAS_NOT_FOUND", service=self.access_type, cause=u'Сервер доступа с IP %s не найден ' % self.nasip, datetime=self.datetime) 
@@ -703,23 +706,23 @@ class HandlelISGAuth(HandleSAuth):
         logger.warning("Searching lISG account for ip address %s", station_id)
         #acc = self.caches.account_cache.by_ipn_ip_nas.get((station_id, nas.id))
         #subacc = SubAccount()
-        subacc = self.caches.subaccount_cache.by_ipn_ip.get(station_id)
-        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)
+        subacc = self.cache.get_subaccount_by_ipn_ip(station_id)
+        self.authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)
         if not subacc:
             logger.warning("Subcccount for lISG not found for ip address %s", (station_id,))
             sqlloggerthread.add_message(type="AUTH_SUBACC_NOT_FOUND", service=self.access_type, cause=u'Субаккаунт с логином  ipn ip %s в системе не найден.' % (station_id,), datetime=self.datetime)
             #Не учитывается сервер доступа
-            return self.auth_NA(authobject)
-        acc = self.caches.account_cache.by_id.get(subacc.account_id)
+            return self.auth_NA(self.authobject)
+        acc = self.cache.get_account_by_id(subacc.account_id)
         
         if not acc:
             logger.warning("Account with username  %s not found", (user_name,))
             sqlloggerthread.add_message(type="AUTH_ACC_NOT_FOUND", service=self.access_type, cause=u'Аккаунт для субаккаунта с логином %s в системе не найден.' % (subacc.username, ), datetime=self.datetime)
-            return self.auth_NA(authobject)
+            return self.auth_NA(self.authobject)
             
         nas_id = subacc.nas_id
 
-        nas = self.caches.nas_cache.by_id.get(nas_id)
+        nas = self.cache.get_nas_by_id(nas_id)
         
 
         
@@ -728,8 +731,8 @@ class HandlelISGAuth(HandleSAuth):
             Если NAS пользователя найден  и нас не в списке доступных и запрещено игнорировать сервера доступа 
             """
             logger.warning("Account nas(%s) is not in sended nasses and IGNORE_NAS_FOR_VPN is False %s", (repr(nas), nasses,))
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_BAD_NAS", service=self.access_type, cause=u'Субаккаунт привязан к конкретному серверу доступа, но запрос на авторизацию поступил с IP %s.' % (self.nasip), datetime=self.datetime)
-            return self.auth_NA(authobject)
+            sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_BAD_NAS", service=self.access_type, cause=u'Субаккаунт привязан к конкретному серверу доступа, но запрос на авторизацию поступил с IP %s.' % (self.nasip), datetime=self.datetime)
+            return self.auth_NA(self.authobject)
         elif not nas_id:
             """
             Иначе, если указан любой NAS - берём первый из списка совпавших по IP
@@ -737,57 +740,57 @@ class HandlelISGAuth(HandleSAuth):
             nas = nasses[0]
 
         nas_id = nas.id    
-        authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = queues.challenges)
+        self.authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = queues.challenges)
 
         self.nas_type = nas.type
         self.replypacket = packet.Packet(secret=str(nas.secret),dict=vars.DICT)
         
         logger.debug("Account data : %s", repr(acc))
 
-        process, ok, left = authobject._HandlePacket()
+        process, ok, left = self.authobject._HandlePacket()
         if not process:
             logger.warning(left, ())
-            logger.debug("Auth object : %s" , authobject)
+            logger.debug("Auth object : %s" , self.authobject)
             #self.cur.close()
             if ok:
-                return authobject, self.replypacket
+                return self.authobject, self.replypacket
             else:
-                return self.auth_NA(authobject)
+                return self.auth_NA(self.authobject)
  
  
-        process, ok, left = authobject._ProcessPacket()
+        process, ok, left = self.authobject._ProcessPacket()
         if not process:
             logger.warning(left, ())
-            logger.debug("Auth object : %s" , authobject)
+            logger.debug("Auth object : %s" , self.authobject)
             if ok:
-                return authobject, self.replypacket
+                return self.authobject, self.replypacket
             else:
-                return self.auth_NA(authobject)
+                return self.auth_NA(self.authobject)
  
-        check_auth, left = authobject.check_auth()
-        logger.debug("Auth object : %s" , authobject)
+        check_auth, left = self.authobject.check_auth()
+        logger.debug("Auth object : %s" , self.authobject)
         if not check_auth:
             logger.warning(left, ())
-            return self.auth_NA(authobject) 
+            return self.auth_NA(self.authobject) 
 
-        if acc.account_status != 1:
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_ACCOUNT_DISABLED", service=self.access_type, cause=u'Аккаунт отключен', datetime=self.datetime)
-            return self.auth_NA(authobject)  
+        if acc.status != 1:
+            sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_ACCOUNT_DISABLED", service=self.access_type, cause=u'Аккаунт отключен', datetime=self.datetime)
+            return self.auth_NA(self.authobject)  
         
         #print common_vpn,access_type,self.access_type
         if (acc.access_type is None) or (acc.access_type != self.access_type):
             logger.warning("Unallowed Access Type for user %s. Access type - %s; packet access type - %s", (user_name, acc.access_type, self.access_type))
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_WRONG_ACCESS_TYPE", service=self.access_type, cause=u'Способ доступа %s не совпадает с разрешённым в параметрах тарифного плана %s.' % (self.access_type, acc.access_type), datetime=self.datetime)
-            return self.auth_NA(authobject)
+            sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_WRONG_ACCESS_TYPE", service=self.access_type, cause=u'Способ доступа %s не совпадает с разрешённым в параметрах тарифного плана %s.' % (self.access_type, acc.access_type), datetime=self.datetime)
+            return self.auth_NA(self.authobject)
 
         acstatus = (((subacc.allow_vpn_with_null and acc.ballance >=0) or (subacc.allow_vpn_with_minus and acc.ballance<=0) or acc.ballance>0)\
                     and \
                     (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked==True and not acc.disabled_by_limit==True)))
         #acstatus = True
         if not acstatus:
-            logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (subacc.username, subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_VPN_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
-            return self.auth_NA(authobject)     
+            logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (subacc.username, subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.status))
+            sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_VPN_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
+            return self.auth_NA(self.authobject)     
 
      
 
@@ -795,9 +798,9 @@ class HandlelISGAuth(HandleSAuth):
 
         allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
 
-        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.account_status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tariff_active))
+        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tariff_active))
         if allow_dial and acc.tariff_active:
-            authobject.set_code(2)
+            self.authobject.set_code(2)
             self.replypacket.username = '' #Нельзя юникод
             self.replypacket.password = '' #Нельзя юникод
             if subacc.vpn_ip_address not in ['', '0.0.0.0', '0.0.0.0/0']:
@@ -808,18 +811,18 @@ class HandlelISGAuth(HandleSAuth):
             #self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
             #self.replypacket.AddAttribute('Class', str("%s,0,%s,%s" % (subacc.id,nas_id,str(self.session_speed))))
             
-            self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.vpn_speed)
+            self.create_speed(nas, subacc.id, acc.tarif_id, acc.id, speed=subacc.vpn_speed)
             if self.session_speed:
                 self.replypacket.AddAttribute('Class', str("%s,0,%s,%s" % (subacc.id,nas_id,str(self.session_speed))))
 
 
             self.add_values(acc.tarif_id, nas.id, acstatus)
             if vars.SQLLOG_SUCCESS:
-                sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)
-            return authobject, self.replypacket
+                sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)
+            self.reply()
         else:
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)
-            return self.auth_NA(authobject)
+            sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)
+            return self.auth_NA(self.authobject)
              
 #HotSpot_class
 #auth_class
@@ -840,14 +843,14 @@ class HandleHotSpotAuth(HandleSAuth):
         """
         Deny access
         """
-        authobject.set_code(3)
-        return authobject, self.packetobject
+        self.authobject.set_code(3)
+        return self.authobject, self.packetobject
 
         
     def handle(self):
         global sqlloggerthread
         self.datetime = datetime.datetime.now()
-        nasses = self.caches.nas_cache.by_ip.get(self.nasip) 
+        nasses = self.cache.get_nas_by_ip(self.nasip) 
         if not nasses:
             logger.warning("Requested NAS IP (%s) not found in nasses %s", (self.nasip, str(nasses),))
             sqlloggerthread.add_message(type="AUTH_NAS_NOT_FOUND", service=self.access_type, cause=u'Сервер доступа с IP %s не найден ' % self.nasip, datetime=self.datetime) 
@@ -897,14 +900,14 @@ class HandleHotSpotAuth(HandleSAuth):
         subacc = self.caches.subaccount_cache.by_username.get(user_name)
         logger.info("Subacc %s for username %s acc %s", (subacc, user_name, acc))
         if not acc and subacc:
-            acc=self.caches.account_cache.by_id.get(subacc.account_id)
+            acc=self.cache.get_account_by_id(subacc.account_id)
             logger.info("Subacc %s access type=%s for username %s", (subacc, acc.access_type, user_name, ))
             if not acc.access_type=='HotSpot':
                 acc=None
         if not acc and mac:
             subacc = self.caches.subaccount_cache.by_mac.get(mac)
             if subacc:
-                acc=self.caches.account_cache.by_id.get(subacc.account_id)
+                acc=self.cache.get_account_by_id(subacc.account_id)
                 if acc.access_type not in ['HotSpotMac','HotSpotIp+Mac']:
                     acc=None
                     
@@ -913,9 +916,9 @@ class HandleHotSpotAuth(HandleSAuth):
                 logger.info("Subacc %s access type=%s for username %s", (subacc, acc.access_type if acc else 'acc not found', user_name, ))
 
         if not acc and ip:
-            subacc = self.caches.subaccount_cache.by_ipn_ip.get(ip)
+            subacc = self.cache.get_subaccount_by_ipn_ip(ip)
             if subacc:
-                acc=self.caches.account_cache.by_id.get(subacc.account_id)
+                acc=self.cache.get_account_by_id(subacc.account_id)
                 if acc.access_type!='HotSpotIp+Password':
                     acc=None
                     subacc=None
@@ -953,11 +956,11 @@ class HandleHotSpotAuth(HandleSAuth):
             
 
         if subacc:
-            acstatus = acc.account_status==1 and (((subacc.allow_vpn_with_null and acc.ballance >=0) or (subacc.allow_vpn_with_minus and acc.ballance<=0) or acc.ballance>0)\
+            acstatus = acc.status==1 and (((subacc.allow_vpn_with_null and acc.ballance >=0) or (subacc.allow_vpn_with_minus and acc.ballance<=0) or acc.ballance>0)\
                         and \
                         (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit)))
         else:
-            acstatus = acc.ballance >0 and not acc.balance_blocked and not acc.disabled_by_limit and acc.account_status==1
+            acstatus = acc.ballance >0 and not acc.balance_blocked and not acc.disabled_by_limit and acc.status==1
 
         if subacc:
             subacc_id=subacc.id
@@ -967,15 +970,15 @@ class HandleHotSpotAuth(HandleSAuth):
             
         if not acstatus:
             if subacc:
-                logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (user_name,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
+                logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (user_name,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.status))
             else:
-                logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (user_name,subacc.allow_vpn_with_null,acc.ballance, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
-            sqlloggerthread.add_message(nas=acc.nas_id, subaccount=subacc_id, account=acc.account_id, type="AUTH_HOTSPOT_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
+                logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (user_name,subacc.allow_vpn_with_null,acc.ballance, acc.balance_blocked, acc.disabled_by_limit, acc.status))
+            sqlloggerthread.add_message(nas=acc.nas_id, subaccount=subacc_id, account=acc.id, type="AUTH_HOTSPOT_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
             return self.auth_NA(authobject)     
         
         allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
 
-        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.account_status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked,acc.tariff_active))
+        logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked,acc.tariff_active))
         vpn_ip_address = None
         ipinuse_id=''
         pool_id=None
@@ -992,12 +995,11 @@ class HandleHotSpotAuth(HandleSAuth):
                     #self.cursor.connection.commit()
                     if not vpn_ip_address:
                         logger.error("Couldn't find free ipv4 address for user %s id %s in pool: %s", (str(user_name), subacc_id, pool_id))
-                        sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc_id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
+                        sqlloggerthread.add_message(account=acc.id, subaccount=subacc_id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
                         #vars.cursor_lock.release()
                         return self.auth_NA(authobject)
                    
-                    self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip,datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
-                    ipinuse_id=self.cursor.fetchone()[0]
+
                     #vars.cursor.connection.commit()   
                     #vars.cursor_lock.release()
                     #self.cursor.connection.commit()
@@ -1005,7 +1007,7 @@ class HandleHotSpotAuth(HandleSAuth):
                 except Exception, ex:
                     #vars.cursor_lock.release()
                     logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), subacc_id, pool_id, repr(ex)))
-                    sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
+                    sqlloggerthread.add_message(account=acc.id, subaccount=subacc.id, type="AUTH_IP_POOL_ERROR", service=self.access_type, cause=u'Ошибка выдачи свободного IP адреса', datetime=self.datetime)
                     return self.auth_NA(authobject) 
 
         else:
@@ -1025,14 +1027,18 @@ class HandleHotSpotAuth(HandleSAuth):
                 self.replypacket.AddAttribute('Framed-IP-Address', subacc.vpn_ip_address)  
                               
             self.replypacket.AddAttribute('Acct-Interim-Interval', nas.acct_interim_interval)
-            self.create_speed(nas, None, acc.tarif_id, acc.account_id, speed='')
+            self.create_speed(nas, None, acc.tarif_id, acc.id, speed='')
             self.replypacket.AddAttribute('Class', str("%s,%s,%s,%s" % (subacc_id,ipinuse_id,nas.id, str(self.session_speed))))
             self.add_values(acc.tarif_id, nas.id, acstatus)
             if vars.SQLLOG_SUCCESS:
-                sqlloggerthread.add_message(nas=nas.id, subaccount=subacc_id, account=acc.account_id,  type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)            
-            return authobject, self.replypacket
+                sqlloggerthread.add_message(nas=nas.id, subaccount=subacc_id, account=acc.id,  type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)            
+            self.reply()
+            if ipinuse_id:
+                self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id,ip,datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
+                ipinuse_id=self.cursor.fetchone()[0]
+                
         else:
-            sqlloggerthread.add_message(nas=nas.id, subaccount=subacc_id, account=acc.account_id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)
+            sqlloggerthread.add_message(nas=nas.id, subaccount=subacc_id, account=acc.id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)
             return self.auth_NA(authobject)
 
 
@@ -1069,7 +1075,7 @@ class HandleSDHCP(HandleSAuth):
     def handle(self):
         global sqlloggerthread
         self.datetime = datetime.datetime.now()
-        nasses = self.caches.nas_cache.by_ip.get(self.nasip)
+        nasses = self.cache.get_nas_by_ip(self.nasip)
         if not nasses: 
             sqlloggerthread.add_message(type="AUTH_NAS_NOT_FOUND", service=self.access_type, cause=u'Сервер доступа c IP %s в системе не найден.' % (self.nasip,), datetime=self.datetime)
             return '',None
@@ -1110,20 +1116,20 @@ class HandleSDHCP(HandleSAuth):
                 else:
                     sqlloggerthread.add_message(nas=nas_id,  type="DHCP_PORT_SWITCH_WRONG", service=self.access_type, cause=u'Субаккаунт с remote-id %s и портом %s не найден' % (identify, port), datetime=self.datetime)
                     return self.auth_NA(authobject)  
-            acc = self.caches.account_cache.by_id.get(subacc.account_id)
+            acc = self.cache.get_account_by_id(subacc.account_id)
             if not acc:
                 logger.warning("Account not found for DHCP request with mac address %s", (mac, ))
                 #Не учитывается сервер доступа
                 sqlloggerthread.add_message(type="AUTH_ACC_NOT_FOUND", service=self.access_type, cause=u'Аккаунт для субаккаунта с mac %s в системе не найден.' % (mac, ), datetime=self.datetime)
                 return self.auth_NA(authobject)
             if subaccount_switch.option82_auth_type==0 and (subaccount_switch.remote_id!=switch.remote_id or subacc.switch_port!=port):
-                sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_PORT_WRONG", service=self.access_type, cause=u'Remote-id или порт не совпадают %s %s' % (identify, port), datetime=self.datetime)
+                sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="DHCP_PORT_WRONG", service=self.access_type, cause=u'Remote-id или порт не совпадают %s %s' % (identify, port), datetime=self.datetime)
                 return self.auth_NA(authobject)  
             elif subaccount_switch.option82_auth_type==1 and (subaccount_switch.remote_id!=switch.remote_id or subacc.switch_port!=port):
-                sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_PORT_WRONG", service=self.access_type, cause=u'Remote-id или порт не совпадают %s %s' % (identify, port), datetime=self.datetime)
+                sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="DHCP_PORT_WRONG", service=self.access_type, cause=u'Remote-id или порт не совпадают %s %s' % (identify, port), datetime=self.datetime)
                 return self.auth_NA(authobject)  
             elif subaccount_switch.option82_auth_type==2 and subaccount_switch.id!=switch.id:
-                sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="DHCP_SWITCH_WRONG", service=self.access_type, cause=u'Свитч c remote-id=%s не совпадает с указанным в настройках субаккаунта' % (identify, port), datetime=self.datetime)
+                sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="DHCP_SWITCH_WRONG", service=self.access_type, cause=u'Свитч c remote-id=%s не совпадает с указанным в настройках субаккаунта' % (identify, port), datetime=self.datetime)
                 return self.auth_NA(authobject)  
                     
           
@@ -1138,7 +1144,7 @@ class HandleSDHCP(HandleSAuth):
             sqlloggerthread.add_message(type="AUTH_DHCP_DONT_ALLOW", service=self.access_type, cause=u'Субаккаунту с mac %s запрещена выдача IP по DHCP.' % (mac,), datetime=self.datetime)
             return self.auth_NA(authobject)            
         if not acc:
-            acc = self.caches.account_cache.by_id.get(subacc.account_id)
+            acc = self.cache.get_account_by_id(subacc.account_id)
             
         if not acc:
             logger.warning("Account not found for %s request with mac address %s", (self.access_type, mac, ))
@@ -1149,13 +1155,13 @@ class HandleSDHCP(HandleSAuth):
         nas_id = subacc.nas_id
 
         
-        nas = self.caches.nas_cache.by_id.get(nas_id) 
+        nas = self.cache.get_nas_by_id(nas_id) 
         if (nas and nas not in nasses) and vars.IGNORE_NAS_FOR_DHCP is False:
             """
             Если NAS пользователя найден  и нас не в списке доступных и запрещено игнорировать сервера доступа 
             """
             logger.warning("Account nas(%s) is not in sended nasses and IGNORE_NAS_FOR_%s is False %s", (repr(nas), nasses,self.access_type))
-            sqlloggerthread.add_message(account=acc.account_id, subaccount=subacc.id, type="AUTH_BAD_NAS", service=self.access_type, cause=u'Субаккаунт привязан к конкретному серверу доступа, но запрос на авторизацию поступил с IP %s.' % (self.nasip), datetime=self.datetime)
+            sqlloggerthread.add_message(account=acc.id, subaccount=subacc.id, type="AUTH_BAD_NAS", service=self.access_type, cause=u'Субаккаунт привязан к конкретному серверу доступа, но запрос на авторизацию поступил с IP %s.' % (self.nasip), datetime=self.datetime)
             return self.auth_NA(authobject)
         elif not nas_id:
             """
@@ -1173,13 +1179,13 @@ class HandleSDHCP(HandleSAuth):
                     (subacc.allow_dhcp_with_block or (not subacc.allow_dhcp_with_block and not acc.balance_blocked==True and not acc.disabled_by_limit==True)))
         #acstatus = True
         
-        if acc.account_status != 1:
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_ACCOUNT_DISABLED", service=self.access_type, cause=u'Аккаунт отключен', datetime=self.datetime)
+        if acc.status != 1:
+            sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_ACCOUNT_DISABLED", service=self.access_type, cause=u'Аккаунт отключен', datetime=self.datetime)
             return self.auth_NA(authobject)   
         
         if not acstatus:
-            logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (mac,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.account_status))
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="AUTH_%s_BALLANCE_ERROR" % self.access_type, service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
+            logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (mac,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.status))
+            sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_%s_BALLANCE_ERROR" % self.access_type, service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
             return self.auth_NA(authobject)      
 
         allow_dial = True
@@ -1192,12 +1198,12 @@ class HandleSDHCP(HandleSAuth):
             self.replypacket.AddAttribute('Session-Timeout',   vars.SESSION_TIMEOUT)
             if acc.access_type in ['DHCP', 'Wireless']:
                 self.add_values(acc.tarif_id, nas.id, acstatus)
-                self.create_speed(nas, subacc.id, acc.tarif_id, acc.account_id, speed=subacc.ipn_speed)
+                self.create_speed(nas, subacc.id, acc.tarif_id, acc.id, speed=subacc.ipn_speed)
             if vars.SQLLOG_SUCCESS:
-                sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="%s_AUTH_OK" % self.access_type, service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)
-            return authobject, self.replypacket
+                sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="%s_AUTH_OK" % self.access_type, service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)
+            self.reply()
         else:
-            sqlloggerthread.add_message(nas=nas_id, account=acc.account_id, subaccount=subacc.id, type="%s_AUTH_BAD_TIME" % self.access_type, service=self.access_type, cause=u'Тариф пользователя неактивен(%s) или время доступа выходит за рамки разрешённого %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)
+            sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="%s_AUTH_BAD_TIME" % self.access_type, service=self.access_type, cause=u'Тариф пользователя неактивен(%s) или время доступа выходит за рамки разрешённого %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)
             return self.auth_NA(authobject)
 
 

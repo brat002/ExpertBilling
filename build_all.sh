@@ -26,7 +26,7 @@ echo "Additional keys: " $5
 simple_build="core rad_auth rad_acct nf nffilter nfroutine nfwriter"
 total_build="$crypto_build $simple_build"
 
-modules="db utilites dictionary packet auth bidict IPy isdlogger log_adapter logger option_parser period_utilities saver ssh_paramiko ssh_utilities syslog_dummy tools dictfile queues"
+modules="db utilites dictionary packet auth bidict cacherouter IPy isdlogger log_adapter logger option_parser period_utilities saver ssh_paramiko ssh_utilities syslog_dummy tools dictfile queues"
 mkdir -p cmodules
 
 for bld in $modules; do
