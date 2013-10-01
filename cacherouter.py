@@ -406,7 +406,7 @@ class Cache(object):
         if obj: return obj
         
         
-        self.cursor.execute("""SELECT accs.id, accs.service_id, accs.account_id, date_trunc('second',accs.activated) as activated, date_trunc('second',accs.deactivated) as deactivated, accs.action_status, 
+        self.cursor.execute("""SELECT accs.id, accs.service_id, accs.account_id, accs.activated, accs.deactivated, accs.action_status, 
     
                                     accs.speed_status, accs.temporary_blocked, date_trunc('second',accs.last_checkout) as last_checkout, accs.subaccount_id, COALESCE(accs.cost, addons.cost) as cost
     
@@ -427,7 +427,7 @@ class Cache(object):
         if obj: return obj
         
         
-        self.cursor.execute("""SELECT accs.id, accs.service_id, accs.account_id, date_trunc('second',accs.activated) as activated, date_trunc('second',accs.deactivated) as deactivated, accs.action_status, 
+        self.cursor.execute("""SELECT accs.id, accs.service_id, accs.account_id, accs.activated, accs.deactivated, accs.action_status, 
     
                                     accs.speed_status, accs.temporary_blocked, date_trunc('second',accs.last_checkout) as last_checkout, accs.subaccount_id, COALESCE(accs.cost, addons.cost) as cost
     
