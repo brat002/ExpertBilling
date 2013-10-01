@@ -15,6 +15,7 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
   COST 100;
   
+  
 CREATE OR REPLACE FUNCTION get_free_ip_from_pool(ag_pool_id_ integer, acct_interval integer)
   RETURNS inet AS
 $BODY$
