@@ -44,7 +44,7 @@ from auth import Auth, get_eap_handlers
 from cacherouter import Cache
 import cacherouter
 globals()['mikrobill.cacherouter'] = cacherouter
-globals()['trunk.cacherouter'] = cacherouter
+
 w32Import = False
 
 from twisted.internet.protocol import DatagramProtocol
