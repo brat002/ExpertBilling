@@ -197,7 +197,11 @@ class AcctHandler(Thread):
             except Queue.Empty, ex: 
                 continue
             except Exception, ex:
-                
+                try:
+                    self.dbconn.rollback()
+                except Exception as nex:
+                    logger.error("%s rollback transaction exception: %s \n %s", (self.getName(), repr(nex), traceback.format_exc()))
+                    
                 logger.error("%s readfrom exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
                     time.sleep(5)
