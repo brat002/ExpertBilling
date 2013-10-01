@@ -468,7 +468,7 @@ class Cache(object):
         if obj: return obj
         
         
-        self.cursor.execute("""SELECT tpn.id, tpn.name, date_trunc('second', tpn.time_start), tpn.length, tpn.repeat_after, tpn.time_period_id 
+        self.cursor.execute("""SELECT tpn.id, tpn.name, date_trunc('second', tpn.time_start) as time_start, tpn.length, tpn.repeat_after, tpn.time_period_id 
                             FROM billservice_timeperiodnode as tpn WHERE tpn.time_period_id =%s;""", (timeperiod_id, ))
         res = self.cursor.fetchall()
         obj = self.memcached_connection.set(cache_key, res, COMMON_CACHE_TIMEOUT)

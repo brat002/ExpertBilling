@@ -558,9 +558,9 @@ class CoreVars(Vars):
         self.TRANSACTIONS_PER_DAY = 24
         self.VPN_SLEEP = 60
         self.PERIODICAL_SLEEP = 180
-        self.TIMEACCESS_SLEEP = 60
+        self.TIMEACCESS_SLEEP = 120
         self.LIMIT_SLEEP = 110
-        self.SETTLEMENT_PERIOD_SLEEP = 120
+        self.SETTLEMENT_PERIOD_SLEEP = 300
         self.IPN_SLEEP = 120
         self.DICT_LIST = ("dicts/dictionary", "dicts/dictionary.microsoft","dicts/dictionary.mikrotik","dicts/dictionary.rfc3576")
         self.USE_COEFF_FOR_PREPAID = False

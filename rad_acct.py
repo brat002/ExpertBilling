@@ -513,7 +513,7 @@ class HandleSAcct(HandleSBase):
                                         self.packetobject.get('Framed-IP-Address',[''])[0],
                                         self.nasip, self.access_type, nas_int_id, session_speed, self.packetobject['NAS-Port'][0] if self.packetobject.get('NAS-Port') else None ,ipinuse_id if ipinuse_id else None ))
                 if ipinuse_id:
-                    self.cur.execute("UPDATE billservice_ipinuse SET ack=True, lost=NULL, disabled=NULL where id=%s", (ipinuse_id,))
+                    self.cur.execute("UPDATE billservice_ipinuse SET ack=True, last_update=now() where id=%s", (ipinuse_id,))
                 #radiusstatthr.add_start(nas_id=nas_int_id, timestamp=now)
         elif self.packetobject['Acct-Status-Type']==['Alive']:
             bytes_in, bytes_out = self.get_bytes()
@@ -553,7 +553,7 @@ class HandleSAcct(HandleSBase):
                 self.cur.execute(insert_data)
 
             if ipinuse_id:
-                self.cur.execute("UPDATE billservice_ipinuse SET ack=True,lost=NULL, disabled=NULL where id=%s and (ack=False or disabled is not null) RETURNING ID", (ipinuse_id,))
+                self.cur.execute("UPDATE billservice_ipinuse SET ack=True, last_update=now(), disabled=NULL where id=%s", (ipinuse_id,))
                 
             #radiusstatthr.add_alive(nas_id=nas_int_id, timestamp=now)
                             
@@ -572,7 +572,7 @@ class HandleSAcct(HandleSBase):
                 
             #radiusstatthr.add_stop(nas_id=nas_int_id, timestamp=now)                
             if ipinuse_id:
-                self.cur.execute("UPDATE billservice_ipinuse SET disabled=now(), lost=NULL WHERE id=%s", (ipinuse_id,))
+                self.cur.execute("UPDATE billservice_ipinuse SET last_update=now(), disabled=now() WHERE id=%s", (ipinuse_id,))
         self.cur.connection.commit()
         #self.cur.close()       
         

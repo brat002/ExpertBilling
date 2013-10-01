@@ -240,9 +240,7 @@ class check_vpn_access(Thread):
                         if (rs.time_from_last_update and rs.time_from_last_update+15>=nas.acct_interim_interval*3+3) or (not rs.time_from_last_update and from_start>=nas.acct_interim_interval*3+3):
                             cur.execute("""UPDATE radius_activesession SET session_status='ACK' WHERE id=%s;
                                         """, (rs.id,))
-                            cur.execute("""
-                            UPDATE billservice_ipinuse SET lost=now() WHERE id=%s
-                            """, (rs.ipinuse_id, ))
+
                         cur.connection.commit()               
                     
                     except Exception, ex:
@@ -727,7 +725,7 @@ class RadiusAccessBill(Thread):
         #connection._con._con.set_client_encoding('UTF8')
         global fMem, suicideCondition, cacheMaster, vars
         self.connection = get_connection(vars.db_dsn)
-        self.connection.set_isolation_level(ISOLATION_LEVEL_SERIALIZABLE)
+        self.connection.set_isolation_level(ISOLATION_LEVEL_REPEATABLE_READ)
         dateAT = datetime.datetime(2000, 1, 1)
         caches = None
         accounts_bytes_cache={} # account_id: date_start_date_end, bytes_in, bytes_out
@@ -1141,7 +1139,7 @@ class addon_service(Thread):
         #connection._con._con.set_client_encoding('UTF8')
         global suicideCondition, cacheMaster, fMem, vars
         self.connection = get_connection(vars.db_dsn)
-        self.connection.set_isolation_level(ISOLATION_LEVEL_SERIALIZABLE)
+        self.connection.set_isolation_level(ISOLATION_LEVEL_REPEATABLE_READ)
         dateAT = datetime.datetime(2000, 1, 1)
         caches = None
         while True:            
@@ -1306,7 +1304,7 @@ class settlement_period_service_dog(Thread):
                         cacheMaster.lock.release()
 
                 if 0: assert isinstance(caches, CoreCaches)
-                self.connection.set_isolation_level(ISOLATION_LEVEL_SERIALIZABLE)
+                self.connection.set_isolation_level(ISOLATION_LEVEL_REPEATABLE_READ)
                 cur = self.connection.cursor()
                 for acc in caches.account_cache.data:
                     try:
@@ -1386,8 +1384,8 @@ class settlement_period_service_dog(Thread):
                         prepaid_traffic_reset = shedl.prepaid_traffic_reset if shedl.prepaid_traffic_reset else acc.datetime
                         prepaid_radius_traffic_reset = shedl.prepaid_radius_traffic_reset if shedl.prepaid_radius_traffic_reset else acc.datetime
                         #if (reset_traffic or acc.traffic_transmit_service_id is None) and (shedl.prepaid_traffic_reset is None or shedl.prepaid_traffic_reset<period_start or acc.acctf_id!= shedl.accounttarif_id):
-                        need_traffic_reset=(reset_traffic and shedl.prepaid_traffic_accrued and prepaid_traffic_reset<period_start) or  (shedl.prepaid_traffic_accrued and (acc.traffic_transmit_service_id is  None or acc.acctf_id != shedl.accounttarif_id))
-                        need_radius_traffic_reset=(radius_traffic and radius_traffic.reset_prepaid_traffic and  prepaid_radius_traffic_reset<period_start) or (shedl.prepaid_radius_traffic_accrued and (acc.radius_traffic_transmit_service_id is None  or acc.acctf_id != shedl.accounttarif_id))
+                        need_traffic_reset=     shedl.prepaid_traffic_accrued and ( (acc.traffic_transmit_service_id is  None or acc.acctf_id != shedl.accounttarif_id)  or   (reset_traffic and prepaid_traffic_reset<period_start))
+                        need_radius_traffic_reset= shedl.prepaid_radius_traffic_accrued and ((radius_traffic.reset_prepaid_traffic and  prepaid_radius_traffic_reset<period_start) or (acc.radius_traffic_transmit_service_id is None  or acc.acctf_id != shedl.accounttarif_id))
 
                         if need_traffic_reset:
                             #(Если нужно сбрасывать трафик или нет услуги доступа по трафику) И
