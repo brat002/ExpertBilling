@@ -655,6 +655,11 @@ class HandleSAuth(HandleSBase):
                 self.replypacket.AddAttribute('Framed-IPv6-Prefix', str(subacc.vpn_ipv6_ip_address))
             #account_speed_limit_cache
             
+            if address_requested:
+                self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id, ip, datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
+                ipinuse_id=self.cursor.fetchone()[0]
+                self.cursor.connection.commit()
+                
             self.create_speed(nas, subacc.id, acc.tarif_id, acc.id, speed=subacc.vpn_speed)
             if self.session_speed:
                 self.replypacket.AddAttribute('Class', str("%s,%s,%s,%s" % (subacc.id,ipinuse_id,nas.id,str(self.session_speed))))
@@ -676,10 +681,7 @@ class HandleSAuth(HandleSBase):
                     except Exception, ex:
                         logger.error("Error update subaccount %s with id %s ipn mac address to: %s %s", (str(user_name), subacc.id, station_id, repr(ex)))
                         
-            if address_requested:
-                self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id, ip, datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
-                ipinuse_id=self.cursor.fetchone()[0]
-                self.cursor.connection.commit()
+
         else:
             sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)
             return self.auth_NA(self.authobject)
