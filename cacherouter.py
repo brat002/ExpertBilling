@@ -482,7 +482,7 @@ class Cache(object):
         if obj: return obj
         
         
-        self.cursor.execute("""SELECT id, next_ippool_id FROM billservice_ippool WHERE id =%s;""", (id, ))
+        self.cursor.execute("""SELECT id, next_ippool_id as next_pool_id FROM billservice_ippool WHERE id =%s;""", (id, ))
         res = self.cursor.fetchone()
         obj = self.memcached_connection.set(cache_key, res, COMMON_CACHE_TIMEOUT)
         

@@ -32,7 +32,7 @@ from collections import defaultdict, deque
 from cacherouter import Cache
 import cacherouter
 globals()['mikrobill.cacherouter'] = cacherouter
-globals()['trunk.cacherouter'] = cacherouter
+
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
