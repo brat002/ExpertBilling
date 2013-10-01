@@ -2,10 +2,10 @@ import pylibmc
 import psycopg2.extras
 import datetime
 
-NAS_CACHE_TIMEOUT = 60
-SUBACC_CACHE_TIMEOUT = 60
-ACC_CACHE_TIMEOUT = 60
-COMMON_CACHE_TIMEOUT = 60
+NAS_CACHE_TIMEOUT = 120
+SUBACC_CACHE_TIMEOUT = 120
+ACC_CACHE_TIMEOUT = 120
+COMMON_CACHE_TIMEOUT = 180
 
 class RealDictRow(dict):
     """A `!dict` subclass representing a data record."""
@@ -38,35 +38,47 @@ class RealDictRow(dict):
         self.update(data[0])
         self._column_mapping = data[1]
         
+class AttrDict(dict):
+    
+    def __getattr__(self, attr):
+        return self[attr]
+
+
+        
 psycopg2.extras.RealDictRow = RealDictRow
 
-from decorator import decorator
 from time import time
- 
-def memoize_with_expiry(expiry_time=0, _cache=None, num_args=None):
-    def _memoize_with_expiry(func, *args, **kw):
-        # Determine what cache to use - the supplied one, or one we create inside the
-        # wrapped function.
-        if _cache is None and not hasattr(func, '_cache'):
-            func._cache = {}
-        cache = _cache or func._cache
-        
-        mem_args = args[:num_args]
-        # frozenset is used to ensure hashability
-        if kw: 
-            key = mem_args, frozenset(kw.iteritems())
-        else:
-            key = mem_args
-        if key in cache:
-            result, timestamp = cache[key]
-            # Check the age.
-            age = time() - timestamp
-            if not expiry_time or age < expiry_time:
-                return result
-        result = func(*args, **kw)
-        cache[key] = (result, time())
-        return result
-    return decorator(_memoize_with_expiry)
+class memoize_with_expiry(object):
+    def __init__(self, expiry_time=0, cache=None, num_args=None):
+        self.cache = cache
+        self.expiry_time = expiry_time
+        self.num_args = num_args
+    
+    def __call__(self, func):
+        def wrapped(*args, **kw):
+            if self.cache is None and not hasattr(func, '_cache'):
+                func._cache = {}
+            cache = self.cache or func._cache
+            
+            if self.num_args:
+                mem_args = args[:self.num_args]
+            else:
+                mem_args = args
+            # frozenset is used to ensure hashability
+            if kw: 
+                key = mem_args, frozenset(kw.iteritems())
+            else:
+                key = mem_args
+            if key in cache:
+                result, timestamp = cache[key]
+                # Check the age.
+                age = time() - timestamp
+                if not self.expiry_time or age < self.expiry_time:
+                    return result
+            result = func(*args, **kw)
+            cache[key] = (result, time())
+            return result
+        return wrapped
 
 class Cache(object):
     
@@ -133,17 +145,17 @@ class Cache(object):
                    acct_interim_interval 
                    FROM nas_nas WHERE id=%s;''' , (self.crypt_key, id))
         res = self.cursor.fetchone()
-        if res:
-            res = res[0]
+
         obj = self.memcached_connection.set(cache_key, res, NAS_CACHE_TIMEOUT)
         return res
+    
     @memoize_with_expiry(30)
     def get_subaccount_by_ipn_ip(self,  ipn_ip_address):
         current_key = 'subaccount__by_ipn_ip_address_%s'
         cache_key = (self.cache_prefix+current_key) % ipn_ip_address
         obj = self.memcached_connection.get(cache_key)
         if obj: 
-            print 'get_subaccount_by_ipn_ip from cache'
+            
             return obj
         
         
@@ -170,7 +182,7 @@ class Cache(object):
         cache_key = (self.cache_prefix+current_key) % ipn_mac_address
         obj = self.memcached_connection.get(cache_key)
         if obj: 
-            print 'get_subaccount_by_mac from cache'
+            
             return obj
         
         

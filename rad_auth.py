@@ -42,6 +42,8 @@ from utilites import in_period_info
 import auth
 from auth import Auth, get_eap_handlers
 from cacherouter import Cache
+import cacherouter
+globals()['mikrobill.cacherouter'] = cacherouter
 w32Import = False
 
 from twisted.internet.protocol import DatagramProtocol
@@ -239,7 +241,7 @@ class SQLLoggerThread(Thread):
         self.sqllog_deque = deque()
         self.sqllog_lock  = Lock()
 
-        #print 'loggerthread initialized'
+        # 'loggerthread initialized'
     
     def add_message(self, account=None, subaccount=None, nas=None, type='', service='', cause='', datetime=None):
         self.sqllog_deque.append((account, subaccount, nas, type, service, cause, datetime))
@@ -445,7 +447,7 @@ class HandleSAuth(HandleSBase):
         #nasses = self.cache.get_nas_by_ip(self.nasip)
         a = time.time()
         nasses = self.cache.get_nas_by_ip(self.nasip)
-        print '1', time.time()-a
+
         if not nasses:
             logger.warning("Requested NAS IP (%s) not found in nasses %s", (self.nasip, str(nasses),))
             sqlloggerthread.add_message(type="AUTH_NAS_NOT_FOUND", service=self.access_type, cause=u'Сервер доступа с IP %s не найден ' % self.nasip, datetime=self.datetime) 
@@ -454,7 +456,6 @@ class HandleSAuth(HandleSBase):
         logger.info("NAS or NASSES Found %s", (str(nasses),))
         #if 0: assert isinstance(nas, NasData)
 
-        print '2', time.time()-a
         
         station_id = self.packetobject.get('Calling-Station-Id', [''])[0]
         if self.access_type == 'PPPOE'  and nasses[0].type=='cisco':
@@ -473,7 +474,7 @@ class HandleSAuth(HandleSBase):
             logger.warning("Subaccount with username  %s not found", (user_name,))   
             sqlloggerthread.add_message(nas=nasses[0].id,type="AUTH_SUBACC_NOT_FOUND", service=self.access_type, cause=u'Субаккаунт с логином %s и ip/mac %s в системе не найден.' % (user_name, station_id), datetime=self.datetime) 
             return self.auth_NA(self.authobject)     
-        print '3', time.time()-a
+
         acc = self.cache.get_account_by_id(subacc.account_id)
         
         if not acc:
@@ -486,7 +487,7 @@ class HandleSAuth(HandleSBase):
         vpn_ip_address = subacc.vpn_ip_address
         # Сервер доступа может быть не указан 
         nas_id = subacc.nas_id
-        print '4', time.time()-a
+
         if self.access_type=='W802.1x':
             #nas = self.cache.get_nas_by_id(subacc.switch_id, None) # Пока не реализована нужна логика на стороне интерфейса
             nas = self.cache.get_nas_by_id(nas_id)
@@ -503,7 +504,7 @@ class HandleSAuth(HandleSBase):
             sqlloggerthread.add_message(nas=nas_id, type="AUTH_ASSOC_PPTP_IPN_MAC", service=self.access_type, cause=u'Попытка авторизации %s с неразрешённого IPN MAC адреса %s.' % (user_name, station_id), datetime=self.datetime)
             return self.auth_NA(self.authobject) 
           
-        print '5', time.time()-a
+
         if (nas and nas not in nasses) and vars.IGNORE_NAS_FOR_VPN is False and self.access_type in ['PPTP', 'PPPOE']:
             """
             Если NAS пользователя найден  и нас не в списке доступных и запрещено игнорировать сервера доступа 
@@ -526,7 +527,7 @@ class HandleSAuth(HandleSBase):
         self.replypacket = packet.Packet(secret=str(nas.secret),dict=vars.DICT)         
         self.authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = queues.challenges, logger = logger)
 
-        print '6', time.time()-a
+
         if 0: assert isinstance(acc, AccountData)
         self.authobject.plainusername = str(username)
         self.authobject.plainpassword = str(password)
@@ -567,7 +568,7 @@ class HandleSAuth(HandleSBase):
             logger.warning("Unallowed Tarif Access Type for user %s. Account access type - %s; packet access type - %s", (username, acc.access_type, self.access_type))
             sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_WRONG_ACCESS_TYPE", service=self.access_type, cause=u'Способ доступа %s не совпадает с разрешённым в параметрах тарифного плана %s.' % (self.access_type, acc.access_type), datetime=self.datetime)
             return self.auth_NA(self.authobject)
-        print '7', time.time()-a
+
         if acc.status != 1:
             sqlloggerthread.add_message(account=acc.id, subaccount=subacc.id, type="AUTH_ACCOUNT_DISABLED", service=self.access_type, cause=u'Аккаунт отключен', datetime=self.datetime)
             return self.auth_NA(self.authobject)  
@@ -636,7 +637,7 @@ class HandleSAuth(HandleSBase):
                         return self.auth_NA(self.authobject) 
             else:
                 vpn_ip_address = subacc.vpn_ip_address
-            print '8', time.time()-a
+
 
              
             self.authobject.set_code(2)
@@ -657,7 +658,7 @@ class HandleSAuth(HandleSBase):
             if self.session_speed:
                 self.replypacket.AddAttribute('Class', str("%s,%s,%s,%s" % (subacc.id,ipinuse_id,nas.id,str(self.session_speed))))
             self.add_values(acc.tarif_id, nas.id, acstatus)
-            print '10', time.time()-a
+
             #print "Setting Speed For User" , self.speed
             if vars.SQLLOG_SUCCESS:
                 sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_OK", service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)

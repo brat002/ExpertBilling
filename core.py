@@ -226,23 +226,12 @@ class check_vpn_access(Thread):
                                                     speed=speed, cb=tasks.update_vpn_speed_state.s(nas_id=rs.nas_id, nas_port_id=rs.nas_port_id, session_id=rs.id, newspeed=newspeed))
 
                                 logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-                        elif not (acstatus and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id) and rs.pod_queued) :
+                        elif not rs.pod_queued and ( not acstatus or not caches.timeperiodaccess_cache.in_period.get(acc.tarif_id)):
                             logger.debug("%s: Send POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                             PoD.delay(acc._asdict(), subacc._asdict(), nas._asdict(), access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, nas_port_id=rs.nas_port_id, caller_id=str(rs.caller_id), format_string=str(nas.reset_action), cb=tasks.update_pod_state.s(nas_id=rs.nas_id, nas_port_id=rs.nas_port_id, session_id=rs.id))
                             logger.debug("%s: POD sended: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
+                            continue
 
-                        for key, value in dublicated_ips.iteritems():
-                            if len(value)<=1: continue
-                            logger.debug("%s: Dublicated IP detected %s %s", (self.getName(), key, value))
-                            value = sorted(value, key=attrgetter('date_start'))
-                            first = True
-                            for rs in value:
-                                if first == True:
-                                    first = False
-                                    continue
-                                logger.debug("%s: Send dublicates remove POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-                                PoD.delay(acc._asdict(), subacc._asdict(), nas._asdict(), access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, caller_id=str(rs.caller_id), format_string=str(nas.reset_action))
-                                logger.debug("%s: dublicates remove POD sended: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
 
                             
                         
@@ -261,6 +250,20 @@ class check_vpn_access(Thread):
                         if isinstance(ex, vars.db_errors): raise ex
                 #cur.execute("UPDATE billservice_ipinuse SET disabled=now() WHERE dynamic=True and disabled is Null and ip::inet not in (SELECT DISTINCT framed_ip_address::inet FROM radius_activesession WHERE ipinuse_id is not NUll and (session_status='ACTIVE'));")    
                 #cur.connection.commit()   
+                
+                for key, value in dublicated_ips.iteritems():
+                    if len(value)<=1: continue
+                    logger.debug("%s: Dublicated IP detected %s %s", (self.getName(), key, value))
+                    value = sorted(value, key=attrgetter('date_start'))
+                    first = True
+                    for rs in value:
+                        if first == True:
+                            first = False
+                            continue
+                        logger.debug("%s: Send dublicates remove POD: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
+                        PoD.delay(acc._asdict(), subacc._asdict(), nas._asdict(), access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, caller_id=str(rs.caller_id), format_string=str(nas.reset_action))
+                        logger.debug("%s: dublicates remove POD sended: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
+
                 cur.close()
                 logger.info("VPNALIVE: VPN thread run time: %s", time.time() - a)
             except Exception, ex:
