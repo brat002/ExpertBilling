@@ -620,7 +620,8 @@ class HandleSAuth(HandleSBase):
                             pool_id=acc.vpn_guest_ippool_id
                             logger.debug("Searching free ip for subaccount %s in vpn guest pool with id %s ", (str(user_name), acc.vpn_guest_ippool_id))
                             self.cursor.execute('SELECT get_free_ip_from_pool(%s, %s);', (pool_id, nas.acct_interim_interval))
-                            self.cursor.connection.commit()
+                            
+                            
                             vpn_ip_address = self.cursor.fetchone()[0]
                         else:
                             pool_id, vpn_ip_address = self.find_free_ip(pool_id, nas.acct_interim_interval)
@@ -631,6 +632,10 @@ class HandleSAuth(HandleSBase):
                             sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_EMPTY_FREE_IPS", service=self.access_type, cause=u'В указанном пуле нет свободных IP адресов', datetime=self.datetime)
                             #vars.cursor_lock.release()
                             return self.auth_NA(self.authobject)
+                        if address_requested:
+                            self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id, ip, datetime, dynamic, ack) VALUES(%s,%s,now(),True, False) RETURNING id;",(pool_id, vpn_ip_address))
+                            ipinuse_id=self.cursor.fetchone()[0]
+                            self.cursor.connection.commit()
                         #self.cursor.connection.commit()
                     except Exception, ex:
                         logger.error("Couldn't get an address for user %s | id %s from pool: %s :: %s", (str(user_name), subacc.id, subacc.ipv4_vpn_pool_id, repr(ex)))
@@ -655,10 +660,7 @@ class HandleSAuth(HandleSBase):
                 self.replypacket.AddAttribute('Framed-IPv6-Prefix', str(subacc.vpn_ipv6_ip_address))
             #account_speed_limit_cache
             
-            if address_requested:
-                self.cursor.execute("INSERT INTO billservice_ipinuse(pool_id, ip, datetime, dynamic) VALUES(%s,%s,now(),True) RETURNING id;",(pool_id, vpn_ip_address))
-                ipinuse_id=self.cursor.fetchone()[0]
-                self.cursor.connection.commit()
+
                 
             self.create_speed(nas, subacc.id, acc.tarif_id, acc.id, speed=subacc.vpn_speed)
             if self.session_speed:
