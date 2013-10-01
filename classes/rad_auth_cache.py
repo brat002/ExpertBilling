@@ -26,19 +26,19 @@ class RadAuthCaches(CacheCollection):
         super(RadAuthCaches, self).__init__(date)
         self.account_cache = AccountCache(date)
         self.period_cache  = PeriodCache(date, fMem)
-        self.nas_cache = NasCache(crypt_key)
-        self.defspeed_cache = DefaultSpeedCache()
-        self.speed_cache = SpeedCache()
-        self.speedlimit_cache = SpeedlimitCache()
-        self.radattrs_cache = RadiusAttrsCache()
-        self.addonservice_cache = AddonServiceCache()
-        self.accountaddonservice_cache = AccountAddonServiceCache()
-        self.subaccount_cache = SubAccountsCache(crypt_key)
-        self.ippool_cache = IpPoolCache()
-        self.switch_cache = SwitchCache()
+        #self.nas_cache = NasCache(crypt_key)
+        #self.defspeed_cache = DefaultSpeedCache()
+        #self.speed_cache = SpeedCache()
+        #self.speedlimit_cache = SpeedlimitCache()
+        #self.radattrs_cache = RadiusAttrsCache()
+        #self.addonservice_cache = AddonServiceCache()
+        #self.accountaddonservice_cache = AccountAddonServiceCache()
+        #self.subaccount_cache = SubAccountsCache(crypt_key)
+        #self.ippool_cache = IpPoolCache()
+        #self.switch_cache = SwitchCache()
         self.timeperiodnode_cache = TimePeriodNodeCache()
-        self.caches = [self.account_cache, self.period_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.speedlimit_cache, self.radattrs_cache, self.addonservice_cache, self.accountaddonservice_cache, self.subaccount_cache, self.ippool_cache, self.switch_cache, self.timeperiodnode_cache]
-
+        #self.caches = [self.account_cache, self.period_cache, self.nas_cache, self.defspeed_cache, self.speed_cache, self.speedlimit_cache, self.radattrs_cache, self.addonservice_cache, self.accountaddonservice_cache, self.subaccount_cache, self.ippool_cache, self.switch_cache, self.timeperiodnode_cache]
+        self.caches = [self.period_cache, self.timeperiodnode_cache, self.account_cache]
 
 class AccountCache(CacheItem):
     __slots__ = ('by_username', 'by_ipn_mac', 'by_ipn_ip_nas', 'by_id')
