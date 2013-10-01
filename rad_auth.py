@@ -211,7 +211,7 @@ class AuthHandler(Thread):
                     
                     #logger.debug("AUTH packet: %s", show_packet(packetfromcore))
 
-                print time.time()-a
+                
                 logger.info("AUTH: %s, USER: %s, NAS: %s, ACCESS TYPE: %s", (time.time()-auth_time, user_name, nas_ip, access_type))
                 #dbCur.connection.commit()
 
