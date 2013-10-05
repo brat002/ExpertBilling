@@ -188,7 +188,7 @@
                           <label class="control-label">{{form.burst_treshold_tx.label}}</label>
                           <div class="controls">
                           {{ form.burst_treshold_tx }}
-                          {% if form.burst_tx.errors %}
+                          {% if form.burst_treshold_tx.errors %}
                               <span class="help-inline">{% for error in form.burst_treshold_tx.errors %}{{ error }}<br/> {% endfor %}</span>
                           {% endif %}
                           {% if form.burst_treshold_tx.help_text%}

@@ -1005,12 +1005,15 @@ def addon_service(request):
     accountservices = []
     for uservice in account_services:
         if uservice.service.wyte_period_id:
-            delta = settlement_period_info(uservice.activated, uservice.service.wyte_period.length_in, uservice.service.wyte_period.length)[2]
-            if uservice.activated + datetime.timedelta(seconds = delta)>datetime.datetime.now():
+            try:
+                delta = settlement_period_info(uservice.activated, uservice.service.wyte_period.length_in, uservice.service.wyte_period.length)[2]
+                if uservice.activated + datetime.timedelta(seconds = delta)>datetime.datetime.now():
+                    uservice.wyte = True
+                    uservice.end_wyte_date = uservice.activated + datetime.timedelta(seconds = delta)
+                else:
+                    uservice.wyte = False
+            except:
                 uservice.wyte = True
-                uservice.end_wyte_date = uservice.activated + datetime.timedelta(seconds = delta)
-            else:
-                uservice.wyte = False
         elif uservice.service.wyte_cost:
             uservice.wyte = True
         else:
