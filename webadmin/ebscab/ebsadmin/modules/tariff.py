@@ -46,7 +46,6 @@ def tariff_edit(request):
             tariff = Tariff.objects.get(id=id)
             form = TariffForm(request.POST, instance=tariff)
             accessparameters_form = AccessParametersTariffForm(request.POST, instance=tariff.access_parameters, prefix="ap")
-            print accessparameters_form
         else:
             form = TariffForm(request.POST)
             accessparameters_form = AccessParametersTariffForm(request.POST, prefix="ap")
