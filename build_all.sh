@@ -12,8 +12,7 @@ fi
 VENV_PATH="../venv/"
 
 function install_env {
-    virtualenv --python=python2.7 $VENV_PATH
-    $VENV_PATH/bin/pip install -r soft/requirements.txt
+    virtualenv --python=python2.7 $VENV_PATH && $VENV_PATH/bin/pip install -r soft/requirements.txt
 }
 
 function update_packages {
