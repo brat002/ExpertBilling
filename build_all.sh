@@ -1,5 +1,6 @@
 #!/bin/sh -e
 #$1 - project name $2 users $3 key $4 license string $5 additional flags
+source ../venv/bin/activate
 users="32"
 testdrive="true"
 if [ $2 ]; then
@@ -157,3 +158,4 @@ cd ../
 tar -czvf $1.tar.gz ebs.tar.gz ../fabfile.py ../install.txt web.tar.gz
 cd ../
 
+deactivate
