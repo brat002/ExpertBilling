@@ -109,7 +109,6 @@ def send_as_task(connection, data, routing_key):
     with producers[connection].acquire(block=True) as producer:
         maybe_declare(task_exchange, producer.channel)
         producer.publish(payload, serializer='pickle',
-                                  compression='bzip2',
                                   exchange=task_exchange, 
                                   routing_key=routing_key)
         
@@ -584,7 +583,7 @@ class FlowDequeThread(Thread):
                 if vars.WRITE_FLOW and nfwrite_list:
                     #queues.flowSynchroBox.appendData(ips + flow.getBaseSlice())
                     try:
-                        send_as_task(out_connection, marshal.dumps(nfwrite_list), 'nf_write')
+                        send_as_task(out_connection, nfwrite_list, 'nf_write')
                     except Exception, ex:
                         logger.error("fdqThread exception: Can not write to nfwriter queue \n %s %s", (repr(ex), traceback.format_exc()))
                 #queues.flowSynchroBox.checkData()
