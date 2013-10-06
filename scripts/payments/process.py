@@ -169,7 +169,7 @@ if __name__=='__main__':
                 f.close()
 
             #shutil.rm
-            os.remove(curdir+folder_in+file)
+            os.remove(os.path.join(curdir,folder_in,file))
 
         #    process_file(payment_system)
 cur.close()
