@@ -7,7 +7,7 @@ if [ $2 ]; then
     users=$2
     testdrive="false"
 fi
-
+curdate=`date +%Y%m%d%H%M%S`
 python lic_gen.py $1 $2 $3
 if [ ! -d builds ]; then
 	mkdir builds
@@ -73,7 +73,7 @@ done
 
 cp license_$1.lic builds/$1/data/license.lic
 cp -r cmodules builds/$1/data/
-svn export workers builds/$1/data/workers
+cp -r workers builds/$1/data/workers
 cp license.lic.old license.lic
 cp ebs_config.ini.tmpl builds/$1/data/ebs_config.ini.tmpl
 #cp upgrade.py builds/$1/data/upgrade.py
@@ -90,9 +90,8 @@ mkdir builds/$1/data/soft/
 #mkdir builds/$1/ebscab
 rm -rf builds/$1/web
 mkdir -p builds/$1/web/ebscab
-#svn export webadmin/ebscab builds/$1/ebscab/ebscab/ --force
-svn export webadmin/ebscab builds/$1/web/ebscab/ --force
-svn export webadmin/blankpage builds/$1/web/blankpage/ --force
+cp -r webadmin/ebscab builds/$1/web/ebscab/ --force
+cp -r webadmin/blankpage builds/$1/web/blankpage/
 #echo >builds/$1/ebscab/ebscab/log/django.log
 echo >builds/$1/web/ebscab/log/django.log
 chmod 0777 builds/$1/web/ebscab/log/django.log
@@ -105,7 +104,7 @@ cp webadmin/blankpage_config builds/$1/web/
 cp webadmin/blankpage builds/$1/web/
 cp soft/billing builds/$1/data/soft/
 cp soft/backup_and_ftp_netflow.sh builds/$1/data/soft/
-svn export soft/hotspot/ builds/$1/data/soft/hotspot/
+cp -r soft/hotspot/ builds/$1/data/soft/hotspot/
 cp soft/requirements.txt builds/$1/data/soft/
 cp soft/del_requirements.txt builds/$1/data/soft/
 #cp -r ebscab/ builds/$1/ebscab/
@@ -113,17 +112,16 @@ mkdir builds/$1/data/sql
 cp sql/ebs_dump.sql builds/$1/data/sql/
 cp sql/changes.sql builds/$1/data/sql/
 #cp -r sql/upgrade builds/$1/sql/
-svn export sql/upgrade/ builds/$1/data/sql/upgrade/
-svn export dicts/ builds/$1/data/dicts/
-#svn export fonts/ builds/$1/data/fonts/
-svn export scripts/ builds/$1/data/scripts/
-svn export mail/ builds/$1/data/modules/mail/
+cp -r sql/upgrade/ builds/$1/data/sql/upgrade/
+cp -r dicts/ builds/$1/data/dicts/
+cp -r scripts/ builds/$1/data/scripts/
+cp -r mail/ builds/$1/data/modules/mail/
 cp sendmail.py builds/$1/data/scripts/
 cp sendsms.py builds/$1/data/scripts/
 cp install.txt builds/$1/data/
 
-echo `svnversion` >builds/$1/data/version
-echo `svnversion` >builds/$1/web/version
+echo $curdate >builds/$1/data/version
+echo $curdate >builds/$1/web/version
 
 for bldd in $total_build; do
 	cp $bldd builds/$1/data
@@ -142,7 +140,7 @@ cp soft/celeryd builds/$1/data/soft/
 
 rm -rf modules
 
-find $1/data -name '.svn' -type d | xargs rm -rf
+find $1/data -name '.git' -type d | xargs rm -rf
 
 if [ $SUDO_USER ]; then
 	chown -hR $SUDO_USER: builds/$1/data
