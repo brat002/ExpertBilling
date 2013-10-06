@@ -156,4 +156,4 @@ cd ../
 tar -czvf $1.tar.gz ebs.tar.gz ../fabfile.py ../install.txt web.tar.gz
 cd ../
 
-deactivate
+
