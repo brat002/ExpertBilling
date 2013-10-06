@@ -26,5 +26,6 @@
 *.sql
 *.sqlite
 
-./builds/
-./cmodules/
+builds/
+cmodules/
+license*.lic
