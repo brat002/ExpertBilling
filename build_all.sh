@@ -7,6 +7,29 @@ if [ $2 ]; then
     users=$2
     testdrive="false"
 fi
+
+VENV_PATH="../venv/"
+
+function install_env {
+    virtualenv --no-site-packages --python=python2.7 $VENV_PATH
+    $VENV_PATH/bin/pip install -r soft/requirements.txt
+}
+
+function update_packages {
+    $VENV_PATH/bin/pip install -r soft/requirements.txt
+}
+function prepare {
+    #checking for first run and create env
+    if [ ! -d $VENV_PATH ]; then
+        install_env
+    fi
+
+
+        update_packages
+
+}
+
+prepare
 curdate=`date +%Y%m%d%H%M%S`
 python lic_gen.py $1 $2 $3
 if [ ! -d builds ]; then
