@@ -82,7 +82,7 @@ class Worker(ConsumerMixin):
 
         
         try:
-            for flow in marshal.loads(body):
+            for flow in body:
                 ips = map(lambda ip: IPy.intToIp(ip, 4), flow[0:3])
     #            ips = map(lambda ip: IPy.intToIp(ip, 4), flow.getAddrSlice())
                 queues.flowSynchroBox.appendData(list(ips) + list(flow[3:]))
