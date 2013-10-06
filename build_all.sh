@@ -1,4 +1,5 @@
-#!/bin/sh -e
+#!/bin/bash
+
 #$1 - project name $2 users $3 key $4 license string $5 additional flags
 source ../venv/bin/activate
 users="32"
