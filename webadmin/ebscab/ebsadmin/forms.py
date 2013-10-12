@@ -18,7 +18,7 @@ chartdata = {
 #'trafficgroups': {'name':u'Потребление трафика по группам трафика',  'yname':u'МБ','tabs':['accountsTab', 'groupsTab', 'nassesTab']},
 'selectedaccountstraffic': {'name':_(u'Потребление трафика выбранными аккаунтами'),  'yname':_(u'МБ'), 'tabs':['accountsTab', 'groupsTab'], 'type': 'line'},
 'accountstraffic': {'name':_(u'Потребление трафика аккаунтами(общее)'),  'yname':_(u'МБ'), 'tabs':['accountsTab', 'groupsTab']},
-'nassestraffic': {'name':_(u'Потребление трафика по серверам доступа'),  'yname':_(u'МБ'), 'tabs':['nassesTab', 'groupsTab'], 'type': 'line'},
+'nassestraffic': {'name':_(u'Потребление трафика по серверам доступа'),  'yname':_(u'МБ'), 'tabs':['nassesTab'], 'type': 'line'},
 'tariffstraffic': {'name':_(u'Распределение трафика по тарифам'), 'tabs':['groupsTab'], 'type': 'pie'},
 #'distrtrafficclasses': {'name':u'Распределение трафика по классам трафика', 'tabs':['classesTab', 'nassesTab'], 'type': 'pie'},
 'distrtrafficgroups': {'name':_(u'Распределение трафика по группам трафика'), 'tabs':['accountsTab', 'groupsTab', 'nassesTab'], 'type': 'pie'},

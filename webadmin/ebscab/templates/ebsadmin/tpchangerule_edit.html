@@ -150,13 +150,28 @@
                   </div>
                   </div>
                   <div class="control-group">
+                      <label class="control-label">{{form.mirror.label}}: </label>
+                      <div class="controls">
+                      {{ form.mirror }}
+                      {% if form.mirror.errors %}
+                          <span class="help-inline">{% for error in form.mirror.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.mirror.help_text%}`
+                          <p class="help-block">
+                              {{ form.mirror.help_text|safe }}
+                          </p>
+                      {% endif %}
+
+                  </div>
+                  </div>
+                  <div class="control-group">
                       <label class="control-label">{{form.disabled.label}}: </label>
                       <div class="controls">
                       {{ form.disabled }}
                       {% if form.disabled.errors %}
                           <span class="help-inline">{% for error in form.disabled.errors %}{{ error }}<br/> {% endfor %}</span>
                       {% endif %}
-                      {% if form.disabled.help_text%}
+                      {% if form.disabled.help_text%}`
                           <p class="help-block">
                               {{ form.disabled.help_text|safe }}
                           </p>

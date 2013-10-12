@@ -192,7 +192,9 @@ class AcctHandler(Thread):
                  
                 logger.info("ACCT: %s, USER: %s, NAS: %s, ACCESS TYPE: %s", (time.time()-acct_time, coreconnect.userName, coreconnect.nasip, coreconnect.access_type))
                 #dbCur.connection.commit()
+                self.dbconn.commit()
                 dbCur.close()
+                
                 del coreconnect
             except Queue.Empty, ex: 
                 continue
@@ -204,12 +206,16 @@ class AcctHandler(Thread):
                     
                 logger.error("%s readfrom exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                 if ex.__class__ in vars.db_errors:
-                    time.sleep(5)
+                    
                     try:
+                        try:
+                            self.dbconn.rollback()
+                        except:
+                            logger.info("%s : transaction tollback error" , (self.getName(), ))
                         self.dbconn = get_connection(vars.db_dsn)
                     except Exception, eex:
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
-                        time.sleep(10)
+                        time.sleep(1)
 
 class PacketSender(Thread):
 
