@@ -33,3 +33,4 @@ license*.lic
 .project
 .pydevproject
 .settings/org.eclipse.core.resources.prefs
+settings_local.py
