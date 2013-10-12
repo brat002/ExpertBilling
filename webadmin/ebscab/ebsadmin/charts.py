@@ -111,7 +111,7 @@ def charts(request):
             if report=='nassestraffic':
 
                 cur.execute("""select (select name from nas_nas WHERE id=gst.nas_id) as nas,  date_trunc(%%s, gst.datetime) as dt, sum(bytes_in+bytes_out)/1024 FROM billservice_globalstat as gst WHERE True %s %s and gst.datetime between %%s and %%s GROUP by nas_id, date_trunc(%%s, gst.datetime) order by nas,dt;""" \
-                            % (nasses_str, groups_str), (grouping, start_date, end_date, grouping))
+                            % (nasses_str, ), (grouping, start_date, end_date, grouping))
                 res = []
                 subitems = []
                 previtem = None

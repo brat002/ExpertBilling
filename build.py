@@ -4,11 +4,20 @@ from fabric.api import run
 from fabric.api import cd
 from fabric.api import env
 from fabric.api import task
+from fabric.api import hosts
+from fabric.operations import sudo
 
 
-env.hosts = ['brat002@m4.diggit.ru', 'brat002@m8.diggit.ru']
-
+@hosts(['brat002@m4.diggit.ru', 'brat002@m8.diggit.ru'])
 def build(key=None, users=200):
     with cd('mikrobill'):
         run('git pull')
         run('sh build_all.sh %s %s %s' % (key if key else 'demo1.5_`uname -i`', users, key if key else ''))
+       
+@hosts(['brat002@m4.diggit.ru'])
+def update_demo():
+    with cd('mikrobill'):
+        run('cp builds/demo1.5_`uname -i`.tar.gz ../')
+    run('tar -xvzf demo1.5_`uname -i`.tar.gz fabfile.py')
+
+    sudo('fab upgrade:demo1.5_`uname -i`.tar.gz')

@@ -1464,7 +1464,7 @@ class settlement_period_service_dog(Thread):
                                     FROM billservice_transaction as tr
                                     WHERE 
                                     promise_expired = False and type_id='PROMISE_PAYMENT' and
-                                    (end_promise<now() or (SELECT max(summ) FROM billservice_transaction WHERE account_id=tr.account_id and type_id!='PROMISE_PAYMENT' and summ>0 and created>tr.created)>=tr.summ)""")
+                                    (end_promise<now() and (SELECT sum(summ) FROM billservice_transaction WHERE account_id=tr.account_id and type_id!='PROMISE_PAYMENT' and summ>0 and created>tr.created)>=tr.summ)""")
                 promises = set(cur.fetchall())
 
                 if promises:

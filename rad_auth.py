@@ -131,7 +131,7 @@ class AuthHandler(Thread):
         self.dbconn = get_connection(vars.db_dsn)
         self.dateCache = datetime.datetime(2000, 1, 1)
         self.caches = None
-        self.cache = Cache(self.dbconn, vars.memcached_host, vars.CRYPT_KEY)
+        self.cache = Cache(self.dbconn, vars.memcached_host, vars.CRYPT_KEY, logger = logger)
 
     def run(self):
         global cacheMaster, vars, suicideCondition
@@ -198,6 +198,7 @@ class AuthHandler(Thread):
                     authobject, packetfromcore = coreconnect.handle()
                     if packetfromcore is None: 
                         logger.info("Unknown NAS or Account %s", str(nas_ip))
+                        self.dbconn.commit()
                         continue
 
                     authobject.ReturnPacket(packetfromcore)                    
@@ -212,7 +213,7 @@ class AuthHandler(Thread):
                     
                     #logger.debug("AUTH packet: %s", show_packet(packetfromcore))
 
-                
+                self.dbconn.commit()
                 logger.info("AUTH: %s, USER: %s, NAS: %s, ACCESS TYPE: %s", (time.time()-auth_time, user_name, nas_ip, access_type))
                 #dbCur.connection.commit()
 
@@ -221,14 +222,19 @@ class AuthHandler(Thread):
                 continue 
             except Exception, ex:
                 logger.error("%s readfrom exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+                
+                
                 if ex.__class__ in vars.db_errors:
-                    time.sleep(5)
-                    print ex
+                    
                     try:
+                        try:
+                            self.dbconn.rollback()
+                        except:
+                            logger.info("%s : transaction tollback error" , (self.getName(), ))
                         self.dbconn = get_connection(vars.db_dsn)
                     except Exception, eex:
                         logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
-                        time.sleep(10)
+                        time.sleep(1)
 
 
 class SQLLoggerThread(Thread):
