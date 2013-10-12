@@ -148,7 +148,7 @@ class AcctHandler(Thread):
         self.dbconn = get_connection(vars.db_dsn)
         self.dateCache = datetime.datetime(2000, 1, 1)
         self.caches = None
-        self.cache = Cache(self.dbconn, vars.memcached_host, vars.CRYPT_KEY)
+        self.cache = Cache(self.dbconn, vars.memcached_host, vars.CRYPT_KEY, logger = logger)
 
     def run(self):
         global cacheMaster, vars, suicideCondition
