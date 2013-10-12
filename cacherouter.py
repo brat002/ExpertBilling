@@ -92,6 +92,8 @@ class Cache(object):
         self.cursor = self.connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         self.logger = logger
     
+    def getName(self):
+        return 'Cacherouter'
     
     def memcached_connect(self):
         self.memcached_connection = pylibmc.Client([self.memcached_dsn], binary=True,
