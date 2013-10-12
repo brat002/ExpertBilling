@@ -79,10 +79,10 @@ def tpchangerule_edit(request):
                         tp.update(cost=cost, disabled=disabled, on_next_sp=on_next_sp, settlement_period=settlement_period, ballance_min=ballance_min)
                     log('CREATE', request.user, model) 
                     tp = TPChangeRule.objects.filter(from_tariff=tariff, to_tariff=from_tariff)
-                    if not tp:
+                    if not tp and mirror:
                         model=TPChangeRule(from_tariff=tariff, to_tariff=from_tariff, cost=cost, disabled=disabled, on_next_sp=on_next_sp, settlement_period=settlement_period, ballance_min=ballance_min)
                         model.save()
-                    else:
+                    elif mirror:
                         tp.update(cost=cost, disabled=disabled, on_next_sp=on_next_sp, settlement_period=settlement_period, ballance_min=ballance_min)
                     log('CREATE', request.user, model) 
                     

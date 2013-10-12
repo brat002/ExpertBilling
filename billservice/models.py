@@ -19,7 +19,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ValidationError
 import re
 from django.core.cache import cache
-
+from django.db.models import Q
 
 def validate_phone(value):
     if value and not re.match(r'''\+\d{1,25}$''', value):
@@ -1654,7 +1654,7 @@ class IPPool(models.Model):
         return IPy.IP(self.end_ip).int() - IPy.IP(self.start_ip).int()
 
     def get_used_ip_count(self):
-        return self.ipinuse_set.filter(disabled__isnull=True).count()
+        return self.ipinuse_set.filter(Q(dynamic=True, last_update__gte=datetime.datetime.now()-datetime.timedelta(minutes=15)) | Q(dynamic=False, disabled__isnull=True)).count()
 
 
 class IPInUse(models.Model):
@@ -1664,7 +1664,7 @@ class IPInUse(models.Model):
     disabled = models.DateTimeField(blank=True, null=True, verbose_name=_(u'Дата освобождения'))
     dynamic = models.BooleanField(default=False, verbose_name=_(u'Выдан динамически'))
     ack = models.BooleanField(default=False, blank=True, verbose_name=_(u'Подтверждён'))
-    lost = models.DateTimeField(blank=True, null=True, verbose_name=_(u'Сессия сброшена'))
+    last_update = models.DateTimeField(blank=True, null=True, verbose_name=_(u'Последнее обновление'), help_text=_(u'Для динамической выдачи'))
 
     class Meta:
         ordering = ['ip']
