@@ -33,7 +33,7 @@ from lib.http import JsonResponse
 from billservice.models import Account, AccountTarif, Transaction, Card, TransactionType, TrafficLimit, Tariff, TPChangeRule, AddonService, AddonServiceTarif, AccountAddonService, PeriodicalServiceHistory, AddonServiceTransaction, OneTimeServiceHistory, TrafficTransaction, AccountPrepaysTrafic, PrepaidTraffic, SubAccount
 from billservice.models import AccountSuppAgreement, SystemUser, AccountPrepaysRadiusTrafic, AccountPrepaysTime, SuspendedPeriod, GroupStat
 
-from billservice.forms import LoginForm, PasswordForm, EmailForm, SimplePasswordForm, ActivationCardForm, ChangeTariffForm, PromiseForm, StatististicForm
+from billservice.forms import LoginForm, RegisterForm, PasswordForm, EmailForm, SimplePasswordForm, ActivationCardForm, ChangeTariffForm, PromiseForm, StatististicForm
 from billservice import authenticate, log_in, log_out
 from radius.models import ActiveSession
 from billservice.utility import is_login_user, settlement_period_info
@@ -79,10 +79,11 @@ def addon_queryset(request, id_begin, field='datetime', field_to=None):
     return is_range, addon_query
 
 
-@render_to('registration/login.html')
+@render_to('login_base.html')
 def login(request):
     error_message = True
-
+    register_form = RegisterForm()
+    form = LoginForm()
     if request.method == 'POST':
         pin = request.POST.get('pin')
         user = request.POST.get('user')
@@ -147,11 +148,11 @@ def login(request):
                     'error_message':error_message,
                     'form':form,
                     }
-    else:
-        form = LoginForm()
-        return {
-                'form':form,
-               }
+    
+    return {
+            'login_form':form,
+            'register_form': register_form
+           }
 @ajax_request
 def simple_login(request):
     form = LoginForm(request.POST)

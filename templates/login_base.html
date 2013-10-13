@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Login Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="/media/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+    <link href="/media/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="/media/boostrap/js/html5shiv.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="#">ExpertBilling - Страница входа</a>
+        </div>
+      </div>
+    </div>
+    
+
+<div class="container">
+            <div class="row-fluid">
+                <div class="span12">
+                    <div class="span6 well">
+                        <div class="area">
+                            <form class="form-horizontal">
+                                <div class="heading">
+                                    <h4 class="form-heading">Войти</h4>
+                                </div>
+                                <div class="control-group">
+                                <label class="control-label" for="input-username">{{login_form.username.label}}</label>
+                                    <div class="controls">
+                                    {{ login_form.username }}
+                                    {% if login_form.username.errors %}
+                                    <span class="help-inline">{% for error in login_form.username.errors %}{{ error }}<br/> {% endfor %}</span>
+                                    {% endif %}
+                                    {% if login_form.username.help_text%}
+                                    <p class="help-block">
+                                        {{ login_form.username.help_text|safe }}
+                                    </p>
+                                    {% endif %}
+                                    
+                                </div>
+                                </div>
+                                <div class="control-group">
+                                <label class="control-label" for="input-password">{{login_form.password.label}}</label>
+                                    <div class="controls">
+                                    {{ login_form.password }}
+                                    {% if login_form.password.errors %}
+                                    <span class="help-inline">{% for error in login_form.password.errors %}{{ error }}<br/> {% endfor %}</span>
+                                    {% endif %}
+                                    {% if login_form.password.help_text%}
+                                    <p class="help-block">
+                                        {{ login_form.password.help_text|safe }}
+                                    </p>
+                                    {% endif %}
+                                    
+                                </div>
+                                </div>
+                                <div class="control-group">
+                                    <div class="controls">
+                                        <button type="submit" class="btn btn-success">Войти</button>
+                                    </div>
+                                </div>  
+                                <div class="alert alert-error">
+                                    <button type="button" class="close" data-dismiss="alert">×</button>
+                                    <strong>Access Denied!</strong> Please provide valid authorization.
+                                </div>
+                            </form> 
+                        </div>                           
+                    </div>
+                    <div class="span6 well">
+                        <div class="area">
+                            <form class="form-horizontal">
+                                <div class="heading">
+                                    <h4 class="form-heading">Заявка на подключение</h4>
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" for="inputFirst">ФИО</label>
+                                    <div class="controls">
+                                        <input type="text" id="inputFirst" placeholder="Ваше ФИО">
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" for="inputLast">Адрес</label>
+                                    <div class="controls">
+                                        <input type="text" id="inputAddress" placeholder="Адрес подключения">
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" for="inputEmail">Телефон</label>
+                                    <div class="controls">
+                                        <input type="text" id="inputPhone" placeholder="ПОлный номер телефона с префиксом">
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" for="inputUser">Логин</label>
+                                    <div class="controls">
+                                        <input type="text" id="inputUser" placeholder="Желаемый логин">
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" for="inputPassword">Пароль</label>
+                                    <div class="controls">
+                                        <input type="password" id="inputPassword" placeholder="Желаемый пароль">
+                                    </div>
+                                </div>
+                                <div class="control-group">
+                                    <label class="control-label" for="inputPassword">Подтвердить</label>
+                                    <div class="controls">
+                                        {{form.captcha}}
+                                    </div>
+                                </div>
+                                
+                                <div class="control-group">
+                                    <div class="controls">
+
+                                        <button type="submit" class="btn btn-success">Подать заявку</button>
+                                    </div>
+                                </div>  
+                                <div class="alert alert-info">
+                                    <button type="button" class="close" data-dismiss="alert">×</button>
+                                    <strong>Confirmation: </strong> A confirmation email has been sent to your email.<br>
+                                    Thank you for your registration.
+                                </div>
+                            </form> 
+                        </div>                            
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/media/jquery/js/jquery-1.8.2.js"></script>
+
+
+  </body>
+</html>
+
