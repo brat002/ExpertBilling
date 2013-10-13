@@ -282,7 +282,7 @@ SENDSMS_DEFAULT_FROM_PHONE = '+11111111111'
 
 TEST_RUNNER = 'django.test.simple.DjangoTestSuiteRunner'
 
-CAPTCHA_FONT_SIZE = 64
+CAPTCHA_FONT_SIZE = 32
 CAPTCHA_FONT_PATH = 'media/LiberationSans-Regular.ttf'
 CAPTCHA_LETTER_ROTATION = (-1,1)
 CAPTCHA_NOISE_FUNCTIONS =  ('captcha.helpers.noise_dots',)

@@ -82,43 +82,45 @@ def addon_queryset(request, id_begin, field='datetime', field_to=None):
 @render_to('login_base.html')
 def login(request):
     error_message = True
-    register_form = RegisterForm()
-    form = LoginForm()
+
     if request.method == 'POST':
-        pin = request.POST.get('pin')
-        user = request.POST.get('user')
-        if pin:
-            if user:
-                
-                message = None
-                message_type = activate_card(user, pin)
-                ok_message = False
-                if message_type == 1:
-                    message = _(u'Карточка успешно активирована. <br>  Ваш логин %(USERNAME)s <br> ваш пароль %(PASSWORD)s') % {
-                                                                                                                                'USERNAME': user, 
-                                                                                                                                'PASSWORD': pin}
-                    ok_message = True
-                if message_type == 2:
-                    message = _(u'Неверно введен логин или пин')
-                if message_type == 3:
-                    message = _(u'Карточка уже была активирована')
-            form = LoginForm()
-            return {
-                    'form':form,
-                    'message':message,
-                    'ok_message':ok_message,
-                    }
-        form = LoginForm(request.POST)
-        if form.is_valid():
+        register_form = RegisterForm(prefix = 'register')
+        login_form = LoginForm(request.POST, prefix = 'login')
+
+        #=======================================================================
+        # if pin:
+        #     if user:
+        #         
+        #         message = None
+        #         message_type = activate_card(user, pin)
+        #         ok_message = False
+        #         if message_type == 1:
+        #             message = _(u'Карточка успешно активирована. <br>  Ваш логин %(USERNAME)s <br> ваш пароль %(PASSWORD)s') % {
+        #                                                                                                                         'USERNAME': user, 
+        #                                                                                                                         'PASSWORD': pin}
+        #             ok_message = True
+        #         if message_type == 2:
+        #             message = _(u'Неверно введен логин или пин')
+        #         if message_type == 3:
+        #             message = _(u'Карточка уже была активирована')
+        #     form = LoginForm()
+        #     return {
+        #             'form':form,
+        #             'message':message,
+        #             'ok_message':ok_message,
+        #             }
+        #=======================================================================
+
+        if login_form.is_valid():
             
-            user = authenticate(username=form.cleaned_data['username'], \
-                                password=form.cleaned_data['password'])
+            user = authenticate(username=login_form.cleaned_data['username'], \
+                                password=login_form.cleaned_data['password'])
             if user and isinstance(user.account, Account) and not user.account.allow_webcab:
-                form = LoginForm()
-                error_message = _(u'У вас нет прав на вход в веб-кабинет')
+                message = _(u'У вас нет прав на вход в веб-кабинет')
                 return {
-                        'error_message':error_message,
-                        'form':form,
+                        'message':message,
+                        'login_form':login_form,
+                        'register_form': RegisterForm(prefix = 'register'),
                         }
             elif user:
                 log_in(request, user)
@@ -134,25 +136,64 @@ def login(request):
                 request.session.modified = True
                 return HttpResponseRedirect('/')
             else:
-                form = LoginForm(initial={'username': form.cleaned_data['username']})
-                error_message = _(u'Проверьте введенные данные')
+                message = _(u'Проверьте введенные данные')
                 return {
-                        'error_message':error_message,
-                        'form':form,
+                        'message':message,
+                        'login_form': login_form,
+                        'register_form': RegisterForm(prefix = 'register'),
                         }
 
         else:
-            form = LoginForm(initial={'username': request.POST.get('username', None)})
-            error_message = _(u'Проверьте введенные данные')
+            message = _(u'Проверьте введенные данные')
+            
             return {
-                    'error_message':error_message,
-                    'form':form,
+                    'message':message,
+                    'login_form':login_form,
+                    'register_form': RegisterForm(prefix = 'register'),
                     }
+    else:
+        register_form = RegisterForm(prefix = 'register')
+        form = LoginForm(prefix = 'login')
     
     return {
             'login_form':form,
             'register_form': register_form
            }
+    
+@render_to('login_base.html')
+def register(request):
+    error_message = True
+
+    if request.method == 'POST':
+        register_form = RegisterForm(request.POST, prefix = 'register')
+        login_form = LoginForm(prefix = 'login')
+
+        if register_form.is_valid():
+            register_form.save()
+            register_form = RegisterForm(prefix = 'register')
+            return {
+                    'login_form': login_form,
+                    'register_form': register_form,
+                    'message': _(u'Ваша заявка успешно подана. Ожидайте пока с вами свяжется наш менеджер.')}
+        else:
+            message = _(u'Ошибка регистрации')
+            return {
+                    'message':message,
+                    'login_form':login_form,
+                    'register_form': register_form,
+                    }
+
+
+    else:
+        register_form = RegisterForm(prefix = 'register')
+        form = LoginForm(prefix = 'login')
+    
+    return {
+            'login_form':form,
+            'register_form': register_form
+           }
+    
+    
 @ajax_request
 def simple_login(request):
     form = LoginForm(request.POST)
