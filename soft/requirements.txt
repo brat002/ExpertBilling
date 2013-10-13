@@ -40,5 +40,6 @@ django-selectable==0.7.0
 python-cjson
 django-mathfilters
 pylibmc
-
+pil
+django-simple-captcha
 

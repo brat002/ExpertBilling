@@ -40,6 +40,7 @@ urlpatterns = patterns('',
     url(r'^webcab/pay/$', SelectPaymentView.as_view(), name='payment-view'),
     url(r'^autocomplete/', include('autocomplete_light.urls')),
     (r'^selectable/', include('selectable.urls')),
+    url(r'^captcha/', include('captcha.urls')),
 
 ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
