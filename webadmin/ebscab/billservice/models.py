@@ -2570,6 +2570,9 @@ class AccountSuppAgreement(models.Model):
         verbose_name = _(u"Дополнительное соглашение")
         verbose_name_plural = _(u"Дополнительные соглашения")
 
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('accountsuppagreement_delete'), self.id)
+    
 
 class SuppAgreement(models.Model):
     name = models.CharField(max_length=128, verbose_name=_(u"Название"))
