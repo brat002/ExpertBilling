@@ -7,6 +7,7 @@
 *.o
 *.so
 *.pyc
+.pyc
 
 # Packages #
 ############
@@ -34,3 +35,5 @@ license*.lic
 .pydevproject
 .settings/org.eclipse.core.resources.prefs
 settings_local.py
+site_verify_codes.html
+webadmin/ebscab/static/
