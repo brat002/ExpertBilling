@@ -110,7 +110,7 @@ def charts(request):
                 return render_to_response('ebsadmin/charts_pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
             if report=='nassestraffic':
 
-                cur.execute("""select (select name from nas_nas WHERE id=gst.nas_id) as nas,  date_trunc(%%s, gst.datetime) as dt, sum(bytes_in+bytes_out)/1024 FROM billservice_globalstat as gst WHERE True %s %s and gst.datetime between %%s and %%s GROUP by nas_id, date_trunc(%%s, gst.datetime) order by nas,dt;""" \
+                cur.execute("""select (select name from nas_nas WHERE id=gst.nas_id) as nas,  date_trunc(%%s, gst.datetime) as dt, sum(bytes_in+bytes_out)/1024 FROM billservice_globalstat as gst WHERE True %s and gst.datetime between %%s and %%s GROUP by nas_id, date_trunc(%%s, gst.datetime) order by nas,dt;""" \
                             % (nasses_str, ), (grouping, start_date, end_date, grouping))
                 res = []
                 subitems = []
