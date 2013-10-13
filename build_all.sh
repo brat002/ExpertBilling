@@ -105,7 +105,7 @@ mkdir builds/$1/data/soft/
 #mkdir builds/$1/ebscab
 rm -rf builds/$1/web
 mkdir -p builds/$1/web/ebscab
-cp -r webadmin/ebscab builds/$1/web/ebscab/ --force
+cp -r webadmin/ebscab builds/$1/web/ --force
 cp -r webadmin/blankpage builds/$1/web/blankpage/
 #echo >builds/$1/ebscab/ebscab/log/django.log
 echo >builds/$1/web/ebscab/log/django.log
