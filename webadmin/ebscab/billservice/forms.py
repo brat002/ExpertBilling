@@ -7,7 +7,7 @@ from billservice.models import Tariff, AddonService, TPChangeRule, Account, SubA
 from billservice.models import PeriodicalService, TimePeriod, SystemUser, TransactionType, SettlementPeriod, RadiusTraffic, RadiusTrafficNode, PeriodicalServiceLog, Switch
 from billservice.models import Organization, BalanceHistory, PrepaidTraffic, TrafficTransmitNodes, BankData, Group, AccessParameters, TimeSpeed, OneTimeService, TrafficTransmitService, SheduleLog
 from billservice.models import RadiusAttrs, AccountPrepaysTrafic, Template, AccountPrepaysRadiusTrafic, TimeAccessService, ContractTemplate, TimeAccessNode, TrafficLimit, SpeedLimit, AddonService, AddonServiceTarif
-from billservice.models import AccountSuppAgreement, SuppAgreement, City, Street, Operator, SaleCard, DealerPay, Dealer, News, Card, TPChangeRule, House, TimePeriodNode, IPPool, Manufacturer, AccountHardware, Model, HardwareType, Hardware,AccountGroup,AccountPrepaysTime
+from billservice.models import RegistrationRequest, AccountSuppAgreement, SuppAgreement, City, Street, Operator, SaleCard, DealerPay, Dealer, News, Card, TPChangeRule, House, TimePeriodNode, IPPool, Manufacturer, AccountHardware, Model, HardwareType, Hardware,AccountGroup,AccountPrepaysTime
 
 from dynamicmodel.models import DynamicSchemaField
 from dynamicmodel.models import DynamicForm, DynamicExtraForm
@@ -225,18 +225,14 @@ class MyMultipleCheckBoxInput(forms.widgets.CheckboxSelectMultiple):
                 
 class LoginForm(forms.Form):
     username = forms.CharField(label=_(u"Логин"), required = True, error_messages={'required':_(u'Вы не ввели имя пользователя!')})
-    user = forms.CharField(label=_(u"User"), required = False)
-    password = forms.CharField(label=_(u"Пароль"), widget=forms.PasswordInput, required = False)
-    pin = forms.CharField(label=_(u"Пин"), widget=forms.PasswordInput(attrs={'class': 'unset'}), required = False)
+    password = forms.CharField(label=_(u"Пароль"), widget=forms.PasswordInput, required = True)
+
     
     
-class RegisterForm(forms.Form):
-    fullname = forms.CharField(label=_(u"ФИО"), required = True, error_messages={'required':_(u'Вы не ввели ФИО')})
-    address = forms.CharField(label=_(u"Адрес"), help_text = _(u'Ваш адрес'), required = True)
-    phone = forms.CharField(label=_(u"Телефон"), help_text = _(u'Мобильный телефон'), required = True)
-    login = forms.CharField(label=_(u"Логин"), help_text = _(u'Имя пользователя'), required = False)
-    password = forms.CharField(label=_(u"Пароль"), widget=forms.PasswordInput, required = False)
+class RegisterForm(forms.ModelForm):
     captcha = CaptchaField()
+    class Meta:
+        model = RegistrationRequest
     
 class PromiseForm(forms.Form):
     sum = forms.FloatField(label=_(u"Сумма"), required = True, error_messages={'required':_(u'Вы не указали размер платежа!')})

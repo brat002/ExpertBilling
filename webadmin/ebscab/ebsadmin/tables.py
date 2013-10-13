@@ -5,7 +5,7 @@ from billservice.models import Account, SuspendedPeriod, AccountHardware, Transa
 from billservice.models import AccountAddonService, BalanceHistory, IPInUse, Template 
 from billservice.models import SettlementPeriod, SystemUser, PrepaidTraffic
 from billservice.models import TimeSpeed, AddonServiceTarif, PeriodicalServiceLog, News
-from billservice.models import AddonService, SheduleLog, TrafficLimit, TimeAccessNode 
+from billservice.models import AddonService, SheduleLog, TrafficLimit, TimeAccessNode, RegistrationRequest
 from billservice.models import TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType, TrafficTransaction
 from billservice.models import RadiusAttrs, Manufacturer, HardwareType, Hardware, Model, PermissionGroup, PeriodicalServiceHistory
 from billservice.models import Card, SaleCard, Tariff, PeriodicalService, OneTimeService, RadiusTrafficNode, SubAccount, AddonServiceTransaction
@@ -944,6 +944,18 @@ class GroupTable(TableReport):
         model = Group
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
+class RegistrationRequestTable(TableReport):
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+
+    def __init__(self, *args, **argv):
+        super(RegistrationRequestTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
+    class Meta:
+        model = RegistrationRequest
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}  
+
+
 class ContractTemplateTable(TableReport):
     id = django_tables.LinkColumn('contracttemplate_edit', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)

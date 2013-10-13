@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load crispy_forms_tags %}
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -35,98 +36,44 @@
     
 
 <div class="container">
+{% if message %}
+<div class="row-fluid">
+<div class='span12'><h3>{{message}}</h3></div>
+</div>
+{% endif %}
+
             <div class="row-fluid">
                 <div class="span12">
+                
                     <div class="span6 well">
+                    <form action="{% url 'login' %}" method="POST" class='form-horizontal'>
                         <div class="area">
                             <form class="form-horizontal">
                                 <div class="heading">
                                     <h4 class="form-heading">Войти</h4>
                                 </div>
-                                <div class="control-group">
-                                <label class="control-label" for="input-username">{{login_form.username.label}}</label>
-                                    <div class="controls">
-                                    {{ login_form.username }}
-                                    {% if login_form.username.errors %}
-                                    <span class="help-inline">{% for error in login_form.username.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if login_form.username.help_text%}
-                                    <p class="help-block">
-                                        {{ login_form.username.help_text|safe }}
-                                    </p>
-                                    {% endif %}
-                                    
-                                </div>
-                                </div>
-                                <div class="control-group">
-                                <label class="control-label" for="input-password">{{login_form.password.label}}</label>
-                                    <div class="controls">
-                                    {{ login_form.password }}
-                                    {% if login_form.password.errors %}
-                                    <span class="help-inline">{% for error in login_form.password.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if login_form.password.help_text%}
-                                    <p class="help-block">
-                                        {{ login_form.password.help_text|safe }}
-                                    </p>
-                                    {% endif %}
-                                    
-                                </div>
-                                </div>
+
+                                {{login_form|crispy}}
                                 <div class="control-group">
                                     <div class="controls">
                                         <button type="submit" class="btn btn-success">Войти</button>
                                     </div>
                                 </div>  
-                                <div class="alert alert-error">
-                                    <button type="button" class="close" data-dismiss="alert">×</button>
-                                    <strong>Access Denied!</strong> Please provide valid authorization.
-                                </div>
-                            </form> 
-                        </div>                           
+
+
+                        </div>       
+                        </form>                    
                     </div>
+                    
+                    
                     <div class="span6 well">
+                    <form action="{% url 'register' %}" method="POST" class='form-horizontal'>
                         <div class="area">
-                            <form class="form-horizontal">
+
                                 <div class="heading">
                                     <h4 class="form-heading">Заявка на подключение</h4>
                                 </div>
-                                <div class="control-group">
-                                    <label class="control-label" for="inputFirst">ФИО</label>
-                                    <div class="controls">
-                                        <input type="text" id="inputFirst" placeholder="Ваше ФИО">
-                                    </div>
-                                </div>
-                                <div class="control-group">
-                                    <label class="control-label" for="inputLast">Адрес</label>
-                                    <div class="controls">
-                                        <input type="text" id="inputAddress" placeholder="Адрес подключения">
-                                    </div>
-                                </div>
-                                <div class="control-group">
-                                    <label class="control-label" for="inputEmail">Телефон</label>
-                                    <div class="controls">
-                                        <input type="text" id="inputPhone" placeholder="ПОлный номер телефона с префиксом">
-                                    </div>
-                                </div>
-                                <div class="control-group">
-                                    <label class="control-label" for="inputUser">Логин</label>
-                                    <div class="controls">
-                                        <input type="text" id="inputUser" placeholder="Желаемый логин">
-                                    </div>
-                                </div>
-                                <div class="control-group">
-                                    <label class="control-label" for="inputPassword">Пароль</label>
-                                    <div class="controls">
-                                        <input type="password" id="inputPassword" placeholder="Желаемый пароль">
-                                    </div>
-                                </div>
-                                <div class="control-group">
-                                    <label class="control-label" for="inputPassword">Подтвердить</label>
-                                    <div class="controls">
-                                        {{form.captcha}}
-                                    </div>
-                                </div>
+                                {{register_form|crispy}}
                                 
                                 <div class="control-group">
                                     <div class="controls">
@@ -134,19 +81,17 @@
                                         <button type="submit" class="btn btn-success">Подать заявку</button>
                                     </div>
                                 </div>  
-                                <div class="alert alert-info">
-                                    <button type="button" class="close" data-dismiss="alert">×</button>
-                                    <strong>Confirmation: </strong> A confirmation email has been sent to your email.<br>
-                                    Thank you for your registration.
-                                </div>
-                            </form> 
-                        </div>                            
+
+                        </div>   
+                        </form>                         
                     </div>
+                    
                 </div>
                 
             </div>
+            
         </div>
-
+</form>
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->

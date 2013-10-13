@@ -8,7 +8,7 @@ from django_tables2_reports.utils import create_report_http_response
 from object_log.models import LogItem
 from django.contrib import messages
 
-from billservice.models import Account, SystemUser, Transaction
+from billservice.models import Account, SystemUser, Transaction, RegistrationRequest
 from billservice.helpers import systemuser_required
 from ebsadmin.tables import CommentTable
 from ebsadmin.models import Comment
@@ -40,6 +40,8 @@ def admin_dashboard(request):
     
     accounts_inactive = Account.objects.filter(~Q(status = 1)).count()
     
+    registrationrequest_count= RegistrationRequest.objects.all().count()
+    
     return { 'accounts_count':accounts_count, 
             'comment_table': table, 
             'sessions_count': sessions_count, 
@@ -48,6 +50,7 @@ def admin_dashboard(request):
             'transactions_today': transactions_today,
             'accounts_minus': accounts_minus,
             'accounts_plus': accounts_plus,
-            'accounts_inactive': accounts_inactive
+            'accounts_inactive': accounts_inactive,
+            'registrationrequest_count': registrationrequest_count
             } 
 

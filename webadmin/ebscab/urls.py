@@ -48,7 +48,8 @@ urlpatterns += patterns('billservice.views',
     # Uncomment this for admin:
      #(r'^$', 'index'),
      url(r'^$', 'index', name='billservice_index'),
-     (r'^login/$', 'login'),
+     url(r'^login/$', 'login', name='login'),
+     url(r'^register/$', 'register', name='register'),
      
      (r'^simple_login/$', 'simple_login'),
      (r'^get_ballance/$', 'get_ballance'),

@@ -348,6 +348,11 @@ urlpatterns += patterns('ebsadmin.modules.group',
     url(r'^group/delete/$', "group_delete", name="group_delete"),
 )
 
+urlpatterns += patterns('ebsadmin.modules.registrationrequest',
+    url(r'^registrationrequest/$', 'registrationrequest', name='registrationrequest'),
+    url(r'^registrationrequest/delete/$', "registrationrequest_delete", name="registrationrequest_delete"),
+)
+
 urlpatterns += patterns('ebsadmin.modules.contracttemplate',
     url(r'^contracttemplate/edit/$', 'contracttemplate_edit', name='contracttemplate_edit'),
     url(r'^contracttemplate/$', 'contracttemplate', name='contracttemplate'),
