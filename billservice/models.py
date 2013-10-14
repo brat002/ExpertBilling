@@ -140,6 +140,11 @@ ADMIN_OPER_STATUS = (
     (3, 'testing'),
 )
 
+PERMISSION_ROLES = (
+    ('ADMIN', _(u'Администратор')),
+    ('CASHIER', _(u'Кассир')),
+)
+
 
 class SoftDeleteManager(models.Manager):
     ''' Use this manager to get objects that have a deleted field '''
@@ -2505,7 +2510,9 @@ class Permission(models.Model):
 
 class PermissionGroup(models.Model):
     name = models.CharField(max_length=128, verbose_name=_(u"Название"))
+    role = models.CharField(max_length=64, choices =PERMISSION_ROLES, verbose_name=_(u"Роль"))
     permissions = models.ManyToManyField(Permission, verbose_name=_(u"Права"))
+    
     deletable = models.BooleanField(default=False, blank=True)
 
     def __unicode__(self):
