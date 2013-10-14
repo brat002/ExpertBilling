@@ -79,6 +79,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'django.contrib.messages.context_processors.messages',
     'lib.context_processors.default_current_view_name',
+    'lib.context_processors.project_settings',
     
 )
 
