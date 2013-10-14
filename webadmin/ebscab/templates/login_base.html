@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 {% load crispy_forms_tags %}
+{% load billservice_tags %}
+{% load i18n %}
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -29,7 +31,7 @@
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <a class="brand" href="#">ExpertBilling - Страница входа</a>
+          <a class="brand" href="#"><img src="{{ MEDIA_URL }}{{settings.PROVIDER_LOGO}}"></a>
         </div>
       </div>
     </div>
@@ -87,9 +89,15 @@
                     </div>
                     
                 </div>
-                
+
             </div>
-            
+                <div class="row-fluid">
+                <div class="span12">
+                <div class=''>
+                {% show_last_news %}
+                </div>
+                </div>
+                </div>
         </div>
 </form>
     <!-- Le javascript
