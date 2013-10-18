@@ -133,6 +133,9 @@ def setup_webcab():
             local('python manage.py syncdb --noinput')
             local('python manage.py collectstatic --noinput')
             local("touch /opt/ebs/web/ebscab/templates/site_verify_codes.html")
+            local('mkdir -p /opt/ebs/web/ebscab/log/')
+            local('chmod -R 0777 /opt/ebs/web/ebscab/log/')
+            local('touch /opt/ebs/web/ebscab/log/django.log')
 
 
         

@@ -627,9 +627,9 @@ class periodical_service_bill(Thread):
                                 current = True if next_acctf_id is None else False
                                 
                                 
-                                dateAT = next_date if next_date else self.NOW
+                                dt = next_date if next_date else self.NOW
                                 #logger.info("%s : preiter: acctf=%s now=%s dateat=%s current=%s next_date=%s", (self.getName(), acctf_id, self.NOW, dateAT, current, next_date))
-                                self.iterate_ps(cur, acc, ps, dateAT, acctf_id, acctf_datetime, next_date, current, PERIOD)
+                                self.iterate_ps(cur, acc, ps, dt, acctf_id, acctf_datetime, next_date, current, PERIOD)
                             
                             except Exception, ex:
                                 logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -654,7 +654,8 @@ class periodical_service_bill(Thread):
                     dt = dateAT if not addon_ps.deactivated else addon_ps.deactivated
                     try:
                         #self.iterate_ps(cur, caches, acc, addon_ps, mult, dateAT, ADDON)
-                        self.iterate_ps(cur, acc, addon_ps, dt, addon_ps.created, None, None, False, ADDON)
+                        #cur, acc, ps, dateAT, acctf_id, acctf_datetime, next_date, current, pss_type
+                        self.iterate_ps(cur, acc, addon_ps, dt, None, addon_ps.created,  None, False, ADDON)
                     except Exception, ex:
                         logger.error("%s : exception: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
                         if ex.__class__ in vars.db_errors: raise ex

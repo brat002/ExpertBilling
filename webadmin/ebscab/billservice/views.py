@@ -126,7 +126,7 @@ def login(request):
                 log_in(request, user)
                 
                 if isinstance(user.account, SystemUser):
-                    if user.account.permissiongroup.role and user.account.permissiongroup.role=='CASHIER':
+                    if user.account.permissiongroup and user.account.permissiongroup.role and user.account.permissiongroup.role=='CASHIER':
                         return HttpResponseRedirect(reverse("cashier_index"))
                     
                     if request.META.get("HTTP_REFERER"):
