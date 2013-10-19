@@ -50,7 +50,7 @@ def requirements():
             local("for line in `cat /opt/ebs/data/soft/del_requirements.txt`; do pip uninstall -y -q $line; done")
             
     with prefix('. /opt/ebs/venv/bin/activate'):
-        local('pip install -r /opt/ebs/data/soft/requirements.txt')
+        local('pip install -U -r /opt/ebs/data/soft/requirements.txt')
     
 def virtualenv():
     with lcd('/opt/ebs/'):
