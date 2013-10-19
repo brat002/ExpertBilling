@@ -9,7 +9,6 @@ anyjson
 argparse
 billiard
 celery
-distribute
 django-crispy-forms
 ipaddr
 kombu
