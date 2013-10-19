@@ -1,6 +1,5 @@
 BeautifulSoup
 Django==1.5.4
-setuptools
 IPy
 Mako
 MarkupSafe
@@ -11,7 +10,7 @@ argparse
 billiard
 celery
 distribute
-django-crispy-forms==1.2.0
+django-crispy-forms
 ipaddr
 kombu
 paramiko
