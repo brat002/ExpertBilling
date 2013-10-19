@@ -12,10 +12,53 @@
 
     <!-- Le styles -->
     <link href="/media/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <style>
+    <style type="text/css">
       body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+        padding-top: 40px;
+        padding-bottom: 40px;
+        background-color: #f5f5f5;
       }
+
+      .form-signin {
+        max-width: 250px;
+        padding: 19px 29px 29px;
+        margin: 0 auto 20px;
+        background-color: #fff;
+        border: 1px solid #e5e5e5;
+        -webkit-border-radius: 5px;
+           -moz-border-radius: 5px;
+                border-radius: 5px;
+        -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+           -moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+                box-shadow: 0 1px 2px rgba(0,0,0,.05);
+      }
+       
+       
+       .form-alert {
+        max-width: 400px;
+        margin: 0 auto 20px;
+        }
+        
+      .form-signin .form-signin-heading,
+      .form-signin .checkbox {
+        margin-bottom: 10px;
+      }
+      .form-signin input[type="text"],
+      .form-signin input[type="password"] {
+        font-size: 12px;
+        height: auto;
+        margin-bottom: 10px;
+        padding: 7px 9px;
+        height: 10px;
+      }
+      .loginbutton {
+      width: 120px;
+      }
+      
+      .captcha {
+      width: 300px;
+      }
+
     </style>
     <link href="/media/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
 
@@ -28,69 +71,48 @@
 
   <body>
 
-    <div class="navbar navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container">
-          <a class="brand" href="#"><img src="{{ MEDIA_URL }}{{settings.PROVIDER_LOGO}}"></a>
-        </div>
-      </div>
-    </div>
+
+    <div class="container">
+      <form  action="{% url 'login' %}" method="POST"  class="form-signin">
+        <img class="form-signin-heading" src="{{MEDIA_URL}}{{settings.PROVIDER_LOGO}}"></img>
+        {{login_form|crispy}}
+        <div align="center" style="margin-top: 2px; margin-bottom: -8px;"><button class="btn btn-success loginbutton" type="submit">Войти</button></div>
+        <hr>
+        <div align="center" style="margin-top: -12px; margin-bottom: -18px;"><a href="#Zayavka" role="button" class="" data-toggle="modal">Заявка на подключение</a></div>
+      </form>
+    <div style="max-width: 400px; margin:0 auto; margin-top: -11px; font-size: 12px; color:#aaa; text-align:center; line-height: 14px;">Здесь можно написать какую нибудь информацию для абонента, например про совместимость браузера и т.д.</div>
+    </div> <!-- /container -->
+    <br>
+    <div class='container'>
+    <div class="form-alert">        
     
+		{% if message %}
+		
+		<div class="alert alert-info" ><button type="button" class="close" data-dismiss="alert">&times;</button>
+		<h3>{{message}}</h3></div>
+		
+		{% endif %}
 
-<div class="container">
-{% if message %}
-<div class="row-fluid">
-<div class='span12'><h3>{{message}}</h3></div>
-</div>
-{% endif %}
+    </div>
+    </div>
+    <!-- Модальное окно заявки подключения -->
+    <form action="{% url 'register' %}" method="POST" class='form-horizontal'>
+    <div id="Zayavka" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h4 id="myModalLabel">Заявка на подключение</h4>
+    </div>
+    <div class="modal-body">
+        {{register_form|crispy}}
+    </div>
 
-            <div class="row-fluid">
-                <div class="span12">
-                
-                    <div class="span6 well">
-                    <form action="{% url 'login' %}" method="POST" class='form-horizontal'>
-                        <div class="area">
-                            <form class="form-horizontal">
-                                <div class="heading">
-                                    <h4 class="form-heading">Войти</h4>
-                                </div>
-
-                                {{login_form|crispy}}
-                                <div class="control-group">
-                                    <div class="controls">
-                                        <button type="submit" class="btn btn-success">Войти</button>
-                                    </div>
-                                </div>  
-
-
-                        </div>       
-                        </form>                    
-                    </div>
-                    
-                    
-                    <div class="span6 well">
-                    <form action="{% url 'register' %}" method="POST" class='form-horizontal'>
-                        <div class="area">
-
-                                <div class="heading">
-                                    <h4 class="form-heading">Заявка на подключение</h4>
-                                </div>
-                                {{register_form|crispy}}
-                                
-                                <div class="control-group">
-                                    <div class="controls">
-
-                                        <button type="submit" class="btn btn-success">Подать заявку</button>
-                                    </div>
-                                </div>  
-
-                        </div>   
-                        </form>                         
-                    </div>
-                    
-                </div>
-
-            </div>
+    <div class="modal-footer">
+    <button class="btn btn-small" data-dismiss="modal" aria-hidden="true">Закрыть</button>
+    <button class="btn btn-small btn-success" type='submit'>Подать заявку</button>
+    </div>
+    </div>
+    </form>
+    <div class='container'>
                 <div class="row-fluid">
                 <div class="span12">
                 <div class=''>
@@ -98,13 +120,12 @@
                 </div>
                 </div>
                 </div>
-        </div>
-</form>
+    </div>
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="/media/jquery/js/jquery-1.8.2.js"></script>
-
+    <script src="/media/bootstrap/js/bootstrap.js"></script>
 
   </body>
 </html>
