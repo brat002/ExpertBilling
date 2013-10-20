@@ -146,6 +146,8 @@ class AcctHandler(Thread):
         Thread.__init__(self)
         global vars
         self.dbconn = get_connection(vars.db_dsn)
+        self.dbconn.set_isolation_level(0)
+        self.dbconn.set_session(autocommit=True)
         self.dateCache = datetime.datetime(2000, 1, 1)
         self.caches = None
         self.cache = Cache(self.dbconn, vars.memcached_host, vars.CRYPT_KEY, logger = logger)
@@ -818,4 +820,4 @@ if __name__ == "__main__":
         main()
     except Exception, ex:
         print 'Exception in rad, exiting: ', repr(ex)
-        logger.error('Exception in rpc, exiting: %s \n %s', (repr(ex), traceback.format_exc()))        
+        logger.error('Exception in rad acct, exiting: %s \n %s', (repr(ex), traceback.format_exc()))        
