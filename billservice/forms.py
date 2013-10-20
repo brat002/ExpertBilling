@@ -224,8 +224,14 @@ class MyMultipleCheckBoxInput(forms.widgets.CheckboxSelectMultiple):
        
                 
 class LoginForm(forms.Form):
-    username = forms.CharField(label=_(u"Логин"), required = True, error_messages={'required':_(u'Вы не ввели имя пользователя!')})
-    password = forms.CharField(label=_(u"Пароль"), widget=forms.PasswordInput, required = True)
+    username = forms.CharField(label='', required = True, error_messages={'required':_(u'Вы не ввели имя пользователя!')})
+    password = forms.CharField(label='', widget=forms.PasswordInput, required = True)
+
+    def __init__(self, *args, **kwargs):
+        super(LoginForm, self).__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs['placeholder'] = _(u"Логин")
+        self.fields['password'].widget.attrs['placeholder'] = _(u"Пароль")
+
 
     
     
