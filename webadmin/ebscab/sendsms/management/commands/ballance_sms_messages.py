@@ -15,8 +15,9 @@ class Command(BaseCommand):
             body = Template.objects.filter(type__id=10)[0]
         except:
             print u"Создайте шаблон SMS сообщения"
-        for acc in Account.objects.filter(ballance__lte=settings.SENDSMS_IF_BALLANCE_AMOUNT):
+        for acc in Account.objects.filter(ballance__lte=settings.SENDSMS_IF_BALLANCE_AMOUNT, ballance__gte=settings.SENDSMS_NOT_SEND_IF_BALANCE_LESS):
             if not acc.phone_m: continue
+            if Message.objects.filter(account=acc, created__gte=datetime.datetime.now()-datetime.timedelta(days=settings.SENDSMS_SEND_EVERY_N_DAY)).count()>0: continue
             acc.ballance = '%.2f' % acc.ballance 
             item = Message()
             item.account = acc
