@@ -165,7 +165,7 @@ def charts(request):
                 res = cur.fetchall()
                 return render_to_response('ebsadmin/charts_pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
             if report=='distraccountstoptraffic':
-                cur.execute("""select (select username from billservice_account WHERE id=gst.account_id) as username,  sum(bytes)/1024 as b FROM billservice_groupstat as gst WHERE True %s and datetime between %%s and %%s GROUP by account_id ORDER BY b desc limit 10;""" \
+                cur.execute("""select (select username from billservice_account WHERE id=gst.account_id) as username,  sum(bytes)/(1024*1024) as b FROM billservice_groupstat as gst WHERE True %s and datetime between %%s and %%s GROUP by account_id ORDER BY b desc limit 10;""" \
                             % (groups_str,), ( start_date, end_date))
                 res = cur.fetchall()
                 return render_to_response('ebsadmin/charts_pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
