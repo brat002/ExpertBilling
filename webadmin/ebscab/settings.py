@@ -208,7 +208,7 @@ CURRENCY = u' руб'
 #GETPAID_BACKENDS = ('getpaid.backends.easypay',
 'getpaid.backends.platezhkaua',
 #                    )
-PROVIDER_LOGO = 'img/logo.gif' # in media dir
+PROVIDER_LOGO = 'img/ebs.jpg' # in media dir
 GETPAID_BACKENDS_SETTINGS = {
     # Please provide your settings for backends
     'payments.liqpay' : {
