@@ -129,6 +129,8 @@ class AuthHandler(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.dbconn = get_connection(vars.db_dsn)
+        self.dbconn.set_isolation_level(0)
+        self.dbconn.set_session(autocommit=True)
         self.dateCache = datetime.datetime(2000, 1, 1)
         self.caches = None
         self.cache = Cache(self.dbconn, vars.memcached_host, vars.CRYPT_KEY, logger = logger)
@@ -351,9 +353,10 @@ class HandleSAuth(HandleSBase):
     def add_values(self, tarif_id, nas_id, account_status):
         # CREATE ONE SECTION
         attrs = self.cache.get_radiusattr_by_tarif_id(tarif_id) or []
+        account_status =  1 if account_status else 2
         for attr in attrs:
             if attr.account_status != 0 and attr.account_status!=account_status: continue
-            if 0: assert isinstance(attr, RadiusAttrsData)
+
             if attr.vendor:
                 self.replypacket.AddAttribute((attr.vendor,attr.attrid), str(attr.value))
             else:
@@ -362,7 +365,7 @@ class HandleSAuth(HandleSBase):
         attrs = self.cache.get_radiusattr_by_nas_id(nas_id) or []
         for attr in attrs:
             if attr.account_status != 0 and attr.account_status!=account_status: continue
-            if 0: assert isinstance(attr, RadiusAttrsData)
+
             if attr.vendor:
                 self.replypacket.AddAttribute((attr.vendor,attr.attrid), str(attr.value))
             else:
