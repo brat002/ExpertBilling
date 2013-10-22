@@ -191,8 +191,7 @@ class Cache(object):
                                                WHERE ipn_ip_address=%s
                                                ;""", (self.crypt_key, ipn_ip_address))
             res = self.cursor.fetchone()
-            if res:
-                res = res[0]
+
             obj = self.memcached_connection.set(cache_key, res, SUBACC_CACHE_TIMEOUT)
         except Exception as ex:
             self.logger.error("%s database or memcached subsystem error: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -222,11 +221,10 @@ class Cache(object):
                                                associate_pppoe_ipn_mac, vpn_speed, ipn_speed, vlan, 
                                                vpn_ipv6_ip_address, ipv4_vpn_pool_id, sessionscount 
                                                FROM billservice_subaccount
-                                               WHERE ipn_mac_address=%s
+                                               WHERE lower(ipn_mac_address)=%s
                                                ;""", (self.crypt_key, ipn_mac_address))
             res = self.cursor.fetchone()
-            if res:
-                res = res[0]
+
             obj = self.memcached_connection.set(cache_key, res, SUBACC_CACHE_TIMEOUT)
         
         except Exception as ex:
