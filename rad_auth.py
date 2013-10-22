@@ -912,7 +912,7 @@ class HandleHotSpotAuth(HandleSAuth):
         HotSpotMac - в субаккаунт
         """
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type)
-        subacc = self.caches.subaccount_cache.by_username.get(user_name)
+        subacc = self.cache.get_subaccount_by_username(user_name)
         logger.info("Subacc %s for username %s acc %s", (subacc, user_name, acc))
         if not acc and subacc:
             acc=self.cache.get_account_by_id(subacc.account_id)
@@ -920,7 +920,7 @@ class HandleHotSpotAuth(HandleSAuth):
             if not acc.access_type=='HotSpot':
                 acc=None
         if not acc and mac:
-            subacc = self.caches.subaccount_cache.by_mac.get(mac)
+            subacc = self.cache.get_subaccount_by_mac(mac)
             if subacc:
                 acc=self.cache.get_account_by_id(subacc.account_id)
                 if acc.access_type not in ['HotSpotMac','HotSpotIp+Mac']:
@@ -1099,14 +1099,14 @@ class HandleSDHCP(HandleSAuth):
         #acc = self.caches.account_cache.by_ipn_mac.get(mac)
  
         authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type='DHCP')
-        subacc = self.caches.subaccount_cache.by_mac.get(mac)
+        subacc = self.cache.get_subaccount_by_mac(mac)
         subaccount_switch=None
         nas=nasses[0]
         self.replypacket=packet.Packet(secret=nas.secret,dict=vars.DICT)
         nas_id=nas.id
         acc=None
         if subacc:
-            subaccount_switch = self.caches.switch_cache.by_id.get(subacc.switch_id)
+            subaccount_switch = self.cache.get_switch_by_id(subacc.switch_id)
 
         if self.packetobject.get("Agent-Remote-ID") and self.packetobject.get("Agent-Circuit-ID"):
             if subaccount_switch:
@@ -1114,7 +1114,7 @@ class HandleSDHCP(HandleSAuth):
                 
             else:
                 identify, vlan, module, port=parse('dlink-32xx', self.packetobject.get("Agent-Remote-ID",[''])[0],self.packetobject.get("Agent-Circuit-ID",[''])[0])
-            switch = self.caches.switch_cache.by_remote_id.get(identify)# реальный свитч, с которого пришёл запрос
+            switch = self.cache.get_switch_by_identify(identify)# реальный свитч, с которого пришёл запрос
             logger.warning("DHCP option82 remote_id, port %s %s", (identify, port,))
             if not switch:
                 sqlloggerthread.add_message(nas=nas_id, type="DHCP_CANT_FIND_SWITH_BY_REMOTE_ID", service=self.access_type, cause=u'Невозможно найти коммутатор с remote-id %s ' % (identify, ), datetime=self.datetime)
@@ -1125,9 +1125,9 @@ class HandleSDHCP(HandleSAuth):
                 """
                 если субаккаунт не найден по маку первоначально, ищем субаккаунт по id свитча и порту
                 """
-                subacc=self.caches.subaccount_cache.by_switch_port.get((switch.id, port))    
+                subacc=self.cache.get_by_switch_port(switch.id, port)    
                 if subacc:
-                    subaccount_switch= self.caches.switch_cache.by_id.get(subacc.switch_id)
+                    subaccount_switch= self.cache.get_switch_by_id(subacc.switch_id)
                 else:
                     sqlloggerthread.add_message(nas=nas_id,  type="DHCP_PORT_SWITCH_WRONG", service=self.access_type, cause=u'Субаккаунт с remote-id %s и портом %s не найден' % (identify, port), datetime=self.datetime)
                     return self.auth_NA(authobject)  
