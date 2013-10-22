@@ -262,6 +262,34 @@ class Cache(object):
             res = None
         return res
     
+    def get_by_switch_port(self, switch_id, port):
+        current_key = 'subaccount__by_switch_port_%s_%s'
+        cache_key = (self.cache_prefix+current_key) % (switch_id, port)
+        obj = self.memcached_connection.get(cache_key)
+        if obj: return obj
+        
+
+
+        
+        try:
+            self.cursor.execute("""SELECT id, account_id, username, decrypt_pw(password, %s)::text as password, 
+                                              vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, 
+                                              switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, 
+                                              allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, 
+                                              allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip,
+                                               associate_pppoe_ipn_mac, vpn_speed, ipn_speed, vlan, 
+                                               vpn_ipv6_ip_address, ipv4_vpn_pool_id, sessionscount 
+                                               FROM billservice_subaccount
+                                               WHERE switch_id=%s and switch_port=%s
+                                               ;""", (self.crypt_key, switch_id, port))
+            res = self.cursor.fetchone()
+            obj = self.memcached_connection.set(cache_key, res, SUBACC_CACHE_TIMEOUT)
+        except Exception as ex:
+            self.logger.error("%s database or memcached subsystem error: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+            res = None
+        return res
+    
+    
     #@memoize_with_expiry(30)
     def get_subaccount_by_id(self, id):
         current_key = 'subaccount__by_id_%s'
@@ -595,6 +623,22 @@ class Cache(object):
             
         return res
 
+    def get_switch_by_identify(self, identify):
+        current_key = 'switch_by_identify_%s'
+        cache_key = (self.cache_prefix+current_key) % (id,)
+        obj = self.memcached_connection.get(cache_key)
+        if obj: return obj
+        
+        try:
+            self.cursor.execute("""SELECT id, identify, option82, option82_auth_type, option82_template, remote_id FROM billservice_switch WHERE identify =%s;""", (identify, ))
+            res = self.cursor.fetchone()
+            obj = self.memcached_connection.set(cache_key, res, COMMON_CACHE_TIMEOUT)
+        except Exception as ex:
+            self.logger.error("%s database or memcached subsystem error: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+            res = None
+            
+        return res
+    
     #@memoize_with_expiry(30)
     def get_radiusattr_by_tarif_id(self, tarif_id):
         current_key = 'radiusattr_by_tarif_id_%s'
