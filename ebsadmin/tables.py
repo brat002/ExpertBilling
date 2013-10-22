@@ -489,7 +489,7 @@ class AuthLogTable(TableReport):
     class Meta:
         model = AuthLog
         exclude = ('type', 'id')
-        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        attrs = {'class': 'table table-bordered table-condensed'}
         
 class BallanceHistoryTable(TableReport):
     account__username = django_tables.LinkColumn('account_edit', get_params={'id':A('account')})
