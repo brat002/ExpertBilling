@@ -128,6 +128,10 @@ def setup_webcab():
         local('a2dissite default')
         local('a2enmod rewrite')
     local('/etc/init.d/apache2 restart')
+    with settings(warn_only=True):
+        local('''' su postgres -c 'psql ebs -c "ALTER TABLE billservice_account ALTER COLUMN fullname TYPE varchar(2000);"' ''')
+        local('''su postgres -c 'psql ebs -c "ALTER TABLE auth_user ALTER COLUMN first_name TYPE varchar(2000);"' ''')
+
     with prefix('. /opt/ebs/venv/bin/activate'):
         with lcd(WEBCAB_PATH):
             local("touch /opt/ebs/web/ebscab/templates/site_verify_codes.html")
