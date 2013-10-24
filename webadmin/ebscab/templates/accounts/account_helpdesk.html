@@ -32,7 +32,7 @@
 					{% for ticket in tickets %}
 						<tr>
 							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.id }}&nbsp;</td>
-							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a {% if ticket.notify_owner %} class="new_ticket" {% endif %} href='{% url helpdesk_public_view %}?ticket={{ticket.queue.slug}}-{{ticket.id}}'>{{ ticket.title }}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a {% if ticket.notify_owner %} class="new_ticket" {% endif %} href='{% url 'helpdesk_public_view' %}?ticket={{ticket.queue.slug}}-{{ticket.id}}'>{{ ticket.title }}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.created|date:"d.m.Y H:i:s" }}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.assigned_to.username }}&nbsp;</td>
 							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ ticket.get_priority_display }}&nbsp;</td>

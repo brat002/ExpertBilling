@@ -31,7 +31,7 @@ def logview(request):
         return {'status': False}
     
     
-    logfiles = os.listdir('/opt/ebs/data/log/')+os.listdir('/var/log/celery/')
+    logfiles = os.listdir('/opt/ebs/data/log/')
     
     if request.method=='GET':
         form = LogViewer(request.GET)
