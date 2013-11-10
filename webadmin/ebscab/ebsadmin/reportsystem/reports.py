@@ -202,16 +202,17 @@ def accountperiodreport(request, slug):
         form = AccountBallanceForm(request.GET)
         if form.is_valid():
             class AccountPeriodReportTable(TableReport):
-                username = django_tables.Column()
-                ballance = FormatFloatColumn()
-                balance_start = FormatFloatColumn()
-                periodic_summ = FormatFloatColumn()
-                addonservice_summ = FormatFloatColumn()
-                traffictransaction_summ = FormatFloatColumn()
-                timetransaction_summ = FormatFloatColumn()
-                transaction_summ_pos = FormatFloatColumn()
-                transaction_summ_neg = FormatFloatColumn()
-                balance_end = FormatFloatColumn()
+                username = django_tables.Column(verbose_name=u'Логин')
+                fullname = django_tables.Column(verbose_name=u'ФИО')
+                #ballance = FormatFloatColumn(verbose_name=u'Текущий баланс')
+                balance_start = FormatFloatColumn(verbose_name=u'Начальный баланс')
+                periodic_summ = FormatFloatColumn(verbose_name=u'Списания по период. услугам')
+                addonservice_summ = FormatFloatColumn(verbose_name=u'Списания под подкл. услугам')
+                traffictransaction_summ = FormatFloatColumn(verbose_name=u'Списания за трафик')
+                timetransaction_summ = FormatFloatColumn(verbose_name=u'Списания за время')
+                transaction_summ_pos = FormatFloatColumn(verbose_name=u'Пополнений баланса')
+                transaction_summ_neg = FormatFloatColumn(verbose_name=u'Вычеты и баланса')
+                balance_end = FormatFloatColumn(verbose_name=u'Конечный баланс')
                 #summ = FormatFloatColumn()
                 
                 #===============================================================
@@ -221,9 +222,11 @@ def accountperiodreport(request, slug):
                 #    self.footer = django_tables.rows.BoundRows(self.footer_data, self)    
                 class Meta:
                     attrs = {'class': 'table table-bordered table-condensed"'}
+                    configurable = True
                     #annotations = ('summ', )
-                #===============================================================
-                pass
+                def __init__(self, *args, **argv):
+                    super(AccountPeriodReportTable, self).__init__(*args, **argv)
+                    self.name = self.__class__.__name__
 
             date_start = form.cleaned_data.get('date_start')
             date_end = form.cleaned_data.get('date_end')
