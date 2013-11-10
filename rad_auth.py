@@ -1427,7 +1427,7 @@ if __name__ == "__main__":
             
         cacheMaster = CacheMaster()
 
-        logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename='rad_auth_log')
+        logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename='log/rad_auth_log')
         utilites.log_adapt = logger.log_adapt
         saver.log_adapt    = logger.log_adapt
         logger.lprint('Radius start')
