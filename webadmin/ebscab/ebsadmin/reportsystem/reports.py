@@ -15,6 +15,7 @@ import django_tables2 as django_tables
 from django.db.models import Sum
 #from ebsadmin.tables import AccountsCashierReportTable, CashierReportTable
 import datetime
+from ebsadmin.tables import FormatFloatColumn
 
 class FormatFloatColumn(django_tables.Column):
     def render(self, value):
@@ -202,9 +203,15 @@ def accountperiodreport(request, slug):
         if form.is_valid():
             class AccountPeriodReportTable(TableReport):
                 username = django_tables.Column()
-                balance = django_tables.Column()
-                balance_start = django_tables.Column()
-                balance_end = django_tables.Column()
+                ballance = FormatFloatColumn()
+                balance_start = FormatFloatColumn()
+                periodic_summ = FormatFloatColumn()
+                addonservice_summ = FormatFloatColumn()
+                traffictransaction_summ = FormatFloatColumn()
+                timetransaction_summ = FormatFloatColumn()
+                transaction_summ_pos = FormatFloatColumn()
+                transaction_summ_neg = FormatFloatColumn()
+                balance_end = FormatFloatColumn()
                 #summ = FormatFloatColumn()
                 
                 #===============================================================
@@ -213,7 +220,7 @@ def accountperiodreport(request, slug):
                 #    self.footer_data = self.TableDataClass(data=[pp.aggregate(summ=Sum('summ'))], table=self)
                 #    self.footer = django_tables.rows.BoundRows(self.footer_data, self)    
                 class Meta:
-                    attrs = {'class': 'table table-striped table-bordered table-condensed"'}
+                    attrs = {'class': 'table table-bordered table-condensed"'}
                     #annotations = ('summ', )
                 #===============================================================
                 pass
@@ -228,22 +235,75 @@ def accountperiodreport(request, slug):
                 res = Account.objects.filter(id__in =accounts)
             res = res.extra(select={'balance_start':
                                              '''SELECT balance as balance_start FROM billservice_balancehistory 
-                                             WHERE   id = 
-                                             (SELECT min(id) FROM billservice_balancehistory WHERE  account_id=billservice_account.id and datetime>='%(START_DATE)s')'''
+                                             WHERE   account_id=billservice_account.id and datetime<='%(START_DATE)s' ORDER BY datetime DESC limit 1
+                                             '''
 
  
                                               % {
                                                  'START_DATE': date_start
                                                  },
                                             'balance_end':
-                                             '''SELECT balance as balance_end FROM billservice_balancehistory 
-                                             WHERE   id =
-                                             (SELECT min(id) FROM billservice_balancehistory WHERE  account_id=billservice_account.id and datetime>='%(END_DATE)s') '''
+                                             '''SELECT balance as balance_start FROM billservice_balancehistory 
+                                             WHERE   account_id=billservice_account.id and datetime<='%(END_DATE)s' ORDER BY datetime DESC limit 1'''
 
  
                                               % {
                                                  'END_DATE': date_end
-                                                 }
+                                                 },
+                                            'periodic_summ':
+                                             '''SELECT sum(summ) FROM billservice_periodicalservicehistory 
+                                             WHERE   account_id = billservice_account.id and created between '%(START_DATE)s' and '%(END_DATE)s' '''
+
+ 
+                                              % {
+                                                 'START_DATE': date_start,
+                                                 'END_DATE': date_end
+                                                 },
+                                            'addonservice_summ':
+                                             '''SELECT sum(summ) FROM billservice_addonservicetransaction 
+                                             WHERE   account_id = billservice_account.id and created between '%(START_DATE)s' and '%(END_DATE)s' '''
+
+ 
+                                              % {
+                                                 'START_DATE': date_start,
+                                                 'END_DATE': date_end
+                                                 },
+                                            'traffictransaction_summ':
+                                             '''SELECT sum(summ) FROM billservice_traffictransaction 
+                                             WHERE   account_id = billservice_account.id and created between '%(START_DATE)s' and '%(END_DATE)s'  '''
+
+ 
+                                              % {
+                                                 'START_DATE': date_start,
+                                                 'END_DATE': date_end
+                                                 },
+                                            'timetransaction_summ':
+                                             '''SELECT sum(summ) FROM billservice_timetransaction 
+                                             WHERE   account_id = billservice_account.id and created between '%(START_DATE)s' and '%(END_DATE)s'  '''
+
+ 
+                                              % {
+                                                 'START_DATE': date_start,
+                                                 'END_DATE': date_end
+                                                 },
+                                            'transaction_summ_neg':
+                                             '''SELECT sum(summ) FROM billservice_transaction 
+                                             WHERE   account_id = billservice_account.id and summ<0 and created between '%(START_DATE)s' and '%(END_DATE)s'  '''
+
+ 
+                                              % {
+                                                 'START_DATE': date_start,
+                                                 'END_DATE': date_end
+                                                 },
+                                            'transaction_summ_pos':
+                                             '''SELECT sum(summ) FROM billservice_transaction 
+                                             WHERE   account_id = billservice_account.id and summ>0 and created between '%(START_DATE)s' and '%(END_DATE)s'  '''
+
+ 
+                                              % {
+                                                 'START_DATE': date_start,
+                                                 'END_DATE': date_end
+                                                 },
                                               })
             
             pp = res

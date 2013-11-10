@@ -863,7 +863,8 @@ class Account(DynamicModel):
     status = models.IntegerField(verbose_name=_(u'Статус'), default=1, choices=(
         (1, _(u"Активен")), (2, _(u"Не активен, списывать периодические услуги")),
         (3, _(u"Не активен, не списывать периодические услуги")), (4, _(u"Пользовательская блокировка")),
-        (5, _(u"Системная блокировка"))))
+        #(5, _(u"Системная блокировка"))
+        ))
     created = models.DateTimeField(verbose_name=_(u'Создан'), help_text=_(u'Начало оказания услуг'), default='')
     #NOTE: baLance
     ballance = models.DecimalField(_(u'Баланс'), blank=True, default=0, decimal_places=2, max_digits=20)

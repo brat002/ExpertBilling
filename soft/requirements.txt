@@ -46,3 +46,6 @@ simplejson==3.3.1
 six==1.4.1
 wsgiref==0.1.2
 zope.interface==4.0.5
+python-memcached
+
+

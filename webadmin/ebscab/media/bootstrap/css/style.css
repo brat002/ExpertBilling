@@ -215,11 +215,11 @@ footer
 }
 
 .table tbody tr.inactive:hover td {
-  background-color: #999;
+  background-color: #9AA;
 }
 
 .table tbody tr.inactive td {
-  background-color: #999;
+  background-color: #9AA;
 }
 
 .table tbody tr.inactive-light:hover td {
@@ -230,7 +230,7 @@ footer
   background-color: #E1E1E1;
 }
 
-.table-hover tbody tr.success:hover td {
+.table tbody tr.success:hover td {
   background-color: #dff0d8;
 }
 
@@ -238,9 +238,7 @@ footer
   background-color: #dff0d8;
 }
 
-.table tbody tr td.success {
-  background-color: #dff0d8;
-}
+
 
 
 

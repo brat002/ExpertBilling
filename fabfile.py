@@ -10,6 +10,7 @@ import os, sys
 import tempfile
 import ConfigParser
 import datetime
+import importlib
 
 BILLING_ROOT_PATH = '/opt/ebs/'
 BILLING_PATH = '/opt/ebs/data'
@@ -296,6 +297,8 @@ def db_upgrade():
     print("*"*80)
     print(green("Upgrading DB from sql/upgrade/*.sql files"))
     SQL_UPGRADE_PATH = os.path.join(BILLING_PATH, 'sql/upgrade')
+    
+    sys.path.append(os.path.join(BILLING_PATH, 'migrations'))
     install_config = ConfigParser.ConfigParser()
     first_time=False
     if not os.path.exists(LAST_SQL):
@@ -318,9 +321,12 @@ def db_upgrade():
         if not os.path.exists(upgrade_sql):
             print "cannot find file %s" % upgrade_sql
             continue
-            
+        if os.path.exists(os.path.join(BILLING_PATH, 'migrations', 'migration_%s.py' % id)):
+            worker = importlib.import_module('migration_%s' % id)
+            worker.pre_migrate()
         local("""su postgres -c 'psql ebs -f %s'""" % (upgrade_sql,))
-
+        if os.path.exists(os.path.join(BILLING_PATH, 'migrations', 'migration_%s.py' % id)):
+            worker.post_migrate()
 
             
 
