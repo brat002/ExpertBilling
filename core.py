@@ -1563,7 +1563,7 @@ class ipn_service(Thread):
                         for subacc in subaccounts:
                             if subacc.ipn_queued:
                                 logger.info("IPNALIVE: %s: Queued IPN command for subaccount %s is not empty", (self.getName(), subacc.id))
-                            if not subacc.nas_id or (subacc.ipn_ip_address=='0.0.0.0' and subacc.ipn_mac_address==''): continue
+                            if not subacc.nas_id : continue
                             access_list.append((subacc.id, subacc.ipn_ip_address,  subacc.ipn_mac_address, subacc.vpn_ip_address, subacc.nas_id, subacc))
                         #if not acc.tarif_active or acc.ipn_ip_address == '0.0.0.0' and '0.0.0.0' in [[x.ipn_ip_address, x.nas_id] if x is not '0.0.0.0' else 1 for x in subaccounts]: continue
                         accps = caches.accessparameters_cache.by_id.get(acc.access_parameters_id)
