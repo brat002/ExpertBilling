@@ -227,7 +227,7 @@ class DynamicSchema(models.Model):
             .get(
                 type_value=type_value,
                 model=ContentType.objects.get_for_model(model_class))
-
+        
         cache.set(cache_key, schema)
         return schema
 
