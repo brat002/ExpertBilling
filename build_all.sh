@@ -118,7 +118,7 @@ cp webadmin/default builds/$1/web/
 cp webadmin/blankpage_config builds/$1/web/
 cp webadmin/blankpage builds/$1/web/
 cp soft/billing builds/$1/data/soft/
-cp -r migrations builds/$1/migrations
+cp -r migrations builds/$1/data/
 cp soft/backup_and_ftp_netflow.sh builds/$1/data/soft/
 cp -r soft/hotspot/ builds/$1/data/soft/hotspot/
 cp soft/requirements.txt builds/$1/data/soft/

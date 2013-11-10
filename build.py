@@ -38,3 +38,5 @@ def update_demo():
     run('tar -xvzf demo1.5_`uname -i`.tar.gz fabfile.py')
 
     sudo('fab upgrade:demo1.5_`uname -i`.tar.gz')
+    
+    
