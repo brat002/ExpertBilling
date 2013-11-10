@@ -31,10 +31,10 @@ from base64 import b64decode
 
 from classes.rad_auth_cache import *
 from classes.rad_class.CardActivateData import CardActivateData
-from classes.cacheutils import CacheMaster
+
 from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
-from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, command_string_parser, speed_list_to_dict, create_speed
+from utilites import savepid, rempid, get_connection, getpid, check_running, command_string_parser, speed_list_to_dict, create_speed
 import Queue
 from option_parser import parse
 
@@ -136,23 +136,11 @@ class AuthHandler(Thread):
         self.cache = Cache(self.dbconn, vars.memcached_host, vars.CRYPT_KEY, logger = logger)
 
     def run(self):
-        global cacheMaster, vars, suicideCondition
+        global vars, suicideCondition
         while True:
             if suicideCondition[self.__class__.__name__]: break
             try:  
-                if cacheMaster.date > self.dateCache:
 
-                    try:
-                        self.caches = cacheMaster.cache
-                        dateAT = deepcopy(cacheMaster.date)
-                    except Exception, ex:
-                        logger.error("%s: cache exception: %s", (self.getName(), repr(ex)))
-                    finally:
-                        
-                        if 0: assert isinstance(self.caches, RadAuthCaches)
-
-                if not self.caches:
-                    raise Exception("Caches were not ready!")
                 
                 packetobject = None
                 d = auth_queue.get(block=True, timeout=0.03)
@@ -1222,45 +1210,6 @@ class HandleSDHCP(HandleSAuth):
             return self.auth_NA(self.authobject)
 
 
-class CacheRoutine(Thread):
-    def __init__(self):
-        Thread.__init__(self)
-
-    def run(self):
-        #connection = pool.connection()
-        #connection._con._con.set_client_encoding('UTF8')
-        global suicideCondition, cacheMaster, flags, vars, fMem
-        self.connection = get_connection(vars.db_dsn)
-        counter = 0; now = datetime.datetime.now
-        while True:
-            if suicideCondition[self.__class__.__name__]: break            
-            try: 
-                if flags.cacheFlag or (now() - cacheMaster.date).seconds > vars.CACHE_TIME:
-                    run_time = time.time()                    
-                    cur = self.connection.cursor()
-                    #renewCaches(cur)
-                    renewCaches(cur, cacheMaster, RadAuthCaches, 41, (fMem, vars.CRYPT_KEY))
-                    #cur.connection.commit()
-                    cur.close()
-                    if counter == 0:
-                        aUC(AU, lambda: len(cacheMaster.cache.account_cache.data), ungraceful_save, flags)
-                        if not flags.allowedUsersCheck: continue                    
-                    counter += 1
-                    if flags.cacheFlag:
-                        with flags.cacheLock: flags.cacheFlag = False
-                    logger.info("ast time : %s", time.time() - run_time)
-
-            except Exception, ex:
-                logger.error("%s : #30410004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                if ex.__class__ in vars.db_errors:
-                    time.sleep(5)
-                    try:
-                        self.connection = get_connection(vars.db_dsn)
-                    except Exception, eex:
-                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
-                        time.sleep(10)
-            gc.collect()
-            time.sleep(60)
 
 
 def SIGTERM_handler(signum, frame):
@@ -1285,10 +1234,10 @@ def SIGUSR1_handler(signum, frame):
     with flags.cacheLock: flags.cacheFlag = True
 
 def graceful_save():
-    global  cacheThr, suicideCondition, vars
+    global  suicideCondition, vars
     #asyncore.close_all()
     print "\nPlease, wait...."
-    suicideCondition[cacheThr.__class__.__name__] = True
+
 
     suicideCondition[SQLLoggerThread.__class__.__name__] = True
     
@@ -1306,7 +1255,7 @@ def graceful_save():
     #reactor.stop()
 
 def ungraceful_save():
-    global suicideCondition, cacheThr
+    global suicideCondition
     for key in suicideCondition.iterkeys():
         suicideCondition[key] = True
     rempid(vars.piddir, vars.name)
@@ -1315,7 +1264,7 @@ def ungraceful_save():
     logger.lprint("RAD AUTH exiting.")
     for th in threads:
         th.join()
-    cacheThr.join()    
+
 
     sys.exit()
 
@@ -1332,7 +1281,7 @@ class pfMemoize(object):
         return res
     
 def main():
-    global threads, curCachesDate, cacheThr, suicideCondition, server_acct, sqlloggerthread, SQLLoggerThread
+    global threads, curCachesDate, suicideCondition, server_acct, sqlloggerthread, SQLLoggerThread
     threads = []
 
     for i in xrange(vars.AUTH_THREAD_NUM):
@@ -1340,10 +1289,7 @@ def main():
         newAcct.setName('AUTH:#%i: AuthHandler' % i)
         threads.append(newAcct)
             
-    cacheThr = CacheRoutine()
-    suicideCondition[cacheThr.__class__.__name__] = False
-    cacheThr.setName("CacheRoutine")
-    cacheThr.start()    
+   
 
     sqlloggerthread = SQLLoggerThread(suicideCondition)
     if vars.ENABLE_SQLLOG:
@@ -1352,17 +1298,7 @@ def main():
         threads.append(sqlloggerthread)
 
     
-    time.sleep(2)
-    while cacheMaster.read is False or flags.allowedUsersCheck is False:        
-        if not cacheThr.isAlive:
-            print 'Exception in cache thread: exiting'
-            sys.exit()
-        time.sleep(10)
-        if not cacheMaster.read: 
-            print 'rad_auth caches still not read, maybe you should check the log'
-    
-    #print dir(cacheMaster.cache)
-    print 'caches ready'
+
 
     for th in threads:
         suicideCondition[th.__class__.__name__] = False
@@ -1425,7 +1361,7 @@ if __name__ == "__main__":
         else:
             port = vars.AUTH_PORT
             
-        cacheMaster = CacheMaster()
+        
 
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename='log/rad_auth_log')
         utilites.log_adapt = logger.log_adapt
@@ -1446,64 +1382,11 @@ if __name__ == "__main__":
 
         suicideCondition = {}
         fMem = pfMemoize()
-        a=open(b64decode('bGljZW5zZS5saWM=')).read().split(b64decode('QVM='))
-        raw_uid, raw_crc = a
-        l_uid = raw_uid[:32]
-        srts=int(str(raw_uid[32:]).strip().lower(),16)
-        if l_uid==md5(str('freedom')).hexdigest().upper():
-            o = str('freedom')
-        else:
-            s,o=commands.getstatusoutput(b64decode('Y2F0IC9wcm9jL2NwdWluZm8gfCBncmVwICJtb2RlbCBuYW1lIg=='))
-        uid = md5(o).hexdigest().upper()
-        
-        if l_uid!=uid:
-            print b64decode('SW5jb3JyZWN0IGhhc2guIE5ldyBoYXJkd2FyZT8=')
-            sys.exit()
-            
-        uid+=str(hex(srts))
-        uid=uid.upper()
-        crc=0
-        i=0
-        for x in uid:
-            crc+=ord(x)**i-1
-            i+=1
-        
-        cc=md5(str(crc)).hexdigest().upper()
-        
-        if raw_crc!=cc:
-            print b64decode('SW5zdWNjZWZ1bGwgY3J5cHRvaGFzaA==')
-            sys.exit()
-
-        _1i = lambda: srts
-        
-        if not srts:
-            _1i = lambda: ''
-            
-        def sAU(allowed, dbconnection = None):
-            AU = lambda: int(allowed)
-            if dbconnection:
-                cur = dbconnection.cursor()
-                cur.callproc('crt_allowed_checker', (AU(),))
-                dbconnection.commit()
-                cur.close()
-                dbconnection.close()
-            return AU
-        
-        def aUC(allowed, current, exit, flags):
-            if current() > allowed():
-                logger.error("SHUTTING DOWN: current amount of users[%s] exceeds allowed[%s] for the license file" , (str(current()), str(allowed())))
-                print >> sys.stderr, "SHUTTING DOWN: current amount of users[%s] exceeds allowed[%s] for the license file" % (str(current()), str(allowed()))
-                flags.allowedUsersCheck = False
-                exit()
-            else:
-                flags.allowedUsersCheck = True
-                
-        tmpconnection = get_connection(vars.db_dsn)
-        AU = sAU(_1i(), tmpconnection)        
+    
 
         #-------------------
         print "ebs: rad_auth: configs read, about to start"
         main()
     except Exception, ex:
         print 'Exception in rad, exiting: ', repr(ex)
-        logger.error('Exception in rpc, exiting: %s \n %s', (repr(ex), traceback.format_exc()))        
+        logger.error('Exception in rad_auth, exiting: %s \n %s', (repr(ex), traceback.format_exc()))        

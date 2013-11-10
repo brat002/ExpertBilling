@@ -37,10 +37,10 @@ globals()['mikrobill.cacherouter'] = cacherouter
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
 from classes.rad_acct_cache import *
-from classes.cacheutils import CacheMaster
+
 from classes.flags import RadFlags
 from classes.vars import RadVars, RadQueues
-from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running
+from utilites import savepid, rempid, get_connection, getpid, check_running
 import Queue
 import cjson
 
@@ -153,24 +153,11 @@ class AcctHandler(Thread):
         self.cache = Cache(self.dbconn, vars.memcached_host, vars.CRYPT_KEY, logger = logger)
 
     def run(self):
-        global cacheMaster, vars, suicideCondition
+        global vars, suicideCondition
         while True:
             if suicideCondition[self.__class__.__name__]: break
             try:  
-                if cacheMaster.date > self.dateCache:
 
-                    try:
-                        self.caches = cacheMaster.cache
-                        dateAT = deepcopy(cacheMaster.date)
-                    except Exception, ex:
-                        logger.error("%s: cache exception: %s", (self.getName(), repr(ex)))
-                    finally:
-
-                        if 0: assert isinstance(self.caches, RadAcctCaches)
-
-                if not self.caches:
-                    raise Exception("Caches were not ready!")
-                
                 packetobject = None
                 d = acct_queue.get(block=True, timeout=0.05)
                 if not d:
@@ -592,45 +579,6 @@ class HandleSAcct(HandleSBase):
 
 
 
-class CacheRoutine(Thread):
-    def __init__(self):
-        Thread.__init__(self)
-
-    def run(self):
-        #connection = pool.connection()
-        #connection._con._con.set_client_encoding('UTF8')
-        global suicideCondition, cacheMaster, flags, vars
-        self.connection = get_connection(vars.db_dsn)
-        counter = 0; now = datetime.datetime.now
-        while True:
-            if suicideCondition[self.__class__.__name__]:
-                 
-                break            
-            try: 
-                if flags.cacheFlag or (now() - cacheMaster.date).seconds > vars.CACHE_TIME:
-                    run_time = time.time()                    
-                    cur = self.connection.cursor()
-                    #renewCaches(cur)
-                    renewCaches(cur, cacheMaster, RadAcctCaches, 41, (vars.CRYPT_KEY, ))
-                    #cur.connection.commit()
-                    cur.close()            
-                    counter += 1
-                    if flags.cacheFlag:
-                        with flags.cacheLock: flags.cacheFlag = False
-                    logger.info("ast time : %s", time.time() - run_time)
-
-            except Exception, ex:
-                logger.error("%s : #30410004 : %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
-                if ex.__class__ in vars.db_errors:
-                    time.sleep(5)
-                    try:
-                        self.connection = get_connection(vars.db_dsn)
-                    except Exception, eex:
-                        logger.info("%s : database reconnection error: %s" , (self.getName(), repr(eex)))
-                        time.sleep(10)
-            #gc.collect()
-            time.sleep(5)
-
 
 def SIGTERM_handler(signum, frame):
     logger.lprint("SIGTERM recieved")
@@ -658,9 +606,9 @@ def SIGUSR1_handler(signum, frame):
     with flags.cacheLock: flags.cacheFlag = True
 
 def graceful_save():
-    global  cacheThr, packetSenderThr, suicideCondition, vars
+    global  packetSenderThr, suicideCondition, vars
     #asyncore.close_all()
-    suicideCondition[cacheThr.__class__.__name__] = True
+
     suicideCondition[packetSenderThr.__class__.__name__] = True
 
     logger.lprint("About to stop gracefully.")
@@ -679,7 +627,7 @@ def graceful_save():
     
 
 def ungraceful_save():
-    global suicideCondition, cacheThr, packetSenderThr
+    global suicideCondition, packetSenderThr
     for key in suicideCondition.iterkeys():
         suicideCondition[key] = True
     rempid(vars.piddir, vars.name)
@@ -688,23 +636,19 @@ def ungraceful_save():
     logger.lprint("RAD ACCT exiting.")
     for th in threads:
         th.join()
-    cacheThr.join()    
+
     packetSenderThr.join()
     sys.exit()
 
 def main():
-    global threads, curCachesDate, cacheThr, suicideCondition, server_acct, sqlloggerthread, packetSenderThr#, radiusstatthr
+    global threads, curCachesDate, suicideCondition, server_acct, sqlloggerthread, packetSenderThr#, radiusstatthr
     threads = []
 
     for i in xrange(vars.ACCT_THREAD_NUM):
         newAcct = AcctHandler()
         newAcct.setName('ACCT:#%i: AcctHandler' % i)
         threads.append(newAcct)
-            
-    cacheThr = CacheRoutine()
-    suicideCondition[cacheThr.__class__.__name__] = False
-    cacheThr.setName("CacheRoutine")
-    cacheThr.start()    
+  
 
     packetSenderThr = PacketSender()
     suicideCondition[packetSenderThr.__class__.__name__] = False
@@ -717,17 +661,9 @@ def main():
     #    radiusstatthr.setName('RADIUSSTAT:THR:#%i: RadiusStatThread' % 1)
     #    threads.append(radiusstatthr)
         
-    time.sleep(2)
-    while cacheMaster.read is False:        
-        if not cacheThr.isAlive:
-            print 'Exception in cache thread: exiting'
-            sys.exit()
-        time.sleep(10)
-        if not cacheMaster.read: 
-            print 'rad_acct caches still not read, maybe you should check the log'
-    
+
     #print dir(cacheMaster.cache)
-    print 'caches ready'
+  
 
     for th in threads:
         suicideCondition[th.__class__.__name__] = False
@@ -800,7 +736,7 @@ if __name__ == "__main__":
         else:
             port = vars.ACCT_PORT
         
-        cacheMaster = CacheMaster()
+        
 
         logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename='log/rad_acct_log')
         utilites.log_adapt = logger.log_adapt
