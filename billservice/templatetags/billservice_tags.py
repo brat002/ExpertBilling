@@ -99,7 +99,8 @@ def traffic_limit_row(trafficlimit, user, iter_nom, last=False):
         sp_start = cursor.fetchone()
         sp_start = sp_start[0]
     else:
-        sp_start = settlement_period.time_start
+        settlement_period = user.get_account_tariff().settlement_period
+        sp_start = settlement_period.time_start if settlement_period else None
     from billservice.utility import settlement_period_info
     settlement_period_start, settlement_period_end, delta = settlement_period_info(time_start=sp_start, repeat_after=settlement_period.length_in, repeat_after_seconds=settlement_period.length)
     #если нужно считать количество трафика за последнеие N секунд, а не за рачётный период, то переопределяем значения
