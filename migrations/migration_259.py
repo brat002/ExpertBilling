@@ -16,7 +16,7 @@ def post_migrate():
     for table in cur.fetchall():
         dt = table[0].replace('billservice_balancehistory', '')
         if not dt: continue
-        cur.execute("""ALTER TABLE billservice_balancehistory%s DROP INDEX billservice_balancehistory%s_account_id; 
+        cur.execute("""DROP INDEX billservice_balancehistory%s_account_id; 
                        CREATE INDEX billservice_balancehistory%s_account_id_datetime
       ON billservice_balancehistory%s
       USING btree
