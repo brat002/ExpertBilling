@@ -1,0 +1,132 @@
+{% extends "ebsadmin/tariff_edit.html" %}
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load render_table from django_tables2 %}
+ 
+ 
+
+                
+{% block extra_head %}
+{{block.super}}
+
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     $(".open-custom-dialog").click(function(event) {
+         $('<div />').dialog2({
+             title: "{% blocktrans %}Лимит трафика{% endblocktrans %}", 
+             content: this.href, 
+             id: "periodicalservice-modal"
+         });
+
+         event.preventDefault(event);
+     });
+
+     $(".open-speedlimit-dialog").click(function(event) {
+         $('<div />').dialog2({
+             title: "{% blocktrans %}Правило изменения скорости{% endblocktrans %}", 
+             content: this.href, 
+             id: "speedlimit-modal"
+         });
+
+         event.preventDefault(event);
+     });
+     
+     $(".show-speedlimit-confirm").click(function(event) {
+         a=$(this);
+         $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить? Если в лимите трафика указано действие 'Изменить скорость' - вы обязаны указать параметры изменения скорости.{% endblocktrans %}", {
+             confirm: function() {
+                 $.getJSON(a.attr('href'),{},function(data,status){
+                     if( status=='success' ){
+                         if(data.status==true)
+                             {
+                             location.reload();
+                             }else{
+                                 alert(data.message)
+                             }
+                         
+                     }else{
+                         alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
+                     }
+
+                 })                      
+                 }, 
+             decline: function() {  }
+         });
+
+         event.preventDefault(event);
+     });
+     
+     $(".show-confirm").click(function(event) {
+         a=$(this);
+         $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить лимит трафика?{% endblocktrans %}", {
+             confirm: function() {
+                 $.getJSON(a.attr('href'),{},function(data,status){
+                     if( status=='success' ){
+                         if(data.status==true)
+                             {
+                             location.reload();
+                             }else{
+                                 alert(data.message)
+                             }
+                         
+                     }else{
+                         alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
+                     }
+
+                 })                      
+                 }, 
+             decline: function() {  }
+         });
+
+         event.preventDefault(event);
+     });
+     
+     $("#modal-trafficlimit-dialog").click(function(event) {
+         $('<div />').dialog2({
+             title: "{% blocktrans %}Добавить лимит трафика{% endblocktrans %}", 
+             content: "{% url 'tariff_trafficlimit_edit' %}?tariff_id={{tariff.id}}", 
+             id: "ps-modal"
+         });
+
+         event.preventDefault(event);
+     });
+ });
+ </script>
+ <style type="text/css">
+
+.modal {
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  z-index: 1050;
+  width: 600px;
+  margin: 0 0 0 -400px; /* -1 * (width / 2) */ 
+  overflow: auto;
+  background-color: #ffffff;
+  border: 1px solid #999;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  *border: 1px solid #999;
+  -webkit-border-radius: 6px;
+     -moz-border-radius: 6px;
+          border-radius: 6px;
+  -webkit-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+     -moz-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  -webkit-background-clip: padding-box;
+     -moz-background-clip: padding-box;
+          background-clip: padding-box;
+}
+</style>
+{% endblock %}
+
+{% block tariff_content %}
+
+            <legend>{% blocktrans %}Лимиты трафика{% endblocktrans %}</legend>
+<div class="alert alert-info">
+{% blocktrans %}Лимиты трафика позволяют ограничить объём потребляемого трафика за указанный период времени.{% endblocktrans %}
+</div>
+             <fieldset>
+  {% if table %}{% render_table table %}{% endif %}
+  <div class="btn-toolbar"><a href="#" id="modal-trafficlimit-dialog" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a></div>
+                </fieldset>
+{% endblock %}

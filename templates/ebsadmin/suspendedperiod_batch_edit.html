@@ -1,0 +1,73 @@
+{% load ebsadmin_tags %}
+{% load i18n %}
+{% if not status %}
+    {% for message in messages %}
+
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
+
+      {% endfor %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     $('.datepicker').datepicker({
+         months: ["{% blocktrans %}Январь{% endblocktrans %}","{% blocktrans %}Февраль{% endblocktrans %}","{% blocktrans %}Март{% endblocktrans %}","{% blocktrans %}Апрель{% endblocktrans %}","{% blocktrans %}Май{% endblocktrans %}","{% blocktrans %}Июнь{% endblocktrans %}","{% blocktrans %}Июль{% endblocktrans %}","{% blocktrans %}Август{% endblocktrans %}","{% blocktrans %}Сентябрь{% endblocktrans %}","{% blocktrans %}Октябрь{% endblocktrans %}","{% blocktrans %}Ноябрь{% endblocktrans %}","{% blocktrans %}Декабрь{% endblocktrans %}"],
+         weekStart: 1,
+         noDefault: true,
+         format: 'yyyy-mm-dd hh:ii:ss',
+         days: ["{% blocktrans %}вс{% endblocktrans %}", "{% blocktrans %}пн{% endblocktrans %}","{% blocktrans %}вт{% endblocktrans %}","{% blocktrans %}ср{% endblocktrans %}","{% blocktrans %}чт{% endblocktrans %}","{% blocktrans %}пт{% endblocktrans %}","{% blocktrans %}сб{% endblocktrans %}"],});
+
+     $(".timepicker").mask("99:99:99");
+ });
+ </script>
+{% if form %}
+            
+                <form action='{% url 'account_management_suspendedperiod' %}' method="POST" class="well form-horizontal ajax form-condensed ">
+                <fieldset>
+                {{form.accounts}}
+                  <div class="control-group">
+                      <label class="control-label">{{form.start_date.label}}: </label>
+                      <div class="controls">
+                      {{ form.start_date }}
+                      {% if form.start_date.errors %}
+                          <span class="help-inline">{% for error in form.start_date.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.start_date.help_text%}
+                          <p class="help-block">
+                              {{ form.start_date.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-group">
+
+                      <label class="control-label">{{form.end_date.label}}:</label>
+                      <div class="controls">
+                      {{ form.end_date }}
+                      {% if form.end_date.errors %}
+                          <span class="help-inline">{% for error in form.end_date.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.end_date.help_text%}
+                          <p class="help-block">
+                              {{ form.end_date.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+
+                </fieldset>
+                <div class="form-actions">
+				    <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">
+				    <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
+				</div>
+                </form>
+{% endif %}
+{% else %}
+{% blocktrans %}Операция произведена успешно.{% endblocktrans %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     location.reload();
+ });
+ </script>
+{% endif %}
