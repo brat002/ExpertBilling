@@ -467,7 +467,7 @@ def change_speed(account, subacc ,nas, session_id='', vpn_ip_address='', access_
                 status = True if status==0 else False
             if status==True and cb:
                 cb.apply()
-                logger.info('Command %s was executed with status %s and output %s' % (command_string, status, output))
+            logger.info('Command %s was executed with status %s and output %s' % (command_string, status, output))
         except Exception, e:
             logger.info('Change Speed ssh exception %s' % repr(e))
             return False

@@ -819,6 +819,7 @@ def correct_speed(speed, correction):
     """
     res = []
     #max tx
+    if not speed or correction: return speed
     res.append(speedlimit_logic(speed[0], correction[0], correction[11], correction[12]))
     #max rx            
     res.append(speedlimit_logic(speed[1], correction[1], correction[11], correction[12]))
