@@ -582,7 +582,7 @@ class HandleSAuth(HandleSBase):
             sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_VPN_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
             return self.auth_NA(self.authobject)
 
-        allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
+        allow_dial = True #self.caches.period_cache.in_period.get(acc.tarif_id, False)
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tariff_active))
         if allow_dial and acc.tariff_active:
@@ -799,7 +799,7 @@ class HandlelISGAuth(HandleSAuth):
 
         #username, password, nas_id, ipaddress, tarif_id, access_type, status, balance_blocked, ballance, disabled_by_limit, speed, tarif_status = row
 
-        allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
+        allow_dial = True #self.caches.period_cache.in_period.get(acc.tarif_id, False)
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tariff_active))
         if allow_dial and acc.tariff_active:
@@ -974,7 +974,7 @@ class HandleHotSpotAuth(HandleSAuth):
             sqlloggerthread.add_message(nas=acc.nas_id, subaccount=subacc_id, account=acc.id, type="AUTH_HOTSPOT_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
             return self.auth_NA(self.authobject)     
         
-        allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
+        allow_dial = True #self.caches.period_cache.in_period.get(acc.tarif_id, False)
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked,acc.tariff_active))
         vpn_ip_address = None
@@ -1193,7 +1193,7 @@ class HandleSDHCP(HandleSAuth):
 
         allow_dial = True
         if acc.access_type in ['DHCP', 'Wireless']:
-            allow_dial = self.caches.period_cache.in_period.get(acc.tarif_id, False)
+            allow_dial = True #self.caches.period_cache.in_period.get(acc.tarif_id, False)
         if acstatus and allow_dial and acc.tariff_active:
             self.authobject.set_code(2)
             self.replypacket.AddAttribute('Framed-IP-Address', subacc.ipn_ip_address)
