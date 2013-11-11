@@ -1,0 +1,5 @@
+{% if item %}
+<div class="pull-right">
+<a class="btn btn-info" href="{% url 'actionlog' %}?id={{item.id}}&ct={{ct_id}}">История</a>
+</div>
+{% endif %}

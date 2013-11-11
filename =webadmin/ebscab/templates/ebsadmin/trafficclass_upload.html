@@ -1,0 +1,50 @@
+{% extends "ebsadmin/base.html" %}
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load render_table from django_tables2 %}
+{% load crispy_forms_tags %}
+{% load ebsadmin_tags %}
+{% block extra_head %}
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+
+        });
+        </script>
+
+{% endblock %}
+ {% load render_table from django_tables2 %}
+{% block base %}
+<div class="span12">
+<div class="row-fluid">
+<ul class="breadcrumb">
+  <li>
+    <a href="{% url 'trafficclass' %}">{% blocktrans %}Классы трафика{% endblocktrans %}</a> <span class="divider">/</span>{% blocktrans %}Загрузка сетей в класс{% endblocktrans %}
+  </li>
+
+</ul>
+<div class="alert">{% blocktrans %}<h3>Внимание!</h3>
+Предварительно убедитесь в том, что вы не создадите дубликатов и, при необходимости, очистите класс от предыдущих подсетей.{% endblocktrans %}
+</div>
+<form method="POST" action="{% url 'trafficclass_upload' %}" class="well form-horizontal form-condensed " enctype="multipart/form-data" >
+            <legend>{% blocktrans %}Параметры{% endblocktrans %}</legend>
+             <fieldset>
+                  {{form|crispy}}
+                  
+                </fieldset>
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Создать{% endblocktrans %}</button>
+                    </div>
+                </fieldset>
+            </form>
+
+
+        </div>
+        {% if table %}
+        <legend>{% blocktrans %}Созданные сети{% endblocktrans %}:</legend>
+{% render_table table %}
+{% endif %}
+    </div>
+
+ {% endblock %}
+

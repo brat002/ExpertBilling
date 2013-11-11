@@ -1,0 +1,50 @@
+{% extends "ebsadmin/base.html" %}
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% block extra_head %}
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+
+        });
+        </script>
+
+{% endblock %}
+{% block base %}
+<div class="span12">
+<div class="row-fluid">
+<legend>{% blocktrans %}Просмотр логов{% endblocktrans %}</legend>
+<form method="GET" action="{% url 'logview' %}?id={{item.id}}" class="form-condensed " >
+<div class="navbar navbar-googlenav">
+  <div class="navbar-inner">
+    <div class="btn-toolbar">
+      <div class="btn-group">
+      <label>{% blocktrans %}Лог{% endblocktrans %}: </label>
+        {{form.log}}
+      </div>
+      <div class="btn-group">
+        <label>{{form.lines.label}}:</label>
+        {{form.lines}}
+      </div>
+ 
+      <div class="btn-group">
+        {{form.full}}
+        <label>{{form.full.label}}</label>
+      </div>
+ 
+      <div class="btn-group pull-right">
+        <button class="btn btn-primary" type="submit">{% blocktrans %}Показать{% endblocktrans %}</button>
+      </div>
+ 
+  </div>
+</div>            
+            </form>
+                  <textarea class='input-xlarge row-fluid' rows=20>
+                  {{content}}
+                  </textarea>
+
+        </div>
+
+    </div>
+
+ {% endblock %}
+

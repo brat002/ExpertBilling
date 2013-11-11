@@ -1,0 +1,56 @@
+{% block extra_head %}
+{% load i18n %}
+{% load ebsadmin_tags %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+ });
+ </script>
+
+{% endblock %}
+{% block base %}
+{% if not status %}
+    {% for message in messages %}
+
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
+
+      {% endfor %}
+{% if form %}
+                <form action='{% url 'accountgroup_edit' %}?id={{item.id}}'' method="POST" class="well form-horizontal  form-condensed  ajax">
+                <legend>{% blocktrans %}Группа абонентов{% endblocktrans %}{% objectlog item %}</legend>
+                <fieldset>
+                  {{ form.id }}
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">{{form.name.label}}: </label>
+                      <div class="controls">
+                      {{ form.name }}
+                      {% if form.name.errors %}
+                          <span class="help-inline">{% for error in form.name.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.name.help_text%}
+                          <p class="help-block">
+                              {{ form.name.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>                
+                </fieldset>
+                <div class="form-actions">
+                    <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">
+                    <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
+                </div>
+                </form>
+{% endif %}
+{% else %}
+{% blocktrans %}Операция произведена успешно.{% endblocktrans %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     location.reload();
+ });
+ </script>
+{% endif %}
+{% endblock %}
