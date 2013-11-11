@@ -1,0 +1,55 @@
+{% extends 'base_extended.html' %}
+{% load i18n %}
+{% load billservice_tags %}
+{% load custom_filters %}
+
+{% block content %}
+{% if group_stat %}
+<table class="wide statistic_table" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="white bold s-11 blue_caption a-left">{% blocktrans %}Объём трафика{% endblocktrans %}</th>
+	</tr>
+	<tr>
+		<td class="">
+			<table class="wide extra_table" cellpadding="0" cellspacing="0">
+				<tr>
+					<tr>
+						<th>{% blocktrans %}Направление{% endblocktrans %}</th>
+						<th>{% blocktrans %}Год{% endblocktrans %}</th>
+						<th>{% blocktrans %}Месяц{% endblocktrans %}</th>
+						<th>{% blocktrans %}День{% endblocktrans %}</th>
+						<th>{% blocktrans %}Объём{% endblocktrans %}</th>
+					</tr>
+				</tr>
+					{% for gpst in group_stat %}
+						<tr>
+							<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ gpst.group_name }}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ gpst.year }}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ gpst.month }}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{{ gpst.day }}&nbsp;</td>
+							<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% traffic_format gpst.bytes %}&nbsp;</td>
+						</tr>
+					{% endfor %}
+
+					<tr>
+						<td class="right {{ rec_count|coll_bg  }} no_border">&nbsp;</td>
+						<td class="left_border {{ rec_count|coll_bg  }} no_border">&nbsp;</td>
+						<td class="left_border {{ rec_count|coll_bg  }} no_border">&nbsp;</td>
+						<td align="right" class="bold left_border {{ rec_count|coll_bg  }} no_border">{% blocktrans %}Всего:{% endblocktrans %}</td>						
+						<td class="left_border {{ rec_count|coll_bg  }} no_border">{% traffic_format summ_bytes %}</td>
+					</tr>
+
+			</table>
+		</td>
+	</tr>
+</table>
+
+{% else %}
+ <h2 align="center">{% blocktrans %}Данных нет{% endblocktrans %}</h2>
+{% endif %}
+{% endblock %}
+
+
+{% block title %}
+    {% blocktrans %}Биллинговая информация{% endblocktrans %}
+{% endblock %}

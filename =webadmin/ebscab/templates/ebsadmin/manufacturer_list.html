@@ -1,0 +1,76 @@
+{% extends "ebsadmin/base.html" %}
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load render_table from django_tables2 %}
+{% block extra_head %}
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+            $("#id_btn_add").click(function(event) {
+                $('<div/>').dialog2({
+                    title: "{% blocktrans %}Добавление производителей оборудования{% endblocktrans %}", 
+                    content: "{% url 'manufacturer_edit' %}", 
+                    id: "server-notice"
+                });
+
+                event.preventDefault(event);
+            });
+            $(".open-custom-dialog").click(function(event) {
+                $('<div />').dialog2({
+                    title: "{% blocktrans %}Изменить название{% endblocktrans %}", 
+                    content: this.href, 
+                    id: "manufacturer-modal"
+                });
+
+                event.preventDefault(event);
+            });
+            $(".show-confirm").click(function(event) {
+                a=$(this);
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить?{% endblocktrans %}", {
+                    confirm: function() {
+                        $.getJSON(a.attr('href'),{},function(data,status){
+                            if( status=='success' ){
+                                if(data.status==true)
+                                    {
+                                    location.reload();
+                                    }else{
+                                        alert(data.message)
+                                    }
+                                
+                            }else{
+                                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
+                            }
+
+                        })                      
+                        }, 
+                    decline: function() {  }
+                });
+
+                event.preventDefault(event);
+            });
+        });
+        </script>
+
+{% endblock %}
+{% block base %}
+
+
+
+
+  <div class="row-fluid">
+  
+<div>
+<ul class="breadcrumb">
+  <li>
+    <a href="{% url 'manufacturer' %}">{% blocktrans %}Производители оборудования{% endblocktrans %}</a> <span class="divider">/</span>
+  </li>
+</ul>
+</div>
+<div class="btn-toolbar pull-right"><a href="{% url 'manufacturer_edit' %}" id="id_btn_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a>&nbsp;</div>
+<div>
+  {% render_table table %}
+</div>
+    </div>
+  
+
+ {% endblock %}
+

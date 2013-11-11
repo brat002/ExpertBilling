@@ -1,0 +1,45 @@
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load crispy_forms_tags %}
+{% block extra_head %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     $('#id_preset_reply').change(function() {
+         preset = $('#id_preset_reply').val();
+         if (preset != '') {
+             $.get("{% url 'helpdesk_raw' "preset" %}?id=" + preset, function(data) {
+                 $("#id_comment").val(data)
+             });
+         }
+     });
+ });
+ </script>
+
+{% endblock %}
+{% block base %}
+{% if not status %}
+    {% for message in messages %}
+
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
+
+      {% endfor %}
+{% if form %}
+                <form action='{% url 'followup_edit' %}?id={{item.id}}'' method="POST" class="well form-horizontal ajax form-condensed ">
+
+                {% crispy form %}             
+
+
+                </form>
+{% endif %}
+{% else %}
+{% blocktrans %}Операция произведена успешно.{% endblocktrans %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     location.reload();
+ });
+ </script>
+{% endif %}
+{% endblock %}

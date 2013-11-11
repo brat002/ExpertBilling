@@ -1,0 +1,213 @@
+{% extends "cassa/base.html" %}
+{% load i18n %}
+ {% load render_table from django_tables2 %}
+{% block extra_head %}
+          <script type="text/javascript"> 
+        $(document).ready(function() {
+            $(".show-confirm").click(function() {
+                a=$(this);
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить?{% endblocktrans %}", {
+                    confirm: function() {
+                        $.getJSON(a.attr('href'),{},function(data,status){
+                            if( status=='success' ){
+                                if(data.status==true)
+                                    {
+                                    location.reload();
+                                    }else{
+                                        alert(data.message)
+                                    }
+                                
+                            }else{
+                                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
+                            }
+
+                        })                      
+                        }, 
+                    decline: function() {  }
+                });
+
+                event.preventDefault();
+            });
+            //$("#id_main_table").selectable({filter:'tbody tr'});
+            $("#id_main_table tbody").css('cursor', 'pointer');
+            $("#id_main_table tbody tr").click(function(){
+            	
+                $(this).find('input').attr('checked', true);
+                $("#id_main_table tbody tr").attr('class', '');
+                $(this).closest('tr').attr('class', 'ui-selected');
+                //$(this).find('input').cl4ck();
+                //$(this).closest('tr').attr('class', 'ui-selected');
+            });
+            $("#id_main_table tbody input[type=radio]").click(function(){
+            	$("#id_main_table tbody tr").attr('class', '');
+            	$(this).closest('tr').attr('class', 'ui-selected');
+            });
+            $("#modal-transaction-dialog").click(function(event) {
+            	var account_id=$("#id_main_table tbody input[type=radio]:checked").val();
+            	if (account_id) {
+	                $('<div/>').dialog2({
+	                    title: "{% blocktrans %}Внести платёж{% endblocktrans %}", 
+	                    content: "{% url 'transaction_edit' %}?account_id="+account_id, 
+	                    id: "server-notice"
+	                });
+	                
+            	}
+
+                event.preventDefault(event);
+            });
+            
+            $("#modal-bonustransaction-dialog").click(function(event) {
+            	var account_id=$("#id_main_table tbody input[type=radio]:checked").val();
+            	if (account_id) {
+	                $('<div/>').dialog2({
+	                    title: "{% blocktrans %}Внести бонусный платёж{% endblocktrans %}", 
+	                    content: "{% url 'bonus_transaction_edit' %}?account_id="+account_id, 
+	                    id: "server-notice"
+	                });
+            	}
+                event.preventDefault(event);
+            });
+            
+            $("#modal-accounttariff-dialog-table").click(function(event) {
+            	var account_id=$("#id_main_table tbody input[type=radio]:checked").val();
+                if (account_id) {
+                $('<div/>').dialog2({
+                    title: "{% blocktrans %}Изменение тарифного плана{% endblocktrans %}", 
+                    content: "/ebsadmin/accounttariff/edit/?account_id="+account_id, 
+                    id: "server-notice"
+                });
+                }
+
+                event.preventDefault();
+            });
+            $('#id_house').autocomplete({
+                source: function( request, response )
+                {                      
+                    $.ajax(
+                    { 
+                        url: "{% url 'house' %}",
+                        data: {
+                                term: request.term, 
+                                street_name: $('#id_street').val(),    //Pass the selected country to php
+                                city_id: $('#id_city').val()
+                              },        
+                        type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                        dataType: "json",   //return data in json format                                                                                                                                       
+                        success: function( data ) 
+                        {
+                            response( $.map( data.records, function( item ) 
+                            {
+                                return item.name
+                            }));
+                        }
+                    });                
+                },
+                minChars: 0, // Минимальная длина запроса для срабатывания автозаполнения
+                maxHeight: 400, // Максимальная высота списка подсказок, в пикселях
+                width: 300, // Ширина списка
+                zIndex: 9999, // z-index списка
+                deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
+                onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
+            });
+            $('#id_street').autocomplete({
+                source: function( request, response )
+                {                      
+                    $.ajax(
+                    { 
+                        url: "{% url 'street' %}",
+                        data: {
+                                term: request.term, 
+                                city_id: $('#id_city').val()
+                              },        
+                        type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                        dataType: "json",   //return data in json format                                                                                                                                       
+                        success: function( data ) 
+                        {
+                            response( $.map( data.records, function( item ) 
+                            {
+                                return item.name
+                            }));
+                        }
+                    });                
+                },
+                minChars: 0, // Минимальная длина запроса для срабатывания автозаполнения
+                maxHeight: 400, // Максимальная высота списка подсказок, в пикселях
+                width: 300, // Ширина списка
+                zIndex: 9999, // z-index списка
+                deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
+                onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
+            });
+        });
+        </script>
+<style type="text/css">
+.ui-selecting, .ui-selected { background: #88BCFF }  
+.plate { background-color:#505050; height:100px;width:200px;color:white; }
+
+</style>
+
+{% endblock %}
+{% block body %}
+     {% for message in messages %}
+
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
+
+      {% endfor %}
+  <div class="row-fluid">
+  
+
+<div>
+<form action='#' method="GET" class="well form-inline form-condensed ">
+<div><label class='checkbox inline'>{{form.contract.label}}: {{form.contract}}</label>
+<label class='checkbox inline'>{{form.username.label}}: {{form.username}}</label>
+<label class='checkbox inline'>{{form.fullname.label}}: {{form.fullname}}</label>
+
+</div>
+<div><label class='checkbox inline'>{{form.city.label}}: {{form.city}}</label>
+<label class='checkbox inline'>{{form.street.label}}: {{form.street}}</label>
+<label class='checkbox inline'>{{form.house.label}}: {{form.house}}</label>
+<label class='checkbox inline'>{{form.room.label}}: {{form.room}}</label>
+</div>
+                <div class="form-actions">
+                    <input type='submit' class="btn btn-primary" value="Искать">
+                    <input type='reset' class="btn btn-inverse" value="Очистить">
+                </div>
+</form>
+</div>
+<div class="btn-toolbar">
+  <div class="btn-group">
+        <a href="{% url 'account_edit' %}" class='btn'><i class="cus-user-add"></i>&nbsp;{% blocktrans %}Новый аккаунт{% endblocktrans %}</a>
+  </div>
+  <div class="btn-group">
+    <button id="modal-transaction-dialog" class="btn btn-primary"><i class='icon-plus icon-white'></i> {% blocktrans %}Пополнить баланс{% endblocktrans %}</button>
+  </div>
+  <div class="btn-group">
+    <button id="modal-bonustransaction-dialog" class="btn btn-primary"><i class='icon-plus icon-white'></i> {% blocktrans %}Пополнить бонусный баланс{% endblocktrans %}</button>
+  </div>
+
+
+  <div class="btn-group">
+    <button id="modal-accounttariff-dialog-table" class="btn btn-success"><i class="icon-pencil icon-white "></i> {% blocktrans %}Сменить тарифный план{% endblocktrans %}</button>
+  </div>
+
+  <div class="btn-group">
+    <a href="{% url 'cashier_transactionreport' %}" class="btn btn-info">{% blocktrans %}Мои операции с балансом{% endblocktrans %}</a>
+  </div>
+  
+  <div class="btn-group">
+    <a href="/reports/cashierdailyreport/" class="btn btn-warning">{% blocktrans %}Отчёт за период{% endblocktrans %}</a>
+  </div>
+  
+  
+  
+</div>
+<div>
+  {% if table %}{% render_table table %}{% endif %}
+</div>
+    </div>
+  
+
+ {% endblock %}
+

@@ -1,0 +1,322 @@
+{% extends "ebsadmin/tariff_edit.html" %}
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% block tariff_content %}
+<form method="POST" action="{% url 'tariff_edit' %}?id={{item.id}}" class="well form-horizontal form-condensed">
+{{form.id}}
+{{access_parameters.id}}
+{{form.time_access_service}}
+{{form.traffic_transmit_service}}
+{{form.radius_traffic_transmit_service}}
+
+            <legend>{% blocktrans %}Общие параметры{% endblocktrans %}</legend>
+             <fieldset>
+                    <div class="control-row">
+                        <label class="control-label">ID:</label>
+                        <div class="controls">
+                            <label class="checkbox">{{form.id.value}}</label>
+                        </div>
+                    </div>
+                  <div class="control-group">
+                  
+                  <div class="control-row {% if form.name.errors %}error{% endif %}">
+                      <label class="control-label">{{form.name.label}}: </label>
+                      <div class="controls">
+                      {{ form.name }}
+                      {% if form.name.errors %}
+                          <span class="help-inline">{% for error in form.name.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.name.help_text%}
+                          <p class="help-block">
+                              {{ form.name.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  <div class="control-group {% if access_parameters.access_type.errors %}error{% endif %}">
+                  
+                      <label class="control-label">{{access_parameters.access_type.label}}: </label>
+                      <div class="controls">
+                      {{ access_parameters.access_type }}
+                      {% if access_parameters.access_type.errors %}
+                          <span class="help-inline">{% for error in access_parameters.access_type.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if access_parameters.access_type.help_text%}
+                          <p class="help-block">
+                              {{ access_parameters.access_type.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  
+                  </div>
+                  <div class="control-group {% if access_parameters.ipn_for_vpn.errors %}error{% endif %}">
+                  
+                      <label class="control-label">{{access_parameters.ipn_for_vpn.label}}: </label>
+                      <div class="controls">
+                      {{ access_parameters.ipn_for_vpn }}
+                      {% if access_parameters.ipn_for_vpn.errors %}
+                          <span class="help-inline">{% for error in access_parameters.ipn_for_vpn.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if access_parameters.ipn_for_vpn.help_text%}
+                          <p class="help-block">
+                              {{ access_parameters.ipn_for_vpn.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  
+                  </div>
+
+                  
+                  <div class="control-group {% if form.vpn_ippool.errors %}error{% endif %}">
+
+                      <label class="control-label">{{form.vpn_ippool.label}}: </label>
+                      <div class="controls">
+                      {{ form.vpn_ippool }}
+                      {% if form.vpn_ippool.errors %}
+                          <span class="help-inline">{% for error in form.vpn_ippool.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.vpn_ippool.help_text%}
+                          <p class="help-block">
+                              {{ form.vpn_ippool.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+
+                  </div>
+                  <div class="control-group {% if form.vpn_guest_ippool.errors %}error{% endif %}">
+
+                      <label class="control-label">{{form.vpn_guest_ippool.label}}: </label>
+                      <div class="controls">
+                      {{ form.vpn_guest_ippool }}
+                      {% if form.vpn_guest_ippool.errors %}
+                          <span class="help-inline">{% for error in form.vpn_guest_ippool.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.vpn_guest_ippool.help_text%}
+                          <p class="help-block">
+                              {{ form.vpn_guest_ippool.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+
+                  </div>
+                  <div class="control-group">
+                  <div class="control-row {% if access_parameters.access_time.errors %}error{% endif %}">
+                      <label class="control-label">{{access_parameters.access_time.label}}: </label>
+                      <div class="controls">
+                      {{ access_parameters.access_time }}
+                      {% if access_parameters.access_time.errors %}
+                          <span class="help-inline">{% for error in access_parameters.access_time.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if access_parameters.access_time.help_text%}
+                          <p class="help-block">
+                              {{ access_parameters.access_time.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+
+                  <div class="control-group">
+                  <div class="control-row {% if form.settlement_period.errors %}error{% endif %}">
+                      <label class="control-label">{{form.settlement_period.label}}: </label>
+                      <div class="controls">
+                      {{ form.settlement_period }}
+                      {% if form.settlement_period.errors %}
+                          <span class="help-inline">{% for error in form.settlement_period.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.settlement_period.help_text%}
+                          <p class="help-block">
+                              {{ form.settlement_period.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  <div class="control-group {% if form.cost.errors %}error{% endif %}">
+
+                      <label class="control-label">{{form.cost.label}}: </label>
+                      <div class="controls">
+                      {{ form.cost }}
+                      {% if form.cost.errors %}
+                          <span class="help-inline">{% for error in form.cost.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.cost.help_text%}
+                          <p class="help-block">
+                              {{ form.cost.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+
+                  </div>
+                  <div class="control-group {% if form.cost.errors %}error{% endif %}">
+
+                      <label class="control-label">{{form.require_tarif_cost.label}}: </label>
+                      <div class="controls">
+                      {{ form.require_tarif_cost }}
+                      {% if form.require_tarif_cost.errors %}
+                          <span class="help-inline">{% for error in form.require_tarif_cost.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.require_tarif_cost.help_text%}
+                          <p class="help-block">
+                              {{ form.require_tarif_cost.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+
+                  </div>
+                  
+                  <div class="control-group {% if form.reset_tarif_cost.errors %}error{% endif %}">
+                      <label class="control-label">{{form.reset_tarif_cost.label}}: </label>
+                      <div class="controls">
+                      {{ form.reset_tarif_cost }}
+                      {% if form.reset_tarif_cost.errors %}
+                          <span class="help-inline">{% for error in form.reset_tarif_cost.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.reset_tarif_cost.help_text%}
+                          <p class="help-block">
+                              {{ form.reset_tarif_cost.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+
+
+                  <div class="control-group">
+                  <div class="control-row {% if form.allow_express_pay.errors %}error{% endif %}">
+                      <label class="control-label">{{form.allow_express_pay.label}}: </label>
+                      <div class="controls">
+                      {{ form.allow_express_pay }}
+                      {% if form.allow_express_pay.errors %}
+                          <span class="help-inline">{% for error in form.allow_express_pay.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.allow_express_pay.help_text%}
+                          <p class="help-block">
+                              {{ form.allow_express_pay.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  <div class="control-group">
+                  <div class="control-row {% if form.allow_ballance_transfer.errors %}error{% endif %}">
+                      <label class="control-label">{{form.allow_ballance_transfer.label}}: </label>
+                      <div class="controls">
+                      {{ form.allow_ballance_transfer }}
+                      {% if form.allow_ballance_transfer.errors %}
+                          <span class="help-inline">{% for error in form.allow_ballance_transfer.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.allow_ballance_transfer.help_text%}
+                          <p class="help-block">
+                              {{ form.allow_ballance_transfer.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  <div class="control-group {% if form.description.errors %}error{% endif %}">
+                      <label class="control-label">{{form.description.label}}: </label>
+                      <div class="controls">
+                      {{ form.description }}
+                      {% if form.description.errors %}
+                          <span class="help-inline">{% for error in form.description.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.description.help_text%}
+                          <p class="help-block">
+                              {{ form.description.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-group">
+                  <div class="control-row {% if form.active.errors %}error{% endif %}">
+                      <label class="control-label">{{form.active.label}}: </label>
+                      <div class="controls">
+                      {{ form.active }}
+                      {% if form.active.errors %}
+                          <span class="help-inline">{% for error in form.active.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.active.help_text%}
+                          <p class="help-block">
+                              {{ form.active.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  </fieldset>
+                  <legend>Параметры блокировки</legend>
+                  <fieldset>
+                  <div class="control-group">
+                  <div class="control-row {% if form.allow_userblock.errors %}error{% endif %}">
+                      <label class="control-label">{{form.allow_userblock.label}}: </label>
+                      <div class="controls">
+                      {{ form.allow_userblock }}
+                      {% if form.allow_userblock.errors %}
+                          <span class="help-inline">{% for error in form.allow_userblock.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.allow_userblock.help_text%}
+                          <p class="help-block">
+                              {{ form.allow_userblock.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  <div class="control-group">
+                  <div class="control-row {% if form.userblock_cost.errors %}error{% endif %}">
+                      <label class="control-label">{{form.userblock_cost.label}}: </label>
+                      <div class="controls">
+                      {{ form.userblock_cost }}
+                      {% if form.userblock_cost.errors %}
+                          <span class="help-inline">{% for error in form.userblock_cost.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.userblock_cost.help_text%}
+                          <p class="help-block">
+                              {{ form.userblock_cost.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  <div class="control-group">
+                  <div class="control-row {% if form.userblock_max_days.errors %}error{% endif %}">
+                      <label class="control-label">{{form.userblock_max_days.label}}: </label>
+                      <div class="controls">
+                      {{ form.userblock_max_days }}
+                      {% if form.userblock_max_days.errors %}
+                          <span class="help-inline">{% for error in form.userblock_max_days.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.userblock_max_days.help_text%}
+                          <p class="help-block">
+                              {{ form.userblock_max_days.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  <div class="control-group">
+                  <div class="control-row {% if form.userblock_require_balance.errors %}error{% endif %}">
+                      <label class="control-label">{{form.userblock_require_balance.label}}: </label>
+                      <div class="controls">
+                      {{ form.userblock_require_balance }}
+                      {% if form.userblock_require_balance.errors %}
+                          <span class="help-inline">{% for error in form.userblock_require_balance.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.userblock_require_balance.help_text%}
+                          <p class="help-block">
+                              {{ form.userblock_require_balance.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+
+                </fieldset>
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
+                    </div>
+                </fieldset>
+            </form>
+{% endblock %}
