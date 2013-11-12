@@ -1,0 +1,213 @@
+{% load ebsadmin_tags %}
+{% load i18n %}
+{% if not status %}
+    {% for message in messages %}
+
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
+
+      {% endfor %}
+ <script type="text/javascript"> 
+
+ $(document).ready(function() {
+
+
+
+ });
+ </script>
+
+{% if form %}
+            <form method="POST" action="{% url 'trafficnode' %}?id={{item.id}}" class="well form-horizontal ajax form-condensed ">
+            {{ form.id }}
+            {{ form.traffic_class }}
+                <fieldset>
+                  <div class="control-group">
+
+                      <label class="control-label"><strong>{{form.name.label}}:</strong> </label>
+                      <div class="controls">
+                      {{ form.name }}
+                      {% if form.name.errors %}
+                          <span class="help-inline">{% for error in form.name.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.name.help_text%}
+                          <p class="help-block">
+                              {{ form.name.help_text|safe }}
+                          </p>
+                      {% endif %}
+
+                  </div>
+                  </div>
+                  <div class="control-group">
+                    <div class="control-row">
+                      <label class="control-label">{{form.protocol.label}}: </label>
+                      <div class="controls">
+                      {{ form.protocol }}
+                      {% if form.protocol.errors %}
+                          <span class="help-inline">{% for error in form.protocol.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.protocol.help_text%}
+                          <p class="help-block">
+                              {{ form.protocol.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                    </div>
+                  </div>             
+
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label"><strong>{{form.src_ip.label}}</strong></label>
+                      <div class="controls">
+                      {{ form.src_ip }}
+                      {% if form.src_ip.errors %}
+                          <span class="help-inline">{% for error in form.src_ip.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.src_ip.help_text%}
+                          <p class="help-block">
+                              {{ form.src_ip.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-row">
+                      <label class="control-label"><strong>{{form.dst_ip.label}}</strong></label>
+                      <div class="controls">
+                      {{ form.dst_ip }}
+                      {% if form.dst_ip.errors %}
+                          <span class="help-inline">{% for error in form.dst_ip.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.dst_ip.help_text%}
+                          <p class="help-block">
+                              {{ form.dst_ip.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">{{form.src_port.label}}:</label>
+                      <div class="controls">
+                      {{ form.src_port }}
+                      {% if form.src_port.errors %}
+                          <span class="help-inline">{% for error in form.src_port.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.src_port.help_text%}
+                          <p class="help-block">
+                              {{ form.src_port.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-row">
+                      <label class="control-label">{{form.dst_port.label}}:</label>
+                      <div class="controls">
+                      {{ form.dst_port }}
+                      {% if form.dst_port.errors %}
+                          <span class="help-inline">{% for error in form.dst_port.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.dst_port.help_text%}
+                          <p class="help-block">
+                              {{ form.dst_port.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">{{form.in_index.label}}:</label>
+                      <div class="controls">
+                      {{ form.in_index }}
+                      {% if form.in_index.errors %}
+                          <span class="help-inline">{% for error in form.in_index.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.in_index.help_text%}
+                          <p class="help-block">
+                              {{ form.in_index.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-row">
+                      <label class="control-label">{{form.out_index.label}}:</label>
+                      <div class="controls">
+                      {{ form.out_index }}
+                      {% if form.out_index.errors %}
+                          <span class="help-inline">{% for error in form.out_index.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.out_index.help_text%}
+                          <p class="help-block">
+                              {{ form.out_index.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">{{form.src_as.label}}:</label>
+                      <div class="controls">
+                      {{ form.src_as }}
+                      {% if form.src_as.errors %}
+                          <span class="help-inline">{% for error in form.src_as.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.src_as.help_text%}
+                          <p class="help-block">
+                              {{ form.src_as.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-row">
+                      <label class="control-label">{{form.dst_as.label}}:</label>
+                      <div class="controls">
+                      {{ form.dst_as }}
+                      {% if form.dst_as.errors %}
+                          <span class="help-inline">{% for error in form.dst_as.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.dst_as.help_text%}
+                          <p class="help-block">
+                              {{ form.dst_as.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+
+
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">{{form.next_hop.label}}:</label>
+                      <div class="controls">
+                      {{ form.next_hop }}
+                      {% if form.next_hop.errors %}
+                          <span class="help-inline">{% for error in form.next_hop.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.next_hop.help_text%}
+                          <p class="help-block">
+                              {{ form.next_hop.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+
+                </fieldset>
+                
+                <div class="form-actions">
+                    <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">
+                    <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
+                </div>
+            </form>
+{% endif %}
+{% else %}
+{% blocktrans %}Операция произведена успешно.{% endblocktrans %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     location.reload();
+ });
+ </script>
+{% endif %}

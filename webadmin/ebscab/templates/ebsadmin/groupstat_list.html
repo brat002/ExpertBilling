@@ -1,0 +1,54 @@
+{% extends "ebsadmin/base.html" %}
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load crispy_forms_tags %}
+{% block extra_head %}
+
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+
+            {% if table %}
+            $('#tab-control a[href="#result"]').tab('show');
+            {% else %}
+            $('#tab-control a[href="#filter"]').tab('show');
+            {% endif %}
+            $("#id_daterange").daterangepicker();
+        });
+        </script>
+
+{% endblock %}
+{% block base %}
+<legend>{% blocktrans %}Тарифицированный трафик{% endblocktrans %}</legend>
+<ul class="nav nav-tabs" id="tab-control">
+  <li ><a href="#filter">{% blocktrans %}Фильтр{% endblocktrans %}</a></li>
+  <li><a href="#result">{% blocktrans %}Отчёт{% endblocktrans %}</a></li>  
+</ul>
+
+ {% load render_table from django_tables2 %}
+<div class="tab-content">
+  <div class="tab-pane" id="filter">
+  
+  <div class="row-fluid">
+        <div class="span12">
+            <form action="{{form.action}}" method="GET" class="well form-horizontal form-condensed ">
+            {{ form.non_field_errors }}
+                <fieldset>
+
+                    {{form|crispy}}
+                
+                </fieldset>
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+  
+  </div>
+  <div class="tab-pane" id="result">{% if table %}{% render_table table %}{% endif %}</div>
+
+</div>
+ {% endblock %}
+

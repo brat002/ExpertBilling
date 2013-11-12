@@ -1,0 +1,257 @@
+{% load ebsadmin_tags %}
+{% load i18n %}
+{% if not status %}
+    {% for message in messages %}
+
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
+
+      {% endfor %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+
+ });
+
+ </script>
+<style type="text/css">
+
+.modal {
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  z-index: 1050;
+  width: 800px;
+  margin: 0 0 0 -400px; /* -1 * (width / 2) */ 
+  overflow: auto;
+  background-color: #ffffff;
+  border: 1px solid #999;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  *border: 1px solid #999;
+  -webkit-border-radius: 6px;
+     -moz-border-radius: 6px;
+          border-radius: 6px;
+  -webkit-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+     -moz-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  -webkit-background-clip: padding-box;
+     -moz-background-clip: padding-box;
+          background-clip: padding-box;
+}
+</style>
+{% if form %}
+            <form method="POST" action="{% url 'tariff_speedlimit_edit' %}?trafficlimit_id={{trafficlimit.id}}" class="well form-horizontal ajax form-condensed ">
+            {{form.id}}
+                <fieldset>
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">{{form.change_speed_type.label}}</label>
+                      <div class="controls">
+                      {{ form.change_speed_type }}
+                      {% if form.change_speed_type.errors %}
+                          <span class="help-inline">{% for error in form.change_speed_type.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.change_speed_type.help_text%}
+                          <p class="help-block">
+                              {{ form.change_speed_type.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                      </div>
+                      <div class="control-row">
+                      <label class="control-label">{{form.speed_units.label}}</label>
+                      <div class="controls">
+                      {{ form.speed_units }}
+                      {% if form.speed_units.errors %}
+                          <span class="help-inline">{% for error in form.speed_units.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.speed_units.help_text%}
+                          <p class="help-block">
+                              {{ form.speed_units.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                      </div>
+                  </div>
+
+                  <div class="control-group">
+                      <div class="control-row">
+                          <label class="control-label">{{form.max_tx.label}}</label>
+                          <div class="controls">
+                          {{ form.max_tx }}
+                          {% if form.max_tx.errors %}
+                              <span class="help-inline">{% for error in form.max_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.max_tx.help_text%}
+                              <p class="help-block">
+                                  {{ form.max_tx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                      <div class="control-row">
+                          <label class="control-label">{{form.max_rx.label}}</label>
+                          <div class="controls">
+                          {{ form.max_rx }}
+                          {% if form.max_rx.errors %}
+                              <span class="help-inline">{% for error in form.max_rx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.max_rx.help_text%}
+                              <p class="help-block">
+                                  {{ form.max_rx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      <div class="control-row">
+                          <label class="control-label">{{form.burst_tx.label}}</label>
+                          <div class="controls">
+                          {{ form.burst_tx }}
+                          {% if form.burst_tx.errors %}
+                              <span class="help-inline">{% for error in form.burst_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.burst_tx.help_text%}
+                              <p class="help-block">
+                                  {{ form.burst_tx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                      <div class="control-row">
+                          <label class="control-label">{{form.burst_rx.label}}</label>
+                          <div class="controls">
+                          {{ form.burst_rx }}
+                          {% if form.burst_rx.errors %}
+                              <span class="help-inline">{% for error in form.burst_rx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.burst_rx.help_text%}
+                              <p class="help-block">
+                                  {{ form.burst_rx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      <div class="control-row">
+                          <label class="control-label">{{form.burst_treshold_tx.label}}</label>
+                          <div class="controls">
+                          {{ form.burst_treshold_tx }}
+                          {% if form.burst_treshold_tx.errors %}
+                              <span class="help-inline">{% for error in form.burst_treshold_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.burst_treshold_tx.help_text%}
+                              <p class="help-block">
+                                  {{ form.burst_treshold_tx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                      <div class="control-row">
+                          <label class="control-label">{{form.burst_treshold_rx.label}}</label>
+                          <div class="controls">
+                          {{ form.burst_treshold_rx }}
+                          {% if form.burst_treshold_rx.errors %}
+                              <span class="help-inline">{% for error in form.burst_treshold_rx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.burst_treshold_rx.help_text%}
+                              <p class="help-block">
+                                  {{ form.burst_treshold_rx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      <div class="control-row">
+                          <label class="control-label">{{form.burst_time_tx.label}}</label>
+                          <div class="controls">
+                          {{ form.burst_time_tx }}
+                          {% if form.burst_time_tx.errors %}
+                              <span class="help-inline">{% for error in form.burst_time_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.burst_time_tx.help_text%}
+                              <p class="help-block">
+                                  {{ form.burst_time_tx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                      <div class="control-row">
+                          <label class="control-label">{{form.burst_time_rx.label}}</label>
+                          <div class="controls">
+                          {{ form.burst_time_rx }}
+                          {% if form.burst_time_rx.errors %}
+                              <span class="help-inline">{% for error in form.burst_time_rx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.burst_time_rx.help_text%}
+                              <p class="help-block">
+                                  {{ form.burst_time_rx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      <div class="control-row">
+                          <label class="control-label">{{form.min_tx.label}}</label>
+                          <div class="controls">
+                          {{ form.min_tx }}
+                          {% if form.min_tx.errors %}
+                              <span class="help-inline">{% for error in form.min_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.min_tx.help_text%}
+                              <p class="help-block">
+                                  {{ form.min_tx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                      <div class="control-row">
+                          <label class="control-label">{{form.min_rx.label}}</label>
+                          <div class="controls">
+                          {{ form.min_rx }}
+                          {% if form.min_rx.errors %}
+                              <span class="help-inline">{% for error in form.min_rx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.min_rx.help_text%}
+                              <p class="help-block">
+                                  {{ form.min_rx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      
+                          <label class="control-label">{{form.priority.label}}</label>
+                          <div class="controls">
+                          {{ form.priority }}
+                          {% if form.priority.errors %}
+                              <span class="help-inline">{% for error in form.priority.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.priority.help_text%}
+                              <p class="help-block">
+                                  {{ form.priority.help_text|safe }}
+                              </p>
+                          {% endif %}
+                      </div>
+                  </div>
+                </fieldset>
+                <div class="form-actions">
+                    <input type='submit' class="btn btn-primary" value="{% blocktrans %}Сохранить{% endblocktrans %}">
+                    <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
+                </div>
+            </form>
+{% endif %}
+{% else %}
+{% blocktrans %}Операция произведена успешно.{% endblocktrans %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     location.reload();
+ });
+ </script>
+{% endif %}

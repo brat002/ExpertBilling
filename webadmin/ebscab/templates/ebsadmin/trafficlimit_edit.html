@@ -1,0 +1,150 @@
+{% load ebsadmin_tags %}
+{% load i18n %}
+{% if not status %}
+    {% for message in messages %}
+
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
+
+      {% endfor %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+
+ });
+
+ </script>
+
+{% if form %}
+            <form method="POST" action="{% url 'tariff_trafficlimit_edit' %}?id={{item.id}}" class="well form-horizontal ajax form-condensed ">
+                {{form.tarif}}
+                {{form.id}}
+                <fieldset>
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">{{form.name.label}}: </label>
+                      <div class="controls">
+                      {{ form.name }}
+                      {% if form.id.errors %}
+                          <span class="help-inline">{% for error in form.id.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.id.help_text%}
+                          <p class="help-block">
+                              {{ form.id.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  <div class="control-group">
+
+                      <label class="control-label">{{form.settlement_period.label}}: </label>
+                      <div class="controls">
+                      {{ form.settlement_period }}
+                      {% if form.settlement_period.errors %}
+                          <span class="help-inline">{% for error in form.settlement_period.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.settlement_period.help_text%}
+                          <p class="help-block">
+                              {{ form.settlement_period.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+
+                  </div>               
+                  <div class="control-group">
+                      <label class="control-label">{{form.mode.label}}</label>
+                      <div class="controls">
+                      {{ form.mode }}
+                      {% if form.mode.errors %}
+                          <span class="help-inline">{% for error in form.mode.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.mode.help_text%}
+                          <p class="help-block">
+                              {{ form.mode.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">{{form.group.label}}:</label>
+                      <div class="controls">
+                      {{ form.group }}
+                      {% if form.group.errors %}
+                          <span class="help-inline">{% for error in form.group.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.group.help_text%}
+                          <p class="help-block">
+                              {{ form.group.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                  <div class="control-group">
+                  <div class="control-row">
+                      <label class="control-label">{{form.size.label}}:</label>
+                      <div class="controls">
+                      {{ form.size }}
+                      {% if form.size.errors %}
+                          <span class="help-inline">{% for error in form.size.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.size.help_text%}
+                          <p class="help-block">
+                              {{ form.size.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+
+                  </div>
+                  <div class="control-group">
+
+                      <label class="control-label">{{form.action.label}}:</label>
+                      <div class="controls">
+                      {{ form.action }}
+                      {% if form.action.errors %}
+                          <span class="help-inline">{% for error in form.action.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.action.help_text%}
+                          <p class="help-block">
+                              {{ form.action.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  <div class="control-group">
+                  
+                      <div class="control-row">
+                      <label class="control-label">{{form.deactivated.label}}:</label>
+                      <div class="controls">
+                      {{ form.deactivated }}
+                      {% if form.deactivated.errors %}
+                          <span class="help-inline">{% for error in form.deactivated.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.deactivated.help_text%}
+                          <p class="help-block">
+                              {{ form.deactivated.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  </div>
+                  </div>
+                </fieldset>
+                
+                <div class="form-actions">
+                    <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">
+                    <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
+                </div>
+            </form>
+{% endif %}
+{% else %}
+{% blocktrans %}Операция произведена успешно.{% endblocktrans %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     location.reload();
+ });
+ </script>
+{% endif %}

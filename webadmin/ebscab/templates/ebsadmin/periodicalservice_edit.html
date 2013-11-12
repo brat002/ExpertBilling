@@ -1,0 +1,55 @@
+{% load ebsadmin_tags %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% if not status %}
+    {% for message in messages %}
+
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
+
+      {% endfor %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     $('.datepicker').datepicker({
+         months: ["{% blocktrans %}Январь{% endblocktrans %}","{% blocktrans %}Февраль{% endblocktrans %}","{% blocktrans %}Март{% endblocktrans %}","{% blocktrans %}Апрель{% endblocktrans %}","{% blocktrans %}Май{% endblocktrans %}","{% blocktrans %}Июнь{% endblocktrans %}","{% blocktrans %}Июль{% endblocktrans %}","{% blocktrans %}Август{% endblocktrans %}","{% blocktrans %}Сентябрь{% endblocktrans %}","{% blocktrans %}Октябрь{% endblocktrans %}","{% blocktrans %}Ноябрь{% endblocktrans %}","{% blocktrans %}Декабрь{% endblocktrans %}"],
+         weekStart: 1,
+         noDefault: true,
+         format: 'yyyy-mm-dd hh:ii:ss',
+         days: ["{% blocktrans %}вс{% endblocktrans %}", "{% blocktrans %}пн{% endblocktrans %}","{% blocktrans %}вт{% endblocktrans %}","{% blocktrans %}ср{% endblocktrans %}","{% blocktrans %}чт{% endblocktrans %}","{% blocktrans %}пт{% endblocktrans %}","{% blocktrans %}сб{% endblocktrans %}"],});
+
+     $(".timepicker").mask("99:99:99");
+     
+     function check_tpd(){
+         if ($("#id_cash_method").val()=='GRADUAL'){
+        	 $("#div_id_tpd").show();
+        	 
+         }else{
+        	 $("#div_id_tpd").hide();
+        	 $("#div_id_tpd").val('');
+         }
+     };
+     check_tpd();
+     $("#id_cash_method").change(check_tpd)
+ });
+ </script>
+
+{% if form %}
+            <form method="POST" action="{% url 'tariff_periodicalservice_edit' %}?id={{item.id}}" class="well form-horizontal form-condensed ajax">
+            {{form|crispy}}
+                
+                <div class="form-actions">
+                    <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">
+                    <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
+                </div>
+            </form>
+{% endif %}
+{% else %}
+{% blocktrans %}Операция произведена успешно.{% endblocktrans %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     location.reload();
+ });
+ </script>
+{% endif %}

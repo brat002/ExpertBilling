@@ -1,0 +1,59 @@
+{% extends "ebsadmin/base.html" %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+{% load ebsadmin_tags %}
+{% block extra_head %}
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+
+            $(".show-confirm").click(function(event) {
+                a=$(this);
+                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить правило?{% endblocktrans %}", {
+                    confirm: function() {
+                        $.getJSON(a.attr('href'),{},function(data,status){
+                            if( status=='success' ){
+                                if(data.status==true)
+                                    {
+                                    location.reload();
+                                    }else{
+                                        alert(data.message)
+                                    }
+                                
+                            }else{
+                                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
+                            }
+
+                        })                      
+                        }, 
+                    decline: function() {  }
+                });
+
+                event.preventDefault(event);
+            });
+        });
+        </script>
+
+{% endblock %}
+{% block base %}
+
+
+
+
+  <div class="row-fluid">
+  
+<div>
+<ul class="breadcrumb">
+  <li>
+    <a href="{% url 'tpchangerule' %}">{% blocktrans %}Правила смены тарифных планов{% endblocktrans %}</a> <span class="divider">/</span>
+  </li>
+</ul>
+</div>
+<div class="btn-toolbar pull-right"><a href="{% url 'tpchangerule_edit' %}" id="id_btn_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a>&nbsp;</div>
+<div>
+  {% render_table table %}
+</div>
+    </div>
+  
+
+ {% endblock %}
+

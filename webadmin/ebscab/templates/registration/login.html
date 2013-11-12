@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load billservice_tags %}
+{% load i18n %}
+{% block logo_style %}margin-top:9px; *margin-top:0;{% endblock %}
+
+{% block addon_classes %}chrome_header{% endblock %}
+
+{% block login %}
+
+
+
+
+<div class="reg_margin">
+    {% if error_message %}
+        <h2 align="center">{{ error_message }}</h2>
+    {% endif %}
+    {% if message %}
+        <h2 align="center">{{ message|safe }}</h2>
+    {% endif %}
+<form method="post" action="/login/">
+<table class="pass_table wide" cellpadding="0" cellspacing="0">
+    <tr>
+        <th class="blue_caption white s-11 bold main_table_left_border right_border cursor" id="pass_click">
+            {% blocktrans %}ВХОД В СИСТЕМУ{% endblocktrans %} <a id="enter" class="f-right close" href="#">&nbsp;</a>
+        </th>
+    </tr>
+    <tr>
+        <td>
+            <div id="pass_body">
+                <table cellpadding="5px;" class="enter_table">
+                    {% for field in form %}
+                        {% ifnotequal field.name 'pin' %}
+                            {% ifnotequal field.name 'user' %}
+                                <tr>
+                                    <th><label>{{ field.label }}:</label></th>
+                                    <td>{{ field }}</td>
+                                </tr>
+                            {% endifnotequal %}
+                        {% endifnotequal %}
+                    {% endfor  %}
+                </table>
+                <input type="submit" class="pass_button button_margin f-right" value="OK"/>
+            </div>
+        </td>
+    </tr>
+</table>
+<table class="pass_table wide" cellpadding="0" cellspacing="0">
+    <tr>
+        <th class="blue_caption white s-11 bold main_table_left_border right_border cursor" id="pin_click">
+            АКТИВАЦИЯ КАРТЫ ДОСТУПА <a id="card_activation" class="f-right open" href="#">&nbsp;</a>
+        </th>
+    </tr>
+    <tr>
+        <td>
+            <div id="pin_body">
+                <table cellpadding="5px;" class="enter_table">
+                    {% for field in form %}
+                        {% ifnotequal field.label 'Пароль' %}
+                            {% ifnotequal field.label 'Имя пользователя' %}
+                                <tr>
+                                    <th><label>{% ifequal field.label 'User' %}Имя пользователя{% else %}{{ field.label }}{% endifequal %}:</label></th>
+                                    <td>{{ field }}</td>
+                                </tr>
+                            {% endifnotequal %}
+                        {% endifnotequal %}
+                    {% endfor  %}
+                </table>
+                <input type="submit" class="pass_button button_margin f-right" value="OK"/>
+            </div>
+        </td>
+    </tr>
+</table>
+</form>
+
+{% show_last_news %}
+
+</div>
+{% endblock %}
+
+{% block title %}
+    Вход
+{% endblock %}
+
+
+{% block extra_head %}
+    <script>    
+//hide      
+        $(function() {
+            function runPassEffect(){
+                $("#pass_body").toggle();
+                if ($("#enter").attr('class') == 'f-right close') {
+                    $("#enter").attr('class','f-right open');
+                    $("#card_activation").attr('class','f-right close');
+                } else {
+                    $("#enter").attr('class','f-right close');
+                    $("#card_activation").attr('class','f-right open');
+                }
+            };
+            
+            function runPinEffect(){
+                $("#pin_body").toggle();
+            };
+            
+            $("#pass_click").click(function() {
+                runPinEffect();
+                runPassEffect();
+                return false;
+            });
+            
+            $("#pin_click").click(function() {
+                runPinEffect();
+                runPassEffect();
+                return false;
+            });
+            
+            $("#pin_body").hide();
+        });
+//endhide
+        
+    </script>
+{% endblock %}

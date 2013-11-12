@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+{% load crispy_forms_tags %}
+{% load billservice_tags %}
+{% load i18n %}
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Login Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="/media/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 40px;
+        padding-bottom: 40px;
+        background-color: #f5f5f5;
+      }
+
+      .form-signin {
+        max-width: 250px;
+        padding: 19px 29px 29px;
+        margin: 0 auto 20px;
+        background-color: #fff;
+        border: 1px solid #e5e5e5;
+        -webkit-border-radius: 5px;
+           -moz-border-radius: 5px;
+                border-radius: 5px;
+        -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+           -moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
+                box-shadow: 0 1px 2px rgba(0,0,0,.05);
+      }
+       
+       
+       .form-alert {
+        max-width: 400px;
+        margin: 0 auto 20px;
+        }
+        
+      .form-signin .form-signin-heading,
+      .form-signin .checkbox {
+        margin-bottom: 10px;
+      }
+      .form-signin input[type="text"],
+      .form-signin input[type="password"] {
+        font-size: 12px;
+        height: auto;
+        margin-bottom: 10px;
+        padding: 7px 9px;
+        height: 10px;
+      }
+      .loginbutton {
+      width: 120px;
+      }
+      
+
+    </style>
+    <link href="/media/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="/media/boostrap/js/html5shiv.js"></script>
+    <![endif]-->
+
+  </head>
+
+  <body>
+
+
+    <div class="container">
+      <form  action="{% url 'login' %}" method="POST"  class="form-signin">
+        <img class="form-signin-heading" src="{{MEDIA_URL}}{{settings.PROVIDER_LOGO}}"></img>
+        {{login_form|crispy}}
+        <div align="center" style="margin-top: 2px; margin-bottom: -8px;"><button class="btn btn-success loginbutton" type="submit">Войти</button></div>
+        <hr>
+        <div align="center" style="margin-top: -12px; margin-bottom: -18px;"><a href="#Zayavka" role="button" class="" data-toggle="modal">Заявка на подключение</a></div>
+      </form>
+    <div style="max-width: 400px; margin:0 auto; margin-top: -11px; font-size: 12px; color:#aaa; text-align:center; line-height: 14px;">Не передавайте свой пароль никому, храните его в тайне.</div>
+    </div> <!-- /container -->
+    <br>
+    <div class='container'>
+    <div class="form-alert">        
+    
+		{% if message %}
+		
+		<div class="alert alert-info" ><button type="button" class="close" data-dismiss="alert">&times;</button>
+		{{message}}</div>
+		
+		{% endif %}
+
+    </div>
+    </div>
+    <!-- Модальное окно заявки подключения -->
+    <form action="{% url 'register' %}" method="POST" class='form-horizontal'>
+    <div id="Zayavka" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h4 id="myModalLabel">Заявка на подключение</h4>
+    </div>
+    <div class="modal-body">
+        {{register_form|crispy}}
+    </div>
+
+    <div class="modal-footer">
+    <button class="btn btn-small" data-dismiss="modal" aria-hidden="true">Закрыть</button>
+    <button class="btn btn-small btn-success" type='submit'>Подать заявку</button>
+    </div>
+    </div>
+    </form>
+    <div class='container'>
+                <div class="row-fluid">
+                <div class="span12">
+                <div class=''>
+                {% show_last_news %}
+                </div>
+                </div>
+                </div>
+    </div>
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/media/jquery/js/jquery-1.8.2.js"></script>
+    <script src="/media/bootstrap/js/bootstrap.js"></script>
+
+  </body>
+</html>
+
