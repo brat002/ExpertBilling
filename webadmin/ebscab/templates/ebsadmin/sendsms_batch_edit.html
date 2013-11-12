@@ -1,0 +1,63 @@
+{% load ebsadmin_tags %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% if not status %}
+    {% for message in messages %}
+
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
+
+      {% endfor %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     $('.datepicker').datepicker({
+         months: ["{% blocktrans %}Январь{% endblocktrans %}","{% blocktrans %}Февраль{% endblocktrans %}","{% blocktrans %}Март{% endblocktrans %}","{% blocktrans %}Апрель{% endblocktrans %}","{% blocktrans %}Май{% endblocktrans %}","{% blocktrans %}Июнь{% endblocktrans %}","{% blocktrans %}Июль{% endblocktrans %}","{% blocktrans %}Август{% endblocktrans %}","{% blocktrans %}Сентябрь{% endblocktrans %}","{% blocktrans %}Октябрь{% endblocktrans %}","{% blocktrans %}Ноябрь{% endblocktrans %}","{% blocktrans %}Декабрь{% endblocktrans %}"],
+         weekStart: 1,
+         noDefault: true,
+         format: 'yyyy-mm-dd hh:ii:ss',
+         days: ["{% blocktrans %}вс{% endblocktrans %}", "{% blocktrans %}пн{% endblocktrans %}","{% blocktrans %}вт{% endblocktrans %}","{% blocktrans %}ср{% endblocktrans %}","{% blocktrans %}чт{% endblocktrans %}","{% blocktrans %}пт{% endblocktrans %}","{% blocktrans %}сб{% endblocktrans %}"],});
+
+         $("#id_body").bind('keyup', function(){
+
+    	 n = $(this).val().length;
+    	 
+    	 $('#id_chars').text(n);
+    	 });
+         n = $(this).val().length;
+         
+         $('#id_chars').text(n);
+ });
+ </script>
+{% if form %}
+            
+                <form action='{% url 'sendsms' %}' method="POST" class="well form-horizontal ajax form-condensed ">
+                <fieldset>
+                {{form|crispy}}
+                
+                <div class="clearfix control-group">
+                  <label  class="control-label ">
+                  {% blocktrans %}Символов{% endblocktrans %}
+                  </label>
+                  <div class="controls">
+                    <span id="id_chars"></span>
+                  </div>
+                </div>
+                </fieldset>
+                <div class="form-actions">
+				    <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Change{% endblocktrans %}">
+				    <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
+				</div>
+                </form>
+                {% else %}
+                <div class='alert'>{% blocktrans %}Сначала выберите получателей{% endblocktrans %}</div>
+{% endif %}
+{% else %}
+{% blocktrans %}Операция произведена успешно.{% endblocktrans %}
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     location.reload();
+ });
+ </script>
+{% endif %}

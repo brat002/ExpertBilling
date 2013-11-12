@@ -1,0 +1,134 @@
+{% extends "ebsadmin/base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load ebsadmin_tags %}
+{% block extra_head %}
+<script type="text/javascript" src="/media/dygraph/dygraph-combined.js"></script>
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+        	
+            function refresh()
+            {
+                
+                if ($('#id_autorefresh').is(':checked')){
+                window.location.href = window.location.href
+                }
+                setTimeout(refresh,60000);
+
+            }
+            
+            refresh();
+            
+            var auto_refresh = $.cookie('monitoring_autorefresh');
+            if (auto_refresh) {
+                $('#id_autorefresh').prop('checked', true);
+            }
+            
+
+                $('#id_autorefresh').change(function(e){
+                  //save the latest tab using a cookie:
+                  $.cookie('monitoring_autorefresh', $('#id_autorefresh').is(':checked'));
+                });
+               
+                
+                $.ajax(
+                        {
+                            url: "{% url 'radiusstat' %}",     
+                            type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                            dataType: "json",   //return data in json format                                                                                                                                       
+                            success: function( data ) 
+                            {
+                                var new_arr=[];
+                                
+                              $.map( data.records, function( item ) 
+                                         {
+                                          item.date = new Date(item.date); 
+                                            new_arr.push([item.date, item.active])
+                                             return item
+                                         })
+                                g = new Dygraph(
+                                        document.getElementById("demodiv"),
+                                        new_arr,
+                                        {
+                                          //labelsSeparateLines: true,
+                                          legend: 'always',
+                                          width: 1024,
+                                          height: 200,
+                                          title: 'RADIUS Сессий онлайн всего',
+                                          xlabel: 'Дата',
+                                          ylabel: 'Кол-во',
+                                          labels: ['Дата', 'Сессий активно'],
+                                          drawXGrid: true,
+                                          fillGraph: true,
+                                          drawPoints: true,
+                                          showRangeSelector: true,
+                                          rangeSelectorHeight: 30,
+                                          rangeSelectorPlotStrokeColor: 'blue',
+                                          rangeSelectorPlotFillColor: 'lightblue',
+                                          labelsDiv: "status",
+                                        }
+                                    );
+                            }
+                        })
+                        
+                {% for nas_id, nas_name in radiusstat_nasses %}
+                $.ajax(
+                        {
+                            url: "{% url 'radiusstat' %}?nas={{nas_id}}",     
+                            type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
+                            dataType: "json",   //return data in json format                                                                                                                                       
+                            success: function( data ) 
+                            {
+                                var new_arr=[];
+                                
+                              $.map( data.records, function( item ) 
+                                         {
+                                          item.date = new Date(item.date); 
+                                            new_arr.push([item.date, item.active])
+                                             return item
+                                         })
+                                g = new Dygraph(
+                                        document.getElementById("demodiv{{nas_id}}"),
+                                        new_arr,
+                                        {
+                                          //labelsSeparateLines: true,
+                                          legend: 'always',
+                                          width: 1024,
+                                          height: 200,
+                                          title: 'RADIUS Сессий онлайн  на {{nas_name}}',
+                                          xlabel: 'Дата',
+                                          ylabel: 'Кол-во',
+                                          labels: ['Дата', 'Сессий активно'],
+                                          drawXGrid: true,
+                                          fillGraph: true,
+                                          drawPoints: true,
+                                          showRangeSelector: true,
+                                          rangeSelectorHeight: 30,
+                                          rangeSelectorPlotStrokeColor: 'blue',
+                                          rangeSelectorPlotFillColor: 'lightblue',
+                                          labelsDiv: "status{{nas_id}}",
+                                        }
+                                    );
+                            }
+                        })
+                {% endfor %}
+                        
+        });
+        </script>
+        
+{% endblock %}
+{% block base %}
+<div class="span12">
+  <div class='row-fluid'>
+<div class="pull-right"><label class="checkbox inline">Автообновление:&nbsp;</label><input type="checkbox" id="id_autorefresh"></div>
+<div class='span12' id="demodiv"></div>
+<div class='span12'  id="status"></div>
+{% for nas_id, nas_name in radiusstat_nasses %}
+<div class='span12' id="demodiv{{nas_id}}"></div>
+<div class='span12'  id="status{{nas_id}}"></div>
+{% endfor %}
+</div>
+    </div>
+
+ {% endblock %}
+

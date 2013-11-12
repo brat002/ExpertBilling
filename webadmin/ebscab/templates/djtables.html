@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="/media/django_tables2/themes/paleblue/css/screen.css" />
+<link href="/media/bootstrap/css/bootstrap.css" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="/media/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="/admin_media/css/forms.css">
+
+
+<!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="/admin_media/css/ie.css" /><![endif]-->
+
+<script type="text/javascript">window.__admin_media_prefix__ = "/admin_media/";</script>
+
+
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="/admin_media/js/core.js"></script>
+<script type="text/javascript" src="/admin_media/js/admin/RelatedObjectLookups.js"></script>
+<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+<script  type="text/javascript" >
+$(document).ready(function() {
+    $('#myTab a').click(function (e) {
+          e.preventDefault();
+          $(this).tab('show');
+        })
+    });
+
+</script>
+<script src="/media/bootstrap/js/bootstrap.js"></script>
+<script src="/media/bootstrap/js/bootstrap-dropdown.js"></script>
+<script src="/media/bootstrap/js/bootstrap-tab.js"></script>
+<script type="text/javascript" src="/admin_media/js/calendar.js"></script>
+
+
+<script type="text/javascript" src="/admin_media/js/admin/DateTimeShortcuts.js"></script>
+<meta name="robots" content="NONE,NOARCHIVE">
+
+</head>
+<body style="padding-top: 60px;">
+{% load render_table from django_tables2 %}
+
+<div class="navbar  navbar-fixed-top">
+  <div class="navbar-inner">
+<a class="brand" href="#">
+  ExpertBiling Admin interface
+</a>  
+    <div class="container">
+  
+<ul class="nav">
+  <li class="active">
+    <a href="#">Dashboard</a>
+  </li>
+  <li><a href="/ebsadmin/accountsreport/">Аккаунты</a></li>
+  <li><a href="#">Сервера доступа</a></li>
+  <li><a href="#">Расчётные периоды</a></li>
+	<ul class="nav">
+	  <li class="dropdown">
+	    <a href="#"
+	          class="dropdown-toggle"
+	          data-toggle="dropdown">
+	          Отчёты
+	          <b class="caret"></b>
+	    </a>
+	    <ul class="dropdown-menu">
+	      <li><a href="#">Операции с л/c</a></li>
+	    </ul>
+	  </li>
+	</ul>
+
+  <li><a href="#">Справочники</a></li>
+  <li><a href="#">Карточная система</a></li>
+</ul>
+<form class="navbar-search pull-left" action="">
+            <input type="text" class="search-query span2" placeholder="Search">
+          </form>
+    </div>
+  </div>
+</div>
+{% load crispy_forms_tags %}
+
+
+
+
+
+<ul class="nav nav-tabs" id="myTab">
+  <li class="active"><a href="#profile">Отчёт</a></li>
+  <li><a href="#home">Фильтр</a></li>  
+  <li><a href="#messages">Messages</a></li>
+  <li><a href="#settings">Settings</a></li>
+</ul>
+ {% load querystring from django_tables2 %}
+<div class="tab-content">
+  <div class="tab-pane active" id="profile">{% if table %}{% render_table table %}
+  <ul class="pagination">
+    {% for i in pages_range %}
+
+    <li><a href="{% querystring table.prefixed_page_field=i %}" >{{i}}</a></li>
+
+    {% endfor %}  
+  </ul>
+  {% endif %}</div>
+  <div class="tab-pane" id="home">{% crispy form %}</div>
+  <div class="tab-pane" id="messages">...</div>
+  <div class="tab-pane" id="settings">...</div>
+</div>
+
+
+
+    
+
+
+
+</body>
+</html>

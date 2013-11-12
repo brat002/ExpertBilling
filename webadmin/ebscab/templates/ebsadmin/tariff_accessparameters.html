@@ -1,0 +1,303 @@
+{% extends "ebsadmin/tariff_edit.html" %}
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load render_table from django_tables2 %}
+
+{% block extra_head %}
+{{block.super}}
+
+ <script type="text/javascript"> 
+ $(document).ready(function() {
+     $(".open-custom-dialog").click(function(event) {
+         $('<div />').dialog2({
+             title: "{% blocktrans %}Правило изменения скорости{% endblocktrans %}", 
+             content: this.href, 
+             id: "timespeed-modal"
+         });
+
+         event.preventDefault(event);
+     });
+     $(".show-confirm").click(function(event) {
+         a=$(this);
+         $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить? Вы уверены, что хотите удалить строку?{% endblocktrans %}", {
+             confirm: function() {
+                 $.getJSON(a.attr('href'),{},function(data,status){
+                     if( status=='success' ){
+                         if(data.status==true)
+                             {
+                             location.reload();
+                             }else{
+                                 alert(data.message)
+                             }
+                         
+                     }else{
+                         alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
+                     }
+
+                 })                      
+                 }, 
+             decline: function() {  }
+         });
+
+         event.preventDefault(event);
+     });
+     $("#modal-timespeed-dialog").click(function(event) {
+         $('<div />').dialog2({
+             title: "{% blocktrans %}Добавить параметры изменения скорости{% endblocktrans %}", 
+             content: "{% url 'tariff_timespeed_edit' %}?tariff={{tariff.id}}&access_parameters={{item.id}}", 
+             id: "traffictransmitnode-modal"
+         });
+
+         event.preventDefault(event);
+     });
+ });
+ </script>
+ 
+{% endblock %}
+{% block tariff_content %}
+<form method="POST" action="{% url 'tariff_accessparameters' %}?tariff_id={{tariff.id}}"class="well form-horizontal form-condensed ">
+{{form.id}}
+                  <div class="control-group">
+
+                          <label class="control-label">{{form.access_type.label}}</label>
+                          <div class="controls">
+                          {{ form.access_type }}
+                          {% if form.access_type.errors %}
+                              <span class="help-inline">{% for error in form.access_type.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.access_type.help_text%}
+                              <p class="help-block">
+                                  {{ form.access_type.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+
+                 </div>
+                  <div class="control-group">
+                  
+                      <label class="control-label">{{form.ipn_for_vpn.label}}: </label>
+                      <div class="controls">
+                      {{ form.ipn_for_vpn }}
+                      {% if form.ipn_for_vpn.errors %}
+                          <span class="help-inline">{% for error in form.ipn_for_vpn.errors %}{{ error }}<br/> {% endfor %}</span>
+                      {% endif %}
+                      {% if form.ipn_for_vpn.help_text%}
+                          <p class="help-block">
+                              {{ form.ipn_for_vpn.help_text|safe }}
+                          </p>
+                      {% endif %}
+                      </div>
+                  
+                  </div>
+                  <div class="control-group">
+                      <div class="control-row">
+                          <label class="control-label">{{form.access_time.label}}</label>
+                          <div class="controls">
+                          {{ form.access_time }}
+                          {% if form.access_time.errors %}
+                              <span class="help-inline">{% for error in form.access_time.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.access_time.help_text%}
+                              <p class="help-block">
+                                  {{ form.access_time.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                 </div>
+                  <div class="control-group">
+                      <div class="control-row">
+                          <label class="control-label">{{form.sessionscount.label}}</label>
+                          <div class="controls">
+                          {{ form.sessionscount }}
+                          {% if form.sessionscount.errors %}
+                              <span class="help-inline">{% for error in form.sessionscount.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.sessionscount.help_text%}
+                              <p class="help-block">
+                                  {{ form.sessionscount.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                 </div>
+                <legend>Настройки скорости по-умолчанию</legend>
+                <fieldset>
+                  <div class="control-group">
+                      <div class="control-row">
+                          <label class="control-label">{{form.max_tx.label}}</label>
+                          <div class="controls">
+                          {{ form.max_tx }}
+                          {% if form.max_tx.errors %}
+                              <span class="help-inline">{% for error in form.max_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.max_tx.help_text%}
+                              <p class="help-block">
+                                  {{ form.max_tx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                      <div class="control-row">
+                          <label class="control-label">{{form.max_rx.label}}</label>
+                          <div class="controls">
+                          {{ form.max_rx }}
+                          {% if form.max_rx.errors %}
+                              <span class="help-inline">{% for error in form.max_rx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.max_rx.help_text%}
+                              <p class="help-block">
+                                  {{ form.max_rx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      <div class="control-row">
+                          <label class="control-label">{{form.burst_tx.label}}</label>
+                          <div class="controls">
+                          {{ form.burst_tx }}
+                          {% if form.burst_tx.errors %}
+                              <span class="help-inline">{% for error in form.burst_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.burst_tx.help_text%}
+                              <p class="help-block">
+                                  {{ form.burst_tx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                      <div class="control-row">
+                          <label class="control-label">{{form.burst_rx.label}}</label>
+                          <div class="controls">
+                          {{ form.burst_rx }}
+                          {% if form.burst_rx.errors %}
+                              <span class="help-inline">{% for error in form.burst_rx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.burst_rx.help_text%}
+                              <p class="help-block">
+                                  {{ form.burst_rx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      <div class="control-row">
+                          <label class="control-label">{{form.burst_treshold_tx.label}}</label>
+                          <div class="controls">
+                          {{ form.burst_treshold_tx }}
+                          {% if form.burst_treshold_tx.errors %}
+                              <span class="help-inline">{% for error in form.burst_treshold_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.burst_treshold_tx.help_text%}
+                              <p class="help-block">
+                                  {{ form.burst_treshold_tx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                      <div class="control-row">
+                          <label class="control-label">{{form.burst_treshold_rx.label}}</label>
+                          <div class="controls">
+                          {{ form.burst_treshold_rx }}
+                          {% if form.burst_treshold_rx.errors %}
+                              <span class="help-inline">{% for error in form.burst_treshold_rx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.burst_treshold_rx.help_text%}
+                              <p class="help-block">
+                                  {{ form.burst_treshold_rx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      <div class="control-row">
+                          <label class="control-label">{{form.burst_time_tx.label}}</label>
+                          <div class="controls">
+                          {{ form.burst_time_tx }}
+                          {% if form.burst_time_tx.errors %}
+                              <span class="help-inline">{% for error in form.burst_time_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.burst_time_tx.help_text%}
+                              <p class="help-block">
+                                  {{ form.burst_time_tx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                      <div class="control-row">
+                          <label class="control-label">{{form.burst_time_rx.label}}</label>
+                          <div class="controls">
+                          {{ form.burst_time_rx }}
+                          {% if form.burst_time_rx.errors %}
+                              <span class="help-inline">{% for error in form.burst_time_rx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.burst_time_rx.help_text%}
+                              <p class="help-block">
+                                  {{ form.burst_time_rx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      <div class="control-row">
+                          <label class="control-label">{{form.min_tx.label}}</label>
+                          <div class="controls">
+                          {{ form.min_tx }}
+                          {% if form.min_tx.errors %}
+                              <span class="help-inline">{% for error in form.min_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.min_tx.help_text%}
+                              <p class="help-block">
+                                  {{ form.min_tx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                      <div class="control-row">
+                          <label class="control-label">{{form.min_rx.label}}</label>
+                          <div class="controls">
+                          {{ form.min_rx }}
+                          {% if form.min_rx.errors %}
+                              <span class="help-inline">{% for error in form.min_rx.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.min_rx.help_text%}
+                              <p class="help-block">
+                                  {{ form.min_rx.help_text|safe }}
+                              </p>
+                          {% endif %}
+                          </div>
+                      </div>
+                  </div>
+                  <div class="control-group">
+                      
+                          <label class="control-label">{{form.priority.label}}</label>
+                          <div class="controls">
+                          {{ form.priority }}
+                          {% if form.priority.errors %}
+                              <span class="help-inline">{% for error in form.priority.errors %}{{ error }}<br/> {% endfor %}</span>
+                          {% endif %}
+                          {% if form.priority.help_text%}
+                              <p class="help-block">
+                                  {{ form.priority.help_text|safe }}
+                              </p>
+                          {% endif %}
+                      </div>
+                  </div>
+                </fieldset>
+       <fieldset>
+  {% render_table table %}
+  <div class="btn-toolbar"><a href="#" id="modal-timespeed-dialog" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a></div>
+                </fieldset>
+
+                <fieldset>
+                    <div class="form-actions form-actions-center">
+                        <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
+                    </div>
+                </fieldset>
+            </form>
+{% endblock %}

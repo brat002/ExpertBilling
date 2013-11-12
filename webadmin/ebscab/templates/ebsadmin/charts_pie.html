@@ -1,0 +1,52 @@
+{% extends "ebsadmin/charts.html" %}
+{% load i18n %}
+{% block chart_block %}
+<script  type="text/javascript" >
+var chart;
+$(document).ready(function() {
+    chart = new Highcharts.Chart({
+        chart: {
+            renderTo: 'container',
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: true
+        },
+        title: {
+            text: '{{report_name}}'
+        },
+        tooltip: {
+            formatter: function() {
+                return '<b>'+ this.point.name +'</b>: '+ this.y.toFixed(4) + {% if rep.units %}' {{rep.units}}'{% else %}' МБ'{% endif %};
+            }
+        },
+
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                animation: true, 
+                cursor: 'pointer',
+                showInLegend: true,
+                shadow: true,
+                dataLabels: {
+                    enabled: true,
+                    color: '#000000',
+                    connectorColor: '#000000',
+                    formatter: function() {
+                        return '<b>'+ this.point.name +'</b>: '+ this.y.toFixed(4) +{% if rep.units %}' {{rep.units}}'{% else %}' МБ'{% endif %};
+                    }
+                }
+            }
+        },
+        series: [{
+            type: '{{reporttype}}',
+            name: '{{report_name}}',
+            data: [
+                {% for name, bytes in res %}
+                ['{{name|safe}}', {{bytes}}],
+                {% endfor %}
+            ]
+        }]
+    });
+});
+</script>    
+{% endblock %}

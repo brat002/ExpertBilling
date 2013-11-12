@@ -1,0 +1,22 @@
+<div class="form-row form-field {% if field.errors %} error {% endif %}" 
+     id="{% block wrapper_id %}{% if field.form.prefix %}{{ field.form.prefix }}-{% endif %}form-field-wrapper-{{ field.name }}{% endblock %}">
+ 	{% if field.errors %}<div class="field-errors">{{ field.errors }}</div>{% endif %}
+<div>
+  	
+   {% block label %}
+   	{% if not no_label %}
+    <label for="id_{% if field.form.prefix %}{{ field.form.prefix }}-{% endif %}{{ field.name }}">{{ field.label|safe }}</label>
+	{% endif %}
+   {% endblock %}
+   <div class="field">
+	   {% block field %}
+	    	{% block field-content %}
+	      		{{ field|safe }}
+	    	{% endblock %}
+	   {% endblock %}
+   </div>
+  </div>
+   {% if field.help_text %}<p class="help">{{ field.help_text }}</p>{% endif %}  
+</div>
+{% block footer %}{% endblock %}
+<div style="clear: both"></div>
