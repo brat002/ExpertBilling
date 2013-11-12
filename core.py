@@ -1483,7 +1483,7 @@ class settlement_period_service_dog(Thread):
                     if account.account_status==4:
                         sps=caches.suspended_cache.by_account_id.get(acc.account_id,[])
                         for sp in sps:
-                            if sp.end_date and sp.start_date+account.userblock_max_days>=dateAT:
+                            if sp.end_date and sp.start_date+datetime.timedelta(seconds = account.userblock_max_days)>=dateAT:
                                 
                                 """
                                 Запрос должен быть именно такого вида, чтобы не допустить двойной установки статуса
