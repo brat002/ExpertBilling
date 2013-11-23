@@ -35,7 +35,7 @@ def prepare_deploy():
     #local('apt-get update')
     #local('apt-get -y install g++ postgresql-9.1 postgresql-contrib-9.1 postgresql-server-dev-9.1 htop mc python-dev mc openssh-server openssl python-paramiko python-crypto libapache2-mod-wsgi python-simplejson rrdtool snmp python-pexpect python-pip python-virtualenv rabbitmq-server ')
     local('apt-get  -y --force-yes  install libjpeg-dev libfreetype6 libfreetype6-dev zlib1g-dev g++ postgresql-9.1 postgresql-contrib-9.1 postgresql-server-dev-9.1 htop mc python-dev mc openssh-server openssl python-paramiko python-crypto libapache2-mod-wsgi python-simplejson rrdtool snmp python-pexpect python-pip python-virtualenv redis-server rabbitmq-server libmemcached-dev memcached')
-
+    local('pip install psycopg2')
 
 def configure_rabbit():
     with settings(warn_only=True):

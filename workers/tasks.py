@@ -2,6 +2,8 @@
 
 from celery.task import task
 import os, sys
+sys.path.insert(0, '/opt/ebs/data/cmodules/')
+
 import decimal
 import commands
 from pyrad import dictionary
@@ -270,7 +272,7 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
         doc_data=doc.RequestPacket()
         sock.sendto(doc_data,(str(nas.get('ipaddress')), 1700))
         (data, addrport) = sock.recvfrom(8192)
-        doc=packet.AcctPacket(secret=str(nas.get('secret')), dict=dict, packet=data)
+        doc=packet.AcctPacket(secret=str(nas.get('secret')), dict=DICT, packet=data)
         sock.close()
 
         if cb:
@@ -410,11 +412,11 @@ def change_speed(account, subacc ,nas, session_id='', vpn_ip_address='', access_
                 doc.AddAttribute(nas.get('speed_attr_id2'),unicode(result_params))
                     
         doc_data=doc.RequestPacket()
-        logger.info('CoA socket send: %s' % unicode(nas.ipaddress))
+        #logger.info('CoA socket send: %s' % unicode(nas.ipaddress))
         sock.sendto(doc_data,(nas.get('ipaddress'), 1700))
         (data, addrport) = sock.recvfrom(8192)
         logger.info('CoA socket get: %s' % str(addrport))
-        doc=packet.AcctPacket(secret=nas.get('secret'), dict=dict, packet=data)
+        doc=packet.AcctPacket(secret=str(nas.get('secret')), dict=dict, packet=data)
 
         sock.close()
 
