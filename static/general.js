@@ -1,11 +1,14 @@
 $(document).ready(function() {
+    
+    // отображение диалогового окна для подтверждения действия
     $(".show-confirm").click(function(event) {
         a = $(this);
+
         $.fn.dialog2.helpers.confirm(a.data('clickmessage'), {
             confirm: function() {
                 $.getJSON(a.attr('href'), {}, function(data,status){
-                    if( status=='success' ) {
-                        if(data.status==true) {
+                    if(status == 'success') {
+                        if(data.status == true) {
                             location.reload();
                         } else {
                             alert(data.message)
@@ -15,7 +18,7 @@ $(document).ready(function() {
                     }
                 })                      
             }, 
-            decline: function() {  }
+            decline: function() {}
         });
         event.preventDefault(event);
     });
