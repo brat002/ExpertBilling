@@ -545,7 +545,7 @@ if __name__=='__main__':
         logger.lprint('Nf Writer start')
         if check_running(getpid(vars.piddir, 'nfwriter'), 'nfwriter'): raise Exception ('%s already running, exiting' % 'nfwriter')
         
-        out_connection = Connection(vars.kombu_dsn)
+        
         
         
         #write profiling info predicate
