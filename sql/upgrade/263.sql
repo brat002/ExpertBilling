@@ -1,0 +1,1 @@
+ALTER TABLE billservice_accountprepaystrafic DROP CONSTRAINT billservice_accountprepaystrafic_uniq;
