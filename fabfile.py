@@ -164,10 +164,10 @@ def deploy(tarfile):
     unpack(tarfile)
     requirements()
     #backup settings before deploy, restore settings after deploy
-    
+    postconf()
     db_install()
     db_upgrade()
-    postconf()
+    
     setup_webcab()
     init_scripts()
     
@@ -195,11 +195,12 @@ def upgrade_14(tarfile):
     #backup settings before deploy, restore settings after deploy
     
     #db_install()
+    postconf()
     db_upgrade()
     
     setup_webcab()
     init_scripts()
-    postconf()
+    
     restart()
     congratulations()
     
