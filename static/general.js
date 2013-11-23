@@ -1,7 +1,7 @@
 $(document).ready(function() {
     $(".show-confirm").click(function(event) {
         a = $(this);
-        $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить?{% endblocktrans %}", {
+        $.fn.dialog2.helpers.confirm(a.data('clickmessage', {
             confirm: function() {
                 $.getJSON(a.attr('href'), {}, function(data,status){
                     if( status=='success' ) {
