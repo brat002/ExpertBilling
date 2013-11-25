@@ -1324,11 +1324,11 @@ class settlement_period_service_dog(Thread):
                             time_start, period_start, delta = (acc.datetime, acc.datetime, 86400*365*365)
                         else:
                             sp = caches.settlementperiod_cache.by_id.get(acc.settlement_period_id)
-                            if 0: assert isinstance(sp, SettlementPeriodData)
+
                             time_start = acc.datetime if sp.autostart else sp.time_start
                             period_start, period_end, delta = fMem.settlement_period_(time_start, sp.length_in, sp.length, dateAT)
                             #Если начало расчётного периода осталось в прошлом тарифном плане-за начало расчётного периода принимаем начало тарифного плана
-                            if period_start < acc.datetime: period_start = acc.datetime                            
+                            if period_start < acc.datetime and not sp.autostart: period_start = acc.datetime                            
     
                         #нужно производить в конце расчётного периода
                         ballance_checkout = shedl.ballance_checkout if shedl.ballance_checkout else acc.datetime
