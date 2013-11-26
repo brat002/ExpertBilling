@@ -375,7 +375,7 @@ class Cache(object):
                                 ba.nas_id, ba.vpn_ip_address, bt.id as tarif_id, accps.access_type, 
                                 ba.status, ba.balance_blocked, (ba.ballance+ba.credit) as ballance, 
                                 ba.disabled_by_limit, bt.active as tariff_active, 
-                                bt.radius_traffic_transmit_service_id, bt.vpn_ippool_id, bt.vpn_guest_ippool_id, accps.sessionscount
+                                bt.radius_traffic_transmit_service_id, bt.vpn_ippool_id, bt.vpn_guest_ippool_id, accps.sessionscount, bt.time_access_service_id
                                 FROM billservice_account as ba
                                 JOIN billservice_accounttarif AS act ON act.id=(SELECT max(id) FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and date_trunc('second', att.datetime)<%s)
                                 JOIN billservice_tariff AS bt ON bt.id=act.tarif_id

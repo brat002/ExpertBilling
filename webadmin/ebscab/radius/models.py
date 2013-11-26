@@ -122,4 +122,10 @@ class RadiusStat(models.Model):
     active = models.PositiveIntegerField(blank=True, default=0)
     datetime = models.DateTimeField(db_index=True)
     
+class RadiusLastValue(models.Model):
+    activesession = models.ForeignKey(ActiveSession)
+    lc_bytes_in = models.BigIntegerField()
+    lc_bytes_out = models.BigIntegerField()
+    lt_time = models.BigIntegerField()
+    datetime = models.DateTimeField()
     

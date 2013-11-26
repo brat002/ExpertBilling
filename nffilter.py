@@ -15,29 +15,28 @@ import os, sys
 import marshal
 import utilites
 
-import psycopg2
-import threading
+
+
 import traceback
 import ConfigParser
-import socket, select, struct, datetime, time
-import string, glob, types
+import socket, struct, datetime, time
+import  glob
 
 
-try:
-    import codecs
-except ImportError:
-    codecs = None
+
+
+
 
 import isdlogger
 import saver
-import IPy
 
-from threading import Thread, Lock, Event
-from IPy import IP, IPint, parseAddress
-from collections import deque, defaultdict
+
+from threading import Thread, Lock
+from IPy import IP, IPint
+from collections import deque
 from saver import graceful_loader, graceful_saver
 import logging
-from logging.handlers import TimedRotatingFileHandler, BaseRotatingHandler, _MIDNIGHT
+
 
 
 from classes.nf_cache import *
@@ -45,20 +44,24 @@ from classes.common.Flow5Data import Flow5Data
 from classes.cacheutils import CacheMaster
 from classes.flags import NfFlags
 from classes.vars import NfFilterVars, NfQueues, install_logger
-from utilites import renewCaches, savepid, rempid, get_connection, getpid, check_running, \
-                     STATE_NULLIFIED, STATE_OK, NFR_PACKET_HEADER_FMT
+from utilites import renewCaches, savepid, rempid, get_connection,  \
+                     STATE_NULLIFIED, NFR_PACKET_HEADER_FMT
 
+
+def chunks(l, n):
+    """ Yield successive n-sized chunks from l.
+    """
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]
 #from dirq.QueueSimple import QueueSimple
 #from saver import RedisQueue
 
 from kombu.mixins import ConsumerMixin
-from kombu.log import get_logger
-from kombu.utils import kwdict, reprcall
 from kombu import Connection
 from kombu.common import maybe_declare
 from kombu.pools import producers
 
-from queues import nf_out, nf_write, nf_in, task_exchange
+from queues import  nf_in, task_exchange
 
 MIN_NETFLOW_PACKET_LEN = 16
 HEADER_FORMAT = "!HHIIIIBBH"
@@ -197,46 +200,16 @@ def find_account_by_activesession(nasses,flow):
     return caches.account_cache.by_id.get(acc_data_src),caches.account_cache.by_id.get(acc_data_dst), nas_id
 
 
-def find_account_by_ip(nasses,flow,src=False, dst=False):
-    acc_data_src,acc_data_dst, nas_id = None, None, None
-    caches = cacheMaster.cache
-    for nasitem in nasses:
+def find_account_by_ip(flow):
 
-        #logger.debug("Checking flow for nas_id=: %s Account-id", (nasitem.id, ))
-        if src:
-            if not acc_data_src:
-                #Если нашли - больше не проверяем
-                acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, nasitem.id))
-                if acc_data_src:
-                    nas_id = nasitem.id
-        if dst:
-            if not acc_data_dst:
-                #Если нашли - больше не проверяем
-                acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, nasitem.id))
-                if acc_data_dst:
-                    nas_id = nasitem.id
-        if acc_data_dst and acc_data_src:  
-            #logger.debug(" Account with nas for flow src(%s) dst(%s) nas_id(%s)", (acc_data_src, acc_data_dst,nas_id,))
-            return caches.account_cache.by_id.get(acc_data_src), caches.account_cache.by_id.get(acc_data_dst), nas_id
-    if src:
-        if not acc_data_src:
-            #Если не нашли аккаунта с привязкой к серверу доступа - выбираем без сервера
-            acc_data_src = caches.account_cache.vpn_ips.get((flow.src_addr, None))
-            if nasses:
-                nas_id = nasses[0].id
-            else:
-                nas_id = None
-    if dst:
-        if not acc_data_dst:
-            #Если не нашли аккаунта с привязкой к серверу доступа - выбираем без сервера
-            acc_data_dst = caches.account_cache.vpn_ips.get((flow.dst_addr, None))
-            if nasses:
-                nas_id = nasses[0].id
-            else:
-                nas_id = None
+    caches = cacheMaster.cache
+
+    acc_data_src = caches.ips_cache.by_ip.get(flow.src_addr)
+
+    acc_data_dst = caches.ips_cache.by_ip.get(flow.dst_addr)
+
             
-    #logger.debug(" Account without nas for flow src(%s) dst(%s) nas_id(%s)", (acc_data_src, acc_data_dst,nas_id,))
-    return acc_data_src,acc_data_dst, nas_id
+    return acc_data_src,acc_data_dst
 
 
 def nfPacketHandle(data, addr, flowCache):
@@ -251,9 +224,10 @@ def nfPacketHandle(data, addr, flowCache):
         return
     caches = cacheMaster.cache
     if 0: assert isinstance(caches, NfCaches)
-    nasses = caches.nas_cache.by_ip.get(addr, [])
+    nasses = caches.nas_cache.by_ip.get(addr)
     if not caches: return
-    if not nasses: logger.warning("NAS %s not found in our beautiful system. May be it hackers?", repr(addr)); return      
+    if not nasses: logger.warning("NAS %s not found in our beautiful system. May be it hackers?", repr(addr)); return    
+    nas_id = nasses[0].id
     flows=[]
     _nf = struct.unpack("!H", data[:2])
     pVersion = _nf[0]
@@ -263,56 +237,22 @@ def nfPacketHandle(data, addr, flowCache):
     hdr = hdr_class(data[:vars.headerLENGTH])
     #======
     #runs through flows
+    chunks(hdr[1])
     for n in xrange(hdr[1]):
         offset = vars.headerLENGTH + (vars.flowLENGTH * n)
         flow_data = data[offset:offset + vars.flowLENGTH]
         flow = flow_class(flow_data)
-        if 0: assert isinstance(flow, Flow5Data)
-        #logger.debug("New flow arrived. src_ip=%s dst_ip=%s in_index=%s, out_index=%s: ", (IPy.intToIp(flow.src_addr, 4),IPy.intToIp(flow.dst_addr, 4), flow.in_index, flow.out_index))
-        #look for account for ip address
+
         if vars.SKIP_INDEX_CHECK==False and (flow.out_index == 0 or flow.in_index == flow.out_index):
             logger.debug("flow int index==flow out index %s==%s or out index==0 rejecting", (flow.in_index,flow.out_index,))
             continue
-        acc_data_src = None
-        acc_data_dst = None
-        nas_id = None
+
         #nasses_list=[nasitem.id for nasitem in nasses]
 
-        #acc_data_src,acc_data_dst, nas_id = find_account_by_port(nasses, flow)
-        acc_data_src,acc_data_dst, nas_id = find_account_by_activesession(nasses, flow)
-        acc_data_src_ip, acc_data_dst_ip, nas_id_ip=None,None,None
-        
-        if acc_data_src:
-            src=False
-        else:
-            src=True
-        
-        if acc_data_dst:
-            dst=False
-        else:
-            dst=True
+        acc_src, acc_dst = find_account_by_ip(flow)
 
-            
-        if not (acc_data_src and acc_data_dst):
-            acc_data_src_ip,acc_data_dst_ip, nas_id_ip = find_account_by_ip(nasses, flow, src, dst)
-            pass
-            
-        if  acc_data_src:
-            acc_data_src=acc_data_src
-        else:
-            acc_data_src=acc_data_src_ip
-            
-        if  acc_data_dst:
-            acc_data_dst=acc_data_dst
-        else:
-            acc_data_dst=acc_data_dst_ip
-        
-        if  nas_id:
-            nas_id=nas_id
-        else:
-            nas_id=nas_id_ip
 
-        logger.debug("Account with nas for flow src(%s) dst(%s) default nas(%s)", (acc_data_src, acc_data_dst, nas_id, ))
+        logger.debug("Account with nas for flow src(%s) dst(%s) default nas(%s)", (acc_src, acc_dst, nas_id, ))
         #Проверка на IPN сеть
         #=======================================================================
         # if not acc_data_src and caches.account_cache.ipn_range:
@@ -329,10 +269,10 @@ def nfPacketHandle(data, addr, flowCache):
         #            break
         # logger.debug("IPN Account for flow src(%s) dst(%s)", (acc_data_src, acc_data_dst, ))
         #=======================================================================
-        local = bool(acc_data_src and acc_data_dst)
+        local = bool(acc_src and acc_dst)
         if local:
             logger.debug("Flow is local",())
-        acc_acct_tf = (acc_data_src, acc_data_dst) if local else (acc_data_src or acc_data_dst,)
+        acc_acct_tf = (acc_src, acc_dst) if local else (acc_src or acc_dst,)
         #print repr(acc_acct_tf)
             
         if acc_acct_tf[0]:            
@@ -340,7 +280,7 @@ def nfPacketHandle(data, addr, flowCache):
             #acc_id, acctf_id, tf_id = (acc_acct_tf)
             flow.padding = local
             flow.account_id = acc_acct_tf
-            flow.node_direction = 'INPUT' if acc_data_dst else 'OUTPUT'
+            flow.node_direction = 'INPUT' if acc_dst else 'OUTPUT'
             
             flowCache.addflow5(flow)         
                 
@@ -423,7 +363,7 @@ class FlowDequeThread(Thread):
         ptime =  time.time()
         if vars.NF_TIME_MOD:
             ptime = ptime - (ptime % vars.NF_TIME_MOD)
-        if 0: assert isinstance(flow, Flow5Data); assert isinstance(nnode, ClassData)
+
         flow.datetime = ptime; flow.class_id = tuple(classLst)
         
         flow.class_passthrough = nnode.passthrough; flow.acctf_id = acctf_id
@@ -438,7 +378,7 @@ class FlowDequeThread(Thread):
             groupLst = []
             fcset = set(classLst)
             for tgrp in tarifGroups:
-                if 0: assert isinstance(tgrp, GroupsData)
+
                 #print tgrp.direction, dr
                 if (not tgrp.trafficclass) or (int(tgrp.direction) != int(dr) and tgrp.direction!=2):
                 #if (not tgrp.trafficclass):
@@ -501,9 +441,9 @@ class FlowDequeThread(Thread):
                         flow = copy.copy(qflow) if (local and src) else qflow
                         if 0: assert isinstance(flow, Flow5Data)
                         flow.account_id = acc.account_id
-                        flow.acctf_id = acc.acctf_id
+                        flow.acctf_id = acc.accounttarif_id
                         #get groups for tarif
-                        tarifGroups = cacheMaster.cache.tfgroup_cache.by_tarif.get(acc.tarif_id)
+                        tarifGroups = cacheMaster.cache.tfgroup_cache.by_tarif.get(acc.tariff_id)
                         has_groups = True if tarifGroups else False
                         direction = ((src and 'INPUT') or 'OUTPUT') if local else None
                         passthr = True
@@ -513,7 +453,7 @@ class FlowDequeThread(Thread):
                         for nclass, nnodes in cacheMaster.cache.class_cache.classes:        
                             class_found = False            
                             for nnode in nnodes:
-                                if 0: assert isinstance(nnode, ClassData)
+
                                 if flow.node_direction == 'INPUT':
                                     
                                     if (flow.src_addr & nnode.dst_mask) != nnode.dst_ip:continue
@@ -605,7 +545,7 @@ class NfroutinePushThread(Thread):
 
     def run(self):
         addrport = vars.NFR_ADDR
-        nfsock = get_socket()
+
         errflag, flnumpack = 0, 0
         dfile, fname = None, None
 
