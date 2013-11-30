@@ -102,10 +102,14 @@ class Cache(object):
     
     #@memoize_with_expiry(30)
     def get_nas_by_identify(self,  nas_ip, identify):
-        current_key = 'nas__by_identify_%s'
-        cache_key = (self.cache_prefix+current_key) % identify
-        obj = self.memcached_connection.get(cache_key)
-        
+        current_key = 'nas__by_identify_%s_%s'
+        try:
+            cache_key = (self.cache_prefix+current_key) % (nas_ip, identify)
+            obj = self.memcached_connection.get(cache_key)
+            
+        except Exception as ex:
+            self.logger.error("%s memcached subsystem error: key=%s %s \n %s", (self.getName(), cache_key, repr(ex), traceback.format_exc()))
+            
         if obj: 
             return obj
         
