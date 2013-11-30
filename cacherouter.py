@@ -319,9 +319,12 @@ class Cache(object):
     
     #@memoize_with_expiry(30)
     def get_subaccount_by_username_w_ipn_vpn_link(self,  username, ipn_key):
-        current_key = 'subaccount_by_username_w_ipn_vpn_link_%s'
-        cache_key = (self.cache_prefix+current_key) % ipn_key
-        obj = self.memcached_connection.get(cache_key)
+        current_key = 'subaccount_by_username_w_ipn_vpn_link_%s_%s'
+        cache_key = (self.cache_prefix+current_key) % (username, str(ipn_key),)
+        try:
+            obj = self.memcached_connection.get(cache_key)
+        except Exception, ex:
+            self.logger.error("%s Memcached subsystem error: key=%s %s \n %s", (cache_key, self.getName(), repr(ex), traceback.format_exc()))
         if obj: return obj
         
         
