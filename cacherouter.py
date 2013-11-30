@@ -108,7 +108,7 @@ class Cache(object):
             obj = self.memcached_connection.get(cache_key)
             
         except Exception as ex:
-            self.logger.error("%s memcached subsystem error: key=%s %s \n %s", (self.getName(), cache_key, repr(ex), traceback.format_exc()))
+            self.logger.error("%s memcached subsystem error: key=%s type=%s %s \n %s", (self.getName(), cache_key, type(cache_key), repr(ex), traceback.format_exc()))
             
         if obj: 
             return obj
