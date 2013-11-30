@@ -492,10 +492,9 @@ class Cache(object):
                                 FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
                                 WHERE accountspeedlimit.speedlimit_id=speedlimit.id 
                                 and accountspeedlimit.account_id=%s ORDER BY ID DESC LIMIT 1;""", (account_id, ))
-            res = self.cursor.fetchall()
+            res = self.cursor.fetchone()
             if res:
-                res = res[0]
-            obj = self.memcached_connection.set(cache_key, res, ACC_CACHE_TIMEOUT)
+                obj = self.memcached_connection.set(cache_key, res, ACC_CACHE_TIMEOUT)
         except Exception as ex:
             self.logger.error("%s database or memcached subsystem error: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
             res = []
@@ -519,7 +518,8 @@ class Cache(object):
                                    WHERE accs.account_id=%s and (accs.account_id is not NULL and (SELECT True from billservice_account WHERE id=accs.account_id and deleted is NULL)=True) and  (accs.deactivated is Null or (accs.last_checkout<accs.deactivated AND (SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.id)='periodical') or 
                                    ((SELECT service_type FROM billservice_addonservice as adds WHERE adds.id=accs.service_id)='onetime' and (accs.action_status=True or accs.last_checkout is Null))) or (accs.action_status=True and accs.deactivated is not Null and addons.action=True);""", (account_id, ))
             res = self.cursor.fetchall()
-            obj = self.memcached_connection.set(cache_key, res, ACC_CACHE_TIMEOUT)
+            if res:
+                obj = self.memcached_connection.set(cache_key, res, ACC_CACHE_TIMEOUT)
         except Exception as ex:
             self.logger.error("%s database or memcached subsystem error: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
             res = []
