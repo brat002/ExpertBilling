@@ -486,7 +486,8 @@ class Cache(object):
 
         try:
             #id, account_id, max_tx, max_rx, burst_tx, burst_rx, burst_treshold_tx, burst_treshold_rx, burst_time_tx, burst_time_rx, priority, min_tx, min_rx, speed_units, change_speed_type
-            self.cursor.execute("""SELECT accountspeedlimit.id, accountspeedlimit.account_id, speedlimit.max_tx, speedlimit.max_rx, 
+            cursor = self.connection.cursor()
+            cursor.execute("""SELECT accountspeedlimit.id, accountspeedlimit.account_id, speedlimit.max_tx, speedlimit.max_rx, 
                                 speedlimit.burst_tx, speedlimit.burst_rx, 
                                 speedlimit.burst_treshold_tx, speedlimit.burst_treshold_rx, 
                                 speedlimit.burst_time_tx, speedlimit.burst_time_rx, 
@@ -495,7 +496,7 @@ class Cache(object):
                                 FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
                                 WHERE accountspeedlimit.speedlimit_id=speedlimit.id 
                                 and accountspeedlimit.account_id=%s ORDER BY ID DESC LIMIT 1;""", (account_id, ))
-            res = self.cursor.fetchone()
+            res = cursor.fetchone()
             if res:
                 obj = self.memcached_connection.set(cache_key, res, ACC_CACHE_TIMEOUT)
         except Exception as ex:
