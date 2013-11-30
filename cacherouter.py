@@ -104,7 +104,7 @@ class Cache(object):
     def get_nas_by_identify(self,  nas_ip, identify):
         current_key = 'nas__by_identify_%s_%s'
         try:
-            cache_key = (self.cache_prefix+current_key) % (nas_ip, identify)
+            cache_key = str((self.cache_prefix+current_key) % (nas_ip, identify))
             obj = self.memcached_connection.get(cache_key)
             
         except Exception as ex:
@@ -133,7 +133,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_nas_by_ip(self,  ip):
         current_key = 'nas__by_ip_%s'
-        cache_key = (self.cache_prefix+current_key) % ip
+        cache_key = str((self.cache_prefix+current_key) % ip)
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
 
@@ -154,7 +154,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_nas_by_id(self,  id):
         current_key = 'nas__by_id_%s'
-        cache_key = (self.cache_prefix+current_key) % id
+        cache_key = str((self.cache_prefix+current_key) % id)
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -177,7 +177,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_subaccount_by_ipn_ip(self,  ipn_ip_address):
         current_key = 'subaccount__by_ipn_ip_address_%s'
-        cache_key = (self.cache_prefix+current_key) % ipn_ip_address
+        cache_key = str((self.cache_prefix+current_key) % ipn_ip_address)
         obj = self.memcached_connection.get(cache_key)
         if obj: 
             
@@ -207,7 +207,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_subaccount_by_mac(self,  ipn_mac_address):
         current_key = 'subaccount__by_ipn_mac_address_%s'
-        cache_key = (self.cache_prefix+current_key) % ipn_mac_address
+        cache_key = str((self.cache_prefix+current_key) % ipn_mac_address)
         obj = self.memcached_connection.get(cache_key)
         if obj: 
             
@@ -239,7 +239,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_subaccount_by_username(self, username):
         current_key = 'subaccount__by_username_%s'
-        cache_key = (self.cache_prefix+current_key) % username
+        cache_key = str((self.cache_prefix+current_key) % username)
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -266,7 +266,7 @@ class Cache(object):
     
     def get_by_switch_port(self, switch_id, port):
         current_key = 'subaccount__by_switch_port_%s_%s'
-        cache_key = (self.cache_prefix+current_key) % (switch_id, port)
+        cache_key = str((self.cache_prefix+current_key) % (switch_id, port))
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -295,7 +295,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_subaccount_by_id(self, id):
         current_key = 'subaccount__by_id_%s'
-        cache_key = (self.cache_prefix+current_key) % id
+        cache_key = str((self.cache_prefix+current_key) % id)
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -324,7 +324,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_subaccount_by_username_w_ipn_vpn_link(self,  username, ipn_key):
         current_key = 'subaccount_by_username_w_ipn_vpn_link_%s_%s'
-        cache_key = (self.cache_prefix+current_key) % (username, str(ipn_key),)
+        cache_key = str((self.cache_prefix+current_key) % (username, str(ipn_key),))
         try:
             obj = self.memcached_connection.get(cache_key)
         except Exception, ex:
@@ -372,7 +372,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_account_by_id(self, id):
         current_key = 'account__by_id_%s'
-        cache_key = (self.cache_prefix+current_key) % id
+        cache_key = str((self.cache_prefix+current_key) % id)
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -399,7 +399,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_account_by_username(self, username):
         current_key = 'account__by_username_%s'
-        cache_key = (self.cache_prefix+current_key) % username
+        cache_key = str((self.cache_prefix+current_key) % username)
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -427,7 +427,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_defspeed_by_tarif_id(self, tarif_id):
         current_key = 'defspeed__by_tarif_id_%s'
-        cache_key = (self.cache_prefix+current_key) % (tarif_id, )
+        cache_key = str((self.cache_prefix+current_key) % (tarif_id, ))
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -454,7 +454,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_speed_by_tarif_id(self, tarif_id):
         current_key = 'speed__by_tarif_id_%s'
-        cache_key = (self.cache_prefix+current_key) % (tarif_id, )
+        cache_key = str((self.cache_prefix+current_key) % (tarif_id, ))
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -483,7 +483,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_speedlimit_by_account_id(self, account_id):
         current_key = 'speedlimit__by_account_id_%s'
-        cache_key = (self.cache_prefix+current_key) % (account_id, )
+        cache_key = str((self.cache_prefix+current_key) % (account_id, ))
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -511,7 +511,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_accountaddonservice_by_account_id(self, account_id):
         current_key = 'accountaddonservice__by_account_id_%s'
-        cache_key = (self.cache_prefix+current_key) % (account_id, )
+        cache_key = str((self.cache_prefix+current_key) % (account_id, ))
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -537,7 +537,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_accountaddonservice_by_subaccount_id(self, subaccount_id):
         current_key = 'accountaddonservice__by_subaccount_id_%s'
-        cache_key = (self.cache_prefix+current_key) % (subaccount_id, )
+        cache_key = str((self.cache_prefix+current_key) % (subaccount_id, ))
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -561,7 +561,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_addonservice_by_id(self, id):
         current_key = 'addonservice_by_id_%s'
-        cache_key = (self.cache_prefix+current_key) % (id, )
+        cache_key = str((self.cache_prefix+current_key) % (id, ))
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -584,7 +584,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_timeperiodnode_by_timeperiod_id(self, timeperiod_id):
         current_key = 'timeperiodnode_by_timeperiod_id_%s'
-        cache_key = (self.cache_prefix+current_key) % (timeperiod_id)
+        cache_key = str((self.cache_prefix+current_key) % (timeperiod_id))
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -602,7 +602,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_ippool_by_id(self, id):
         current_key = 'ippool_by_id_%s'
-        cache_key = (self.cache_prefix+current_key) % (id)
+        cache_key = str((self.cache_prefix+current_key) % (id))
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -618,7 +618,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_switch_by_id(self, id):
         current_key = 'switch_by_id_%s'
-        cache_key = (self.cache_prefix+current_key) % (id,)
+        cache_key = str((self.cache_prefix+current_key) % (id,))
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -634,7 +634,7 @@ class Cache(object):
 
     def get_switch_by_identify(self, identify):
         current_key = 'switch_by_identify_%s'
-        cache_key = (self.cache_prefix+current_key) % (id,)
+        cache_key = str((self.cache_prefix+current_key) % (id,))
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -651,7 +651,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_radiusattr_by_tarif_id(self, tarif_id):
         current_key = 'radiusattr_by_tarif_id_%s'
-        cache_key = (self.cache_prefix+current_key) % (tarif_id,)
+        cache_key = str((self.cache_prefix+current_key) % (tarif_id,))
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
@@ -669,7 +669,7 @@ class Cache(object):
     #@memoize_with_expiry(30)
     def get_radiusattr_by_nas_id(self, nas_id):
         current_key = 'radiusattr_by_nas_id_%s'
-        cache_key = (self.cache_prefix+current_key) % (nas_id,)
+        cache_key = str((self.cache_prefix+current_key) % (nas_id,))
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
 
