@@ -208,7 +208,7 @@ def upgrade(tarfile):
     print('Upgrading expert billing system')
     
 
-    stop()
+    
     db_backup()
     data_backup()
     webcab_backup()
@@ -218,6 +218,7 @@ def upgrade(tarfile):
         local('adduser --disabled-password ebs')
     prepare_deploy()
     configure_rabbit()
+    stop()
     virtualenv()
     
 
