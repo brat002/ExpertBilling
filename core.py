@@ -1043,12 +1043,12 @@ class limit_checker(Thread):
                     finally:
                         cacheMaster.lock.release()
 
-                if 0: assert isinstance(caches, CoreCaches)
+
                 
                 oldid = -1
                 cur = self.connection.cursor()
                 for acc in caches.account_cache.data:
-                    if 0: assert isinstance(acc, AccountData)
+
                     if not acc.account_status == 1: continue
                     limits = caches.trafficlimit_cache.by_id.get(acc.tarif_id, [])
                     if not limits:
@@ -1059,7 +1059,6 @@ class limit_checker(Thread):
                         continue
                     block, speed_changed = (False, False)
                     for limit in limits:
-                        if 0: assert isinstance(limit, TrafficLimitData)
                         if not limit.group_id: continue
                         
                         if oldid == acc.account_id and (block or speed_changed):
@@ -1072,7 +1071,7 @@ class limit_checker(Thread):
                         
                         sp = caches.settlementperiod_cache.by_id.get(limit.settlement_period_id)
                         if not sp: logger.info("NOT FOUND: SP: %s",limit.settlement_period_id); continue
-                        if 0: assert isinstance(sp, SettlementPeriodData)
+
                         
                         sp_defstart = acc.datetime if sp.autostart else sp.time_start
                         sp_start, sp_end, delta = fMem.settlement_period_(sp_defstart, sp.length_in, sp.length, dateAT)
