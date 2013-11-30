@@ -48,11 +48,7 @@ from utilites import renewCaches, savepid, rempid, get_connection,  \
                      STATE_NULLIFIED, NFR_PACKET_HEADER_FMT
 
 
-def chunks(l, n):
-    """ Yield successive n-sized chunks from l.
-    """
-    for i in xrange(0, len(l), n):
-        yield l[i:i+n]
+
 #from dirq.QueueSimple import QueueSimple
 #from saver import RedisQueue
 
@@ -237,7 +233,9 @@ def nfPacketHandle(data, addr, flowCache):
     hdr = hdr_class(data[:vars.headerLENGTH])
     #======
     #runs through flows
-    chunks(hdr[1])
+    
+    
+
     for n in xrange(hdr[1]):
         offset = vars.headerLENGTH + (vars.flowLENGTH * n)
         flow_data = data[offset:offset + vars.flowLENGTH]
