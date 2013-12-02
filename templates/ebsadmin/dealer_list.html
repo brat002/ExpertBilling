@@ -1,31 +1,29 @@
 {% extends "ebsadmin/base.html" %}
+
 {% load i18n %}
 {% load ebsadmin_tags %}
 {% load render_table from django_tables2 %}
-{% block extra_head %}
 
-        <script type="text/javascript"> 
-        $(document).ready(function() {
-
-        });
-        </script>
-
-{% endblock %}
 {% block base %}
-
   <div class="row-fluid">
-<div>
-<ul class="breadcrumb">
-  <li>
-    <a href="{% url 'dealer' %}">{% blocktrans %}Дилеры{% endblocktrans %}</a> <span class="divider">/</span>
-  </li>
-</ul>
-</div>
-
-<div class="btn-toolbar pull-right"><a href="{% url 'dealer_edit' %}" id="id_btn_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a>&nbsp;</div>
-<div>
-  {% render_table table %}
-</div>
+    <div>
+      <ul class="breadcrumb">
+        <li>
+          <a href="{% url 'dealer' %}">
+            {% blocktrans %}Дилеры{% endblocktrans %}
+          </a> <span class="divider">/</span>
+        </li>
+      </ul>
     </div>
- {% endblock %}
 
+    <div class="btn-toolbar pull-right">
+      <a href="{% url 'dealer_edit' %}" id="id_btn_add" class="btn btn-success">
+        {% blocktrans %}Добавить{% endblocktrans %}
+      </a>&nbsp;
+    </div>
+    
+    <div>
+      {% render_table table %}
+    </div>
+  </div>
+{% endblock %}
