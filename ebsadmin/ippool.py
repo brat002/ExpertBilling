@@ -78,7 +78,11 @@ def ippool_edit(request):
    
     return { 
         'form':form, 
-        'item': item
+        'item': item,
+        'list_url': reverse('ippool'),
+        'list_label': _(u'IP пулы'),
+        'form_action_url': reverse('ippool_edit'),
+        'form_legend': _(u'Параметры IP пула'),
     }
 
 @ajax_request

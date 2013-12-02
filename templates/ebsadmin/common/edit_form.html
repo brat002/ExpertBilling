@@ -9,23 +9,26 @@
     <div class="row-fluid">
       <ul class="breadcrumb">
         <li>
-          <a href="{% url 'ippool' %}">
-            {% blocktrans %}IP пулы{% endblocktrans %}
+          <a href="{{ list_url }}">
+            {{ list_label }}
           </a> <span class="divider">/</span>
         </li>
-        <li class="active">{{form.name.value}}</li>
+        <li class="active">{{ form.name.value }}</li>
       </ul>
 
-      <form method="POST" action="{% url 'ippool_edit' %}?id={{item.id}}"class="well form-horizontal form-condensed ">
+      <form method="POST" action="{{ form_action_url }}?id={{item.id}}"class="well form-horizontal form-condensed ">
         <legend>
-          {% blocktrans %}Параметры IP пула{% endblocktrans %}{% objectlog item %}
+          {{ form_legend }}
+          {% objectlog item %}
         </legend>
         <fieldset>
           {{form|crispy}}
         </fieldset>
         <fieldset>
           <div class="form-actions form-actions-center">
-            <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
+            <button class="btn btn-primary" type="submit">
+              {% blocktrans %}Сохранить{% endblocktrans %}
+            </button>
           </div>
         </fieldset>
       </form>
