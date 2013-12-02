@@ -32,7 +32,7 @@ def ippool(request):
     return {"table": table} 
     
 @systemuser_required
-@render_to('ebsadmin/ippool_edit.html')
+@render_to('ebsadmin/common/edit_form.html')
 def ippool_edit(request):
 
     id = request.GET.get("id")
@@ -76,7 +76,10 @@ def ippool_edit(request):
         else:
             form = IPPoolForm()
    
-    return { 'form':form, 'item': item} 
+    return { 
+        'form':form, 
+        'item': item
+    }
 
 @ajax_request
 @systemuser_required
