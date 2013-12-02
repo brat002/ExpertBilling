@@ -33,7 +33,7 @@ def hardware(request):
     return {"table": table} 
     
 @systemuser_required
-@render_to('ebsadmin/hardware_edit.html')
+@render_to('ebsadmin/common/edit_form.html')
 def hardware_edit(request):
     id = request.POST.get("id")
 
@@ -77,7 +77,15 @@ def hardware_edit(request):
         else:
             form = HardwareForm()
 
-    return { 'form':form, 'status': False, 'item':item} 
+    return {
+        'form':form,
+        'status': False,
+        'item':item,
+        'list_url': reverse('hardware'),
+        'list_label': _(u'Устройства'),
+        'form_action_url': reverse('hardware_edit'),
+        'form_legend': _(u'Параметры устройства'),
+    }
 
 @ajax_request
 @systemuser_required
