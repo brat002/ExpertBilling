@@ -42,7 +42,7 @@ $(document).ready(function() {
     
     $('<div/>').dialog2({
       title: gettext('Внести платёж'), 
-      content: element.attr('href')+'?accounts='+element.data('accountid'), 
+      content: element.attr('href')+'?account_id='+element.data('accountid'), 
       id: "server-notice"
     });
 
