@@ -10,7 +10,7 @@ $(document).ready(function() {
             message = gettext('Вы действительно хотите удалить?');
         }
 
-        $.fn.dialog2.helpers.confirm(a.data('clickmessage'), {
+        $.fn.dialog2.helpers.confirm(message, {
             confirm: function() {
                 $.getJSON(a.attr('href'), {}, function(data,status){
                     if(status == 'success') {
