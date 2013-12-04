@@ -1192,7 +1192,13 @@
           <fieldset>
             <legend>{% blocktrans %}Взятое в аренду оборудование{% endblocktrans %}</legend>
             {% if accounthardware_table %}{% render_table accounthardware_table %}{% endif %}
-            <input type="button"  id="modal-accounthardware-dialog-table" class="btn btn-success  align-right" value="{% blocktrans %}Добавить{% endblocktrans %}">
+
+            <a href="{% url 'accounthardware' %}?account_id={{account.id}}"
+                class="btn btn-success align-right general-modal-dialog" 
+                data-dlgbodyid="accounthardware-modal" 
+                data-dlgtitle="{% trans 'Прикрепить оборудование' %}">
+              {% blocktrans %}Добавить{% endblocktrans %}
+            </a>
           </fieldset>
 
           <fieldset>
