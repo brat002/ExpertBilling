@@ -1165,7 +1165,7 @@
   <fieldset>
     <legend>Предыдущие тарифные планы </legend>
     {% if accounttarif_table %}{% render_table accounttarif_table %}{% endif %}
-    <a href="{% url 'accounttariff_edit' %}?account_id={{account.id}}" id="modal-accounttariff-dialog-table" class="btn btn-success  align-right">Добавить</a>
+    <a href="{% url 'accounttariff_edit' %}?account_id={{account.id}}" class="btn btn-success  align-right general-modal-dialog" data-dlgbodyid="server-notice" data-dlgtitle="{% trans 'Изменение тарифного плана' %}">Добавить</a>
   </fieldset>
   {% comment %}
   <fieldset>
