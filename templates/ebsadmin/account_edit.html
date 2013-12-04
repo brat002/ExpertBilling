@@ -59,7 +59,7 @@
                 {% blocktrans %}SMS{% endblocktrans %} <span class="caret"></span>
               </a>
               <ul class="dropdown-menu">
-               <li><a href="{% url 'sendsms' %}" id="modal-sendsms-dialog-table" data-accountid="{{account.id}}">{% blocktrans %}Отправить SMS{% endblocktrans %}</a></li>
+               <li><a href="{% url 'sendsms' %}?accounts={{account.id}}" id="general-modal-dialog" data-dlgtitle="{% trans 'Отправить SMS' %}">{% blocktrans %}Отправить SMS{% endblocktrans %}</a></li>
                <li><a href="{% url 'sms' %}?accounts={{account.id}}">{% blocktrans %}Отправленные SMS{% endblocktrans %}</a></li>
 
              </ul>

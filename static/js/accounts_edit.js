@@ -1,18 +1,5 @@
 $(document).ready(function() {
 
-  // вызов диалога отправки смс из формы редактирования аккаунта
-  $("#modal-sendsms-dialog-table").click(function(event) {
-    var element = $(this);
-
-    $('<div/>').dialog2({
-      title: gettext('Отправить SMS'), 
-      content: element.attr('href')+'?accounts='+element.data('accountid'), 
-      id: "server-notice"
-    });
-
-    event.preventDefault(event);
-  });
-
   $(".comment-done").click(function(event) {
     $('<div />').dialog2({
       title: gettext('Изменить запись'),
@@ -36,18 +23,6 @@ $(document).ready(function() {
   }else{
     $('#organization-fieldset').hide();
   }
-
-  $("#modal-transaction-dialog").click(function(event) {
-    var element = $(this);
-
-    $('<div/>').dialog2({
-      title: gettext('Внести платёж'), 
-      content: element.attr('href')+'?account_id='+element.data('accountid'), 
-      id: "server-notice"
-    });
-
-    event.preventDefault(event);
-  });
 
   $("#general-modal-dialog").click(function(event) {
     var element = $(this);
