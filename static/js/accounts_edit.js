@@ -24,16 +24,4 @@ $(document).ready(function() {
     $('#organization-fieldset').hide();
   }
 
-  $("#general-modal-dialog").click(function(event) {
-    var element = $(this);
-    
-    $('<div/>').dialog2({
-      title: element.data('dlgtitle'), 
-      content: element.attr('href'), 
-      id: "server-notice"
-    });
-
-    event.preventDefault(event);
-  });
-
 });
