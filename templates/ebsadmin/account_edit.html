@@ -1293,7 +1293,7 @@
       <li><strong>{% blocktrans %}Обещанные платежи:{% endblocktrans %} <a href="{% url 'transactionreport2' %}?account={{account.id}}&tree=PROMISE_PAYMENT">{{account.get_last_promises_count}}</a></strong></li>
       <li>                                    
        <div class="btn-group">
-         <a href="#"  class="btn btn-success" id="modal-transaction-dialog" ><i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}</a>
+         <a href="{% url 'transaction_edit' %}" class="btn btn-success" id="modal-transaction-dialog" data-accountid="{{account.id}}"><i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}</a>
        </div>
      </li>
      <li class="nav-header">{% blocktrans %}Бонусный счёт{% endblocktrans %}</li>

@@ -37,4 +37,16 @@ $(document).ready(function() {
     $('#organization-fieldset').hide();
   }
 
+  $("#modal-transaction-dialog").click(function(event) {
+    var element = $(this);
+    
+    $('<div/>').dialog2({
+      title: gettext('Внести платёж'), 
+      content: element.attr('href')+'?accounts='+element.data('accountid'), 
+      id: "server-notice"
+    });
+
+    event.preventDefault(event);
+  });
+
 });
