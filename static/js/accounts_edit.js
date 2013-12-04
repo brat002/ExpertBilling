@@ -6,10 +6,10 @@ $(document).ready(function() {
 
     $('<div/>').dialog2({
       title: gettext('Отправить SMS'), 
-      content: element.attr('href')+'?accounts=' + element.attr('accountid'), 
+      content: element.attr('href')+'?accounts='+element.data('accountid'), 
       id: "server-notice"
     });
-    
+
     event.preventDefault(event);
   });
 
