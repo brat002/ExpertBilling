@@ -13,4 +13,13 @@ $(document).ready(function() {
     event.preventDefault(event);
   });
 
+  $(".comment-done").click(function(event) {
+    $('<div />').dialog2({
+      title: gettext('Изменить запись'),
+      content: this.href, 
+    });
+
+    event.preventDefault(event);
+  });
+
 });
