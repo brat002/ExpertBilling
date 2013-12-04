@@ -1198,7 +1198,12 @@
           <fieldset>
             <legend>Периоды без списаний</legend>
             {% if suspendedperiod_table %}{% render_table suspendedperiod_table  %}{% endif %}
-            <input type="button" id="modal-suspendedperiod-dialog-table" class="btn btn-success  align-right" value="{% blocktrans %}Добавить{% endblocktrans %}">
+            <a href="{% url 'suspendedperiod' %}?account_id={{account.id}}"
+                class="btn btn-success align-right general-modal-dialog" 
+                data-dlgbodyid="server-notice" 
+                data-dlgtitle="{% trans 'Добавить период без списаний услуг' %}">
+              {% blocktrans %}Добавить{% endblocktrans %}
+            </a>
           </fieldset>
 
           <fieldset>
