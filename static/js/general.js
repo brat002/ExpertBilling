@@ -4,6 +4,12 @@ $(document).ready(function() {
     $(".show-confirm").click(function(event) {
         a = $(this);
 
+        if (a.data('clickmessage')) {
+            message = a.data('clickmessage');
+        } else {
+            message = gettext('Вы действительно хотите удалить?');
+        }
+
         $.fn.dialog2.helpers.confirm(a.data('clickmessage'), {
             confirm: function() {
                 $.getJSON(a.attr('href'), {}, function(data,status){
@@ -14,7 +20,7 @@ $(document).ready(function() {
                             alert(data.message)
                         }
                     } else {
-                        alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
+                        alert(gettext('Произошла непредвиденная ошибка'))
                     }
                 })                      
             }, 
