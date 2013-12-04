@@ -39,10 +39,22 @@ $(document).ready(function() {
 
   $("#modal-transaction-dialog").click(function(event) {
     var element = $(this);
-    
+
     $('<div/>').dialog2({
       title: gettext('Внести платёж'), 
       content: element.attr('href')+'?account_id='+element.data('accountid'), 
+      id: "server-notice"
+    });
+
+    event.preventDefault(event);
+  });
+
+  $("#general-modal-dialog").click(function(event) {
+    var element = $(this);
+    
+    $('<div/>').dialog2({
+      title: element.data('dlgtitle'), 
+      content: element.attr('href'), 
       id: "server-notice"
     });
 
