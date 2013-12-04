@@ -36,7 +36,7 @@ $(document).ready(function() {
     $('<div/>').dialog2({
       title: element.data('dlgtitle'), 
       content: element.attr('href'), 
-      id: "server-notice"
+      id: element.data('dlgbodyid')
     });
 
     event.preventDefault(event);
