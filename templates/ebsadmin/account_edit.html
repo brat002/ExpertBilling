@@ -150,7 +150,12 @@
                   <div class="controls ">
                     <div class="input-append">
                       {{ form.contract }}
-                      <a id="modal-templateselect-dialog" class="btn btn-info btn-mini add-on" ><i class="icon-print icon-white"></i></a>
+                      <a href="{% url 'templateselect' %}?account_id={{account.id}}&type=1&type=2" 
+                        class="btn btn-info btn-mini add-on general-modal-dialog" 
+                        data-dlgbodyid="templateselect-modal" 
+                        data-dlgtitle="{% trans 'Выберите шаблон документа' %}">
+                      <i class="icon-print icon-white"></i>
+                    </a>
                     </div>
                     {% if form.contract.errors %}
                     <span class="help-inline">{% for error in form.contract.errors %}{{ error }}<br/> {% endfor %}</span>
@@ -971,7 +976,12 @@
               <legend>Подключаемые услуги</legend>
 
               {% if accountaddonservice_table %}{% render_table accountaddonservice_table %}{% endif %}
-              <a href="{% url 'accountaddonservice' %}?account_id={{account.id}}" class="btn btn-success align-right" id="modal-accountaddonservice-dialog" >Добавить</a>
+              <a href="{% url 'accountaddonservice' %}?account_id={{account.id}}" 
+                  class="btn btn-success align-right general-modal-dialog" 
+                  data-dlgbodyid="accountaddonservicer-modal" 
+                  data-dlgtitle="{% trans 'Прикрепить подключаемую услугу' %}">
+                Добавить
+              </a>
             </fieldset>
           </div>
         {% endif %}
@@ -1314,8 +1324,11 @@
           </strong>
           <li>
             <div class="btn-group">
-              <a href="#"  class="btn btn-large btn-info" id="modal-accounttariff-dialog">
-                <i class="icon-pencil icon-white "></i>{% blocktrans %}Изменить{% endblocktrans %}
+              <a href="/ebsadmin/accounttariff/edit/?account_id={{account.id}}" 
+                  class="btn btn-large btn-info general-modal-dialog" 
+                  data-dlgbodyid="server-notice" 
+                  data-dlgtitle="{% trans 'Изменение тарифного плана' %}">
+                <i class="icon-pencil icon-white"></i>{% blocktrans %}Изменить{% endblocktrans %}
               </a>
             </div>
           </li>
@@ -1346,9 +1359,12 @@
           <li><strong><h3>{{account.bonus_ballance|floatformat:2}} {{currency}}</h3></strong></li>
           <li>
             <div class="btn-group">
-              <a href="#" class="btn btn-success" id="modal-bonustransaction-dialog" >
+              <a href="{% url 'bonus_transaction_edit' %}?account_id={{account.id}}" 
+                  class="btn btn-success general-modal-dialog" 
+                  data-dlgbodyid="server-notice" 
+                  data-dlgtitle="{% trans 'Внести бонусный платёж' %}">
                 <i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}
-              </a>
+              </a>              
             </div>
           </li>
           <li class="divider"></li>
