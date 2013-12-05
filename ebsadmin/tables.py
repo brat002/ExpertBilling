@@ -1170,12 +1170,26 @@ class TPChangeRuleTable(TableReport):
         available_fields = ("id", 'row_class',  'from_tariff', 'to_tariff', 'cost', 'ballance_min', 'on_next_sp', 'settlement_period', 'disabled', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
 
-class AccountGroupTable(TableReport):
 
-    id = django_tables.LinkColumn('accountgroup_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    name = django_tables.LinkColumn('accountgroup_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    cnt = django_tables.TemplateColumn('{{record.account_set.count}}', verbose_name = _(u'Количество'))
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+class AccountGroupTable(TableReport):
+    id = django_tables.LinkColumn(
+        'accountgroup_edit',
+        get_params={'id': A('pk')},
+        attrs={'rel': "alert3", 'class': "general-modal-dialog", 'data-dlgid': "hardwaretype-modal", 'data-dlgtitle': _(u'Изменить тип')}
+    )
+    name = django_tables.LinkColumn(
+        'accountgroup_edit',
+        get_params={'id': A('pk')},
+        attrs={'rel': "alert3", 'class': "general-modal-dialog", 'data-dlgid': "hardwaretype-modal", 'data-dlgtitle': _(u'Изменить тип')}
+    )
+    cnt = django_tables.TemplateColumn('{{record.account_set.count}}', verbose_name=_(u'Количество'))
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить?'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     
     def __init__(self, *args, **argv):
         super(AccountGroupTable, self).__init__(*args, **argv)
