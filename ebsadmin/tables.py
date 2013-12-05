@@ -1305,7 +1305,11 @@ class AccountPrepaysTimeTable(TableReport):
 
     #account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))
     #group = django_tables.Column(u'Группа', accessor=A('group__name'))
-    id = django_tables.LinkColumn('accountprepaystraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    id = django_tables.LinkColumn(
+        'accountprepaystraffic_edit',
+        get_params={'id': A('pk')},
+        attrs={'rel': "alert3", 'class': "open-custom-dialog", 'data-dlgtitle': _(u'Изменить тип')}
+    )
     account_tarif = django_tables.Column(_(u'Аккаунт/Тариф'))
     
     datetime = FormatDateTimeColumn(verbose_name=_(u'Начислен'))
