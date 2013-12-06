@@ -484,7 +484,7 @@ class FlowDequeThread(Thread):
                             #found passthrough=false
                             if not passthr and classLst:
                                 #logger.info("flow no pass: %s  classlst:%s nnode: %s tarifGroups: %s", (flow, classLst, nnode, tarifGroups))
-                                self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
+                                self.add_classes_groups(flow, classLst, fnode, acc.accounttarif_id, has_groups, tarifGroups)
                                 if nnode.store==True:
                                     nfwrite_list.append(tuple(flow))
                                 break                   
@@ -492,7 +492,7 @@ class FlowDequeThread(Thread):
                             else:
                                 if classLst:
                                     #logger.info("flow pass: %s  classlst:%s nnode: %s tarifGroups: %s", (flow, classLst, nnode, tarifGroups))
-                                    self.add_classes_groups(flow, classLst, fnode, acc.acctf_id, has_groups, tarifGroups)
+                                    self.add_classes_groups(flow, classLst, fnode, acc.accounttarif_id, has_groups, tarifGroups)
                                     if nnode.store==True:
                                         nfwrite_list.append(tuple(flow))
                                 else: 

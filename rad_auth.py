@@ -660,8 +660,8 @@ class HandleSAuth(HandleSBase):
 
                 
             self.create_speed(nas, subacc.id, acc.tarif_id, acc.id, speed=subacc.vpn_speed)
-            if self.session_speed:
-                self.replypacket.AddAttribute('Class', str("%s,%s,%s,%s" % (subacc.id,ipinuse_id,nas.id,str(self.session_speed))))
+            #if self.session_speed:
+            self.replypacket.AddAttribute('Class', str("%s,%s,%s,%s" % (subacc.id,ipinuse_id,nas.id,str(self.session_speed))))
             self.add_values(acc.tarif_id, nas.id, acstatus)
 
             #print "Setting Speed For User" , self.speed
@@ -815,8 +815,8 @@ class HandlelISGAuth(HandleSAuth):
             #self.replypacket.AddAttribute('Class', str("%s,0,%s,%s" % (subacc.id,nas_id,str(self.session_speed))))
             
             self.create_speed(nas, subacc.id, acc.tarif_id, acc.id, speed=subacc.vpn_speed)
-            if self.session_speed:
-                self.replypacket.AddAttribute('Class', str("%s,0,%s,%s" % (subacc.id,nas_id,str(self.session_speed))))
+            #if self.session_speed:
+            self.replypacket.AddAttribute('Class', str("%s,0,%s,%s" % (subacc.id,nas_id,str(self.session_speed))))
 
 
             self.add_values(acc.tarif_id, nas.id, acstatus)
