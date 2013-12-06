@@ -1,1853 +1,1396 @@
 {% extends "ebsadmin/base.html" %}
+
 {% load i18n %}
 {% load billservice_tags %}
 {% load ebsadmin_tags %}
 {% load custom_filters %}
 {% load crispy_forms_tags %}
+
 {% block extra_head %}
-<script src="/media/inputmask/jquery.inputmask.js" type="text/javascript"></script>
-
-        <script type="text/javascript"> 
-        $(document).ready(function() {
-        	/*
-        	$("#id_phone_m").inputmask("mask", {"mask": ["+9[9][9]-[9][9]-[9][9][9][9][9][9][9]",], skipOptionalPartCharacter: "", clearMaskOnLostFocus: true });
-        	$("#id_phone_h").inputmask("mask", {"mask": ["+9[9][9]-[9][9]-[9][9][9][9][9][9][9]"], skipOptionalPartCharacter: "", clearMaskOnLostFocus: true });
-        	$("#id_contactperson_phone").inputmask("mask", {"mask": ["+9[9][9]-[9][9]-[9][9][9][9][9][9][9]"], skipOptionalPartCharacter: "", clearMaskOnLostFocus: true });
-             */
-
-        	
-        	{% if account %}
-
-        	{% endif %}
-        //$('#generate_username').popover({title:'Действие над аккаунтом', content: 'Сгенерировать имя пользователя'});
-        $("#generate_username").click(function() {
-        	$.getJSON('{% url 'generate_credentials' %}',{action:'login'},function(data,status){
-        	    if( status=='success' ){
-        	        if(data.success==true)
-        	        	$("#id_username").val(data.generated);
-        	        else
-        	        	alert(data.generated)
-        	    }else{
-        	        alert('{% blocktrans %}В процессе отправки произошла ошибка.{% endblocktrans %}')
-        	    }
-        	})
-        	});
-        
-        $("#modal-sendsms-dialog-table").click(function(event) {
-
-
-            $('<div/>').dialog2({
-                title: "{% blocktrans %}Отправить SMS{% endblocktrans %}", 
-                content: this.href+'?accounts={{account.id}}', 
-                id: "server-notice"
-            });
-
-            event.preventDefault(event);
-        });
-        
-        //$('#generate_password').popover({title:'Действие над аккаунтом', content: 'Сгенерировать пароль'});
-        $('#id_organization').click(function() {
-        	if ($('#id_organization').is(':checked')){
-        		$('#organization-fieldset').show();
-        	}else{
-        		$('#organization-fieldset').hide();
-        	}
-        	
-        });
-        if ($('#id_organization').is(':checked')){
-            $('#organization-fieldset').show();
-        }else{
-            $('#organization-fieldset').hide();
-        }
-        
-        $("#generate_password").click(function() {
-            $.getJSON('{% url 'generate_credentials' %}',{action:'password'},function(data,status){
-                if( status=='success' ){
-                    if(data.success==true)
-                    	//$("#id_password").val(data.generated);
-                        $("#{{form.password.auto_id}}").val(data.generated);
-                    else
-                        alert(data.generated)
-                }else{
-                    alert('{% blocktrans %}В процессе отправки произошла ошибка :({% endblocktrans %}')
-                }
-            })
-            });
-
-
-        	//$('#modal-accounttariff-dialog').popover({title:'Действие над аккаунтом', content: 'Cменить тарифный план'});
-
-             $("#modal-accounttariff-dialog").click(function(event) {
-                 $('<div/>').dialog2({
-                     title: "{% blocktrans %}Изменение тарифного плана{% endblocktrans %}", 
-                     content: "/ebsadmin/accounttariff/edit/?account_id={{account.id}}", 
-                     id: "server-notice"
-                 });
-
-                 event.preventDefault(event);
-             });
-
-
-            $("#modal-accounttariff-dialog-table").click(function(event) {
-                $('<div/>').dialog2({
-                    title: "{% blocktrans %}Изменение тарифного плана{% endblocktrans %}", 
-                    content: "/ebsadmin/accounttariff/edit/?account_id={{account.id}}", 
-                    id: "server-notice"
-                });
-
-                event.preventDefault(event);
-            });
-
-
-            //$('#modal-suspendedperiod-dialog-table').popover({title:'Добавить период без списаний', content: 'Добавить период, во время которого с аккаунта не будут производиться списания по периодическим и подключаемым услугам.'});
-
-            $("#modal-suspendedperiod-dialog-table").click(function(event) {
-                $('<div/>').dialog2({
-                    title: "{% blocktrans %}Добавить период без списаний услуг{% endblocktrans %}", 
-                    content: "{% url 'suspendedperiod' %}?account_id={{account.id}}", 
-                    id: "server-notice"
-                });
-
-                event.preventDefault(event);
-            });
-
-
-            $("#modal-transaction-dialog").click(function(event) {
-                $('<div/>').dialog2({
-                    title: "{% blocktrans %}Внести платёж{% endblocktrans %}", 
-                    content: "{% url 'transaction_edit' %}?account_id={{account.id}}", 
-                    id: "server-notice"
-                });
-
-                event.preventDefault(event);
-            });
-
-            $("#modal-bonustransaction-dialog").click(function(event) {
-                $('<div/>').dialog2({
-                    title: "{% blocktrans %}Внести бонусный платёж{% endblocktrans %}", 
-                    content: "{% url 'bonus_transaction_edit' %}?account_id={{account.id}}", 
-                    id: "server-notice"
-                });
-
-                event.preventDefault(event);
-            });
-            
-            $("#modal-accounthardware-dialog-table").click(function(event) {
-                $('<div />').dialog2({
-                    title: "{% blocktrans %}Прикрепить оборудование{% endblocktrans %}", 
-                    content: "{% url 'accounthardware' %}?account_id={{account.id}}", 
-                    id: "accounthardware-modal"
-                });
-
-                event.preventDefault(event);
-            });
-
-            		
-            $("#modal-accountaddonservice-dialog").click(function(event) {
-                $('<div />').dialog2({
-                    title: "{% blocktrans %}Прикрепить подключаемую услугу{% endblocktrans %}", 
-                    content: "{% url 'accountaddonservice' %}?account_id={{account.id}}", 
-                    id: "accountaddonservicer-modal"
-                });
-
-                event.preventDefault(event);
-            });
-
-
-            $("#modal-templateselect-dialog").click(function(event) {
-                $('<div />').dialog2({
-                    title: "{% blocktrans %}Выберите шаблон документа{% endblocktrans %}", 
-                    content: "{% url 'templateselect' %}?account_id={{account.id}}&type=1&type=2", 
-                    id: "templateselect-modal",
-                });
-
-                event.preventDefault(event);
-            });
-
-            $(function() {
-                $(".open-custom-dialog").click(function(event) {
-                    $('<div />').dialog2({
-                        title: "{% blocktrans %}Добавить{% endblocktrans %}", 
-                        content: this.href, 
-                        id: "accountaddonservicer-modal"
-                    });
-
-                    event.preventDefault(event);
-                });
-            });
-            $(".show-confirm").click(function(event) {
-            	a=$(this);
-                $.fn.dialog2.helpers.confirm("{% blocktrans %}Вы действительно хотите удалить?{% endblocktrans %}", {
-                    confirm: function() {
-                    	$.getJSON(a.attr('href'),{},function(data,status){
-                    	    if( status=='success' ){
-                    	    	if(data.status==true)
-                    	    		{
-                    	    		location.reload();
-                    	    		}else{
-                    	    			alert(data.message)
-                    	    		}
-                    	    	
-                    	    }else{
-                    	        alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
-                    	    }
-
-                    	})                    	
-                    	}, 
-                    decline: function() {  }
-                });
-
-                event.preventDefault(event);
-            });
-            $('#id_house').autocomplete({
-                source: function( request, response )
-                {                      
-                    $.ajax(
-                    { 
-                        url: "{% url 'house' %}",
-                        data: {
-                                term: request.term, 
-                                street_name: $('#id_street').val(),    //Pass the selected country to php
-                                city_id: $('#id_city').val()
-                              },        
-                        type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
-                        dataType: "json",   //return data in json format                                                                                                                                       
-                        success: function( data ) 
-                        {
-                            response( $.map( data.records, function( item ) 
-                            {
-                                return item.name
-                            }));
-                        }
-                    });                
-                },
-                minChars: 0, // Минимальная длина запроса для срабатывания автозаполнения
-                maxHeight: 400, // Максимальная высота списка подсказок, в пикселях
-                width: 300, // Ширина списка
-                zIndex: 9999, // z-index списка
-                deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
-                onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
-            });
-            $('#id_street').autocomplete({
-                source: function( request, response )
-                {                      
-                    $.ajax(
-                    { 
-                        url: "{% url 'street' %}",
-                        data: {
-                                term: request.term, 
-                                city_id: $('#id_city').val()
-                              },        
-                        type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
-                        dataType: "json",   //return data in json format                                                                                                                                       
-                        success: function( data ) 
-                        {
-                            response( $.map( data.records, function( item ) 
-                            {
-                                return item.name
-                            }));
-                        }
-                    });                
-                },
-                minChars: 0, // Минимальная длина запроса для срабатывания автозаполнения
-                maxHeight: 400, // Максимальная высота списка подсказок, в пикселях
-                width: 300, // Ширина списка
-                zIndex: 9999, // z-index списка
-                deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
-                onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
-            });
-            //activate latest tab, if it exists:
-            var lastTab = $.cookie('account_last_tab');
-            if (lastTab) {
-                $('ul.nav-tabs').children().removeClass('active');
-                $('a[href='+ lastTab +']').parents('li:first').addClass('active');
-                $('div.tab-content').children().removeClass('active');
-                $(lastTab).addClass('active');
-            }else
-                $('#tab-control a[href="#tab-first"]').tab('show');
-            
-
-                $('a[data-toggle="tab"]').on('shown', function(e){
-                  //save the latest tab using a cookie:
-                  $.cookie('account_last_tab', $(e.target).attr('href'));
-                });
-
-                $("#id_account-toolbar-save").click(function(event) {
-                    $('#id_form').submit();
-                    event.preventDefault(event);
-                });
-
-                
-                /* subacc */
-                $('#id_assign_vpn_ip_address').popover({title:'{% blocktrans %}Подбор IP адреса{% endblocktrans %}', content: '{% blocktrans %}Выдать следующий IP из пула или показать доcтупные{% endblocktrans %}', trigger: 'hover'});
-                $('#id_subacc-vpn_ip_address').autocomplete({
-                    source: function( request, response )
-                    {                      
-                        $.ajax(
-                        { 
-                            url: "{% url 'getipfrompool' %}",
-                            data: {
-                                    term: request.term, 
-                                    pool_id: $('#id_subacc-ipv4_vpn_pool').val(),    //Pass the selected country to php
-                                  },        
-                            type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
-                            dataType: "json",   //return data in json format                                                                                                                                       
-                            success: function( data ) 
-                            {
-                                response( $.map( data.records, function( item ) 
-                                {
-                                    return item
-                                }));
-                            }
-                        });                
-                    },
-                    minChars: 0, // Минимальная длина запроса для срабатывания автозаполнения
-                    maxHeight: 400, // Максимальная высота списка подсказок, в пикселях
-                    width: 300, // Ширина списка
-                    zIndex: 9999, // z-index списка
-                    deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
-                    onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
-                });
-                $('#id_subacc-vpn_ip_address').click(function(){$('#id_subacc-vpn_ip_address').autocomplete('search')});
-                $('#id_assign_vpn_ip_address').click(function(){
-                    if ($('#id_subacc-vpn_ip_address').val()=='' || $('#id_subacc-vpn_ip_address').val()=='0.0.0.0'){
-                        $('#id_subacc-vpn_ip_address').val('')
-                    }
-                    if ($('#id_subacc-vpn_ip_address').val()){
-                        $('#id_subacc-vpn_ip_address').autocomplete('search')
-                        return
-                    }
-                        $.ajax(
-                        { 
-                            url: "{% url 'getipfrompool' %}",
-                            data: {
-                                    term: $('#id_subacc-vpn_ip_address').val(), 
-                                    pool_id: $('#id_subacc-ipv4_vpn_pool').val(),    //Pass the selected country to php
-                                    limit:1
-                                  },        
-                            type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
-                            dataType: "json",   //return data in json format                                                                                                                                       
-                            success: function( data ) 
-                            {
-                                $('#id_subacc-vpn_ip_address').val(data.records);
-                            }
-                        });   
-                });
-
-                $('#id_assign_ipn_ip_address').popover({title:'{% blocktrans %}Подбор IP адреса{% endblocktrans %}', content: '{% blocktrans %}Выдать следующий IP из пула или показать дсотупные{% endblocktrans %}', trigger: 'hover'});
-                $('#id_subacc-ipn_ip_address').autocomplete({
-                    source: function( request, response )
-                    {                      
-                        $.ajax(
-                        { 
-                            url: "{% url 'getipfrompool' %}",
-                            data: {
-                                    term: request.term, 
-                                    pool_id: $('#id_subacc-ipv4_ipn_pool').val(),    //Pass the selected country to php
-                                  },        
-                            type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
-                            dataType: "json",   //return data in json format                                                                                                                                       
-                            success: function( data ) 
-                            {
-                                response( $.map( data.records, function( item ) 
-                                {
-                                    return item
-                                }));
-                            }
-                        });                
-                    },
-                    minChars: 0, // Минимальная длина запроса для срабатывания автозаполнения
-                    maxHeight: 400, // Максимальная высота списка подсказок, в пикселях
-                    width: 300, // Ширина списка
-                    zIndex: 9999, // z-index списка
-                    deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
-                    onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
-                });
-                $("#modal-ipn-ping-dialog").click(function(event) {
-                    $('<div />').dialog2({
-                        title: "Ping", 
-                        content: "{% url 'tools_ping' %}?ip="+ $('#id_subacc-ipn_ip_address').val()
-                    });
-
-                    event.preventDefault(event);
-                });
-                $("#modal-vpn-ping-dialog").click(function(event) {
-                    $('<div />').dialog2({
-                        title: "Ping", 
-                        content: "{% url 'tools_ping' %}?ip="+ $('#id_subacc-vpn_ip_address').val()
-                    });
-
-                    event.preventDefault(event);
-                });
-                $('#id_subacc-ipn_ip_address').click(function(){$('#id_subacc-ipn_ip_address').autocomplete('search')});
-                $('#id_subacc-ipv6_vpn_ip_address').click(function(){$('#id_subacc-ipv6_vpn_ip_address').autocomplete('search')});
-                $('#id_subacc-vpn_ipv6_ip_address').autocomplete({
-                    source: function( request, response )
-                    {                      
-                        $.ajax(
-                        { 
-                            url: "{% url 'getipfrompool' %}",
-                            data: {
-                                    term: request.term, 
-                                    pool_id: $('#id_subacc-ipv6_vpn_pool').val(),    //Pass the selected country to php
-                                  },        
-                            type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
-                            dataType: "json",   //return data in json format                                                                                                                                       
-                            success: function( data ) 
-                            {
-                                response( $.map( data.records, function( item ) 
-                                {
-                                    return item
-                                }));
-                            }
-                        });                
-                    },
-                    minChars: 0, // Минимальная длина запроса для срабатывания автозаполнения
-                    maxHeight: 400, // Максимальная высота списка подсказок, в пикселях
-                    width: 300, // Ширина списка
-                    zIndex: 9999, // z-index списка
-                    deferRequestBy: 300, // Задержка запроса (мсек), на случай, если мы не хотим слать миллион запросов, пока пользователь печатает. Я обычно ставлю 300.
-                    onSelect: function(data, value){ }, // Callback функция, срабатывающая на выбор одного из предложенных вариантов,
-                });
-                $('#id_subacc-assign_ipv6_vpn_ip_address').click(function(){
-                    if ($('#id_subacc-vpn_ipv6_ip_address').val()=='' || $('#id_subacc-vpn_ipv6_ip_address').val()==':::'){
-                        $('#id_subacc-vpn_ipv6_ip_address').val('')
-                    }
-                    if ($('#id_subacc-vpn_ipv6_ip_address').val()){
-                        $('#id_subacc-vpn_ipv6_ip_address').autocomplete('search')
-                        return
-                    }
-                        $.ajax(
-                        { 
-                            url: "{% url 'getipfrompool' %}",
-                            data: {
-                                    term: $('#id_subacc-vpn_ipv6_ip_address').val(), 
-                                    pool_id: $('#id_subacc-ipv6_vpn_pool').val(),    //Pass the selected country to php
-                                    limit:1
-                                  },        
-                            type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
-                            dataType: "json",   //return data in json format                                                                                                                                       
-                            success: function( data ) 
-                            {
-
-                                $('#id_subacc-vpn_ipv6_ip_address').val(data.records);
-                            }
-                        });   
-                });
-                
-                
-                $('#id_assign_ipn_ip_address').click(function(){
-                    if ($('#id_subacc-ipn_ip_address').val()=='' || $('#id_subacc-ipn_ip_address').val()=='0.0.0.0'){
-                        $('#id_subacc-ipn_ip_address').val('')
-                    }
-                    if ($('#id_subacc-ipn_ip_address').val()){
-                        $('#id_subacc-ipn_ip_address').autocomplete('search')
-                        return
-                    }
-                        $.ajax(
-                        { 
-                            url: "{% url 'getipfrompool' %}",
-                            data: {
-                                    term: $('#id_subacc-ipn_ip_address').val(), 
-                                    pool_id: $('#id_subacc-ipv4_ipn_pool').val(),    //Pass the selected country to php
-                                    limit:1
-                                  },        
-                            type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
-                            dataType: "json",   //return data in json format                                                                                                                                       
-                            success: function( data ) 
-                            {
-                                $('#id_subacc-ipn_ip_address').val(data.records);
-                            }
-                        });   
-                });
-                
-                $('#id_get_mac_address').popover({title:'{% blocktrans %}Внимание{% endblocktrans %}', content: '{% blocktrans %}Этот функционал поддерживается только при использовании RouterOS MikroTik{% endblocktrans %}', trigger: 'hover'});
-                $('#id_get_mac_address').click(function(){
-                    if (!$('#id_subacc-nas').val()==null){
-                        $.fn.dialog2.helpers.alert("{% blocktrans %}Вы не выбрали сервер доступа.{% endblocktrans %}", { 
-                            
-                        });
-                        return
-                    };
-                    if ($('#id_subacc-ipn_ip_address').val()==''){
-                        $.fn.dialog2.helpers.alert("{% blocktrans %}Вы не указали IPN IP адрес.{% endblocktrans %}", { 
-                            
-                        });
-                        return
-                    };
-                        $.ajax(
-                        { 
-                            url: "{% url 'get_mac_for_ip' %}",
-                            data: {
-                                    nas_id: $('#id_subacc-nas').val(), 
-                                    ipn_ip_address: $('#id_subacc-ipn_ip_address').val(),    //Pass the selected country to php
-                                  },        
-                            type: "POST",  // a jQuery ajax POST transmits in querystring format in utf-8
-                            dataType: "json",   //return data in json format                                                                                                                                       
-                            success: function( data ) 
-                            {   
-                                if(data.success==true){
-                                $('#id_subacc-ipn_mac_address').val(data.mac);
-                                }else{
-                                    $.fn.dialog2.helpers.alert("{% blocktrans %}Не удалось получить MAC адрес по причине {% endblocktrans %}"+ data.message, { 
-
-                                    });
-                                }
-                            }
-                        });   
-                        
-
-                });
-                $("#subacc_generate_username").click(function() {
-                    $.getJSON('{% url 'generate_credentials' %}',{action:'login'},function(data,status){
-                        if( status=='success' ){
-                            if(data.success==true)
-                                $("#id_subacc-username").val(data.generated);
-                            else
-                                alert(data.generated)
-                        }else{
-                            alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
-                        }
-                    })
-                    });
-                $("#subacc_generate_password").click(function() {
-                    $.getJSON('{% url 'generate_credentials' %}',{action:'password'},function(data,status){
-                        if( status=='success' ){
-                            if(data.success==true)
-                                $("#id_subacc-password").val(data.generated);
-                            else
-                                alert(data.generated)
-                        }else{
-                            alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
-                        }
-                    })
-                    });
-                /* subacc */
-                
-                $(".comment-done").click(function(event) {
-                    $('<div />').dialog2({
-                        title: "{% blocktrans %}Изменить запись{% endblocktrans %}", 
-                        content: this.href, 
-                    });
-
-                    event.preventDefault(event);
-                });
-        });
-        </script>
-<style type="text/css">
-
-.disabled-row {
-    background-color: lightgrey;
-}
-
-
-</style>
+  <script src="/media/inputmask/jquery.inputmask.js" type="text/javascript"></script>
+  <script src="/static/js/accounts_edit.js" type="text/javascript"></script>
+  <script src="/static/js/general.js"></script>
 {% endblock %}
- {% load render_table from django_tables2 %}
+
+{% load render_table from django_tables2 %}
+
 {% block base %}
-
 <div class="row-fluid">
-
-<div class="{% if account %}span9{% else %}span12{% endif %}">
-
-<ul class="breadcrumb">
-  <li>
-    <a href='{% url 'account_list' %}?data=data'>{% blocktrans %}Все аккаунты{% endblocktrans %}</a> / <a href="{% url 'account_edit' %}?id={{account.id}}">{{account.username}}</a> 
-  </li>
-</ul>
-<div >
-<div class="navbar navbar-googlenav">
-  <div class="navbar-inner">
-    <div class="btn-toolbar">
-      <div class="btn-group">
-        <a href="#" class="btn btn-danger" id='id_account-toolbar-save'>{% blocktrans %}Сохранить{% endblocktrans %}</a>
-      </div>
-      {% if account %}
-      <div class="btn-group">
-        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-          {% blocktrans %}Radius отчёты{% endblocktrans %} <span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu">
-              <li><a href="{% url 'authlog_list' %}?account={{account.id}}"><i class="icon-info-sign"></i>{% blocktrans %}RADIUS авторизации{% endblocktrans %}</a></li>
-              <li><a href="{% url 'activesessionreport' %}?account={{account.id}}"><i class="icon-info-sign"></i>{% blocktrans %}RADIUS сессии{% endblocktrans %}</a></li>
-              <li><a href="{% url 'ipinuse_list' %}?account={{account.id}}"><i class="icon-info-sign"></i>{% blocktrans %}Использованные IP-адреса{% endblocktrans %}</a></li>
-        </ul>
-      </div>
-       <div class="btn-group">
-        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-          {% blocktrans %}Предоплаченные остатки{% endblocktrans %} <span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu">
-              <li><a href="{% url 'accountprepaystraffic' %}?account={{account.id}}"> {% blocktrans %}NetFlow трафик{% endblocktrans %}</a></li>
-              <li><a href="{% url 'accountprepaysradiustraffic' %}?account={{account.id}}">{% blocktrans %}RADIUS трафик{% endblocktrans %}</a></li>
-              <li><a href="{% url 'accountprepaystime' %}?account={{account.id}}">{% blocktrans %}Время{% endblocktrans %}</a></li>
-        </ul>
-      </div>
-      <div class="btn-group">
-        <a href='{% url 'news_edit' %}?accounts={{account.id}}&private=True' class="btn" ><i class='cus-newspaper'></i> {% blocktrans %}Сообшение{% endblocktrans %}</a>
-      </div>
-       <div class="btn-group">
-        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-          {% blocktrans %}SMS{% endblocktrans %} <span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu">
-               <li><a href="{% url 'sendsms' %}"  id="modal-sendsms-dialog-table">{% blocktrans %}Отправить SMS{% endblocktrans %}</a></li>
-              <li><a href="{% url 'sms' %}?accounts={{account.id}}">{% blocktrans %}Отправленные SMS{% endblocktrans %}</a></li>
-
-        </ul>
-      </div>
-                      <div class="btn-group">
-                     <a href="{% url 'helpdesk_submit' %}?account_id={{account.id}}"  class="btn btn-warning" ><i class="icon-comment icon-white "></i>{% blocktrans %}Подать заявку{% endblocktrans %}</a>
-
-                 </div>
-
-    {% endif %}
-  </div>
-</div>
-</div>
-</div>
-
-            <form class=" well form-horizontal  form-condensed" method="POST" id="id_form" action="{% url 'account_edit' %}{% if account %}?id={{account.id}}{% endif %}">
-                <ul class="nav nav-tabs" id="tab-control">
-                    <li class="active"><a href="#tab-first" data-toggle="tab">{% blocktrans %}Карточка{% endblocktrans %}</a></li>
-                    {% if account %}<li class=""><a href="#tab-tables" data-toggle="tab">{% blocktrans %}Услуги{% endblocktrans %}</a></li>{% endif %}
-                    <li class=""><a href="#tab-address" data-toggle="tab">{% blocktrans %}Персональные данные{% endblocktrans %}</a></li>
-                    <li class=""><a href="#tab-second" data-toggle="tab">{% blocktrans %}Юр. лицо{% endblocktrans %}</a></li>
-                    <li class=""><a href="#tab-third" data-toggle="tab">{% blocktrans %}Прочее{% endblocktrans %}</a></li>
-                    
-
+  <div class="{% if account %}span9{% else %}span12{% endif %}">
+    <ul class="breadcrumb">
+      <li>
+        <a href='{% url 'account_list' %}?data=data'>
+          {% blocktrans %}Все аккаунты{% endblocktrans %}
+        </a> / <a href="{% url 'account_edit' %}?id={{account.id}}">{{account.username}}</a> 
+      </li>
+    </ul>
+    <div>
+      <div class="navbar navbar-googlenav">
+        <div class="navbar-inner">
+          <div class="btn-toolbar">
+            <div class="btn-group">
+              <a href="#" class="btn btn-danger" id='id_account-toolbar-save'>{% blocktrans %}Сохранить{% endblocktrans %}</a>
+            </div>
+            {% if account %}
+              <div class="btn-group">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                  {% blocktrans %}Radius отчёты{% endblocktrans %} <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="{% url 'authlog_list' %}?account={{account.id}}">
+                      <i class="icon-info-sign"></i>{% blocktrans %}RADIUS авторизации{% endblocktrans %}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'activesessionreport' %}?account={{account.id}}">
+                      <i class="icon-info-sign"></i>{% blocktrans %}RADIUS сессии{% endblocktrans %}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'ipinuse_list' %}?account={{account.id}}">
+                      <i class="icon-info-sign"></i>{% blocktrans %}Использованные IP-адреса{% endblocktrans %}
+                    </a>
+                  </li>
                 </ul>
-
-                <div class="tab-content">
-                    <div class="tab-pane active" id="tab-first">
-                        <fieldset>
-                            <legend>{% blocktrans %}Карточка клиента{% endblocktrans %}{% objectlog account %}</legend>
-
-
-    
-
-                            <div class="control-group  {% if form.username.errors %} clearfix error{% endif %}">
-                            <div class="control-row">
-                                <label class="control-label" for="input-username"><strong>{{form.username.label}}</strong></label>
-                                <div class="controls">
-                                    <div class="input-append">{{ form.username }}
-                                    <a  id="generate_username" class="btn  add-on">#</a>
-                                    </div>
-                                    {% if form.username.errors %}
-                                    <span class="help-inline">{% for error in form.username.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if form.username.help_text%}
-                                    <p class="help-block">
-                                        {{ form.username.help_text|safe }}
-                                    </p>
-                                    {% endif %}
-                                    
-                                </div>
-                            </div>
-                            {% if account.contract %}
-                            <div class="control-row">
-                                <label class="control-label"><strong>{{form.contract.label}}</strong></label>
-                                <div class="controls ">
-                                    <div class="input-append">{{ form.contract }}<a id="modal-templateselect-dialog" class="btn btn-info btn-mini add-on" ><i class="icon-print icon-white"></i></a></div>
-                                    {% if form.contract.errors %}
-                                        <span class="help-inline">{% for error in form.contract.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if form.contract.help_text%}
-                                        <p class="help-block">
-                                            {{ form.contract.help_text|safe }}
-                                        </p>
-                                    {% endif %}
-                                  
-                                </div>
-                             </div>
-                            {% else %}
-                            <div class="control-row">
-                                <label class="control-label">Шаблон договора:</label>
-                                <div class="controls">
-                                       
-                                        {{ form.contract_num }}
-                                        {% if form.contract_num.errors %}
-                                            <span class="help-inline">{% for error in form.contract_num.errors %}{{ error }}<br/> {% endfor %}</span>
-                                        {% endif %}
-                                        {% if form.contract_num.help_text%}
-                                            <p class="help-block">
-                                                {{ form.contract_num.help_text|safe }}
-                                            </p>
-                                        {% endif %}
-                                </div>
-                            </div>
-                            {% endif %}
-                            </div>
-                            
-
-
-
-                            <div class="control-group">
-                            <div class="control-row {% if form.password.errors %}error{% endif %}">
-                                <label class="control-label" for="input-password"><strong>{{form.password.label}}</strong></label>
-                                <div class="controls">
-                                    <div class="input-append">{{ form.password }}<a id="generate_password" class="btn  add-on">#</a></div>
-                                    {% if form.password.errors %}
-                                    <span class="help-inline">{% for error in form.password.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if form.password.help_text%}
-                                    <p class="help-block">
-                                        {{ form.password.help_text|safe }}
-                                    </p>
-                                    {% endif %}
-
-                                </div>
-                            </div>
-                            <div class="control-row">
-                                <label class="control-label" for="input-account-status"><strong>{{form.status.label}}</strong></label>
-                                <div class="controls">
-                                            {{ form.status }}
-                                            {% if form.status.errors %}
-                                                <span class="help-inline">{% for error in form.status.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.status.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.status.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                </div>
-                            </div>
-                            </div>
-                            
-
-                            <div class="control-group">
-                            <div class="control-row {% if form.credit.errors %}error{% endif %}">
-                                <label class="control-label" for="input-credit"><strong>{{form.credit.label}}</strong></label>
-                                <div class="controls">
-                                        {{ form.credit }}
-                                        {% if form.credit.errors %}
-                                            <span class="help-inline">{% for error in form.credit.errors %}{{ error }}<br/> {% endfor %}</span>
-                                        {% endif %}
-                                        {% if form.credit.help_text%}
-                                            <p class="help-block">
-                                                {{ form.credit.help_text|safe }}
-                                            </p>
-                                        {% endif %}
-                                </div>
-                                </div>
-                            <div class="control-row">
-                                <label class="control-label" for="input-password">{{form.account_group.label}}</label>
-                                <div class="controls">
-                                    {{ form.account_group }}
-                                    {% if form.account_group.errors %}
-                                    <span class="help-inline">{% for error in form.account_group.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if form.account_group.help_text%}
-                                    <p class="help-block">
-                                        {{ form.account_group.help_text|safe }}
-                                    </p>
-                                    {% endif %}
-                                    
-                                </div>
-                            </div>
-                            </div>
-
-                            <div class="control-group">
-                            <div class="control-row {% if form.created.errors %}error{% endif %}">
-                                    <label class="control-label" for="input-created"><strong>Дата создания</strong></label>
-                                    <div class="controls">
-                                    {{ form.created }}
-                                    {% if form.created.errors %}
-                                    <span class="help-inline">{% for error in form.created.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if form.created.help_text%}
-                                    <p class="help-block">
-                                        {{ form.created.help_text|safe }}
-                                    </p>
-                                    {% endif %}
-
-                                    </div>
-                            </div>
-                            <div class="control-row">
-                                <label class="control-label" for="input-account-status">{{form.systemuser.label}}</label>
-                                <div class="controls">
-                                            {{ form.systemuser }}
-                                            {% if form.systemuser.errors %}
-                                                <span class="help-inline">{% for error in form.systemuser.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.systemuser.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.systemuser.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                </div>
-                            </div>
-                            
-                            </div>
-
-
-
-
-{%  comment %} SUBACCOUNT FORM{% endcomment %}
-{% if subaccount_form %}
-{{subaccount_form.id}}
-{{subaccount_form.account}}
-<legend>Параметры доступа (упрощённый интерфейс)</legend>
-                    <div class="control-group">
-                        <div class="control-row">
-                            <label class="control-label" for="input-username">{{subaccount_form.username.label}}</label>
-                            <div class="controls">
-                                    
-                                    <div class="input-append">{{ subaccount_form.username }}
-                                        <a id="subacc_generate_username" class="btn  add-on">#</a>
-                                    </div>
-                                    {% if subaccount_form.username.errors %}
-                                        <span class="help-inline">{% for error in subaccount_form.username.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if subaccount_form.username.help_text%}
-                                        <p class="help-block">
-                                            {{ subaccount_form.username.help_text|safe }}
-                                        </p>
-                                    {% endif %}
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="control-group">
-                        <div class="control-row">
-                            <label class="control-label" for="input-password">{{subaccount_form.password.label}}</label>
-                            <div class="controls">
-                                    <div class="input-append">{{ subaccount_form.password }}
-                                        <a id="subacc_generate_password" class="btn  add-on">#</a>
-                                    </div>
-                                    {% if subaccount_form.password.errors %}
-                                        <span class="help-inline">{% for error in subaccount_form.password.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if subaccount_form.password.help_text%}
-                                        <p class="help-block">
-                                            {{ subaccount_form.password.help_text|safe }}
-                                        </p>
-                                    {% endif %}
-                            </div>
-                        </div>
-
-
-                    </div>
-            
-                    <div class="control-group">
-                    <label class="control-label" for="input-server-access">{{subaccount_form.nas.label}}</label>
-                         <div class="controls">
-                                {{ subaccount_form.nas }}
-                                    {% if subaccount_form.nas.errors %}
-                                        <span class="help-inline">{% for error in subaccount_form.nas.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if subaccount_form.nas.help_text%}
-                                        <p class="help-block">
-                                            {{ subaccount_form.nas.help_text|safe }}
-                                        </p>
-                                    {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="control-group">
-
-                            <label class="control-label" for="input-vpn-ip">{{ subaccount_form.vpn_ip_address.label }}</label>
-                            <div class="controls">
-                            {{ subaccount_form.ipv4_vpn_pool }}{{ subaccount_form.vpn_ip_address }}<input type="button" id="id_assign_vpn_ip_address" class="btn btn-success" value="Выдать">&nbsp;<a href="#" class="btn btn-success" id='modal-vpn-ping-dialog'>{% blocktrans %}Ping{% endblocktrans %}</a>
-                            
-                                {% if subaccount_form.vpn_ip_address.errors %}
-                                    <span class="help-inline">{% for error in subaccount_form.vpn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
-                                {% endif %}
-                                {% if subaccount_form.vpn_ip_address.help_text%}
-                                    <p class="help-block">
-                                        {{ subaccount_form.vpn_ip_address.help_text|safe }}
-                                    </p>
-                                {% endif %}
-                            </div>
-
-                    </div>
-
-                    <div class="control-group">
-
-                            <label class="control-label" for="input-ipn-ip">{{subaccount_form.ipn_ip_address.label}}</label>
-                            <div class="controls">
-                                {{ subaccount_form.ipv4_ipn_pool }}{{ subaccount_form.ipn_ip_address }}<input type="button" id="id_assign_ipn_ip_address" class="btn btn-success"  value="Выдать">&nbsp;<a href="#" class="btn btn-success" id='modal-ipn-ping-dialog'>{% blocktrans %}Ping{% endblocktrans %}</a>
-                                    {% if subaccount_form.ipn_ip_address.errors %}
-                                        <span class="help-inline">{% for error in subaccount_form.ipn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if subaccount_form.ipn_ip_address.help_text%}
-                                        <p class="help-block">
-                                            {{ subaccount_form.ipn_ip_address.help_text|safe }}
-                                        </p>
-                                    {% endif %}
-                            </div>
-
-
-
-                    </div>
-
-                    <div class="control-group">
-                        <label class="control-label" for="input-ipn-mac">{{subaccount_form.ipn_mac_address.label}}</label>
-                        <div class="controls">
-                           {{ subaccount_form.ipn_mac_address }}
-                           {% if subaccount_form.ipn_mac_address.errors %}
-                               <span class="help-inline">{% for error in subaccount_form.ipn_mac_address.errors %}{{ error }}<br/> {% endfor %}</span>
-                           {% endif %}
-                           {% if subaccount_form.ipn_mac_address.help_text%}
-                               <p class="help-block">
-                                   {{ subaccount_form.ipn_mac_address.help_text|safe }}
-                               </p>
-                           {% endif %}<input type="button" class="btn" id="id_get_mac_address" value="Получить">
-                        </div>
-                    </div>
-
-                    <div class="control-group">
-
-                            <label class="control-label" for="input-ipn-ip">{{subaccount_form.vpn_ipv6_ip_address.label}}</label>
-                            <div class="controls">
-                                {{ subaccount_form.ipv6_vpn_pool }}{{ subaccount_form.vpn_ipv6_ip_address }}<input type="button" id="id_assign_ipv6_vpn_ip_address" class="btn btn-success"  value="Выдать">
-                                    {% if subaccount_form.vpn_ipv6_ip_address.errors %}
-                                        <span class="help-inline">{% for error in subaccount_form.vpn_ipv6_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if subaccount_form.vpn_ipv6_ip_address.help_text%}
-                                        <p class="help-block">
-                                            {{ subaccount_form.vpn_ipv6_ip_address.help_text|safe }}
-                                        </p>
-                                    {% endif %}
-                            </div>
-
-
-
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label" for="input-vpn-speed">{{subaccount_form.sessionscount.label}}</label>
-                        <div class="controls">
-                                {{ subaccount_form.sessionscount }}
-                           {% if subaccount_form.sessionscount.errors %}
-                               <span class="help-inline">{% for error in subaccount_form.sessionscount.errors %}{{ error }}<br/> {% endfor %}</span>
-                           {% endif %}
-                           {% if subaccount_form.sessionscount.help_text%}
-                               <p class="help-block">
-                                   {{ subaccount_form.sessionscount.help_text|safe }}
-                               </p>
-                           {% endif %}
-                        </div>
-                    </div>
-                    <hr />
-                    <div class="control-group">
-                        <div class="control-row">
-                            <label class="control-label" for="input-switch">{{subaccount_form.switch.label}}</label>
-                            <div class="controls">
-                                {{ subaccount_form.switch }}
-                           {% if subaccount_form.switch.errors %}
-                               <span class="help-inline">{% for error in subaccount_form.switch.errors %}{{ error }}<br/> {% endfor %}</span>
-                           {% endif %}
-                           {% if subaccount_form.switch.help_text%}
-                               <p class="help-block">
-                                   {{ subaccount_form.switch.help_text|safe }}
-                               </p>
-                           {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="control-row">
-                            <label class="control-label" for="input-switch-port">{{subaccount_form.switch_port.label}}</label>
-                            <div class="controls">
-                                {{ subaccount_form.switch_port }}
-                           {% if subaccount_form.switch_port.errors %}
-                               <span class="help-inline">{% for error in subaccount_form.switch_port.errors %}{{ error }}<br/> {% endfor %}</span>
-                           {% endif %}
-                           {% if subaccount_form.switch_port.help_text%}
-                               <p class="help-block">
-                                   {{ subaccount_form.switch_port.help_text|safe }}
-                               </p>
-                           {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="control-group">
-                        <div class="control-row">
-                            <label class="control-label" for="input-switch"></label>
-                            <div class="controls">
-                                &nbsp;
-                            </div>
-                        </div>
-
-                        <div class="control-row">
-                            <label class="control-label" for="input-switch-port">{{subaccount_form.vlan.label}}</label>
-                            <div class="controls">
-                                {{ subaccount_form.vlan }}
-                           {% if subaccount_form.vlan.errors %}
-                               <span class="help-inline">{% for error in subaccount_form.vlan.errors %}{{ error }}<br/> {% endfor %}</span>
-                           {% endif %}
-                           {% if subaccount_form.vlan.help_text%}
-                               <p class="help-block">
-                                   {{ subaccount_form.vlan.help_text|safe }}
-                               </p>
-                           {% endif %}
-                            </div>
-                        </div>
-                    </div>
-{% endif %}
-{%  comment %} END SUBACCOUNT FORM{% endcomment %}
-{% if account %}
-<hr />
-<fieldset>
-    <legend>{% blocktrans %}Запросы в HelpDesk{% endblocktrans %}</legend>
-       {% if ticket_table %} {% render_table ticket_table %} {% endif %}
-<div>
-<a href="{% url 'helpdesk_submit' %}?account_id={{account.id}}"  class="btn btn-warning align-right" ><i class="icon-comment icon-white "></i>{% blocktrans %}Подать заявку{% endblocktrans %}</a>
-</div>
-</fieldset>
-
-<hr />
-<fieldset>
-    <legend>{% blocktrans %}Доп. соглашения{% endblocktrans %}</legend>
-       {% if ticket_table %} {% render_table accountsuppagreement_table %} {% endif %}
-<div>
-<a href="{% url 'accountsuppagreement_edit' %}?account_id={{account.id}}"  class="btn btn-success align-right" ><i class="icon-plus icon-white "></i>{% blocktrans %}Добавить соглашение{% endblocktrans %}</a>
-</div>
-</fieldset>
-
-<hr />
-<fieldset>
-    <legend>{% blocktrans %}Комментарии к аккаунту{% endblocktrans %}</legend>
-{% object_comments account %}
-   
-{% endif %}
-</fieldset>
-                            <div class="control-group">
-
-                                <label class="control-label" for="input-comment">{{form.comment.label}}</label>
-                                <div class="controls">
-                                    {{ form.comment }}
-                                    {% if form.comment.errors %}
-                                    <span class="help-inline">{% for error in form.comment.errors %}{{ error }}<br/> {% endfor %}</span>
-                                    {% endif %}
-                                    {% if form.comment.help_text%}
-                                    <p class="help-block">
-                                        {{ form.comment.help_text|safe }}
-                                    </p>
-                                    {% endif %}
-                                </div>
-
-                            </div>
-                        </fieldset>
-                        
-                        
-                        {% if account %}
-                        <fieldset>
-                            <legend>Персональные данные</legend>
-
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label">{{form.fullname.label}}:</label>
-                                    <div class="controls">
-                                        <label class="checkbox">{{form.fullname.value}}</label>
-                                    </div>
-                                </div>
-                                
-                                <div class="control-row">
-                                    <label class="control-label">{{form.contactperson.label}}:</label>
-                                    <div class="controls">
-                                        <label class="checkbox">{{form.contactperson.value}}</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label">{{form.phone_m.label}}:</label>
-                                    <div class="controls">
-                                        <label class="checkbox">{{form.phone_m.value}}</label>
-                                    </div>
-                                </div>
-                                
-                                <div class="control-row">
-                                    <label class="control-label">{{form.phone_h.label}}:</label>
-                                    <div class="controls">
-                                        <label class="checkbox">{{form.phone_h.value}}</label>
-                                    </div>
-                                </div>
-                            </div>
-                                <div class="control-row">
-                                    <label class="control-label">{{form.phone_h.label}}:</label>
-                                    <div class="controls">
-                                        <label class="checkbox">{{form.phone_h.value}}</label>
-                                    </div>
-                                </div>
-                            <div class="control-group">
-                                <label class="control-label">{{form.contactperson_phone.label}}:</label>
-                                <div class="controls">
-                                    <label class="checkbox">{{form.contactperson_phone.value}}</label>
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                                <label class="control-label">{{form.email.label}}:</label>
-                                <div class="controls">
-                                    <label class="checkbox"><a href="mailto: {{form.email.value}}">{{form.email.value}}</a></label>
-                                </div>
-                            </div>
-                        </fieldset>
-                        {% endif %}
-                        
-                        
-
-                    </div>
-
-                    <div class="tab-pane" id="tab-address">
-                        <fieldset>
-                            <legend>Персональные данные</legend>
-
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-fio">{{form.fullname.label}}:</label>
-                                    <div class="controls">
-                                            {{ form.fullname }}
-                                            {% if form.fullname.errors %}
-                                                <span class="help-inline">{% for error in form.fullname.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.fullname.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.fullname.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                    </div>
-                                </div>
-                                
-                                <div class="control-row">
-                                    <label class="control-label" for="input-contact-person">{{form.contactperson.label}}:</label>
-                                    <div class="controls">
-                                            {{ form.contactperson }}
-                                            {% if form.contactperson.errors %}
-                                                <span class="help-inline">{% for error in form.contactperson.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.contactperson.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.contactperson.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-mobile-phone">{{form.phone_m.label}}:</label>
-                                    <div class="controls">
-                                            {{ form.phone_m }}
-                                            {% if form.phone_m.errors %}
-                                                <span class="help-inline">{% for error in form.phone_m.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.phone_m.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.phone_m.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                    </div>
-                                </div>
-                                
-                                <div class="control-row">
-                                    <label class="control-label" for="input-home-phone">{{form.birthday.label}}:</label>
-                                    <div class="controls">
-                                            {{ form.birthday }}
-                                            {% if form.birthday.errors %}
-                                                <span class="help-inline">{% for error in form.birthday.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.birthday.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.birthday.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-
-                                <div class="control-group">
-                                    <label class="control-label" for="input-home-phone">{{form.phone_h.label}}:</label>
-                                    <div class="controls">
-                                            {{ form.phone_h }}
-                                            {% if form.phone_h.errors %}
-                                                <span class="help-inline">{% for error in form.phone_h.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.phone_h.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.phone_h.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                    </div>
-                                </div>
-                                
-                            <div class="control-group">
-                                <label class="control-label" for="input-cperson-phone">{{form.contactperson_phone.label}}:</label>
-                                <div class="controls">
-                                      {{ form.contactperson_phone }}
-                                      {% if form.contactperson_phone.errors %}
-                                          <span class="help-inline">{% for error in form.contactperson_phone.errors %}{{ error }}<br/> {% endfor %}</span>
-                                      {% endif %}
-                                      {% if form.contactperson_phone.help_text%}
-                                          <p class="help-block">
-                                              {{ form.contactperson_phone.help_text|safe }}
-                                          </p>
-                                      {% endif %}
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                                <label class="control-label" for="input-form">{{form.email.label}}:</label>
-                                <div class="controls">
-                                      {{ form.email }}
-                                      {% if form.email.errors %}
-                                          <span class="help-inline">{% for error in form.email.errors %}{{ error }}<br/> {% endfor %}</span>
-                                      {% endif %}
-                                      {% if form.email.help_text%}
-                                          <p class="help-block">
-                                              {{ form.email.help_text|safe }}
-                                          </p>
-                                      {% endif %}
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-mobile-phone">{{form.passport.label}}:</label>
-                                    <div class="controls">
-                                      {{ form.passport }}
-                                      {% if form.passport.errors %}
-                                          <span class="help-inline">{% for error in form.passport.errors %}{{ error }}<br/> {% endfor %}</span>
-                                      {% endif %}
-                                      {% if form.passport.help_text%}
-                                          <p class="help-block">
-                                              {{ form.passport.help_text|safe }}
-                                          </p>
-                                      {% endif %}
-                                    </div>
-                                </div>
-                                
-                                <div class="control-row">
-                                    <label class="control-label" for="input-passport-2">{{form.passport_given.label}}:</label>
-                                    <div class="controls">
-                                      {{ form.passport_given }}
-                                      {% if form.passport_given.errors %}
-                                          <span class="help-inline">{% for error in form.passport_given.errors %}{{ error }}<br/> {% endfor %}</span>
-                                      {% endif %}
-                                      {% if form.passport_given.help_text%}
-                                          <p class="help-block">
-                                              {{ form.passport_given.help_text|safe }}
-                                          </p>
-                                      {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-passport-date">{{form.passport_date.label}}:</label>
-                                    <div class="controls">
-                                      {{ form.passport_date }}
-                                      {% if form.passport_date.errors %}
-                                          <span class="help-inline">{% for error in form.passport_date.errors %}{{ error }}<br/> {% endfor %}</span>
-                                      {% endif %}
-                                      {% if form.passport_date.help_text%}
-                                          <p class="help-block">
-                                              {{ form.passport_date.help_text|safe }}
-                                          </p>
-                                      {% endif %}
-                                    </div>
-                                </div>
-
-                                <div class="control-row">
-                                    <label class="control-label" for="input-id-no">{{form.private_passport_number.label}}:</label>
-                                    <div class="controls">
-                                      {{ form.private_passport_number }}
-                                      {% if form.private_passport_number.errors %}
-                                          <span class="help-inline">{% for error in form.private_passport_number.errors %}{{ error }}<br/> {% endfor %}</span>
-                                      {% endif %}
-                                      {% if form.private_passport_number.help_text%}
-                                          <p class="help-block">
-                                              {{ form.private_passport_number.help_text|safe }}
-                                          </p>
-                                      {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-passport-date">{{form.passportdislocate.label}}:</label>
-                                    <div class="controls">
-                                      {{ form.passportdislocate }}
-                                      {% if form.passportdislocate.errors %}
-                                          <span class="help-inline">{% for error in form.passportdislocate.errors %}{{ error }}<br/> {% endfor %}</span>
-                                      {% endif %}
-                                      {% if form.passportdislocate.help_text%}
-                                          <p class="help-block">
-                                              {{ form.passportdislocate.help_text|safe }}
-                                          </p>
-                                      {% endif %}
-                                    </div>
-                                </div>
-
-
-                            </div>
-                        </fieldset>
-                        <fieldset>
-                            <legend>Адрес</legend>
-
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-city">{{form.city.label}}:</label>
-                                    <div class="controls">
-				                    {{ form.city }}
-				                            {% if form.city.errors %}
-				                                <span class="help-inline">{% for error in form.city.errors %}{{ error }}<br/> {% endfor %}</span>
-				                            {% endif %}
-				                            {% if form.city.help_text%}
-				                                <p class="help-block">
-				                                    {{ form.city.help_text|safe }}
-				                                </p>
-				                            {% endif %}
-                                    </div>
-                                </div>
-                                
-                                <div class="control-row">
-                                    <label class="control-label" for="input-district">{{form.region.label}}:</label>
-                                    <div class="controls">
-				                    {{ form.region }}
-				                            {% if form.region.errors %}
-				                                <span class="help-inline">{% for error in form.region.errors %}{{ error }}<br/> {% endfor %}</span>
-				                            {% endif %}
-				                            {% if form.region.help_text%}
-				                                <p class="help-block">
-				                                    {{ form.region.help_text|safe }}
-				                                </p>
-				                            {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-street">{{form.street.label}}</label>
-                                    <div class="controls">
-                                            {{ form.street }}
-                                            {% if form.street.errors %}
-                                                <span class="help-inline">{% for error in form.street.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.street.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.street.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                    </div>
-                                </div>
-                                <div class="control-row">
-                                    <label class="control-label" for="input-postal-code">{{form.postcode.label}}:</label>
-                                    <div class="controls">
-                                            {{ form.postcode }}
-                                            {% if form.postcode.errors %}
-                                                <span class="help-inline">{% for error in form.postcode.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.postcode.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.postcode.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                    </div>
-          
-                            </div>
-                              </div>  
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-street">{{form.house.label}}</label>
-                                    <div class="controls">
-
-                                            {{ form.house }}
-                                            {% if form.house.errors %}
-                                                <span class="help-inline">{% for error in form.house.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.house.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.house.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                    </div>
-                                </div>
-                                </div>
-
-
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-entrance">{{form.house_bulk.label}}</label>
-                                    <div class="controls">
-                                            {{ form.house_bulk }}
-                                            {% if form.house_bulk.errors %}
-                                                <span class="help-inline">{% for error in form.house_bulk.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.house_bulk.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.house_bulk.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                    </div>
-                                </div>
-
-                                <div class="control-row">
-                                    <label class="control-label" for="input-entrance-code">{{form.entrance_code.label}}</label>
-                                    <div class="controls">
-                                            {{ form.entrance_code }}
-                                            {% if form.entrance_code.errors %}
-                                                <span class="help-inline">{% for error in form.entrance_code.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.entrance_code.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.entrance_code.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-        
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-entrance">{{form.entrance.label}}</label>
-                                    <div class="controls">
-                                            {{ form.entrance }}
-                                            {% if form.entrance.errors %}
-                                                <span class="help-inline">{% for error in form.entrance.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.entrance.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.entrance.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-floor">{{form.row.label}}</label>
-                                    <div class="controls">
-                                            {{ form.row }}
-                                            {% if form.row.errors %}
-                                                <span class="help-inline">{% for error in form.row.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.row.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.row.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                    </div>
-                                </div>
-
-                                <div class="control-row">
-                                    <label class="control-label" for="input-apartment-no">{{form.room.label}}</label>
-                                    <div class="controls">
-                                            {{ form.room }}
-                                            {% if form.row.errors %}
-                                                <span class="help-inline">{% for error in form.row.errors %}{{ error }}<br/> {% endfor %}</span>
-                                            {% endif %}
-                                            {% if form.row.help_text%}
-                                                <p class="help-block">
-                                                    {{ form.row.help_text|safe }}
-                                                </p>
-                                            {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-        
-                            <div class="control-group">
-                                <label class="control-label" for="input-floor">{{form.elevator_direction.label}}:</label>
-                                <div class="controls">
-                                   {{ form.elevator_direction }}
-                                   {% if form.elevator_direction.errors %}
-                                       <span class="help-inline">{% for error in form.elevator_direction.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if form.elevator_direction.help_text%}
-                                       <p class="help-block">
-                                           {{ form.elevator_direction.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                </div>
-                            </div>
-
-                        </fieldset>
-                    {{extra_form|crispy}}
-                    </div>
-
-                        {% if account %}
-                      <div class="tab-pane" id="tab-tables">
-                        
-                        
-                        <fieldset>
-                            <legend>Субаккаунты</legend>
-
-                            {% if subaccounts_table %}{% render_table subaccounts_table %}{% endif %}
-                            <a href="{% url 'subaccount' %}?account_id={{account.id}}" class="btn btn-success align-right">Добавить</a>
-
-                            <legend>Подключаемые услуги</legend>
-
-                            {% if accountaddonservice_table %}{% render_table accountaddonservice_table %}{% endif %}
-                            <a href="{% url 'accountaddonservice' %}?account_id={{account.id}}" class="btn btn-success align-right" id="modal-accountaddonservice-dialog" >Добавить</a>
-                        </fieldset>
-                        
-                      </div>
-                    {% endif %}
-                    <div class="tab-pane" id="tab-second">
-                        {{form.organization}} {{form.organization.label}}
-                        <fieldset id='organization-fieldset'>
-                            <legend> Юридическое лицо</legend>
-                            {{org_form.account}}
-                            {{org_form.id}}
-                            <div class="control-group">
-                                <label class="control-label" for="input-company">{{org_form.name.label}}:</label>
-                                <div class="controls">
-                                   {{ org_form.name }}
-                                   {% if org_form.name.errors %}
-                                       <span class="help-inline">{% for error in org_form.name.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if org_form.name.help_text%}
-                                       <p class="help-block">
-                                           {{ org_form.name.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-company-phone">{{org_form.phone.label}}: </label>
-                                    <div class="controls">
-                                   {{ org_form.phone }}
-                                   {% if org_form.phone.errors %}
-                                       <span class="help-inline">{% for error in org_form.phone.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if org_form.phone.help_text%}
-                                       <p class="help-block">
-                                           {{ org_form.phone.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </div>
-                                </div>
-
-                                <div class="control-row">
-                                    <label class="control-label" for="input-company">{{org_form.fax.label}}: </label>
-                                    <div class="controls">
-                                   {{ org_form.fax }}
-                                   {% if org_form.fax.errors %}
-                                       <span class="help-inline">{% for error in org_form.fax.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if org_form.fax.help_text%}
-                                       <p class="help-block">
-                                           {{ form.org_form.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                                <label class="control-label" for="input-company-address">{{org_form.uraddress.label}}:</label>
-                                <div class="controls">
-                                   {{ org_form.uraddress }}
-                                   {% if form.uraddress.errors %}
-                                       <span class="help-inline">{% for error in org_form.uraddress.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if org_form.uraddress.help_text%}
-                                       <p class="help-block">
-                                           {{ org_form.uraddress.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                                <label class="control-label" for="input-company-unp">{{org_form.unp.label}}:</label>
-                                <div class="controls">
-                                   {{ org_form.unp }}
-                                   {% if org_form.unp.errors %}
-                                       <span class="help-inline">{% for error in org_form.unp.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if org_form.unp.help_text%}
-                                       <p class="help-block">                            
-                                           {{ org_form.unp.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-company-cpp">{{org_form.kpp.label}}</label>
-                                    <div class="controls">
-                                   {{ org_form.kpp }}
-                                   {% if org_form.kpp.errors %}
-                                       <span class="help-inline">{% for error in org_form.kpp.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if org_form.kpp.help_text%}
-                                       <p class="help-block">
-                                           {{ org_form.kpp.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </div>
-                                </div>
-
-                                <div class="control-row">
-                                    <label class="control-label" for="input-company-okpo">{{org_form.okpo.label}}</label>
-                                    <div class="controls">
-                                   {{ org_form.okpo }}
-                                   {% if org_form.okpo.errors %}
-                                       <span class="help-inline">{% for error in org_form.okpo.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if org_form.okpo.help_text%}
-                                       <p class="help-block">
-                                           {{ org_form.okpo.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-company-bank">{{bank_form.bank.label}}</label>
-                                    <div class="controls">
-                                   {{ bank_form.bank }}
-                                   {% if bank_form.bank.errors %}
-                                       <span class="help-inline">{% for error in bank_form.bank.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if bank_form.bank.help_text%}
-                                       <p class="help-block">
-                                           {{ bank_form.bank.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </div>
-                                </div>
-
-                                <div class="control-row">
-                                    <label class="control-label" for="input-company-swift">{{bank_form.bankcode.label}}</label>
-                                    <div class="controls">
-                                   {{ bank_form.bankcode }}
-                                   {% if bank_form.bankcode.errors %}
-                                       <span class="help-inline">{% for error in bank_form.bankcode.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if bank_form.bankcode.help_text%}
-                                       <p class="help-block">
-                                           {{ bank_form.bankcode.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-company-account">{{org_form.kor_s.label}}</label>
-                                    <div class="controls">
-                                   {{ org_form.kor_s }}
-                                   {% if org_form.kor_s.errors %}
-                                       <span class="help-inline">{% for error in org_form.kor_s.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if org_form.kor_s.help_text%}
-                                       <p class="help-block">
-                                           {{ org_form.kor_s.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </div>
-                                </div>
-        
-                                <div class="control-row">
-                                    <label class="control-label" for="input-settlement-account">{{org_form.rs.label}}</label>
-                                    <div class="controls">
-                                   {{ org_form.rs }}
-                                   {% if org_form.rs.errors %}
-                                       <span class="help-inline">{% for error in org_form.rs.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if org_form.rs.help_text%}
-                                       <p class="help-block">
-                                           {{ org_form.rs.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="control-group">
-                                <div class="control-row">
-                                    <label class="control-label" for="input-company-account">{{bank_form.currency.label}}</label>
-                                    <div class="controls">
-                                   {{ bank_form.currency }}
-                                   {% if bank_form.currency.errors %}
-                                       <span class="help-inline">{% for error in bank_form.currency.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if bank_form.currency.help_text%}
-                                       <p class="help-block">
-                                           {{ bank_form.currency.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </div>
-                                </div>
-        
-                            </div>
-                        </fieldset>
-                    </div>
-
-                    <div class="tab-pane" id="tab-third">
-
-
-
-                        <fieldset>
-                            <legend>Предыдущие тарифные планы </legend>
-                            {% if accounttarif_table %}{% render_table accounttarif_table %}{% endif %}
-                            <a href="{% url 'accounttariff_edit' %}?account_id={{account.id}}" id="modal-accounttariff-dialog-table" class="btn btn-success  align-right">Добавить</a>
-                        </fieldset>
-                        {% comment %}
-                        <fieldset>
-                            <legend>{% blocktrans %}Документы{% endblocktrans %}<button href="#" class="btn align-right">{% blocktrans %}Добавить{% endblocktrans %}</button></legend>
-
-                        </fieldset>
-                        {% endcomment %}
-                        <fieldset>
-                            <legend>{% blocktrans %}Взятое в аренду оборудование{% endblocktrans %}</legend>
-                            {% if accounthardware_table %}{% render_table accounthardware_table %}{% endif %}
-                            <input type="button"  id="modal-accounthardware-dialog-table" class="btn btn-success  align-right" value="{% blocktrans %}Добавить{% endblocktrans %}">
-                        </fieldset>
-
-                        <fieldset>
-                            <legend>Периоды без списаний</legend>
-                            {% if suspendedperiod_table %}{% render_table suspendedperiod_table  %}{% endif %}
-                            <input type="button" id="modal-suspendedperiod-dialog-table" class="btn btn-success  align-right" value="{% blocktrans %}Добавить{% endblocktrans %}">
-                        </fieldset>
-                        <fieldset>
-                            <legend>{% blocktrans %}Прочее{% endblocktrans %}</legend>
-
-
-                            <div class="control-group">
-                                <label class="control-label" for="input-max">{{form.promise_summ.label}}</label>
-                                <div class="controls">
-                                   {{ form.promise_summ }}
-                                   {% if form.promise_summ.errors %}
-                                       <span class="help-inline">{% for error in form.promise_summ.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if form.promise_summ.help_text%}
-                                       <p class="help-block">
-                                           {{ form.promise_summ.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <label class="control-label" for="input-max">{{form.promise_min_ballance.label}}</label>
-                                <div class="controls">
-                                   {{ form.promise_min_ballance }}
-                                   {% if form.promise_min_ballance.errors %}
-                                       <span class="help-inline">{% for error in form.promise_min_ballance.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if form.promise_min_ballance.help_text%}
-                                       <p class="help-block">
-                                           {{ form.promise_min_ballance.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <label class="control-label" for="input-max">{{form.promise_days.label}}</label>
-                                <div class="controls">
-                                   {{ form.promise_days }}
-                                   {% if form.promise_days.errors %}
-                                       <span class="help-inline">{% for error in form.promise_days.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if form.promise_days.help_text%}
-                                       <p class="help-block">
-                                           {{ form.promise_days.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <label class="control-label" for="input-max">{% blocktrans %}Опции{% endblocktrans %}</label>
-                                <div class="controls docs-input-sizes">
-                                    <label class="checkbox">
-                                   {{ form.allow_webcab }}{{form.allow_webcab.label}}
-                                   {% if form.allow_webcab.errors %}
-                                       <span class="help-inline">{% for error in form.allow_webcab.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if form.allow_webcab.help_text%}
-                                       <p class="help-block">
-                                           {{ form.allow_webcab.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </label>
-                                    <label class="checkbox">
-                                   {{ form.allow_expresscards }}{{form.allow_expresscards.label}}
-                                   {% if form.allow_expresscards.errors %}
-                                       <span class="help-inline">{% for error in form.allow_expresscards.errors %}{{ error }}<br/> {% endfor %}</span>
-                                   {% endif %}
-                                   {% if form.allow_expresscards.help_text%}
-                                       <p class="help-block">
-                                           {{ form.allow_expresscards.help_text|safe }}
-                                       </p>
-                                   {% endif %}
-                                    </label>
-                                </div>
-                            </div>
-
-
-
-
-                        </fieldset>
-                    </div>
-
-
-                <fieldset>
-                    <div class="form-actions form-actions-center">
-                        <input class="btn btn-primary" type="submit" value="{% blocktrans %}Сохранить{% endblocktrans %}">
-                    </div>
-                </fieldset>
-                </div>
-                
-
-            </form>
-        </div>
-        {% if account %}
-        <div class="span3">
-          <div class="well sidebar-nav alert-success">
-            <ul class="nav nav-list">
-              <li class="nav-header">{% blocktrans %}Тариф{% endblocktrans %}</li>
-              <strong><h4><a href="{% url 'tariff_edit' %}?id={{account.get_account_tariff.id}}">{{account.get_account_tariff.name}}</a></h4></strong>
-                <li>                                    <div class="btn-group">
-                                        <a href="#"  class="btn btn-large btn-info" id="modal-accounttariff-dialog" ><i class="icon-pencil icon-white "></i>{% blocktrans %}Изменить{% endblocktrans %}</a>
-
-                                    </div></li>
-            </ul>
+              </div>
+              <div class="btn-group">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                  {% blocktrans %}Предоплаченные остатки{% endblocktrans %} <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="{% url 'accountprepaystraffic' %}?account={{account.id}}">
+                      {% blocktrans %}NetFlow трафик{% endblocktrans %}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'accountprepaysradiustraffic' %}?account={{account.id}}">
+                      {% blocktrans %}RADIUS трафик{% endblocktrans %}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'accountprepaystime' %}?account={{account.id}}">
+                      {% blocktrans %}Время{% endblocktrans %}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div class="btn-group">
+                <a href='{% url 'news_edit' %}?accounts={{account.id}}&private=True' class="btn" >
+                  <i class='cus-newspaper'></i> {% blocktrans %}Сообшение{% endblocktrans %}
+                </a>
+              </div>
+              <div class="btn-group">
+                <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                  {% blocktrans %}SMS{% endblocktrans %} <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="{% url 'sendsms' %}?accounts={{account.id}}" 
+                        class="general-modal-dialog" 
+                        data-dlgbodyid="server-notice" 
+                        data-dlgtitle="{% trans 'Отправить SMS' %}">
+                      {% blocktrans %}Отправить SMS{% endblocktrans %}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'sms' %}?accounts={{account.id}}">
+                      {% blocktrans %}Отправленные SMS{% endblocktrans %}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div class="btn-group">
+                <a href="{% url 'helpdesk_submit' %}?account_id={{account.id}}" class="btn btn-warning" >
+                  <i class="icon-comment icon-white "></i>{% blocktrans %}Подать заявку{% endblocktrans %}
+                </a>
+              </div>
+            {% endif %}
           </div>
-          <div class="well sidebar-nav">
-            <ul class="nav nav-list">
-              <li class="nav-header">{% blocktrans %}Итоговый баланс{% endblocktrans %}</li>
-              <li><strong><h3>{{account.ballance|floatformat:2}} {{currency}}</h3></strong></li>
-              <li><strong>{% blocktrans %}Обещанные платежи:{% endblocktrans %} <a href="{% url 'transactionreport2' %}?account={{account.id}}&tree=PROMISE_PAYMENT">{{account.get_last_promises_count}}</a></strong></li>
-                <li>                                    
-	                <div class="btn-group">
-	                    <a href="#"  class="btn btn-success" id="modal-transaction-dialog" ><i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}</a>
-	                </div>
-                </li>
-              <li class="nav-header">{% blocktrans %}Бонусный счёт{% endblocktrans %}</li>
-              <li><strong><h3>{{account.bonus_ballance|floatformat:2}} {{currency}}</h3></strong></li>
-              
-                <li>                                    <div class="btn-group">
-                                        <a href="#"  class="btn btn-success" id="modal-bonustransaction-dialog" ><i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}</a>
-
-                                    </div></li>
-               <li class="divider"></li>
-               <li><a href="{% url 'transactionreport2' %}?account={{account.id}}&only_payments=True"><i class='icon-list-alt'></i>{% blocktrans %}Пополнения баланса{% endblocktrans %}</a></li>
-               <li><a href="{% url 'transactionreport2' %}?account={{account.id}}&only_credits=True"><i class='icon-list-alt'></i>{% blocktrans %}Списания баланса{% endblocktrans %}</a></li>
-              <li><a href="{% url 'transactionreport2' %}?account={{account.id}}&tree=PROMISE_PAYMENT"><i class='icon-list-alt'></i>{% blocktrans %}Обещанные платежи{% endblocktrans %}</a></li>
-              <li><a href="{% url 'ballancehistoryreport' %}?account={{account.id}}"><i class='icon-list-alt'></i>{% blocktrans %}История изменения баланса{% endblocktrans %}</a></li>
-
-            </ul>
-          </div>
-
-    
         </div>
-        {% endif %}
+      </div>
     </div>
 
- {% endblock %}
+    <form class=" well form-horizontal  form-condensed" method="POST" id="id_form" action="{% url 'account_edit' %}{% if account %}?id={{account.id}}{% endif %}">
+      <ul class="nav nav-tabs" id="tab-control">
+        <li class="active"><a href="#tab-first" data-toggle="tab">{% blocktrans %}Карточка{% endblocktrans %}</a></li>
+        {% if account %}<li class=""><a href="#tab-tables" data-toggle="tab">{% blocktrans %}Услуги{% endblocktrans %}</a></li>{% endif %}
+        <li class=""><a href="#tab-address" data-toggle="tab">{% blocktrans %}Персональные данные{% endblocktrans %}</a></li>
+        <li class=""><a href="#tab-second" data-toggle="tab">{% blocktrans %}Юр. лицо{% endblocktrans %}</a></li>
+        <li class=""><a href="#tab-third" data-toggle="tab">{% blocktrans %}Прочее{% endblocktrans %}</a></li>
+      </ul>
 
+      <div class="tab-content">
+        <div class="tab-pane active" id="tab-first">
+          <fieldset>
+            <legend>{% blocktrans %}Карточка клиента{% endblocktrans %}{% objectlog account %}</legend>
+
+            <div class="control-group {% if form.username.errors %}clearfix error{% endif %}">
+              <div class="control-row">
+                <label class="control-label" for="input-username"><strong>{{form.username.label}}</strong></label>
+                <div class="controls">
+                  <div class="input-append">{{ form.username }}
+                    <a  id="generate_username" class="btn  add-on">#</a>
+                  </div>
+                  {% if form.username.errors %}
+                  <span class="help-inline">{% for error in form.username.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.username.help_text%}
+                  <p class="help-block">
+                    {{ form.username.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              {% if account.contract %}
+                <div class="control-row">
+                  <label class="control-label"><strong>{{form.contract.label}}</strong></label>
+                  <div class="controls ">
+                    <div class="input-append">
+                      {{ form.contract }}
+                      <a href="{% url 'templateselect' %}?account_id={{account.id}}&type=1&type=2" 
+                        class="btn btn-info btn-mini add-on general-modal-dialog" 
+                        data-dlgbodyid="templateselect-modal" 
+                        data-dlgtitle="{% trans 'Выберите шаблон документа' %}">
+                      <i class="icon-print icon-white"></i>
+                    </a>
+                    </div>
+                    {% if form.contract.errors %}
+                    <span class="help-inline">{% for error in form.contract.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if form.contract.help_text%}
+                    <p class="help-block">
+                      {{ form.contract.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+              {% else %}
+                <div class="control-row">
+                  <label class="control-label">Шаблон договора:</label>
+                  <div class="controls">
+                    {{ form.contract_num }}
+                    {% if form.contract_num.errors %}
+                    <span class="help-inline">{% for error in form.contract_num.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if form.contract_num.help_text%}
+                    <p class="help-block">
+                      {{ form.contract_num.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="control-group">
+              <div class="control-row {% if form.password.errors %}error{% endif %}">
+                <label class="control-label" for="input-password"><strong>{{form.password.label}}</strong></label>
+                <div class="controls">
+                  <div class="input-append">{{ form.password }}<a id="generate_password" class="btn  add-on">#</a></div>
+                  {% if form.password.errors %}
+                  <span class="help-inline">{% for error in form.password.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.password.help_text%}
+                  <p class="help-block">
+                    {{ form.password.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label" for="input-account-status"><strong>{{form.status.label}}</strong></label>
+                <div class="controls">
+                  {{ form.status }}
+                  {% if form.status.errors %}
+                  <span class="help-inline">{% for error in form.status.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.status.help_text%}
+                  <p class="help-block">
+                    {{ form.status.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row {% if form.credit.errors %}error{% endif %}">
+                <label class="control-label" for="input-credit"><strong>{{form.credit.label}}</strong></label>
+                <div class="controls">
+                  {{ form.credit }}
+                  {% if form.credit.errors %}
+                  <span class="help-inline">{% for error in form.credit.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.credit.help_text%}
+                  <p class="help-block">
+                    {{ form.credit.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label" for="input-password">{{form.account_group.label}}</label>
+                <div class="controls">
+                  {{ form.account_group }}
+                  {% if form.account_group.errors %}
+                  <span class="help-inline">{% for error in form.account_group.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.account_group.help_text%}
+                  <p class="help-block">
+                    {{ form.account_group.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row {% if form.created.errors %}error{% endif %}">
+                <label class="control-label" for="input-created"><strong>Дата создания</strong></label>
+                <div class="controls">
+                  {{ form.created }}
+                  {% if form.created.errors %}
+                  <span class="help-inline">{% for error in form.created.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.created.help_text%}
+                  <p class="help-block">
+                    {{ form.created.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label" for="input-account-status">{{form.systemuser.label}}</label>
+                <div class="controls">
+                  {{ form.systemuser }}
+                  {% if form.systemuser.errors %}
+                  <span class="help-inline">{% for error in form.systemuser.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.systemuser.help_text%}
+                  <p class="help-block">
+                    {{ form.systemuser.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            {% comment %}SUBACCOUNT FORM{% endcomment %}
+            {% if subaccount_form %}
+              {{subaccount_form.id}}
+              {{subaccount_form.account}}
+              <legend>Параметры доступа (упрощённый интерфейс)</legend>
+
+              <div class="control-group">
+                <div class="control-row">
+                  <label class="control-label" for="input-username">{{subaccount_form.username.label}}</label>
+                  <div class="controls">
+                    <div class="input-append">{{ subaccount_form.username }}
+                      <a id="subacc_generate_username" class="btn  add-on">#</a>
+                    </div>
+                    {% if subaccount_form.username.errors %}
+                    <span class="help-inline">{% for error in subaccount_form.username.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if subaccount_form.username.help_text%}
+                    <p class="help-block">
+                      {{ subaccount_form.username.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <div class="control-row">
+                  <label class="control-label" for="input-password">{{subaccount_form.password.label}}</label>
+                  <div class="controls">
+                    <div class="input-append">{{ subaccount_form.password }}
+                      <a id="subacc_generate_password" class="btn  add-on">#</a>
+                    </div>
+                    {% if subaccount_form.password.errors %}
+                    <span class="help-inline">{% for error in subaccount_form.password.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if subaccount_form.password.help_text%}
+                    <p class="help-block">
+                      {{ subaccount_form.password.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <label class="control-label" for="input-server-access">{{subaccount_form.nas.label}}</label>
+                <div class="controls">
+                  {{ subaccount_form.nas }}
+                  {% if subaccount_form.nas.errors %}
+                  <span class="help-inline">{% for error in subaccount_form.nas.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if subaccount_form.nas.help_text%}
+                  <p class="help-block">
+                    {{ subaccount_form.nas.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-group">
+                <label class="control-label" for="input-vpn-ip">{{ subaccount_form.vpn_ip_address.label }}</label>
+
+                <div class="controls">
+                  {{ subaccount_form.ipv4_vpn_pool }}{{ subaccount_form.vpn_ip_address }}<input type="button" id="id_assign_vpn_ip_address" class="btn btn-success" value="Выдать">&nbsp;<a href="#" class="btn btn-success" id='modal-vpn-ping-dialog'>{% blocktrans %}Ping{% endblocktrans %}</a>
+
+                  {% if subaccount_form.vpn_ip_address.errors %}
+                  <span class="help-inline">{% for error in subaccount_form.vpn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+
+                  {% if subaccount_form.vpn_ip_address.help_text%}
+                  <p class="help-block">
+                    {{ subaccount_form.vpn_ip_address.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-group">
+                <label class="control-label" for="input-ipn-ip">{{subaccount_form.ipn_ip_address.label}}</label>
+
+                <div class="controls">
+                  {{ subaccount_form.ipv4_ipn_pool }}{{ subaccount_form.ipn_ip_address }}<input type="button" id="id_assign_ipn_ip_address" class="btn btn-success"  value="Выдать">&nbsp;<a href="#" class="btn btn-success" id='modal-ipn-ping-dialog'>{% blocktrans %}Ping{% endblocktrans %}</a>
+                  {% if subaccount_form.ipn_ip_address.errors %}
+                  <span class="help-inline">{% for error in subaccount_form.ipn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if subaccount_form.ipn_ip_address.help_text%}
+                  <p class="help-block">
+                    {{ subaccount_form.ipn_ip_address.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-group">
+                <label class="control-label" for="input-ipn-mac">{{subaccount_form.ipn_mac_address.label}}</label>
+                <div class="controls">
+                  {{ subaccount_form.ipn_mac_address }}
+                  {% if subaccount_form.ipn_mac_address.errors %}
+                  <span class="help-inline">{% for error in subaccount_form.ipn_mac_address.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if subaccount_form.ipn_mac_address.help_text%}
+                  <p class="help-block">
+                    {{ subaccount_form.ipn_mac_address.help_text|safe }}
+                  </p>
+                  {% endif %}<input type="button" class="btn" id="id_get_mac_address" value="Получить">
+                </div>
+              </div>
+
+              <div class="control-group">
+                <label class="control-label" for="input-ipn-ip">{{subaccount_form.vpn_ipv6_ip_address.label}}</label>
+                <div class="controls">
+                  {{ subaccount_form.ipv6_vpn_pool }}{{ subaccount_form.vpn_ipv6_ip_address }}<input type="button" id="id_assign_ipv6_vpn_ip_address" class="btn btn-success"  value="Выдать">
+                  {% if subaccount_form.vpn_ipv6_ip_address.errors %}
+                  <span class="help-inline">{% for error in subaccount_form.vpn_ipv6_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if subaccount_form.vpn_ipv6_ip_address.help_text%}
+                  <p class="help-block">
+                    {{ subaccount_form.vpn_ipv6_ip_address.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-group">
+                <label class="control-label" for="input-vpn-speed">{{subaccount_form.sessionscount.label}}</label>
+                <div class="controls">
+                  {{ subaccount_form.sessionscount }}
+                  {% if subaccount_form.sessionscount.errors %}
+                  <span class="help-inline">{% for error in subaccount_form.sessionscount.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if subaccount_form.sessionscount.help_text%}
+                  <p class="help-block">
+                    {{ subaccount_form.sessionscount.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <hr />
+
+              <div class="control-group">
+                <div class="control-row">
+                  <label class="control-label" for="input-switch">{{subaccount_form.switch.label}}</label>
+                  <div class="controls">
+                    {{ subaccount_form.switch }}
+                    {% if subaccount_form.switch.errors %}
+                    <span class="help-inline">{% for error in subaccount_form.switch.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if subaccount_form.switch.help_text%}
+                    <p class="help-block">
+                      {{ subaccount_form.switch.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="control-row">
+                  <label class="control-label" for="input-switch-port">{{subaccount_form.switch_port.label}}</label>
+                  <div class="controls">
+                    {{ subaccount_form.switch_port }}
+                    {% if subaccount_form.switch_port.errors %}
+                    <span class="help-inline">{% for error in subaccount_form.switch_port.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if subaccount_form.switch_port.help_text%}
+                    <p class="help-block">
+                      {{ subaccount_form.switch_port.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <div class="control-row">
+                  <label class="control-label" for="input-switch"></label>
+                  <div class="controls">
+                    &nbsp;
+                  </div>
+                </div>
+
+                <div class="control-row">
+                  <label class="control-label" for="input-switch-port">{{subaccount_form.vlan.label}}</label>
+                  <div class="controls">
+                    {{ subaccount_form.vlan }}
+                    {% if subaccount_form.vlan.errors %}
+                    <span class="help-inline">{% for error in subaccount_form.vlan.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if subaccount_form.vlan.help_text%}
+                    <p class="help-block">
+                      {{ subaccount_form.vlan.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+            {% comment %}END SUBACCOUNT FORM{% endcomment %}
+
+            {% if account %}
+            <hr />
+
+            <fieldset>
+              <legend>{% blocktrans %}Запросы в HelpDesk{% endblocktrans %}</legend>
+              {% if ticket_table %} {% render_table ticket_table %} {% endif %}
+              <div>
+                <a href="{% url 'helpdesk_submit' %}?account_id={{account.id}}"  class="btn btn-warning align-right" ><i class="icon-comment icon-white "></i>{% blocktrans %}Подать заявку{% endblocktrans %}</a>
+              </div>
+            </fieldset>
+
+            <hr />
+
+            <fieldset>
+              <legend>{% blocktrans %}Доп. соглашения{% endblocktrans %}</legend>
+              {% if ticket_table %} {% render_table accountsuppagreement_table %} {% endif %}
+              <div>
+                <a href="{% url 'accountsuppagreement_edit' %}?account_id={{account.id}}"  class="btn btn-success align-right" ><i class="icon-plus icon-white "></i>{% blocktrans %}Добавить соглашение{% endblocktrans %}</a>
+              </div>
+            </fieldset>
+
+            <hr />
+
+            <fieldset>
+              <legend>{% blocktrans %}Комментарии к аккаунту{% endblocktrans %}</legend>
+              {% object_comments account %}
+
+              {% endif %}
+            </fieldset>
+
+            <div class="control-group">
+              <label class="control-label" for="input-comment">{{form.comment.label}}</label>
+              <div class="controls">
+                {{ form.comment }}
+                {% if form.comment.errors %}
+                <span class="help-inline">{% for error in form.comment.errors %}{{ error }}<br/> {% endfor %}</span>
+                {% endif %}
+                {% if form.comment.help_text%}
+                <p class="help-block">
+                  {{ form.comment.help_text|safe }}
+                </p>
+                {% endif %}
+              </div>
+
+            </div>
+          </fieldset>
+
+          {% if account %}
+            <fieldset>
+              <legend>Персональные данные</legend>
+
+              <div class="control-group">
+                <div class="control-row">
+                  <label class="control-label">{{form.fullname.label}}:</label>
+                  <div class="controls">
+                    <label class="checkbox">{{form.fullname.value}}</label>
+                  </div>
+                </div>
+
+                <div class="control-row">
+                  <label class="control-label">{{form.contactperson.label}}:</label>
+                  <div class="controls">
+                    <label class="checkbox">{{form.contactperson.value}}</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <div class="control-row">
+                  <label class="control-label">{{form.phone_m.label}}:</label>
+                  <div class="controls">
+                    <label class="checkbox">{{form.phone_m.value}}</label>
+                  </div>
+                </div>
+
+                <div class="control-row">
+                  <label class="control-label">{{form.phone_h.label}}:</label>
+                  <div class="controls">
+                    <label class="checkbox">{{form.phone_h.value}}</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label">{{form.phone_h.label}}:</label>
+                <div class="controls">
+                  <label class="checkbox">{{form.phone_h.value}}</label>
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">{{form.contactperson_phone.label}}:</label>
+                <div class="controls">
+                  <label class="checkbox">{{form.contactperson_phone.value}}</label>
+                </div>
+              </div>
+
+              <div class="control-group">
+                <label class="control-label">{{form.email.label}}:</label>
+                <div class="controls">
+                  <label class="checkbox"><a href="mailto: {{form.email.value}}">{{form.email.value}}</a></label>
+                </div>
+              </div>
+            </fieldset>
+          {% endif %}
+        </div>
+
+        <div class="tab-pane" id="tab-address">
+          <fieldset>
+            <legend>Персональные данные</legend>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-fio">{{form.fullname.label}}:</label>
+                <div class="controls">
+                  {{ form.fullname }}
+                  {% if form.fullname.errors %}
+                  <span class="help-inline">{% for error in form.fullname.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.fullname.help_text%}
+                  <p class="help-block">
+                    {{ form.fullname.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label" for="input-contact-person">{{form.contactperson.label}}:</label>
+                <div class="controls">
+                  {{ form.contactperson }}
+                  {% if form.contactperson.errors %}
+                  <span class="help-inline">{% for error in form.contactperson.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.contactperson.help_text%}
+                  <p class="help-block">
+                    {{ form.contactperson.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-mobile-phone">{{form.phone_m.label}}:</label>
+                <div class="controls">
+                  {{ form.phone_m }}
+                  {% if form.phone_m.errors %}
+                  <span class="help-inline">{% for error in form.phone_m.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.phone_m.help_text%}
+                  <p class="help-block">
+                    {{ form.phone_m.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label" for="input-home-phone">{{form.birthday.label}}:</label>
+                <div class="controls">
+                  {{ form.birthday }}
+                  {% if form.birthday.errors %}
+                  <span class="help-inline">{% for error in form.birthday.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.birthday.help_text%}
+                  <p class="help-block">
+                    {{ form.birthday.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label" for="input-home-phone">{{form.phone_h.label}}:</label>
+              <div class="controls">
+                {{ form.phone_h }}
+                {% if form.phone_h.errors %}
+                <span class="help-inline">{% for error in form.phone_h.errors %}{{ error }}<br/> {% endfor %}</span>
+                {% endif %}
+                {% if form.phone_h.help_text%}
+                <p class="help-block">
+                  {{ form.phone_h.help_text|safe }}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label" for="input-cperson-phone">{{form.contactperson_phone.label}}:</label>
+              <div class="controls">
+                {{ form.contactperson_phone }}
+                {% if form.contactperson_phone.errors %}
+                <span class="help-inline">{% for error in form.contactperson_phone.errors %}{{ error }}<br/> {% endfor %}</span>
+                {% endif %}
+                {% if form.contactperson_phone.help_text%}
+                <p class="help-block">
+                  {{ form.contactperson_phone.help_text|safe }}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label" for="input-form">{{form.email.label}}:</label>
+              <div class="controls">
+                {{ form.email }}
+                {% if form.email.errors %}
+                <span class="help-inline">{% for error in form.email.errors %}{{ error }}<br/> {% endfor %}</span>
+                {% endif %}
+                {% if form.email.help_text%}
+                <p class="help-block">
+                  {{ form.email.help_text|safe }}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-mobile-phone">{{form.passport.label}}:</label>
+                <div class="controls">
+                  {{ form.passport }}
+                  {% if form.passport.errors %}
+                  <span class="help-inline">{% for error in form.passport.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.passport.help_text%}
+                  <p class="help-block">
+                    {{ form.passport.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label" for="input-passport-2">{{form.passport_given.label}}:</label>
+                <div class="controls">
+                  {{ form.passport_given }}
+                  {% if form.passport_given.errors %}
+                  <span class="help-inline">{% for error in form.passport_given.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.passport_given.help_text%}
+                  <p class="help-block">
+                    {{ form.passport_given.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-passport-date">{{form.passport_date.label}}:</label>
+                <div class="controls">
+                  {{ form.passport_date }}
+                  {% if form.passport_date.errors %}
+                  <span class="help-inline">{% for error in form.passport_date.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.passport_date.help_text%}
+                  <p class="help-block">
+                    {{ form.passport_date.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label" for="input-id-no">{{form.private_passport_number.label}}:</label>
+                <div class="controls">
+                  {{ form.private_passport_number }}
+                  {% if form.private_passport_number.errors %}
+                  <span class="help-inline">{% for error in form.private_passport_number.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.private_passport_number.help_text%}
+                  <p class="help-block">
+                    {{ form.private_passport_number.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-passport-date">{{form.passportdislocate.label}}:</label>
+                <div class="controls">
+                  {{ form.passportdislocate }}
+                  {% if form.passportdislocate.errors %}
+                  <span class="help-inline">{% for error in form.passportdislocate.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.passportdislocate.help_text%}
+                  <p class="help-block">
+                    {{ form.passportdislocate.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Адрес</legend>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-city">{{form.city.label}}:</label>
+                <div class="controls">
+                  {{ form.city }}
+                  {% if form.city.errors %}
+                  <span class="help-inline">{% for error in form.city.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.city.help_text%}
+                  <p class="help-block">
+                    {{ form.city.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label" for="input-district">{{form.region.label}}:</label>
+                <div class="controls">
+                  {{ form.region }}
+                  {% if form.region.errors %}
+                  <span class="help-inline">{% for error in form.region.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.region.help_text%}
+                  <p class="help-block">
+                    {{ form.region.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-street">{{form.street.label}}</label>
+                <div class="controls">
+                  {{ form.street }}
+                  {% if form.street.errors %}
+                  <span class="help-inline">{% for error in form.street.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.street.help_text%}
+                  <p class="help-block">
+                    {{ form.street.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label" for="input-postal-code">{{form.postcode.label}}:</label>
+                <div class="controls">
+                  {{ form.postcode }}
+                  {% if form.postcode.errors %}
+                  <span class="help-inline">{% for error in form.postcode.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.postcode.help_text%}
+                  <p class="help-block">
+                    {{ form.postcode.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-street">{{form.house.label}}</label>
+                <div class="controls">
+
+                  {{ form.house }}
+                  {% if form.house.errors %}
+                  <span class="help-inline">{% for error in form.house.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.house.help_text%}
+                  <p class="help-block">
+                    {{ form.house.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-entrance">{{form.house_bulk.label}}</label>
+                <div class="controls">
+                  {{ form.house_bulk }}
+                  {% if form.house_bulk.errors %}
+                  <span class="help-inline">{% for error in form.house_bulk.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.house_bulk.help_text%}
+                  <p class="help-block">
+                    {{ form.house_bulk.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label" for="input-entrance-code">{{form.entrance_code.label}}</label>
+                <div class="controls">
+                  {{ form.entrance_code }}
+                  {% if form.entrance_code.errors %}
+                  <span class="help-inline">{% for error in form.entrance_code.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.entrance_code.help_text%}
+                  <p class="help-block">
+                    {{ form.entrance_code.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-entrance">{{form.entrance.label}}</label>
+                <div class="controls">
+                  {{ form.entrance }}
+                  {% if form.entrance.errors %}
+                  <span class="help-inline">{% for error in form.entrance.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.entrance.help_text%}
+                  <p class="help-block">
+                    {{ form.entrance.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-floor">{{form.row.label}}</label>
+                <div class="controls">
+                  {{ form.row }}
+                  {% if form.row.errors %}
+                  <span class="help-inline">{% for error in form.row.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.row.help_text%}
+                  <p class="help-block">
+                    {{ form.row.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label" for="input-apartment-no">{{form.room.label}}</label>
+                <div class="controls">
+                  {{ form.room }}
+                  {% if form.row.errors %}
+                  <span class="help-inline">{% for error in form.row.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.row.help_text%}
+                  <p class="help-block">
+                    {{ form.row.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label" for="input-floor">{{form.elevator_direction.label}}:</label>
+              <div class="controls">
+                {{ form.elevator_direction }}
+                {% if form.elevator_direction.errors %}
+                <span class="help-inline">{% for error in form.elevator_direction.errors %}{{ error }}<br/> {% endfor %}</span>
+                {% endif %}
+                {% if form.elevator_direction.help_text%}
+                <p class="help-block">
+                  {{ form.elevator_direction.help_text|safe }}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+
+          </fieldset>
+          {{extra_form|crispy}}
+        </div>
+
+        {% if account %}
+          <div class="tab-pane" id="tab-tables">
+            <fieldset>
+              <legend>Субаккаунты</legend>
+
+              {% if subaccounts_table %}{% render_table subaccounts_table %}{% endif %}
+              <a href="{% url 'subaccount' %}?account_id={{account.id}}" class="btn btn-success align-right">Добавить</a>
+
+              <legend>Подключаемые услуги</legend>
+
+              {% if accountaddonservice_table %}{% render_table accountaddonservice_table %}{% endif %}
+              <a href="{% url 'accountaddonservice' %}?account_id={{account.id}}" 
+                  class="btn btn-success align-right general-modal-dialog" 
+                  data-dlgbodyid="accountaddonservicer-modal" 
+                  data-dlgtitle="{% trans 'Прикрепить подключаемую услугу' %}">
+                Добавить
+              </a>
+            </fieldset>
+          </div>
+        {% endif %}
+
+        <div class="tab-pane" id="tab-second">
+          {{form.organization}} {{form.organization.label}}
+          <fieldset id='organization-fieldset'>
+            <legend> Юридическое лицо</legend>
+            {{org_form.account}}
+            {{org_form.id}}
+            <div class="control-group">
+              <label class="control-label" for="input-company">{{org_form.name.label}}:</label>
+              <div class="controls">
+                {{ org_form.name }}
+                {% if org_form.name.errors %}
+                <span class="help-inline">{% for error in org_form.name.errors %}{{ error }}<br/> {% endfor %}</span>
+                {% endif %}
+                {% if org_form.name.help_text%}
+                <p class="help-block">
+                  {{ org_form.name.help_text|safe }}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-company-phone">{{org_form.phone.label}}: </label>
+                <div class="controls">
+                  {{ org_form.phone }}
+                  {% if org_form.phone.errors %}
+                  <span class="help-inline">{% for error in org_form.phone.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if org_form.phone.help_text%}
+                  <p class="help-block">
+                    {{ org_form.phone.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label" for="input-company">{{org_form.fax.label}}: </label>
+                <div class="controls">
+                  {{ org_form.fax }}
+                  {% if org_form.fax.errors %}
+                  <span class="help-inline">{% for error in org_form.fax.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if org_form.fax.help_text%}
+                  <p class="help-block">
+                    {{ form.org_form.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label" for="input-company-address">{{org_form.uraddress.label}}:</label>
+              <div class="controls">
+                {{ org_form.uraddress }}
+                {% if form.uraddress.errors %}
+                <span class="help-inline">{% for error in org_form.uraddress.errors %}{{ error }}<br/> {% endfor %}</span>
+                {% endif %}
+                {% if org_form.uraddress.help_text%}
+                <p class="help-block">
+                  {{ org_form.uraddress.help_text|safe }}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label" for="input-company-unp">{{org_form.unp.label}}:</label>
+              <div class="controls">
+                {{ org_form.unp }}
+                {% if org_form.unp.errors %}
+                <span class="help-inline">{% for error in org_form.unp.errors %}{{ error }}<br/> {% endfor %}</span>
+                {% endif %}
+                {% if org_form.unp.help_text%}
+                <p class="help-block">                            
+                  {{ org_form.unp.help_text|safe }}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-company-cpp">{{org_form.kpp.label}}</label>
+                <div class="controls">
+                  {{ org_form.kpp }}
+                  {% if org_form.kpp.errors %}
+                  <span class="help-inline">{% for error in org_form.kpp.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if org_form.kpp.help_text%}
+                  <p class="help-block">
+                    {{ org_form.kpp.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label" for="input-company-okpo">{{org_form.okpo.label}}</label>
+                <div class="controls">
+                  {{ org_form.okpo }}
+                  {% if org_form.okpo.errors %}
+                  <span class="help-inline">{% for error in org_form.okpo.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if org_form.okpo.help_text%}
+                  <p class="help-block">
+                    {{ org_form.okpo.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-company-bank">{{bank_form.bank.label}}</label>
+                <div class="controls">
+                  {{ bank_form.bank }}
+                  {% if bank_form.bank.errors %}
+                  <span class="help-inline">{% for error in bank_form.bank.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if bank_form.bank.help_text%}
+                  <p class="help-block">
+                    {{ bank_form.bank.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label" for="input-company-swift">{{bank_form.bankcode.label}}</label>
+                <div class="controls">
+                  {{ bank_form.bankcode }}
+                  {% if bank_form.bankcode.errors %}
+                  <span class="help-inline">{% for error in bank_form.bankcode.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if bank_form.bankcode.help_text%}
+                  <p class="help-block">
+                    {{ bank_form.bankcode.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-company-account">{{org_form.kor_s.label}}</label>
+                <div class="controls">
+                  {{ org_form.kor_s }}
+                  {% if org_form.kor_s.errors %}
+                  <span class="help-inline">{% for error in org_form.kor_s.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if org_form.kor_s.help_text%}
+                  <p class="help-block">
+                    {{ org_form.kor_s.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="control-row">
+                <label class="control-label" for="input-settlement-account">{{org_form.rs.label}}</label>
+                <div class="controls">
+                  {{ org_form.rs }}
+                  {% if org_form.rs.errors %}
+                  <span class="help-inline">{% for error in org_form.rs.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if org_form.rs.help_text%}
+                  <p class="help-block">
+                    {{ org_form.rs.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-row">
+                <label class="control-label" for="input-company-account">{{bank_form.currency.label}}</label>
+                <div class="controls">
+                  {{ bank_form.currency }}
+                  {% if bank_form.currency.errors %}
+                  <span class="help-inline">{% for error in bank_form.currency.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if bank_form.currency.help_text%}
+                  <p class="help-block">
+                    {{ bank_form.currency.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="tab-pane" id="tab-third">
+          <fieldset>
+            <legend>Предыдущие тарифные планы </legend>
+            {% if accounttarif_table %}{% render_table accounttarif_table %}{% endif %}
+            <a href="{% url 'accounttariff_edit' %}?account_id={{account.id}}" class="btn btn-success  align-right general-modal-dialog" data-dlgbodyid="server-notice" data-dlgtitle="{% trans 'Изменение тарифного плана' %}">Добавить</a>
+          </fieldset>
+
+          {% comment %}
+          <fieldset>
+            <legend>{% blocktrans %}Документы{% endblocktrans %}<button href="#" class="btn align-right">{% blocktrans %}Добавить{% endblocktrans %}</button></legend>
+
+          </fieldset>
+          {% endcomment %}
+
+          <fieldset>
+            <legend>{% blocktrans %}Взятое в аренду оборудование{% endblocktrans %}</legend>
+            {% if accounthardware_table %}{% render_table accounthardware_table %}{% endif %}
+
+            <a href="{% url 'accounthardware' %}?account_id={{account.id}}"
+                class="btn btn-success align-right general-modal-dialog" 
+                data-dlgbodyid="accounthardware-modal" 
+                data-dlgtitle="{% trans 'Прикрепить оборудование' %}">
+              {% blocktrans %}Добавить{% endblocktrans %}
+            </a>
+          </fieldset>
+
+          <fieldset>
+            <legend>Периоды без списаний</legend>
+            {% if suspendedperiod_table %}{% render_table suspendedperiod_table  %}{% endif %}
+            <a href="{% url 'suspendedperiod' %}?account_id={{account.id}}"
+                class="btn btn-success align-right general-modal-dialog" 
+                data-dlgbodyid="server-notice" 
+                data-dlgtitle="{% trans 'Добавить период без списаний услуг' %}">
+              {% blocktrans %}Добавить{% endblocktrans %}
+            </a>
+          </fieldset>
+
+          <fieldset>
+            <legend>{% blocktrans %}Прочее{% endblocktrans %}</legend>
+
+            <div class="control-group">
+              <label class="control-label" for="input-max">{{form.promise_summ.label}}</label>
+              <div class="controls">
+                {{ form.promise_summ }}
+                {% if form.promise_summ.errors %}
+                <span class="help-inline">{% for error in form.promise_summ.errors %}{{ error }}<br/> {% endfor %}</span>
+                {% endif %}
+                {% if form.promise_summ.help_text%}
+                <p class="help-block">
+                  {{ form.promise_summ.help_text|safe }}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label" for="input-max">{{form.promise_min_ballance.label}}</label>
+              <div class="controls">
+                {{ form.promise_min_ballance }}
+                {% if form.promise_min_ballance.errors %}
+                <span class="help-inline">{% for error in form.promise_min_ballance.errors %}{{ error }}<br/> {% endfor %}</span>
+                {% endif %}
+                {% if form.promise_min_ballance.help_text%}
+                <p class="help-block">
+                  {{ form.promise_min_ballance.help_text|safe }}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label" for="input-max">{{form.promise_days.label}}</label>
+              <div class="controls">
+                {{ form.promise_days }}
+                {% if form.promise_days.errors %}
+                <span class="help-inline">{% for error in form.promise_days.errors %}{{ error }}<br/> {% endfor %}</span>
+                {% endif %}
+                {% if form.promise_days.help_text%}
+                <p class="help-block">
+                  {{ form.promise_days.help_text|safe }}
+                </p>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label class="control-label" for="input-max">{% blocktrans %}Опции{% endblocktrans %}</label>
+              <div class="controls docs-input-sizes">
+                <label class="checkbox">
+                  {{ form.allow_webcab }}{{form.allow_webcab.label}}
+                  {% if form.allow_webcab.errors %}
+                  <span class="help-inline">{% for error in form.allow_webcab.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.allow_webcab.help_text%}
+                  <p class="help-block">
+                    {{ form.allow_webcab.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </label>
+
+                <label class="checkbox">
+                  {{ form.allow_expresscards }}{{form.allow_expresscards.label}}
+                  {% if form.allow_expresscards.errors %}
+                  <span class="help-inline">{% for error in form.allow_expresscards.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.allow_expresscards.help_text%}
+                  <p class="help-block">
+                    {{ form.allow_expresscards.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </label>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+
+        <fieldset>
+          <div class="form-actions form-actions-center">
+            <input class="btn btn-primary" type="submit" value="{% blocktrans %}Сохранить{% endblocktrans %}">
+          </div>
+        </fieldset>
+      </div>
+    </form>
+  </div>
+
+  {% if account %}
+    <div class="span3">
+      <div class="well sidebar-nav alert-success">
+        <ul class="nav nav-list">
+          <li class="nav-header">{% blocktrans %}Тариф{% endblocktrans %}</li>
+          <strong>
+            <h4>
+              <a href="{% url 'tariff_edit' %}?id={{account.get_account_tariff.id}}">
+                {{account.get_account_tariff.name}}
+              </a>
+            </h4>
+          </strong>
+          <li>
+            <div class="btn-group">
+              <a href="/ebsadmin/accounttariff/edit/?account_id={{account.id}}" 
+                  class="btn btn-large btn-info general-modal-dialog" 
+                  data-dlgbodyid="server-notice" 
+                  data-dlgtitle="{% trans 'Изменение тарифного плана' %}">
+                <i class="icon-pencil icon-white"></i>{% blocktrans %}Изменить{% endblocktrans %}
+              </a>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="well sidebar-nav">
+        <ul class="nav nav-list">
+          <li class="nav-header">{% blocktrans %}Итоговый баланс{% endblocktrans %}</li>
+          <li><strong><h3>{{account.ballance|floatformat:2}} {{currency}}</h3></strong></li>
+          <li>
+            <strong>
+              {% blocktrans %}Обещанные платежи:{% endblocktrans %} 
+              <a href="{% url 'transactionreport2' %}?account={{account.id}}&tree=PROMISE_PAYMENT">{{account.get_last_promises_count}}</a>
+            </strong>
+          </li>
+          <li>                                    
+            <div class="btn-group">
+              <a href="{% url 'transaction_edit' %}?account_id={{account.id}}" 
+                  class="btn btn-success general-modal-dialog" 
+                  data-dlgbodyid="server-notice" 
+                  data-dlgtitle="{% trans 'Внести платеж' %}">
+                <i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}
+              </a>
+            </div>
+          </li>
+          <li class="nav-header">{% blocktrans %}Бонусный счёт{% endblocktrans %}</li>
+          <li><strong><h3>{{account.bonus_ballance|floatformat:2}} {{currency}}</h3></strong></li>
+          <li>
+            <div class="btn-group">
+              <a href="{% url 'bonus_transaction_edit' %}?account_id={{account.id}}" 
+                  class="btn btn-success general-modal-dialog" 
+                  data-dlgbodyid="server-notice" 
+                  data-dlgtitle="{% trans 'Внести бонусный платёж' %}">
+                <i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}
+              </a>              
+            </div>
+          </li>
+          <li class="divider"></li>
+          <li>
+            <a href="{% url 'transactionreport2' %}?account={{account.id}}&only_payments=True">
+              <i class='icon-list-alt'></i>{% blocktrans %}Пополнения баланса{% endblocktrans %}
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'transactionreport2' %}?account={{account.id}}&only_credits=True">
+              <i class='icon-list-alt'></i>{% blocktrans %}Списания баланса{% endblocktrans %}
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'transactionreport2' %}?account={{account.id}}&tree=PROMISE_PAYMENT">
+              <i class='icon-list-alt'></i>{% blocktrans %}Обещанные платежи{% endblocktrans %}
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'ballancehistoryreport' %}?account={{account.id}}">
+              <i class='icon-list-alt'></i>{% blocktrans %}История изменения баланса{% endblocktrans %}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

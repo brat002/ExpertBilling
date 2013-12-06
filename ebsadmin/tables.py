@@ -550,7 +550,13 @@ class NasTable(TableReport):
 class TemplateTable(TableReport):
     id = django_tables.LinkColumn('template_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     name = django_tables.LinkColumn('template_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить?'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     
     def __init__(self, *args, **argv):
         super(TemplateTable, self).__init__(*args, **argv)
@@ -651,7 +657,14 @@ class CommentTable(TableReport):
 class TransactionTypeTable(TableReport):
     id = django_tables.LinkColumn('transactiontype_edit', get_params={'id':A('pk')})
     name = django_tables.LinkColumn('transactiontype_edit', get_params={'id':A('pk')})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить проводку #{{ record.id }}?'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     
     def __init__(self, *args, **argv):
         super(TransactionTypeTable, self).__init__(*args, **argv)
@@ -1145,7 +1158,13 @@ class NewsTable(TableReport):
 class TPChangeRuleTable(TableReport):
 
     id = django_tables.LinkColumn('tpchangerule_edit', get_params={'id':A('pk')})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить правило?'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     settlement_period = FormatBlankColumn(verbose_name=_(u'Расчётный период'))
     on_next_sp = django_tables.TemplateColumn("<img src='/media/img/icons/{% if record.on_next_sp %}accept.png{% else %}icon_error.gif{% endif %}'>")
     row_class = django_tables.Column(visible=False)
@@ -1163,12 +1182,26 @@ class TPChangeRuleTable(TableReport):
         available_fields = ("id", 'row_class',  'from_tariff', 'to_tariff', 'cost', 'ballance_min', 'on_next_sp', 'settlement_period', 'disabled', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
 
-class AccountGroupTable(TableReport):
 
-    id = django_tables.LinkColumn('accountgroup_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    name = django_tables.LinkColumn('accountgroup_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    cnt = django_tables.TemplateColumn('{{record.account_set.count}}', verbose_name = _(u'Количество'))
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+class AccountGroupTable(TableReport):
+    id = django_tables.LinkColumn(
+        'accountgroup_edit',
+        get_params={'id': A('pk')},
+        attrs={'rel': "alert3", 'class': "general-modal-dialog", 'data-dlgid': "hardwaretype-modal", 'data-dlgtitle': _(u'Изменить тип')}
+    )
+    name = django_tables.LinkColumn(
+        'accountgroup_edit',
+        get_params={'id': A('pk')},
+        attrs={'rel': "alert3", 'class': "general-modal-dialog", 'data-dlgid': "hardwaretype-modal", 'data-dlgtitle': _(u'Изменить тип')}
+    )
+    cnt = django_tables.TemplateColumn('{{record.account_set.count}}', verbose_name=_(u'Количество'))
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить?'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     
     def __init__(self, *args, **argv):
         super(AccountGroupTable, self).__init__(*args, **argv)
@@ -1284,7 +1317,11 @@ class AccountPrepaysTimeTable(TableReport):
 
     #account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))
     #group = django_tables.Column(u'Группа', accessor=A('group__name'))
-    id = django_tables.LinkColumn('accountprepaystraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    id = django_tables.LinkColumn(
+        'accountprepaystraffic_edit',
+        get_params={'id': A('pk')},
+        attrs={'rel': "alert3", 'class': "open-custom-dialog", 'data-dlgtitle': _(u'Изменить тип')}
+    )
     account_tarif = django_tables.Column(_(u'Аккаунт/Тариф'))
     
     datetime = FormatDateTimeColumn(verbose_name=_(u'Начислен'))
