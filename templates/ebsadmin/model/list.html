@@ -1,76 +1,32 @@
 {% extends "ebsadmin/base.html" %}
+
 {% load i18n %}
 {% load ebsadmin_tags %}
 {% load render_table from django_tables2 %}
-{% block extra_head %}
-        <script type="text/javascript"> 
-        $(document).ready(function() {
-            $("#id_btn_add").click(function(event) {
-                $('<div/>').dialog2({
-                    title: "{% blocktrans %}Добавление модели оборудования{% endblocktrans %}", 
-                    content: "{% url 'model_edit' %}", 
-                    id: "server-notice"
-                });
 
-                event.preventDefault(event);
-            });
-            $(".open-custom-dialog").click(function(event) {
-                $('<div />').dialog2({
-                    title: "{% blocktrans %}Изменить модель{% endblocktrans %}", 
-                    content: this.href, 
-                    id: "model-modal"
-                });
-
-                event.preventDefault(event);
-            });
-            $(".show-confirm").click(function() {
-                a=$(this);
-                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить? Удаление модели оборудования вызовет удаление всех связаных объектов в системе.{% endblocktrans %}", {
-                    confirm: function() {
-                        $.getJSON(a.attr('href'),{},function(data,status){
-                            if( status=='success' ){
-                                if(data.status==true)
-                                    {
-                                    location.reload();
-                                    }else{
-                                        alert(data.message)
-                                    }
-                                
-                            }else{
-                                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
-                            }
-
-                        })                      
-                        }, 
-                    decline: function() {  }
-                });
-
-                event.preventDefault(event);
-            });
-        });
-        </script>
-
-{% endblock %}
 {% block base %}
-
-
-
-
   <div class="row-fluid">
-  
-<div>
-<ul class="breadcrumb">
-  <li>
-    <a href="{% url 'model' %}">{% blocktrans %}Модели оборудования{% endblocktrans %}</a> <span class="divider">/</span>
-  </li>
-</ul>
-</div>
-<div class="btn-toolbar pull-right"><a href="{% url 'model_edit' %}" id="id_btn_add" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a>&nbsp;</div>
-<div>
-  {% render_table table %}
-</div>
+    <div>
+      <ul class="breadcrumb">
+        <li>
+          <a href="{% url 'model' %}">
+            {% blocktrans %}Модели оборудования{% endblocktrans %}
+          </a> <span class="divider">/</span>
+        </li>
+      </ul>
     </div>
-  
 
- {% endblock %}
+    <div class="btn-toolbar pull-right">
+      <a href="{% url 'model_edit' %}"
+          class="btn btn-success general-modal-dialog"
+          data-dlgtitle="{% blocktrans %}Добавление модели оборудования{% endblocktrans %}"
+          data-dlgid="server-notice">
+        {% blocktrans %}Добавить{% endblocktrans %}
+      </a>
+    </div>
 
+    <div>
+      {% render_table table %}
+    </div>
+  </div>
+{% endblock %}

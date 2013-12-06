@@ -766,9 +766,33 @@ class ManufacturerTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class ModelTable(TableReport):
-    id = django_tables.LinkColumn('model_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    name = django_tables.LinkColumn('model_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    id = django_tables.LinkColumn(
+        'model_edit',
+        get_params={'id': A('pk')},
+        attrs= {
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Изменить модель'),
+            'data-dlgid': "model-modal"
+        }
+    )
+    name = django_tables.LinkColumn(
+        'model_edit',
+        get_params={'id':A('pk')},
+        attrs= {
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Изменить модель'),
+            'data-dlgid': "model-modal"
+        }
+    )
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить? Удаление модели оборудования вызовет удаление всех связаных объектов в системе.'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     
     def __init__(self, *args, **argv):
         super(ModelTable, self).__init__(*args, **argv)
@@ -1077,7 +1101,7 @@ class TimeAccessNodeTable(TableReport):
         get_params={'id': A('pk')},
         attrs={
             'rel': "alert3",
-            'class': "open-custom-dialog",
+            'class': "general-modal-dialog",
             'data-dlgtitle': _(u'Правило тарификации времени'),
             'data-dlgid': "timeaccessnode-modal"
         }
@@ -1336,7 +1360,11 @@ class AccountPrepaysTimeTable(TableReport):
     id = django_tables.LinkColumn(
         'accountprepaystraffic_edit',
         get_params={'id': A('pk')},
-        attrs={'rel': "alert3", 'class': "open-custom-dialog", 'data-dlgtitle': _(u'Изменить тип')}
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Изменить тип')
+        }
     )
     account_tarif = django_tables.Column(_(u'Аккаунт/Тариф'))
     
