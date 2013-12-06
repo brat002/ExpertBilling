@@ -1180,7 +1180,13 @@ class SheduleLogTable(TableReport):
 class NewsTable(TableReport):
 
     id = django_tables.LinkColumn('news_edit', get_params={'id':A('pk')})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить новость?'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     created = FormatDateTimeColumn(verbose_name=_(u'Активна с'))
     age = FormatDateTimeColumn(verbose_name=_(u'Активна по'))
 
