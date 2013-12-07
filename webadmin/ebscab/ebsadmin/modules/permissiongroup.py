@@ -36,7 +36,7 @@ def permissiongroup(request):
 
     
 @systemuser_required
-@render_to('ebsadmin/permissiongroup_edit.html')
+@render_to('ebsadmin/common/edit_form.html')
 def permissiongroup_edit(request):
     
 
@@ -68,8 +68,14 @@ def permissiongroup_edit(request):
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             return HttpResponseRedirect(reverse("permissiongroup"))
         else:
-
-            return {'form':form,  'status': False,  } 
+            return {
+                'form':form,
+                'status': False,
+                'list_url': reverse('permissiongroup'),
+                'list_label': _(u'Группы доступа'),
+                'form_action_url': reverse('permissiongroup_edit'),
+                'form_legend': _(u'Параметры группы доступа'),
+            }
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_permissiongroup')):
@@ -84,7 +90,15 @@ def permissiongroup_edit(request):
         else:
             form = PermissionGroupForm()
 
-    return { 'form':form, 'status': False, 'item': item} 
+    return {
+        'form':form,
+        'status': False,
+        'item': item,
+        'list_url': reverse('permissiongroup'),
+        'list_label': _(u'Группы доступа'),
+        'form_action_url': reverse('permissiongroup_edit'),
+        'form_legend': _(u'Параметры группы доступа'),
+    }
 
 
 @ajax_request

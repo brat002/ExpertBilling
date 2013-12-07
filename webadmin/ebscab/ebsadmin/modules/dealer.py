@@ -19,7 +19,7 @@ from django.utils.translation import ugettext_lazy as _
 
 
 @systemuser_required
-@render_to('ebsadmin/dealer_list.html')
+@render_to('ebsadmin/dealer/list.html')
 def dealer(request):
     if  not (request.user.account.has_perm('billservice.view_dealer')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -35,7 +35,7 @@ def dealer(request):
     return {"table": table} 
     
 @systemuser_required
-@render_to('ebsadmin/dealer_edit.html')
+@render_to('ebsadmin/dealer/edit.html')
 def dealer_edit(request):
 
     id = request.POST.get("id")
@@ -89,7 +89,7 @@ def dealer_edit(request):
     return { 'form':form, 'bank_form': bank_form,  'item': item} 
 
 @systemuser_required
-@render_to('ebsadmin/dealerselect_window.html')
+@render_to('ebsadmin/dealer/select_window.html')
 def dealer_select(request):
     if  not (request.user.account.has_perm('billservice.view_dealer')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
