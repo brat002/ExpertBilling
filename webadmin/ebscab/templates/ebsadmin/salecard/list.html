@@ -9,17 +9,11 @@
     <div>
       <ul class="breadcrumb">
         <li>
-          <a href="{% url 'transactiontype' %}">
-            {% blocktrans %}Типы проводок{% endblocktrans %}
+          <a href="{% url 'salecard_edit' %}">
+            {% blocktrans %}Накладные на карты{% endblocktrans %}
           </a> <span class="divider">/</span>
         </li>
       </ul>
-    </div>
-
-    <div class="btn-toolbar pull-right">
-      <a href="{% url 'transactiontype_edit' %}" class="btn btn-success align-right">
-        {% blocktrans %}Добавить{% endblocktrans %}
-      </a>
     </div>
 
     <div>

@@ -33,14 +33,12 @@ def hardware(request):
     return {"table": table} 
     
 @systemuser_required
-@render_to('ebsadmin/hardware_edit.html')
+@render_to('ebsadmin/common/edit_form.html')
 def hardware_edit(request):
     id = request.POST.get("id")
-
     item = None
 
     if request.method == 'POST': 
-
         if id:
             model = Hardware.objects.get(id=id)
             form = HardwareForm(request.POST, instance=model) 
@@ -53,7 +51,6 @@ def hardware_edit(request):
                 messages.error(request, _(u'У вас нет прав на создание оборудования'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
 
-
         if form.is_valid():
             model = form.save(commit=False)
             model.save()
@@ -61,23 +58,34 @@ def hardware_edit(request):
             log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
             return HttpResponseRedirect(reverse("hardware")) 
         else:
-
-            return {'form':form,  'status': False} 
+            return {
+                'form':form,
+                'status': False,
+                'list_url': reverse('hardware'),
+                'list_label': _(u'Устройства'),
+                'form_action_url': reverse('hardware_edit'),
+                'form_legend': _(u'Параметры устройства'),
+            }
     else:
         id = request.GET.get("id")
         if  not (request.user.account.has_perm('billservice.view_hardware')):
             messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return HttpResponseRedirect('/ebsadmin/')
         if id:
-
-
             item = Hardware.objects.get(id=id)
-            
             form = HardwareForm(instance=item)
         else:
             form = HardwareForm()
 
-    return { 'form':form, 'status': False, 'item':item} 
+    return {
+        'form':form,
+        'status': False,
+        'item':item,
+        'list_url': reverse('hardware'),
+        'list_label': _(u'Устройства'),
+        'form_action_url': reverse('hardware_edit'),
+        'form_legend': _(u'Параметры устройства'),
+    }
 
 @ajax_request
 @systemuser_required

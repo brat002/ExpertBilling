@@ -20,7 +20,7 @@ from django.utils.translation import ugettext_lazy as _
 
 
 @systemuser_required
-@render_to('ebsadmin/news_list.html')
+@render_to('ebsadmin/news/list.html')
 def news(request):
     if  not (request.user.account.has_perm('billservice.view_news')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -33,7 +33,7 @@ def news(request):
     return {"table": table} 
     
 @systemuser_required
-@render_to('ebsadmin/news_edit.html')
+@render_to('ebsadmin/news/edit.html')
 def news_edit(request):
     id = request.POST.get("id")
 

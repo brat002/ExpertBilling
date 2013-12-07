@@ -18,7 +18,7 @@ from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
-@render_to('ebsadmin/model_list.html')
+@render_to('ebsadmin/model/list.html')
 def model(request):
     if  not (request.user.account.has_perm('billservice.view_model')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -32,7 +32,7 @@ def model(request):
     return {"table": table} 
     
 @systemuser_required
-@render_to('ebsadmin/model_edit.html')
+@render_to('ebsadmin/model/edit.html')
 def model_edit(request):
     id = request.POST.get("id")
 
