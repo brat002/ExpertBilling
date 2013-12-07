@@ -189,7 +189,7 @@ def card_edit(request):
 
 
 @systemuser_required
-@render_to('ebsadmin/salecard_edit.html')
+@render_to('ebsadmin/salecard/edit.html')
 def salecard_edit(request):
     id = request.POST.get("id")
 
@@ -538,7 +538,7 @@ def card_manage(request):
         return {"status": False, "message": "Card not found"}
     
 @systemuser_required
-@render_to('ebsadmin/salecard_list.html')
+@render_to('ebsadmin/salecard/list.html')
 def salecard(request):
     if  not (request.user.account.has_perm('billservice.view_salecard')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
