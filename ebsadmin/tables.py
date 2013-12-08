@@ -1329,7 +1329,15 @@ class AccountPrepaysTraficTable(TableReport):
 
     #account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))
     #group = django_tables.Column(u'Группа', accessor=A('group__name'))
-    id = django_tables.LinkColumn('accountprepaystraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    id = django_tables.LinkColumn(
+        'accountprepaystraffic_edit',
+        get_params={'id': A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Изменить значения'),
+        }
+    )
     account_tarif = django_tables.Column(_(u'Аккаунт/Тариф'))
     prepaid_traffic = django_tables.TemplateColumn("{{record.prepaid_traffic.size|filesizeformat}}({{record.prepaid_traffic.size}})", verbose_name=_(u'Начислено'))
     size = django_tables.TemplateColumn("{{record.size|filesizeformat}}({{record.size}})", verbose_name=_(u'Остаток'))
