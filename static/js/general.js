@@ -7,7 +7,7 @@ $(document).ready(function() {
     if (a.data('clickmessage')) {
       message = a.data('clickmessage');
     } else {
-      message = gettext('Вы действительно хотите удалить?');
+      message = gettext('Удалить?');
     }
 
     $.fn.dialog2.helpers.confirm(message, {
