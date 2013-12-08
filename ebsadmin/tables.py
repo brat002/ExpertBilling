@@ -744,9 +744,19 @@ class UploadTrafficNodeTable(TableReport):
     class Meta:
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         fields = ('row_number', 'src_net', 'dst_net')
-            
+
+
 class RadiusAttrTable(TableReport):
-    id = django_tables.LinkColumn('radiusattr_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    id = django_tables.LinkColumn(
+        'radiusattr_edit',
+        get_params={'id': A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Изменить атрибут'),
+            'data-dlgid': "radiusattr-modal"
+        }
+    )
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
     def __init__(self, *args, **argv):

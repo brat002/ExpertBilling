@@ -19,7 +19,7 @@ from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
-@render_to('ebsadmin/radiusattr_list.html')
+@render_to('ebsadmin/radiusattr/list.html')
 def radiusattr(request):
     if  not (request.user.account.has_perm('billservice.view_radiusattrs')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -46,7 +46,7 @@ def radiusattr(request):
     return {"table": table, 'nas':nas, 'tariff':tariff,  'model_name': nas.__class__.__name__ if nas else tariff.__class__.__name__ if tariff else '' } 
     
 @systemuser_required
-@render_to('ebsadmin/radiusattr_edit.html')
+@render_to('ebsadmin/radiusattr/edit.html')
 def radiusattr_edit(request):
     
     account = None
