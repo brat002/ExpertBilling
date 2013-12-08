@@ -1011,7 +1011,10 @@ class RegistrationRequestTable(TableReport):
 
 class ContractTemplateTable(TableReport):
     id = django_tables.LinkColumn('contracttemplate_edit', get_params={'id':A('pk')})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить шаблон номера договора?'>"
+        "<i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
 
     def __init__(self, *args, **argv):
         super(ContractTemplateTable, self).__init__(*args, **argv)
