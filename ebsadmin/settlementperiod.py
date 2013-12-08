@@ -19,7 +19,7 @@ from django.utils.translation import ugettext_lazy as _
 
 
 @systemuser_required
-@render_to('ebsadmin/settlement_period_list.html')
+@render_to('ebsadmin/settlement_period/list.html')
 def settlementperiod(request):
     if  not (request.user.account.has_perm('billservice.view_settlementperiod')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -33,7 +33,7 @@ def settlementperiod(request):
     return {"table": table} 
     
 @systemuser_required
-@render_to('ebsadmin/settlement_period_edit.html')
+@render_to('ebsadmin/settlement_period/edit.html')
 def settlementperiod_edit(request):
 
     id = request.GET.get("id")
