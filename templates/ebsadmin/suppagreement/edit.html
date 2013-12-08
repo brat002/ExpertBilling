@@ -9,7 +9,9 @@
     <div class="row-fluid">
       <ul class="breadcrumb">
         <li>
-          <a href="{% url 'suppagreement' %}">{% blocktrans %}Виды доп. соглашений{% endblocktrans %}</a> <span class="divider">/</span>
+          <a href="{% url 'suppagreement' %}">
+            {% blocktrans %}Виды доп. соглашений{% endblocktrans %}
+          </a> <span class="divider">/</span>
         </li>
         <li class="active">{{form.name.value}}</li>
       </ul>
@@ -21,7 +23,9 @@
         </fieldset>
         <fieldset>
           <div class="form-actions form-actions-center">
-            <button class="btn btn-primary" type="submit">{% blocktrans %}Сохранить{% endblocktrans %}</button>
+            <button class="btn btn-primary" type="submit">
+              {% blocktrans %}Сохранить{% endblocktrans %}
+            </button>
           </div>
         </fieldset>
       </form>
