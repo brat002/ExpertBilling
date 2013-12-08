@@ -1,0 +1,33 @@
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load crispy_forms_tags %}
+
+{% block base %}
+  {% if not status %}
+    {% for message in messages %}
+      <div class="alert fade in {{ message.tags }}">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        {{ message }}
+      </div>
+    {% endfor %}
+    
+    {% if form %}
+      <form action="{% url 'dynamicschemafield_edit' %}?id={{item.id}}" method="POST" class="well form-horizontal ajax form-condensed ">
+        <fieldset>
+          {{form|crispy}}             
+        </fieldset>
+        <div class="form-actions">
+          <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">
+          <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
+        </div>
+      </form>
+    {% endif %}
+  {% else %}
+    Операция произведена успешно.
+    <script type="text/javascript"> 
+      $(document).ready(function() {
+        location.reload();
+      });
+    </script>
+  {% endif %}
+{% endblock %}
