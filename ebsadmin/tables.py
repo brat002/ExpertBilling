@@ -588,7 +588,13 @@ class SettlementPeriodTable(TableReport):
 class SystemUserTable(TableReport):
     id = django_tables.LinkColumn('systemuser_edit', get_params={'id':A('pk')})
     username = django_tables.LinkColumn('systemuser_edit', get_params={'id':A('pk')})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить?'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     
     def __init__(self, *args, **argv):
         super(SystemUserTable, self).__init__(*args, **argv)
