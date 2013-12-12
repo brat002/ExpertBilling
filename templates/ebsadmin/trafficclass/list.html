@@ -1,0 +1,91 @@
+{% extends "ebsadmin/base.html" %}
+
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load render_table from django_tables2 %}
+
+{% block extra_head %}
+  <script type="text/javascript"> 
+    $(document).ready(function() {
+      $("#id_btn_save").click(function(){
+        var values = jQuery("#id_main_table input[type=hidden]").serializeArray();
+        var js = [];
+        $.each(values, function(key, value) { 
+          js.push({name:'id', value:value.value})
+        });
+        $.post("{% url 'trafficclass_weight' %}", js, function(data, status){
+          if( status=='success' ){
+            if(data.status==true)
+            {
+              location.reload();
+            }else{
+              alert(data.message)
+            }
+
+          }else{
+            alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
+          }
+        }); 
+      });
+
+      var fixHelper = function(e, ui) {
+        ui.children().each(function() {
+          $(this).width($(this).width());
+        });
+        return ui;
+      };
+
+      $("#id_main_table tbody" ).sortable({
+        helper: fixHelper,            
+        update : function () {
+          var i=1;
+          $.each(jQuery("#id_main_table input[type=text]"), function(ind, obj){
+            obj.value = i;
+            i +=1;
+          });
+          $("#id_show_warning").show();
+          return
+
+        } }).disableSelection();
+      $("#id_show_warning").hide();
+    });
+  </script>
+{% endblock %}
+
+{% block base %}
+  <div class="row-fluid">
+    <div class="alert alert-info">
+      {% blocktrans %}<strong>Внимание!</strong> Просмотр классов происходит сверху-вниз. От меньшего веса к большему.{% endblocktrans %}
+    </div>
+
+    <div class="alert alert-error" id="id_show_warning">
+      {% blocktrans %}<strong>Внимание!</strong> Сохраните изменения, нажав кнопку Сохранить.{% endblocktrans %}
+    </div>
+
+    <div>
+      <ul class="breadcrumb">
+        <li>
+          <a href="{% url 'trafficclass' %}">
+            {% blocktrans %}Классы трафика{% endblocktrans %}
+          </a> <span class="divider">/</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="btn-toolbar pull-right">
+      <a href="{% url 'trafficclass_edit' %}"
+          class="btn btn-success general-modal-dialog"
+          data-dlgtitle="{% blocktrans %}Добавить класс{% endblocktrans %}"
+          data-dlgid="trafficclass-modal">
+        {% blocktrans %}Добавить{% endblocktrans %}
+      </a>&nbsp;
+      <a href="#" id="id_btn_save" class="btn btn-warning">
+        {% blocktrans %}Сохранить{% endblocktrans %}
+      </a>
+    </div>
+
+    <div>
+      {% render_table table %}
+    </div>
+  </div>
+{% endblock %}

@@ -588,7 +588,13 @@ class SettlementPeriodTable(TableReport):
 class SystemUserTable(TableReport):
     id = django_tables.LinkColumn('systemuser_edit', get_params={'id':A('pk')})
     username = django_tables.LinkColumn('systemuser_edit', get_params={'id':A('pk')})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить?'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     
     def __init__(self, *args, **argv):
         super(SystemUserTable, self).__init__(*args, **argv)
@@ -677,10 +683,34 @@ class TransactionTypeTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class TrafficClassTable(TableReport):
-    id = django_tables.LinkColumn('trafficclass_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    name = django_tables.LinkColumn('trafficclass_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    id = django_tables.LinkColumn(
+        'trafficclass_edit',
+        get_params={'id':A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Изменить класс'),
+            'data-dlgid': "trafficclass-modal"
+        }
+    )
+    name = django_tables.LinkColumn(
+        'trafficclass_edit',
+        get_params={'id':A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Изменить класс'),
+            'data-dlgid': "trafficclass-modal"
+        }
+    )
     directions = django_tables.TemplateColumn(u"<a href='{% url 'trafficnode_list' %}?id={{record.id}}' class='btn btn-primary btn-mini'>Список направлений</a>", verbose_name=_(u'Направления'), orderable=False)
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a><input type='hidden' name='id' value='{{record.id}}'>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить?'>"
+        "<i class='icon-remove'></i></a><input type='hidden' name='id' value='{{record.id}}'>",
+        verbose_name=' ',
+        orderable=False
+    )
     
     def __init__(self, *args, **argv):
         super(TrafficClassTable, self).__init__(*args, **argv)
@@ -738,9 +768,19 @@ class UploadTrafficNodeTable(TableReport):
     class Meta:
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         fields = ('row_number', 'src_net', 'dst_net')
-            
+
+
 class RadiusAttrTable(TableReport):
-    id = django_tables.LinkColumn('radiusattr_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    id = django_tables.LinkColumn(
+        'radiusattr_edit',
+        get_params={'id': A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Изменить атрибут'),
+            'data-dlgid': "radiusattr-modal"
+        }
+    )
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     
     def __init__(self, *args, **argv):
@@ -803,9 +843,33 @@ class ModelTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class HardwareTypeTable(TableReport):
-    id = django_tables.LinkColumn('hardwaretype_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    name = django_tables.LinkColumn('hardwaretype_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    id = django_tables.LinkColumn(
+        'hardwaretype_edit',
+        get_params={'id':A('pk')},
+        attrs= {
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Изменить тип'),
+            'data-dlgid': "hardwaretype-modal"
+        }
+    )
+    name = django_tables.LinkColumn(
+        'hardwaretype_edit',
+        get_params={'id':A('pk')},
+        attrs= {
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Изменить тип'),
+            'data-dlgid': "hardwaretype-modal"
+        }
+    )
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить? Удаление типа оборудования вызовёт удаление всех связанных объектов в системе.'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     
     def __init__(self, *args, **argv):
         super(HardwareTypeTable, self).__init__(*args, **argv)
@@ -971,7 +1035,13 @@ class PeriodicalServiceTable(TableReport):
         
 class GroupTable(TableReport):
     id = django_tables.LinkColumn('group_edit', get_params={'id':A('pk')})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить? Удаление группы трафика вызовет её удаление во всех тарифных планах.'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
 
     def __init__(self, *args, **argv):
         super(GroupTable, self).__init__(*args, **argv)
@@ -995,7 +1065,10 @@ class RegistrationRequestTable(TableReport):
 
 class ContractTemplateTable(TableReport):
     id = django_tables.LinkColumn('contracttemplate_edit', get_params={'id':A('pk')})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить шаблон номера договора?'>"
+        "<i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
 
     def __init__(self, *args, **argv):
         super(ContractTemplateTable, self).__init__(*args, **argv)
@@ -1310,7 +1383,15 @@ class AccountPrepaysTraficTable(TableReport):
 
     #account = django_tables.Column(u'Аккаунт', accessor=A('account__username'))
     #group = django_tables.Column(u'Группа', accessor=A('group__name'))
-    id = django_tables.LinkColumn('accountprepaystraffic_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    id = django_tables.LinkColumn(
+        'accountprepaystraffic_edit',
+        get_params={'id': A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Изменить значения'),
+        }
+    )
     account_tarif = django_tables.Column(_(u'Аккаунт/Тариф'))
     prepaid_traffic = django_tables.TemplateColumn("{{record.prepaid_traffic.size|filesizeformat}}({{record.prepaid_traffic.size}})", verbose_name=_(u'Начислено'))
     size = django_tables.TemplateColumn("{{record.size|filesizeformat}}({{record.size}})", verbose_name=_(u'Остаток'))
@@ -1457,9 +1538,19 @@ class PaymentTable(TableReport):
         model = Payment
         #fields = ("id", 'service', 'activation_count_period', 'activation_count', 'type', 'd')
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
-        
+
+
 class DynamicSchemaFieldTable(TableReport):
-    id = django_tables.LinkColumn('dynamicschemafield_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    id = django_tables.LinkColumn(
+        'dynamicschemafield_edit',
+        get_params={'id': A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Изменить название'),
+            'data-dlgid': "manufacturer-modal"
+        }
+    )
     #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('pk')})
     d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)

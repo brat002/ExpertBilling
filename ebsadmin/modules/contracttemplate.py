@@ -17,7 +17,7 @@ from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
-@render_to('ebsadmin/contracttemplate_list.html')
+@render_to('ebsadmin/contracttemplate/list.html')
 def contracttemplate(request):
 
     if  not (request.user.account.has_perm('billservice.view_group')):
@@ -32,7 +32,7 @@ def contracttemplate(request):
     return {"table": table} 
     
 @systemuser_required
-@render_to('ebsadmin/contracttemplate_edit.html')
+@render_to('ebsadmin/contracttemplate/edit.html')
 def contracttemplate_edit(request):
     id = request.POST.get("id")
 

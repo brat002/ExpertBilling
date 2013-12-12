@@ -1,0 +1,33 @@
+{% extends "ebsadmin/base.html" %}
+
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load render_table from django_tables2 %}
+
+{% block base %}
+  <div class="row-fluid">
+    <div>
+      <ul class="breadcrumb">
+        <li>
+          <a href="{% url 'settlementperiod' %}">
+            {% blocktrans %}Расчётные периоды{% endblocktrans %}
+          </a> <span class="divider">/</span>
+        </li>
+      </ul>
+    </div>
+
+    {% permission billservice.add_settlementperiod %}
+    <div class="btn-toolbar pull-right">
+      <a href="{% url 'settlementperiod_edit' %}" class="btn btn-success align-right">
+        {% blocktrans %}Добавить{% endblocktrans %}
+      </a>
+    </div>
+    {% endpermission %}
+    
+    {% permission billservice.view_settlementperiod %}
+    <div>
+      {% render_table table %}
+    </div>
+    {% endpermission %}
+  </div>
+{% endblock %}
