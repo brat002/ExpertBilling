@@ -1011,7 +1011,13 @@ class PeriodicalServiceTable(TableReport):
         
 class GroupTable(TableReport):
     id = django_tables.LinkColumn('group_edit', get_params={'id':A('pk')})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить? Удаление группы трафика вызовет её удаление во всех тарифных планах.'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
 
     def __init__(self, *args, **argv):
         super(GroupTable, self).__init__(*args, **argv)

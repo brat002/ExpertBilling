@@ -17,7 +17,7 @@ from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
-@render_to('ebsadmin/group_list.html')
+@render_to('ebsadmin/group/list.html')
 def group(request):
 
     if  not (request.user.account.has_perm('billservice.view_group')):
@@ -32,7 +32,7 @@ def group(request):
     return {"table": table} 
     
 @systemuser_required
-@render_to('ebsadmin/group_edit.html')
+@render_to('ebsadmin/group/edit.html')
 def group_edit(request):
     id = request.POST.get("id")
 
