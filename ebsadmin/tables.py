@@ -683,10 +683,34 @@ class TransactionTypeTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
         
 class TrafficClassTable(TableReport):
-    id = django_tables.LinkColumn('trafficclass_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    name = django_tables.LinkColumn('trafficclass_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    id = django_tables.LinkColumn(
+        'trafficclass_edit',
+        get_params={'id':A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Изменить класс'),
+            'data-dlgid': "trafficclass-modal"
+        }
+    )
+    name = django_tables.LinkColumn(
+        'trafficclass_edit',
+        get_params={'id':A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Изменить класс'),
+            'data-dlgid': "trafficclass-modal"
+        }
+    )
     directions = django_tables.TemplateColumn(u"<a href='{% url 'trafficnode_list' %}?id={{record.id}}' class='btn btn-primary btn-mini'>Список направлений</a>", verbose_name=_(u'Направления'), orderable=False)
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a><input type='hidden' name='id' value='{{record.id}}'>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить?'>"
+        "<i class='icon-remove'></i></a><input type='hidden' name='id' value='{{record.id}}'>",
+        verbose_name=' ',
+        orderable=False
+    )
     
     def __init__(self, *args, **argv):
         super(TrafficClassTable, self).__init__(*args, **argv)
