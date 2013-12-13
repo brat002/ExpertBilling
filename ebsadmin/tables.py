@@ -1168,9 +1168,36 @@ class RadiusTrafficNodeTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
 class TrafficLimitTable(TableReport):
-    id = django_tables.LinkColumn('tariff_trafficlimit_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
-    speedlimit = django_tables.TemplateColumn("<a href='{% url 'tariff_speedlimit_edit' %}?trafficlimit_id={{record.id}}' class='open-speedlimit-dialog'>{% if record.speedlimit %}{{record.speedlimit}}<a href='{{record.speedlimit.get_remove_url}}' class='show-speedlimit-confirm'><i class='icon-remove'></i></a>{% else %}Указать{% endif %}</a>", verbose_name='Изменить скорость', orderable=False)
+    id = django_tables.LinkColumn(
+        'tariff_trafficlimit_edit',
+        get_params={'id': A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Лимит трафика'),
+            'data-dlgid': "periodicalservice-modal"
+        }
+    )
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить лимит трафика?'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
+    speedlimit = django_tables.TemplateColumn(
+        "<a href='{% url 'tariff_speedlimit_edit' %}?trafficlimit_id={{record.id}}' "
+        "class='open-speedlimit-dialog' "
+        "data-dlgtitle='Правило изменения скорости' "
+        "data-dlgid='speedlimit-modal'"
+        ">"
+        "{% if record.speedlimit %}{{record.speedlimit}}"
+        "<a href='{{record.speedlimit.get_remove_url}}' class='show-speedlimit-confirm' "
+        "data-clickmessage='Удалить? Если в лимите трафика указано действие Изменить скорость - вы обязаны указать параметры изменения скорости.'>"
+        "<i class='icon-remove'></i></a>{% else %}Указать{% endif %}</a>",
+        verbose_name='Изменить скорость',
+        orderable=False
+    )
     #speed = TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
