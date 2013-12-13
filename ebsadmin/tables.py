@@ -897,7 +897,13 @@ class HardwareTable(TableReport):
 class SwitchTable(TableReport):
     id = django_tables.LinkColumn('switch_edit', get_params={'id':A('pk')})
     name = django_tables.LinkColumn('switch_edit', get_params={'id':A('pk')})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить? Перед удалением коммутатора убедитесь, что он не используется в биллинг-системе'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     
     def __init__(self, *args, **argv):
         super(SwitchTable, self).__init__(*args, **argv)
