@@ -1,56 +1,21 @@
 {% extends "ebsadmin/base.html" %}
+
 {% load i18n %}
 {% load ebsadmin_tags %}
 {% load render_table from django_tables2 %}
-{% block extra_head %}
-        <script type="text/javascript"> 
-        $(document).ready(function() {
 
-            $(".show-confirm").click(function(event) {
-                a=$(this);
-                $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить? {% endblocktrans %}", {
-                    confirm: function() {
-                        $.getJSON(a.attr('href'),{},function(data,status){
-                            if( status=='success' ){
-                                if(data.status==true)
-                                    {
-                                    location.reload();
-                                    }else{
-                                        alert(data.message)
-                                    }
-                                
-                            }else{
-                                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
-                            }
-
-                        })                      
-                        }, 
-                    decline: function() {  }
-                });
-
-                event.preventDefault(event);
-            });
-        });
-        </script>
-
-{% endblock %}
 {% block base %}
+  <div class="span12">
+    <ul class="breadcrumb">
+      <li>
+        <a href="{% url 'registrationrequest' %}">{% blocktrans %}Запросы на подключение{% endblocktrans %}</a> <span class="divider">/</span>
+      </li>
+    </ul>
+    <div class="row-fluid">
 
-
-
-<div class="span12">
-<ul class="breadcrumb">
-  <li>
-    <a href="{% url 'registrationrequest' %}">{% blocktrans %}Запросы на подключение{% endblocktrans %}</a> <span class="divider">/</span>
-  </li>
-</ul>
-  <div class="row-fluid">
-  
-<div>
-  {% render_table table %}
-</div>
+      <div>
+        {% render_table table %}
+      </div>
     </div>
-  
-</div>
- {% endblock %}
-
+  </div>
+{% endblock %}
