@@ -1163,9 +1163,33 @@ class TimeSpeedTable(TableReport):
         fields = ("id", 'time', 'max_tx', 'max_rx', 'burst_tx', 'burst_rx', 'burst_treshold_tx', 'burst_treshold_rx', 'burst_time_tx', 'burst_time_rx', 'min_tx', 'min_rx', 'priority')
 
 class OneTimeServiceTable(TableReport):
-    id = django_tables.LinkColumn('onetimeservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    name = django_tables.LinkColumn('onetimeservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    id = django_tables.LinkColumn(
+        'onetimeservice_edit',
+        get_params={'id': A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Периодическая услуга'),
+            'data-dlgid': "periodicalservice-modal"
+        }
+    )
+    name = django_tables.LinkColumn(
+        'onetimeservice_edit',
+        get_params={'id': A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Периодическая услуга'),
+            'data-dlgid': "periodicalservice-modal"
+        }
+    )
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm'"
+        "data-clickmessage='Удалить? Удаление разовой услуги вызовет обнуление информации о списаниях по ней. Вместо этого рекомемендуется воспользоваться отключением услуги.'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
     def __init__(self, *args, **argv):
