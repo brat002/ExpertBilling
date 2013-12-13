@@ -19,7 +19,7 @@ from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
-@render_to('ebsadmin/manufacturer_list.html')
+@render_to('ebsadmin/manufacturer/list.html')
 def manufacturer(request):
     if  not (request.user.account.has_perm('billservice.view_manufacturer')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -34,7 +34,7 @@ def manufacturer(request):
     return {"table": table} 
     
 @systemuser_required
-@render_to('ebsadmin/manufacturer_edit.html')
+@render_to('ebsadmin/manufacturer/edit.html')
 def manufacturer_edit(request):
     id = request.POST.get("id")
 
