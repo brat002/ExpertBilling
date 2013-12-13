@@ -1154,8 +1154,23 @@ class OneTimeServiceTable(TableReport):
         fields = ("id", 'name', 'cost', 'd')
 
 class RadiusTrafficNodeTable(TableReport):
-    id = django_tables.LinkColumn('tariff_radiustrafficnode_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    id = django_tables.LinkColumn(
+        'tariff_radiustrafficnode_edit',
+        get_params={'id': A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Правило тарификации трафика'),
+            'data-dlgid': "periodicalservice-modal"
+        }
+    )
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        ">"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
     def __init__(self, *args, **argv):
