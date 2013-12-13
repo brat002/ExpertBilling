@@ -1079,9 +1079,24 @@ class ContractTemplateTable(TableReport):
         attrs = {'class': 'table table-striped table-bordered table-condensed'}
 
 class TrafficTransmitNodesTable(TableReport):
-    id = django_tables.LinkColumn('tariff_traffictransmitnode_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
+    id = django_tables.LinkColumn(
+        'tariff_traffictransmitnode_edit',
+        get_params={'id': A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Правило начисления предоплаченного трафика'),
+            'data-dlgid': "periodicalservice-modal"
+        }
+    )
     group = django_tables.LinkColumn('group_edit', get_params={'id':A('group.id')})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить? Вы уверены, что хотите удалить запись?'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     
     def __init__(self, *args, **argv):
         super(TrafficTransmitNodesTable, self).__init__(*args, **argv)
