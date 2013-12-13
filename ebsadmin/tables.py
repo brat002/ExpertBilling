@@ -1148,8 +1148,23 @@ class PrepaidTrafficTable(TableReport):
         fields = ("id", 'group', 'size', 'd')
 
 class TimeSpeedTable(TableReport):
-    id = django_tables.LinkColumn('tariff_timespeed_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    id = django_tables.LinkColumn(
+        'tariff_timespeed_edit',
+        get_params={'id': A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Правило изменения скорости'),
+            'data-dlgid': "timespeed-modal"
+        }
+    )
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить? Вы уверены, что хотите удалить строку?'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     #group = django_tables.LinkColumn('group_edit', get_params={'id':A('group.id')})
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     
