@@ -1,209 +1,199 @@
 {% load i18n %}
 {% load ebsadmin_tags %}
+
 {% if not status %}
-{{message}}
-    {% for message in messages %}
+  {{message}}
+  
+  {% for message in messages %}
+    <div class="alert fade in {{ message.tags }}">
+      <button type="button" class="close" data-dismiss="alert">×</button>
+      {{ message }}
+    </div>
+  {% endfor %}
+  
+  {% if form %}
+    <form method="POST" action="{% url 'card_generate' %}" class="well form-horizontal  form-condensed ajax">
+      <fieldset>
+        {{ form.card_type }}
+        {% if form.card_type.errors %}
+        <span class="help-inline">{% for error in form.card_type.errors %}{{ error }}<br/> {% endfor %}</span>
+        {% endif %}
+        <div class="control-group row-fluid">
 
-<div class="alert fade in {{ message.tags }}">
-            <button type="button" class="close" data-dismiss="alert">×</button>
-            {{ message }}
+          <div class="control-row span4">
+            <label class="control-label">{{form.series.label}}:</label>
+            <div class="controls">
+              {{ form.series }}
+              {% if form.series.errors %}
+              <span class="help-inline">{% for error in form.series.errors %}{{ error }}<br/> {% endfor %}</span>
+              {% endif %}
+              {% if form.series.help_text%}
+              <p class="help-block">
+                {{ form.series.help_text|safe }}
+              </p>
+              {% endif %}
+            </div>
           </div>
+          <div class="control-row span7">
+            <label class="control-label">{{form.date_start.label}}:</label>
+            <div class="controls">
+              {{ form.date_start }}
+              {% if form.date_start.errors %}
+              <span class="help-inline">{% for error in form.date_start.errors %}{{ error }}<br/> {% endfor %}</span>
+              {% endif %}
+              {% if form.date_start.help_text%}
+              <p class="help-block">
+                {{ form.date_start.help_text|safe }}
+              </p>
+              {% endif %}
 
-      {% endfor %}
-{% if form %}
- <script type="text/javascript"> 
+            </div>
+          </div>
+        </div>
+        <div class="control-group row-fluid">
+          <div class="control-row span4">
 
- $(document).ready(function() {
+            <label class="control-label">{{form.nominal.label}}: </label>
+            <div class="controls">
+              {{ form.nominal }}
+              {% if form.nominal.errors %}
+              <span class="help-inline">{% for error in form.nominal.errors %}{{ error }}<br/> {% endfor %}</span>
+              {% endif %}
+              {% if form.nominal.help_text%}
+              <p class="help-block">
+                {{ form.nominal.help_text|safe }}
+              </p>
+              {% endif %}
+            </div>
 
+          </div>   
+          <div class="control-row span7">
+            <label class="control-label">{{form.date_end.label}}: </label>
+            <div class="controls">
+              {{ form.date_end }}
+              {% if form.date_end.errors %}
+              <span class="help-inline">{% for error in form.date_end.errors %}{{ error }}<br/> {% endfor %}</span>
+              {% endif %}
+              {% if form.date_end.help_text%}
+              <p class="help-block">
+                {{ form.date_end.help_text|safe }}
+              </p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="control-group row-fluid">
+          <div class="control-row span4">
+            <label class="control-label">{{form.count.label}}: </label>
+            <div class="controls">
+              {{ form.count }}
+              {% if form.count.errors %}
+              <span class="help-inline">{% for error in form.count.errors %}{{ error }}<br/> {% endfor %}</span>
+              {% endif %}
+              {% if form.count.help_text%}
+              <p class="help-block">
+                {{ form.count.help_text|safe }}
+              </p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
 
+        {% if form.card_type.value == '1' or form.card_type.value == '2' or form.card_type.value == '3' %}
+        <div class="control-group">
 
- });
- </script>
+          <label class="control-label">{% blocktrans %}Логин{% endblocktrans %}: </label>
+          <div class="controls inline">
+            c {{ form.login_length_from }} по  {{ form.login_length_to }} {{ form.login_letters }}{{ form.login_letters.label }} {{ form.login_numbers }}{{ form.login_numbers.label }}
+            {% if form.login_length_from.errors %}
+            <span class="help-inline">{% for error in form.login_length_from.errors %}{{ error }}<br/> {% endfor %}</span>
+            {% endif %}
+            {% if form.login_length_to.errors %}
+            <span class="help-inline">{% for error in form.login_length_to.errors %}{{ error }}<br/> {% endfor %}</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+        <div class="control-group">
 
+          <label class="control-label">{% blocktrans %}Пин{% endblocktrans %}: </label>
+          <div class="controls inline">
+            c {{ form.pin_length_from }} по  {{ form.pin_length_to }} {{ form.pin_letters }}{{ form.pin_letters.label }} {{ form.pin_numbers }}{{ form.pin_numbers.label }}
+            {% if form.pin_length_from.errors %}
+            <span class="help-inline">{% for error in form.pin_length_from.errors %}{{ error }}<br/> {% endfor %}</span>
+            {% endif %}
+            {% if form.pin_length_to.errors %}
+            <span class="help-inline">{% for error in form.pin_length_to.errors %}{{ error }}<br/> {% endfor %}</span>
+            {% endif %}
+          </div>
+        </div>
+        {% if form.card_type.value == '1' or form.card_type.value == '2' or form.card_type.value == '3' %}
+        <div class="control-group">
+          <div class="control-row">
+            <label class="control-label">{{form.tariff.label}}: </label>
+            <div class="controls">
+              {{ form.tariff }}
+              {% if form.tariff.errors %}
+              <span class="help-inline">{% for error in form.tariff.errors %}{{ error }}<br/> {% endfor %}</span>
+              {% endif %}
+              {% if form.tariff.help_text%}
+              <p class="help-block">
+                {{ form.tariff.help_text|safe }}
+              </p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        {% if form.card_type.value == '1' or form.card_type.value == '2' %}
+        <div class="control-group">
+          <div class="control-row">
+            <label class="control-label">{{form.nas.label}}: </label>
+            <div class="controls">
+              {{ form.nas }}
+              {% if form.nas.errors %}
+              <span class="help-inline">{% for error in form.nas.errors %}{{ error }}<br/> {% endfor %}</span>
+              {% endif %}
+              {% if form.nas.help_text%}
+              <p class="help-block">
+                {{ form.nas.help_text|safe }}
+              </p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        {% if form.card_type.value == '2' %}
+        <div class="control-group">
+          <div class="control-row">
+            <label class="control-label">{{form.ippool.label}}: </label>
+            <div class="controls">
+              {{ form.ippool }}
+              {% if form.ippool.errors %}
+              <span class="help-inline">{% for error in form.ippool.errors %}{{ error }}<br/> {% endfor %}</span>
+              {% endif %}
+              {% if form.ippool.help_text%}
+              <p class="help-block">
+                {{ form.ippool.help_text|safe }}
+              </p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </fieldset>
 
-            <form method="POST" action="{% url 'card_generate' %}" class="well form-horizontal  form-condensed ajax">
-                <fieldset>
-                      {{ form.card_type }}
-                      {% if form.card_type.errors %}
-                          <span class="help-inline">{% for error in form.card_type.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                  <div class="control-group row-fluid">
-
-                    <div class="control-row span4">
-                      <label class="control-label">{{form.series.label}}:</label>
-                      <div class="controls">
-                      {{ form.series }}
-                      {% if form.series.errors %}
-                          <span class="help-inline">{% for error in form.series.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.series.help_text%}
-                          <p class="help-block">
-                              {{ form.series.help_text|safe }}
-                          </p>
-                      {% endif %}
-                    </div>
-                  </div>
-                      <div class="control-row span7">
-                      <label class="control-label">{{form.date_start.label}}:</label>
-                      <div class="controls">
-                      {{ form.date_start }}
-                      {% if form.date_start.errors %}
-                          <span class="help-inline">{% for error in form.date_start.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.date_start.help_text%}
-                          <p class="help-block">
-                              {{ form.date_start.help_text|safe }}
-                          </p>
-                      {% endif %}
-
-                  </div>
-                  </div>
-                  </div>
-                  <div class="control-group row-fluid">
-                  <div class="control-row span4">
-
-                      <label class="control-label">{{form.nominal.label}}: </label>
-                      <div class="controls">
-                      {{ form.nominal }}
-                      {% if form.nominal.errors %}
-                          <span class="help-inline">{% for error in form.nominal.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.nominal.help_text%}
-                          <p class="help-block">
-                              {{ form.nominal.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-
-                  </div>   
-                    <div class="control-row span7">
-                      <label class="control-label">{{form.date_end.label}}: </label>
-                      <div class="controls">
-                      {{ form.date_end }}
-                      {% if form.date_end.errors %}
-                          <span class="help-inline">{% for error in form.date_end.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.date_end.help_text%}
-                          <p class="help-block">
-                              {{ form.date_end.help_text|safe }}
-                          </p>
-                      {% endif %}
-                    </div>
-                  </div>
-                  </div>
-                  <div class="control-group row-fluid">
-                    <div class="control-row span4">
-                      <label class="control-label">{{form.count.label}}: </label>
-                      <div class="controls">
-                      {{ form.count }}
-                      {% if form.count.errors %}
-                          <span class="help-inline">{% for error in form.count.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.count.help_text%}
-                          <p class="help-block">
-                              {{ form.count.help_text|safe }}
-                          </p>
-                      {% endif %}
-                    </div>
-                  </div>
-                  </div>
-                  
-                {% if form.card_type.value == '1' or form.card_type.value == '2' or form.card_type.value == '3' %}
-                  <div class="control-group">
-
-                      <label class="control-label">{% blocktrans %}Логин{% endblocktrans %}: </label>
-                      <div class="controls inline">
-                      c {{ form.login_length_from }} по  {{ form.login_length_to }} {{ form.login_letters }}{{ form.login_letters.label }} {{ form.login_numbers }}{{ form.login_numbers.label }}
-                      {% if form.login_length_from.errors %}
-                          <span class="help-inline">{% for error in form.login_length_from.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.login_length_to.errors %}
-                          <span class="help-inline">{% for error in form.login_length_to.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                  </div>
-                  </div>
-                  {% endif %}
-                  <div class="control-group">
-
-                      <label class="control-label">{% blocktrans %}Пин{% endblocktrans %}: </label>
-                      <div class="controls inline">
-                      c {{ form.pin_length_from }} по  {{ form.pin_length_to }} {{ form.pin_letters }}{{ form.pin_letters.label }} {{ form.pin_numbers }}{{ form.pin_numbers.label }}
-                      {% if form.pin_length_from.errors %}
-                          <span class="help-inline">{% for error in form.pin_length_from.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.pin_length_to.errors %}
-                          <span class="help-inline">{% for error in form.pin_length_to.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                  </div>
-                  </div>
-                  {% if form.card_type.value == '1' or form.card_type.value == '2' or form.card_type.value == '3' %}
-                  <div class="control-group">
-                    <div class="control-row">
-                      <label class="control-label">{{form.tariff.label}}: </label>
-                      <div class="controls">
-                      {{ form.tariff }}
-                      {% if form.tariff.errors %}
-                          <span class="help-inline">{% for error in form.tariff.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.tariff.help_text%}
-                          <p class="help-block">
-                              {{ form.tariff.help_text|safe }}
-                          </p>
-                      {% endif %}
-                    </div>
-                  </div>
-                  </div>
-                  {% endif %}
-                  {% if form.card_type.value == '1' or form.card_type.value == '2' %}
-                  <div class="control-group">
-                    <div class="control-row">
-                      <label class="control-label">{{form.nas.label}}: </label>
-                      <div class="controls">
-                      {{ form.nas }}
-                      {% if form.nas.errors %}
-                          <span class="help-inline">{% for error in form.nas.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.nas.help_text%}
-                          <p class="help-block">
-                              {{ form.nas.help_text|safe }}
-                          </p>
-                      {% endif %}
-                    </div>
-                  </div>
-                  </div>
-                  {% endif %}
-                  {% if form.card_type.value == '2' %}
-                  <div class="control-group">
-                    <div class="control-row">
-                      <label class="control-label">{{form.ippool.label}}: </label>
-                      <div class="controls">
-                      {{ form.ippool }}
-                      {% if form.ippool.errors %}
-                          <span class="help-inline">{% for error in form.ippool.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.ippool.help_text%}
-                          <p class="help-block">
-                              {{ form.ippool.help_text|safe }}
-                          </p>
-                      {% endif %}
-                    </div>
-                  </div>
-                  </div>
-                  {% endif %}
-                </fieldset>
-                
-                <div class="form-actions">
-                    <input type='submit' class="btn btn-primary" value="{% blocktrans %}Сгенерировать{% endblocktrans %}">
-                    <a class="btn close-dialog" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
-                </div>
-            </form>
-{% endif %}
+      <div class="form-actions">
+        <input type='submit' class="btn btn-primary" value="{% blocktrans %}Сгенерировать{% endblocktrans %}">
+        <a class="btn close-dialog" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
+      </div>
+    </form>
+  {% endif %}
 {% else %}
-{% blocktrans %}Операция произведена успешно.{% endblocktrans %}
- <script type="text/javascript"> 
- $(document).ready(function() {
+  {% blocktrans %}Операция произведена успешно.{% endblocktrans %}
+  <script type="text/javascript"> 
+   $(document).ready(function() {
      location.reload();
- });
- </script>
+   });
+  </script>
 {% endif %}
-
