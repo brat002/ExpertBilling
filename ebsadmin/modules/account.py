@@ -43,7 +43,7 @@ def account_management_status(request):
     
     
 @systemuser_required
-@render_to('ebsadmin/accounttarif_edit.html')
+@render_to('ebsadmin/accounttarif/edit.html')
 def accounttarif_edit(request):
 
     account = None
@@ -94,7 +94,7 @@ def accounttarif_edit(request):
 
 
 @systemuser_required
-@render_to('ebsadmin/accounttarif_batch_edit.html')
+@render_to('ebsadmin/accounttarif/batch_edit.html')
 def account_management_accounttariff(request):
 
     account = None
