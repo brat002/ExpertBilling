@@ -136,7 +136,7 @@ def account_management_accounttariff(request):
     return { 'form':form, 'status': False, 'account':account} 
 
 @systemuser_required
-@render_to('ebsadmin/suspendedperiod_batch_edit.html')
+@render_to('ebsadmin/suspendedperiod/batch_edit.html')
 def account_management_suspendedperiod(request):
     
 

@@ -1107,7 +1107,7 @@ def accounthardware(request):
     return { 'form':form, 'status': False, 'account':account, 'item': item} 
 
 @systemuser_required
-@render_to('ebsadmin/suspendedperiod_edit.html')
+@render_to('ebsadmin/suspendedperiod/edit.html')
 def suspendedperiod(request):
     
     account = None
