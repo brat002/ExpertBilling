@@ -1017,9 +1017,33 @@ class TariffTable(TableReport):
         available_fields = ( 'name', 'settlement_period', 'cost', 'access_type', 'reset_tarif_cost', 'accounts_count', 'radiusattrs')
         
 class PeriodicalServiceTable(TableReport):
-    id = django_tables.LinkColumn('tariff_periodicalservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    name = django_tables.LinkColumn('tariff_periodicalservice_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    id = django_tables.LinkColumn(
+        'tariff_periodicalservice_edit',
+        get_params={'id': A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Периодическая услуга'),
+            'data-dlgid': "periodicalservice-modal"
+        }
+    )
+    name = django_tables.LinkColumn(
+        'tariff_periodicalservice_edit',
+        get_params={'id': A('pk')},
+        attrs={
+            'rel': "alert3",
+            'class': "general-modal-dialog",
+            'data-dlgtitle': _(u'Периодическая услуга'),
+            'data-dlgid': "periodicalservice-modal"
+        }
+    )
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить? Удаление периодической услуги вызовет обнуление информации о списаниях по ней. Вместо этого рекомемендуется воспользоваться отключением услуги.'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     created = FormatDateTimeColumn()
     deactivated = FormatDateTimeColumn()
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))

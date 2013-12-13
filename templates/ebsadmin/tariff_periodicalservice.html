@@ -1,67 +1,30 @@
 {% extends "ebsadmin/tariff_edit.html" %}
+
 {% load i18n %}
 {% load ebsadmin_tags %}
- {% load render_table from django_tables2 %}
+{% load render_table from django_tables2 %}
+
 {% block extra_head %}
-{{block.super}}
-
- <script type="text/javascript"> 
- $(document).ready(function() {
-     $(".open-custom-dialog").click(function(event) {
-         $('<div />').dialog2({
-             title: "{% blocktrans %}Периодическая услуга{% endblocktrans %}", 
-             content: this.href, 
-             id: "periodicalservice-modal"
-         });
-
-         event.preventDefault(event);
-     });
-     $(".show-confirm").click(function(event) {
-         a=$(this);
-         $.fn.dialog2.helpers.confirm("{% blocktrans %}Удалить? Удаление периодической услуги вызовет обнуление информации о списаниях по ней. Вместо этого рекомемендуется воспользоваться отключением услуги.{% endblocktrans %}", {
-             confirm: function() {
-                 $.getJSON(a.attr('href'),{},function(data,status){
-                     if( status=='success' ){
-                         if(data.status==true)
-                             {
-                             location.reload();
-                             }else{
-                                 alert(data.message)
-                             }
-                         
-                     }else{
-                         alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
-                     }
-
-                 })                      
-                 }, 
-             decline: function() {  }
-         });
-
-         event.preventDefault(event);
-     });
-     $("#modal-periodicalservice-dialog").click(function(event) {
-         $('<div />').dialog2({
-             title: "{% blocktrans %}Добавить периодическую услугу{% endblocktrans %}", 
-             content: "{% url 'tariff_periodicalservice_edit' %}?tariff_id={{tariff.id}}", 
-             id: "ps-modal"
-         });
-
-         event.preventDefault(event);
-     });
- });
- </script>
+  {{block.super}}
 {% endblock %}
 
 {% block tariff_content %}
+  <legend>{% blocktrans %}Периодические услуги{% endblocktrans %}</legend>
 
-            <legend>{% blocktrans %}Периодические услуги{% endblocktrans %}</legend>
-<div class="alert alert-info">
-{% blocktrans %}Периодические услуги позволяют производить списания с указанным интервалом и способом.{% endblocktrans %}
-</div>
-             <fieldset>
-{{ formset.non_form_errors.as_ul }}
-  {% if table %}{% render_table table %}{% endif %}
-  <div class="btn-toolbar"><a href="#" id="modal-periodicalservice-dialog" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a></div>
-                </fieldset>
+  <div class="alert alert-info">
+    {% blocktrans %}Периодические услуги позволяют производить списания с указанным интервалом и способом.{% endblocktrans %}
+  </div>
+
+  <fieldset>
+    {{ formset.non_form_errors.as_ul }}
+    {% if table %}{% render_table table %}{% endif %}
+    <div class="btn-toolbar">
+      <a href="{% url 'tariff_periodicalservice_edit' %}?tariff_id={{tariff.id}}"
+          class="btn btn-success general-modal-dialog"
+          data-dlgtitle="{% blocktrans %}Добавить периодическую услугу{% endblocktrans %}"
+          data-dlgid="ps-modal">
+        {% blocktrans %}Добавить{% endblocktrans %}
+      </a>
+    </div>
+  </fieldset>
 {% endblock %}
