@@ -19,39 +19,18 @@
        format: 'yyyy-mm-dd hh:ii:ss',
        days: ["{% blocktrans %}вс{% endblocktrans %}", "{% blocktrans %}пн{% endblocktrans %}","{% blocktrans %}вт{% endblocktrans %}","{% blocktrans %}ср{% endblocktrans %}","{% blocktrans %}чт{% endblocktrans %}","{% blocktrans %}пт{% endblocktrans %}","{% blocktrans %}сб{% endblocktrans %}"],});
 
-     $("#id_body").bind('keyup', function(){
-
-       n = $(this).val().length;
-
-       $('#id_chars').text(n);
-     });
-     n = $(this).val().length;
-
-     $('#id_chars').text(n);
+     $(".timepicker").mask("99:99:99");
    });
   </script>
-  
-  {% if form %}
-    <form action='{% url 'sendsms' %}' method="POST" class="well form-horizontal ajax form-condensed ">
-      <fieldset>
-        {{form|crispy}}
 
-        <div class="clearfix control-group">
-          <label  class="control-label ">
-            {% blocktrans %}Символов{% endblocktrans %}
-          </label>
-          <div class="controls">
-            <span id="id_chars"></span>
-          </div>
-        </div>
-      </fieldset>
+  {% if form %}
+    <form action='{% url 'suspendedperiod' %}?account_id={{account.id}}' method="POST" class="well form-horizontal ajax form-condensed ">
+      {{form|crispy}}
       <div class="form-actions">
-        <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Change{% endblocktrans %}">
+        <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">
         <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
       </div>
     </form>
-  {% else %}
-    <div class='alert'>{% blocktrans %}Сначала выберите получателей{% endblocktrans %}</div>
   {% endif %}
 {% else %}
   {% blocktrans %}Операция произведена успешно.{% endblocktrans %}

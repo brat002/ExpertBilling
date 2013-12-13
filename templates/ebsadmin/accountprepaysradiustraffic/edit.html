@@ -1,11 +1,6 @@
-{% load ebsadmin_tags %}
 {% load i18n %}
+{% load ebsadmin_tags %}
 {% load crispy_forms_tags %}
-
-{% block extra_head %}
-  <script type="text/javascript" src="/static/selectable/js/jquery.dj.selectable.js"></script>
-  <link href="/static/selectable/css/dj.selectable.css" type="text/css" media="all" rel="stylesheet">
-{% endblock %}
 
 {% block base %}
   {% if not status %}
@@ -15,10 +10,14 @@
         {{ message }}
       </div>
     {% endfor %}
-    
-    {% if form %}
-      <form action='{% url 'accounthardware' %}?id={{item.id}}&account_id={{account.id}}' method="POST" class="well form-horizontal ajax form-condensed ">
-        {{form|crispy}}
+
+    {% if form %}      
+      <form action='{% url 'accountprepaysradiustraffic_edit' %}?id={{item.id}}' method="POST" class="well form-horizontal  form-condensed  ajax">
+        <legend>{% blocktrans %}Предоплаченный трафик{% endblocktrans %}</legend>
+        <fieldset>
+          {{ form.id }}
+          {{form|crispy}}              
+        </fieldset>
         <div class="form-actions">
           <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">
           <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
@@ -28,9 +27,9 @@
   {% else %}
     {% blocktrans %}Операция произведена успешно.{% endblocktrans %}
     <script type="text/javascript"> 
-     $(document).ready(function() {
-       location.reload();
-     });
+      $(document).ready(function() {
+        location.reload();
+      });
     </script>
   {% endif %}
 {% endblock %}

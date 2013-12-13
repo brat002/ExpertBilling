@@ -3,37 +3,40 @@
 {% load i18n %}
 {% load ebsadmin_tags %}
 {% load crispy_forms_tags %}
+{% load render_table from django_tables2 %}
 
 {% block extra_head %}
   <script type="text/javascript"> 
     $(document).ready(function() {
-
+      $("#id_daterange").daterangepicker({format:'yyyy-MM-dd'});
+      
       {% if table %}
       $('#tab-control a[href="#result"]').tab('show');
       {% else %}
       $('#tab-control a[href="#filter"]').tab('show');
       {% endif %}
-      $("#id_daterange").daterangepicker();
     });
   </script>
 {% endblock %}
 
 {% block base %}
-  <legend>{% blocktrans %}Тарифицированный трафик{% endblocktrans %}</legend>
+  <legend>
+    {% blocktrans %}Остатки предоплаченного трафика(RADIUS тарификация){% endblocktrans %}
+  </legend>
+
   <ul class="nav nav-tabs" id="tab-control">
     <li ><a href="#filter">{% blocktrans %}Фильтр{% endblocktrans %}</a></li>
     <li><a href="#result">{% blocktrans %}Отчёт{% endblocktrans %}</a></li>  
   </ul>
 
-  {% load render_table from django_tables2 %}
-
   <div class="tab-content">
     <div class="tab-pane" id="filter">
       <div class="row-fluid">
         <div class="span12">
-          <form action="{{form.action}}" method="GET" class="well form-horizontal form-condensed ">
+          <form action="{{form.action}}" method="GET" class="well  form-condensed form-horizontal">
             {{ form.non_field_errors }}
             <fieldset>
+              <legend>{% blocktrans %}Поиск по остаткам предоплаченного  RADIUS трафика{% endblocktrans %}</legend>
               {{form|crispy}}
             </fieldset>
             <fieldset>
