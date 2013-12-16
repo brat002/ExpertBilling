@@ -907,7 +907,13 @@ class HardwareTable(TableReport):
     id = django_tables.LinkColumn('hardware_edit', get_params={'id':A('pk')})
     model = django_tables.LinkColumn('hardware_edit', get_params={'id':A('pk')})
     name = django_tables.LinkColumn('hardware_edit', get_params={'id':A('pk')})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить? Удаление устройства вызовет удаление всех связаных с ним объектов в системе.'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     
     def __init__(self, *args, **argv):
         super(HardwareTable, self).__init__(*args, **argv)
