@@ -534,7 +534,13 @@ class NasTable(TableReport):
     name = django_tables.LinkColumn('nas_edit', verbose_name=_(u"Имя"), get_params={'id':A('pk')})
     radiusattrs = django_tables.TemplateColumn(u"<a href='{% url 'radiusattr' %}?nas={{record.id}}' class='btn btn-mini btn-primary'>Изменить</a>", verbose_name=_(u'RADIUS атрибуты'), orderable=False)
     id = django_tables.LinkColumn('nas_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить? Все связанные с сервером доступа записи будут сброшены на значение по умолчанию для выбранной записи'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     
     def __init__(self, *args, **argv):
         super(NasTable, self).__init__(*args, **argv)
