@@ -1391,7 +1391,13 @@ class AddonServiceTarifTable(TableReport):
 
 class PeriodicalServiceLogTable(TableReport):
 
-    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+    d = django_tables.TemplateColumn(
+        "<a href='{{record.get_remove_url}}' class='show-confirm' "
+        "data-clickmessage='Удалить? Удаление записи приведёт к повторной тарификации указанной услуги с начала подключения пользователя на тарифный план.'>"
+        "<i class='icon-remove'></i></a>",
+        verbose_name=' ',
+        orderable=False
+    )
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     datetime = FormatDateTimeColumn(verbose_name=_(u'Дата'))
     
