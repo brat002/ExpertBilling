@@ -1349,8 +1349,9 @@ class settlement_period_service_dog(Thread):
                             cur.connection.commit()
 
                         account_balance = (acc.ballance or 0) + (acc.credit or 0)
+                        blocked = False
                         #Если балланса не хватает - отключить пользователя
-                        if (shedl.balance_blocked is None or shedl.balance_blocked<=period_start) and acc.cost>=account_balance \
+                        if (shedl.balance_blocked is None or shedl.balance_blocked<period_start) and acc.cost>=account_balance \
                          and acc.cost != 0 and acc.require_tarif_cost and not acc.balance_blocked:
                             '''cur.execute("""SELECT transaction_block_sum(%s, %s::timestamp without time zone, %s::timestamp without time zone);""",
                                           (acc.account_id, period_start, now))'''
@@ -1363,9 +1364,10 @@ class settlement_period_service_dog(Thread):
                             if acc.cost > (acc.ballance + acc.credit):
                                 cur.execute("SELECT shedulelog_blocked_fn(%s, %s, %s::timestamp without time zone, %s);", 
                                             (acc.account_id, acc.acctf_id, now, acc.cost))
+                                blocked = True
                             cur.connection.commit()
                             
-                        if acc.balance_blocked and (account_balance >= acc.cost or not acc.require_tarif_cost):
+                        if (acc.balance_blocked or blocked) and (account_balance >= acc.cost or not acc.require_tarif_cost):
                             """Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя"""
                             '''cur.execute("""SELECT transaction_block_sum(%s, %s::timestamp without time zone, %s::timestamp without time zone);""",
                                           (acc.account_id, period_start, now))'''

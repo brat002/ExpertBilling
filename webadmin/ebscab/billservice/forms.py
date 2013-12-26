@@ -3,7 +3,7 @@ from django import forms
 from django.contrib.admin import widgets   
 from datetime import datetime, date
 from django.forms import ModelForm
-from billservice.models import Tariff, AddonService, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document, SuspendedPeriod, Transaction, PermissionGroup, Permission
+from billservice.models import Tariff, NotificationsSettings, AddonService, TPChangeRule, Account, SubAccount, AccountTarif, AccountAddonService, Document, SuspendedPeriod, Transaction, PermissionGroup, Permission
 from billservice.models import PeriodicalService, TimePeriod, SystemUser, TransactionType, SettlementPeriod, RadiusTraffic, RadiusTrafficNode, PeriodicalServiceLog, Switch
 from billservice.models import Organization, BalanceHistory, PrepaidTraffic, TrafficTransmitNodes, BankData, Group, AccessParameters, TimeSpeed, OneTimeService, TrafficTransmitService, SheduleLog
 from billservice.models import RadiusAttrs, AccountPrepaysTrafic, Template, AccountPrepaysRadiusTrafic, TimeAccessService, ContractTemplate, TimeAccessNode, TrafficLimit, SpeedLimit, AddonService, AddonServiceTarif
@@ -986,7 +986,15 @@ class PermissionGroupForm(ModelForm):
     class Meta:
         exclude = ('deletable',)
         model = PermissionGroup
+      
+
         
+class NotificationsSettingsForm(ModelForm):
+    id = forms.IntegerField(required=False, widget = forms.HiddenInput)
+    #permissions = forms.ModelMultipleChoiceField(label=_(u'Уведомления'), queryset = Permission.objects.all(), widget = CheckboxSelectMultipleWithSelectAll)
+    class Meta:
+        model = NotificationsSettings
+
         
 class TPChangeRuleForm(ModelForm):
     def __init__(self, *args, **kwargs):

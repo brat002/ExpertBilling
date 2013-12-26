@@ -790,6 +790,21 @@ def sendsmspilotru_post(url, parameters, id=None):
 
 
 @task
+def sendmainsmsru_post(url, parameters, id=None):
+
+
+    
+    req = urllib2.Request(url, parameters)
+    response = urllib2.urlopen(req).read()
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE sendsms_message SET sended=now(), response=%s WHERE id=%s",  (response, id))
+    conn.commit()
+    cur.close()
+    conn.close()
+    
+@task
 def subass_recreate(acc, subacc, nas, access_type='IPN'):
     cb = cred.s(acc, subacc, access_type, nas, format_string=nas.get('subacc_delete_action'), cb=ipn_del_state.s(subacc.get('id')))
     bcb = cred.s(acc, subacc, access_type, nas, format_string=nas.get('subacc_add_action'), cb = ipn_add_state.s(id, cb = cb))
