@@ -1107,7 +1107,7 @@ def accounthardware(request):
     return { 'form':form, 'status': False, 'account':account, 'item': item} 
 
 @systemuser_required
-@render_to('ebsadmin/suspendedperiod_edit.html')
+@render_to('ebsadmin/suspendedperiod/edit.html')
 def suspendedperiod(request):
     
     account = None
@@ -1260,7 +1260,7 @@ def accountaddonservice_edit(request):
     return { 'form':form, 'status': False, 'account':account, "accountaddonservice":accountaddonservice} 
 
 @systemuser_required
-@render_to('ebsadmin/templateselect_window.html')
+@render_to('ebsadmin/template/select_window.html')
 def templateselect(request):
     if  not (request.user.account.has_perm('billservice.view_template')):
         messages.error(request, _(u'У вас нет прав на просмотр списка шаблонов'), extra_tags='alert-danger')
@@ -1335,7 +1335,7 @@ def activesessionreport(request):
 
 
 @systemuser_required
-@render_to('ebsadmin/template_list.html')
+@render_to('ebsadmin/template/list.html')
 def template(request):
     if  not (request.user.account.has_perm('billservice.view_template')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -1349,7 +1349,7 @@ def template(request):
     return {"table": table} 
     
 @systemuser_required
-@render_to('ebsadmin/template_edit.html')
+@render_to('ebsadmin/template/edit.html')
 def template_edit(request):
 
     id = request.GET.get("id")

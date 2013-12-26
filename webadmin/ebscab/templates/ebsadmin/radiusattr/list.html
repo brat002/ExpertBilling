@@ -1,0 +1,30 @@
+{% extends "ebsadmin/base.html" %}
+
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load render_table from django_tables2 %}
+
+{% block base %}
+  <div class="row-fluid">
+    <div>
+      <ul class="breadcrumb">
+        <li>
+          {% blocktrans %}Дополнительные RADIUS атрибуты{% endblocktrans %}<span class="divider">/</span>{{model_name}}: <a href="{% if nas %}{% url 'nas' %}{% else %}{% url 'tariff' %}{% endif %}">{{nas.name}}{{tariff.name}}</a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="btn-toolbar pull-right">
+      <a href="{% url 'radiusattr_edit' %}?nas={{nas.id}}&tarif={{tariff.id}}"
+          class="btn btn-success align-right general-modal-dialog"
+          data-dlgtitle="{% blocktrans %}Добавление RADIUS атрибутов{% endblocktrans %}"
+          data-dlgid="server-notice">
+        {% blocktrans %}Добавить{% endblocktrans %}
+      </a>
+    </div>
+
+    <div>
+      {% render_table table %}
+    </div>
+  </div>
+{% endblock %}

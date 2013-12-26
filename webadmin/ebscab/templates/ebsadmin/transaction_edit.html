@@ -1,181 +1,174 @@
 {% load ebsadmin_tags %}
 {% load i18n %}
-{% if not status %}
-<script  type="text/javascript" >
-$(document).ready(function() {
 
-    
-	function a(e) {
+{% if not status %}
+  <script  type="text/javascript" >
+    $(document).ready(function() {
+      function a(e) {
         if ($("#id_type").val()=='{{promise_type.id}}'){
-            $("#id_promise_section").show()
-            $(".timepicker").val("00:00:00");
+          $("#id_promise_section").show()
+          $(".timepicker").val("00:00:00");
         }else{
-            $("#id_promise_section").hide()
+          $("#id_promise_section").hide()
         }
-    }
-    $('#id_type').change(a);
-    a();
-    $("#transaction-close-button").live('click', function(){
-    	location.reload();
-    }
-    		)
+      }
+
+      $('#id_type').change(a);
+      a();
+      $("#transaction-close-button").live('click', function(){
+        location.reload();
+      });
     });
 
-</script>
+  </script>
 
-
-    {% for message in messages %}
-
-<div class="alert fade in {{ message.tags }}">
-            <button type="button" class="close" data-dismiss="alert">×</button>
-            {{ message }}
-          </div>
-
-      {% endfor %}
+  {% for message in messages %}
+    <div class="alert fade in {{ message.tags }}">
+      <button type="button" class="close" data-dismiss="alert">×</button>
+      {{ message }}
+    </div>
+  {% endfor %}
            
-{% if form %}
-                <form action='{% url 'transaction_edit' %}?account_id={{account.id}}' method="POST" class="well form-horizontal ajax form-condensed ">
-                <fieldset>
-                {{ form.account }}
-                
-                  <div class="control-group">
-                      <label class="control-label">{{form.type.label}}</label>
-                      <div class="controls">
+  {% if form %}
+    <form action='{% url 'transaction_edit' %}?account_id={{account.id}}' method="POST" class="well form-horizontal ajax form-condensed ">
+      <fieldset>
+        {{ form.account }}
 
-                      {{ form.type }}
-                      {% if form.type.errors %}
-                      <div class="alert alert-error">{% blocktrans %}Возможно для вас не выбрано ни одного способа пополнения. <br />Настройте доступные вам способы{% endblocktrans %} <a href="{% url 'transactiontype' %}">{% blocktrans %}здесь{% endblocktrans %}</a>.</div>
-                          <span class="help-inline">{% for error in form.type.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.type.help_text%}
-                          <p class="help-block">
-                              {{ form.type.help_text|safe }}
-                          </p>
-                      {% endif %}  
-                      
+        <div class="control-group">
+          <label class="control-label">{{form.type.label}}</label>
+          <div class="controls">
 
-                      </div>
-                  </div>
-                  
-                  <div class="control-group">
-                      <label class="control-label">{{form.bill.label}}</label>
-                      <div class="controls">
-                      {{ form.bill }}
-                      {% if form.bill.errors %}
-                          <span class="help-inline">{% for error in form.bill.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.bill.help_text%}
-                          <p class="help-block">
-                              {{ form.bill.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                  <div class="control-group">
-                      <label class="control-label">{{form.description.label}}</label>
-                      <div class="controls">
-                      {{ form.description }}
-                      {% if form.description.errors %}
-                          <span class="help-inline">{% for error in form.description.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.description.help_text%}
-                          <p class="help-block">
-                              {{ form.description.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                  <div class="control-group">
-                      <label class="control-label">{{form.summ.label}}</label>
-                      <div class="controls">
-                      {{ form.summ }}
-                      {% if form.summ.errors %}
-                          <span class="help-inline">{% for error in form.summ.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.summ.help_text%}
-                          <p class="help-block">
-                              {{ form.summ.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                  <div class="control-group">
-                      <label class="control-label">{{form.created.label}}</label>
-                      <div class="controls">
-                      {{ form.created }}
-                      {% if form.created.errors %}
-                          <span class="help-inline">{% for error in form.created.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.created.help_text%}
-                          <p class="help-block">
-                              {{ form.created.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
+            {{ form.type }}
+            {% if form.type.errors %}
+            <div class="alert alert-error">{% blocktrans %}Возможно для вас не выбрано ни одного способа пополнения. <br />Настройте доступные вам способы{% endblocktrans %} <a href="{% url 'transactiontype' %}">{% blocktrans %}здесь{% endblocktrans %}</a>.</div>
+            <span class="help-inline">{% for error in form.type.errors %}{{ error }}<br/> {% endfor %}</span>
+            {% endif %}
+            {% if form.type.help_text%}
+            <p class="help-block">
+              {{ form.type.help_text|safe }}
+            </p>
+            {% endif %}  
+          </div>
+        </div>
 
-                  <div class="control-group" id='id_promise_section'>
-                      <label class="control-label">{{form.end_promise.label}}</label>
-                      <div class="controls">
-                      <span class="add-on">{{ form.end_promise }}</span> 
-                      {% if form.end_promise.errors %}
-                          <span class="help-inline">{% for error in form.end_promise.errors %}{{ error }}<br/> {% endfor %}</span>
-                      {% endif %}
-                      {% if form.end_promise.help_text%}
-                          <p class="help-block">
-                              {{ form.end_promise.help_text|safe }}
-                          </p>
-                      {% endif %}
-                      </div>
-                  </div>
-                </fieldset>
-                <div class="form-actions">
-				    <input type='submit' class="btn btn-primary" value="{% blocktrans %}Оплатить{% endblocktrans %}">
-				    <a class="btn close-dialog" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
-				</div>
-                </form>
- <script type="text/javascript"> 
- $(document).ready(function() {
+        <div class="control-group">
+          <label class="control-label">{{form.bill.label}}</label>
+          <div class="controls">
+            {{ form.bill }}
+            {% if form.bill.errors %}
+            <span class="help-inline">{% for error in form.bill.errors %}{{ error }}<br/> {% endfor %}</span>
+            {% endif %}
+            {% if form.bill.help_text%}
+            <p class="help-block">
+              {{ form.bill.help_text|safe }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
 
-     $('.datepicker').datepicker({
-         months: ["{% blocktrans %}Январь{% endblocktrans %}","{% blocktrans %}Февраль{% endblocktrans %}","{% blocktrans %}Март{% endblocktrans %}","{% blocktrans %}Апрель{% endblocktrans %}","{% blocktrans %}Май{% endblocktrans %}","{% blocktrans %}Июнь{% endblocktrans %}","{% blocktrans %}Июль{% endblocktrans %}","{% blocktrans %}Август{% endblocktrans %}","{% blocktrans %}Сентябрь{% endblocktrans %}","{% blocktrans %}Октябрь{% endblocktrans %}","{% blocktrans %}Ноябрь{% endblocktrans %}","{% blocktrans %}Декабрь{% endblocktrans %}"],
-         weekStart: 1,
-         noDefault: true,
-         format: 'yyyy-mm-dd hh:ii:ss',
-         days: ["{% blocktrans %}вс{% endblocktrans %}", "{% blocktrans %}пн{% endblocktrans %}","{% blocktrans %}вт{% endblocktrans %}","{% blocktrans %}ср{% endblocktrans %}","{% blocktrans %}чт{% endblocktrans %}","{% blocktrans %}пт{% endblocktrans %}","{% blocktrans %}сб{% endblocktrans %}"],});
+        <div class="control-group">
+          <label class="control-label">{{form.description.label}}</label>
+          <div class="controls">
+            {{ form.description }}
+            {% if form.description.errors %}
+            <span class="help-inline">{% for error in form.description.errors %}{{ error }}<br/> {% endfor %}</span>
+            {% endif %}
+            {% if form.description.help_text%}
+            <p class="help-block">
+              {{ form.description.help_text|safe }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
 
-     
- });
- </script>
- {% endif %}
+        <div class="control-group">
+          <label class="control-label">{{form.summ.label}}</label>
+          <div class="controls">
+            {{ form.summ }}
+            {% if form.summ.errors %}
+            <span class="help-inline">{% for error in form.summ.errors %}{{ error }}<br/> {% endfor %}</span>
+            {% endif %}
+            {% if form.summ.help_text%}
+            <p class="help-block">
+              {{ form.summ.help_text|safe }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label">{{form.created.label}}</label>
+          <div class="controls">
+            {{ form.created }}
+            {% if form.created.errors %}
+            <span class="help-inline">{% for error in form.created.errors %}{{ error }}<br/> {% endfor %}</span>
+            {% endif %}
+            {% if form.created.help_text%}
+            <p class="help-block">
+              {{ form.created.help_text|safe }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="control-group" id='id_promise_section'>
+          <label class="control-label">{{form.end_promise.label}}</label>
+          <div class="controls">
+            <span class="add-on">{{ form.end_promise }}</span> 
+            {% if form.end_promise.errors %}
+            <span class="help-inline">{% for error in form.end_promise.errors %}{{ error }}<br/> {% endfor %}</span>
+            {% endif %}
+            {% if form.end_promise.help_text%}
+            <p class="help-block">
+              {{ form.end_promise.help_text|safe }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+      </fieldset>
+      <div class="form-actions">
+        <input type='submit' class="btn btn-primary" value="{% blocktrans %}Оплатить{% endblocktrans %}">
+        <a class="btn close-dialog" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
+      </div>
+    </form>
+
+    <script type="text/javascript"> 
+      $(document).ready(function() {
+        $('.datepicker').datepicker({
+          months: ["{% blocktrans %}Январь{% endblocktrans %}","{% blocktrans %}Февраль{% endblocktrans %}","{% blocktrans %}Март{% endblocktrans %}","{% blocktrans %}Апрель{% endblocktrans %}","{% blocktrans %}Май{% endblocktrans %}","{% blocktrans %}Июнь{% endblocktrans %}","{% blocktrans %}Июль{% endblocktrans %}","{% blocktrans %}Август{% endblocktrans %}","{% blocktrans %}Сентябрь{% endblocktrans %}","{% blocktrans %}Октябрь{% endblocktrans %}","{% blocktrans %}Ноябрь{% endblocktrans %}","{% blocktrans %}Декабрь{% endblocktrans %}"],
+          weekStart: 1,
+          noDefault: true,
+          format: 'yyyy-mm-dd hh:ii:ss',
+          days: ["{% blocktrans %}вс{% endblocktrans %}", "{% blocktrans %}пн{% endblocktrans %}","{% blocktrans %}вт{% endblocktrans %}","{% blocktrans %}ср{% endblocktrans %}","{% blocktrans %}чт{% endblocktrans %}","{% blocktrans %}пт{% endblocktrans %}","{% blocktrans %}сб{% endblocktrans %}"],
+        });
+      });
+    </script>
+  {% endif %}
 {% else %}
- <script type="text/javascript"> 
- $(document).ready(function() {
-    $("#id_btn_print").click( function() {
-
+  <script type="text/javascript"> 
+    $(document).ready(function() {
+      $("#id_btn_print").click( function() {
         var data = {transaction:{{transaction.id}}, template:7};
-
         var $form = $('<form target="_blank" method="POST" action="{% url 'documentrender' %}">');
+
         $.each(data, function(k,v){
-            $form.append('<input type="hidden" name="' + k + '" value="' + v + '">');
+          $form.append('<input type="hidden" name="' + k + '" value="' + v + '">');
         });
         $form.append('</form>');
         $form.submit();
-    })
- });
- </script>
+      })
+    });
+  </script>
  
-{% for message in messages %}
+  {% for message in messages %}
+    <div class="alert fade in {{ message.tags }}">
+      <button type="button" class="close" data-dismiss="alert">×</button>
+      {{ message }}
+    </div>
+  {% endfor %}
 
-<div class="alert fade in {{ message.tags }}">
-<button type="button" class="close" data-dismiss="alert">×</button>
-{{ message }}
-</div>
-{% endfor %}
-
-
-                <div class="form-actions">
-                    <input id="id_btn_print" type='button' class="btn btn-info" value="{% blocktrans %}Печать чека{% endblocktrans %}">
-                    <a class="btn close-dialog" id="transaction-close-button" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
-                </div>
+  <div class="form-actions">
+    <input id="id_btn_print" type='button' class="btn btn-info" value="{% blocktrans %}Печать чека{% endblocktrans %}">
+    <a class="btn close-dialog" id="transaction-close-button" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
+  </div>
 {% endif %}

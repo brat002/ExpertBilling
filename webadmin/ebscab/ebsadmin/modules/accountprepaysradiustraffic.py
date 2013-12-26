@@ -16,7 +16,7 @@ from billservice.helpers import systemuser_required
 
 
 @systemuser_required
-@render_to('ebsadmin/accountprepaysradiustraffic_list.html')
+@render_to('ebsadmin/accountprepaysradiustraffic/list.html')
 def accountprepaysradiustraffic(request):
         
 
@@ -68,7 +68,7 @@ def accountprepaysradiustraffic(request):
         return { 'form':form}   
 
 @systemuser_required
-@render_to('ebsadmin/accountprepaysradiustraffic_edit.html')
+@render_to('ebsadmin/accountprepaysradiustraffic/edit.html')
 def accountprepaysradiustraffic_edit(request):
     id = request.POST.get("id")
 
