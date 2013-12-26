@@ -66,6 +66,12 @@ urlpatterns += patterns('ebsadmin.modules.permissiongroup',
     url(r'^permissiongroup/$', 'permissiongroup', name='permissiongroup'),
 )
 
+urlpatterns += patterns('ebsadmin.modules.notificationssettings',
+    url(r'^notificationssettings/edit/$', 'notificationssettings_edit', name='notificationssettings_edit'),
+    url(r'^notificationssettings/delete/$', 'notificationssettings_delete', name='notificationssettings_delete'),
+    url(r'^notificationssettings/$', 'notificationssettings', name='notificationssettings'),
+)
+
 urlpatterns += patterns('ebsadmin.modules.bonustransaction',
     url(r'^bonustransaction/edit/$', 'bonus_transaction_edit', name='bonus_transaction_edit'),
 )

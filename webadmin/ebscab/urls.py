@@ -18,12 +18,14 @@ admin.autodiscover()
 
 
 
+
 urlpatterns = patterns('',
     # Example:
     # (r'^ebscab/', include('ebscab.foo.urls')),
     #(r'^$','ebscab.billing.views.index'),
     #url('^helpdesk/admin/(.*)', helpdesk_admin.site.urls, name='helpdesk_admin'),
     (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+    (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT}),
     # Uncomment this for admin:
     (r'^objectlog/', include('object_log.urls')),
     (r'^helpdesk/', include('helpdesk.urls')),
@@ -41,9 +43,11 @@ urlpatterns = patterns('',
     url(r'^autocomplete/', include('autocomplete_light.urls')),
     (r'^selectable/', include('selectable.urls')),
     url(r'^captcha/', include('captcha.urls')),
+    #(r'^static/(?P<path>.*)$', 'django.contrib.staticfiles.views.serve')
 
-) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+) #+ patterns((r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT}))
 
+#urlpatterns += staticfiles_urlpatterns()
 urlpatterns += patterns('billservice.views',
     # Uncomment this for admin:
      #(r'^$', 'index'),

@@ -3,7 +3,7 @@
 from billservice.forms import AccountForm
 from billservice.models import Account, SuspendedPeriod, AccountHardware, Transaction
 from billservice.models import AccountAddonService, BalanceHistory, IPInUse, Template 
-from billservice.models import SettlementPeriod, SystemUser, PrepaidTraffic
+from billservice.models import SettlementPeriod, SystemUser, PrepaidTraffic, NotificationsSettings
 from billservice.models import TimeSpeed, AddonServiceTarif, PeriodicalServiceLog, News
 from billservice.models import AddonService, SheduleLog, TrafficLimit, TimeAccessNode, RegistrationRequest
 from billservice.models import TrafficTransmitNodes, IPPool, Group, Dealer, TransactionType, TrafficTransaction
@@ -1423,7 +1423,7 @@ class TicketTable(TableReport):
         model = Ticket
         configurable = True
         available_fields = ("id", 'title', 'queue', 'created', 'status', 'priority', )
-        attrs = {'class': 'table table-striped table-bordered table-condensed'} 
+        attrs = {'class': 'table table-bordered table-condensed'} 
         
 class PermissionGroupTable(TableReport):
     
@@ -1441,6 +1441,22 @@ class PermissionGroupTable(TableReport):
         available_fields = ("id", 'name', 'd', )
         attrs = {'class': 'table table-striped table-bordered table-condensed'} 
         
+        
+class NotificationsSettingsTable(TableReport):
+    
+    id = django_tables.LinkColumn('notificationssettings_edit', get_params={'id':A('pk')})
+    name = django_tables.LinkColumn('notificationssettings_edit', get_params={'id':A('pk')})
+    d = django_tables.TemplateColumn("<a href='{{record.get_remove_url}}' class='show-confirm'><i class='icon-remove'></i></a>", verbose_name=' ', orderable=False)
+
+    
+    def __init__(self, *args, **argv):
+        super(NotificationsSettingsTable, self).__init__(*args, **argv)
+        self.name = self.__class__.__name__
+        
+    class Meta:
+        model = NotificationsSettings
+        available_fields = ("id", 'name', 'd', )
+        attrs = {'class': 'table table-bordered table-condensed'} 
         
 class PaymentTable(TableReport):
     id = django_tables.LinkColumn('payment_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
