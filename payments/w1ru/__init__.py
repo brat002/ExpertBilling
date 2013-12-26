@@ -115,7 +115,9 @@ class PaymentProcessor(PaymentProcessorBase):
             WMI_MERCHANT_ID = forms.CharField(initial = PaymentProcessor.get_backend_setting('MERCHANT_ID',''))
             WMI_PAYMENT_AMOUNT = forms.CharField()
             WMI_CURRENCY_ID = forms.CharField(initial=CURRENCIES.get(PaymentProcessor.get_backend_setting('DEFAULT_CURRENCY', PaymentProcessor.get_backend_setting('BACKEND_ACCEPTED_CURRENCY', ['RUB'])[0])))
-            WMI_TO_USER_ID = forms.CharField()
+            if 'WMI_TO_USER_ID' in request.POST:
+                WMI_TO_USER_ID = forms.CharField()
+
             WMI_PAYMENT_NO = forms.CharField()
             WMI_ORDER_ID = forms.CharField()
             WMI_DESCRIPTION = forms.CharField()
@@ -141,7 +143,7 @@ class PaymentProcessor(PaymentProcessorBase):
             print form._errors
             return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=%s' % urllib.quote_plus(u'Не все поля заполнены или заполнены неверно')
         payment.external_id = data['WMI_ORDER_ID']
-        p#ayment.description = u'Оплачено с %s' % data['WMI_TO_USER_ID']
+        #p#ayment.description = u'Оплачено с %s' % data['WMI_TO_USER_ID']
         
         if data['WMI_ORDER_STATE']=='Accepted':
             payment.on_success(amount=data['WMI_PAYMENT_AMOUNT'])

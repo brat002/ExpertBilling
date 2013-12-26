@@ -2,11 +2,11 @@
 from django.db import models
 from ebscab.nas.models import Nas, TrafficClass, TrafficClass
 from django.contrib.auth.models import User
-from django.db.models import F
+from django.db.models import F, Q
 import datetime, time
 from django.core.urlresolvers import reverse
 from django.db import connection
-from annoying.fields import JSONField
+
 
 connection.features.can_return_id_from_insert = False
 # Create your models here.
@@ -19,7 +19,11 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ValidationError
 import re
 from django.core.cache import cache
-from django.db.models import Q
+
+import django.dispatch
+
+new_transaction = django.dispatch.Signal()
+
 
 def validate_phone(value):
     if value and not re.match(r'''\+\d{1,25}$''', value):
@@ -1113,6 +1117,8 @@ class Transaction(models.Model):
     def save(self, *args, **kwargs):
         from django.db import connection
         connection.features.can_return_id_from_insert = False
+        if not self.id:
+            new_transaction.send(sender=self)
         super(Transaction, self).save(*args, **kwargs)
 
     class Admin:
@@ -2536,11 +2542,9 @@ class PermissionGroup(models.Model):
 
 class NotificationsSettings(models.Model):
     #account = models.ForeignKey(Account)
-    payment_notifications = models.BooleanField() #Transaction
+    tariffs = models.ManyToManyField(Tariff)
+    payment_notifications = models.BooleanField() 
     payment_notifications_template = models.TextField(verbose_name=u'Шаблон уведомления о платеже', default='')
-    tariff_cost_notifications = models.BooleanField(verbose_name=u'Уведомления о недостатке денег для продления тарифа')
-    tariff_cost_notifications_template = models.TextField(
-        verbose_name=u'Шаблон уведомления о недостатке денег для тарифа', default='')
     balance_notifications = models.BooleanField(verbose_name=u'Уведомления о недостатке баланса')
     balance_edge = models.FloatField(verbose_name=u'Граница баланса',
                                      help_text=u'Граница, с которой слать уведомления  о недостатке баланса')
@@ -2549,9 +2553,14 @@ class NotificationsSettings(models.Model):
     balance_notifications_limit = models.IntegerField(verbose_name=u'Количество уведомлений о балансе',
                                                       help_text=u'Не слать более уведомлений о балансе при исчерпании указанного количества')
     balance_notifications_template = models.TextField(verbose_name=u'Шаблон уведомления о недостатке денег', default='')
-    send_email = models.BooleanField(blank=True, default=True)
-    send_sms = models.BooleanField(blank=True, default=True)
+    provider = models.CharField(max_length=64, blank=True)
 
+
+"""
+ballance_sms_notification_count
+ballance_sms_notification_last_date
+"""
+    
 
 #===============================================================================
 # class Monitoring(models.Model):

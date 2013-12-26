@@ -413,7 +413,7 @@ def make_payment(request):
         if last_qiwi_invoice:
             qiwi_form = QiwiPaymentRequestForm(initial={'phone':last_qiwi_invoice.phone})
         else:
-             qiwi_form = QiwiPaymentRequestForm(initptial={'phone':request.user.account.phone_m})
+             qiwi_form = QiwiPaymentRequestForm(initial={'phone':request.user.account.phone_m})
     from getpaid.forms import SelectPaymentMethodForm
     form = SelectPaymentMethodForm()
     return {'allow_qiwi':settings.ALLOW_QIWI, 'allow_webmoney':settings.ALLOW_WEBMONEY, 'qiwi_form':qiwi_form, 'payment_form': form}

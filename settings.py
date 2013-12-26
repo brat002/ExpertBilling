@@ -50,6 +50,7 @@ SHORT_DATETIME_FORMAT = "d.m.Y H:i:s"
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '/opt/ebs/web/ebscab/static'
+
 ADMIN_MEDIA_PREFIX = '/admin_media/'
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 
