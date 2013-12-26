@@ -1,0 +1,30 @@
+{% extends "ebsadmin/base.html" %}
+
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load crispy_forms_tags %}
+{% load render_table from django_tables2 %}
+
+{% block base %}
+  <div class="row-fluid">
+    <div>
+      <ul class="breadcrumb">
+        <li>
+          <a href="{% url 'addonservice' %}">
+            {% blocktrans %}Подключаемые услуги{% endblocktrans %}
+          </a> <span class="divider">/</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="btn-toolbar pull-right">
+      <a href="{% url 'addonservice_edit' %}" class="btn btn-success align-right">
+        {% blocktrans %}Добавить{% endblocktrans %}
+      </a>
+    </div>
+    
+    <div>
+      {% render_table table %}
+    </div>
+  </div>
+{% endblock %}

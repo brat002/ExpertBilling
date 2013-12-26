@@ -1,70 +1,28 @@
 {% extends "ebsadmin/tariff_edit.html" %}
+
 {% load i18n %}
 {% load ebsadmin_tags %}
 {% load render_table from django_tables2 %}
- 
- 
 
-                
 {% block extra_head %}
-{{block.super}}
-
- <script type="text/javascript"> 
- $(document).ready(function() {
-     $(".open-custom-dialog").click(function(event) {
-         $('<div />').dialog2({
-             title: "{% blocktrans %}Подключаемая услуга"{% endblocktrans %}, 
-             content: this.href, 
-             id: "periodicalservice-modal"
-         });
-
-         event.preventDefault(event);
-     });
-     $(".show-confirm").click(function(event) {
-         a=$(this);
-         $.fn.dialog2.helpers.confirm("{% blocktrans %}Вы действительно хотите удалить правило активации подключаемых услуг?{% endblocktrans %}", {
-             confirm: function() {
-                 $.getJSON(a.attr('href'),{},function(data,status){
-                     if( status=='success' ){
-                         if(data.status==true)
-                             {
-                             location.reload();
-                             }else{
-                                 alert(data.message)
-                             }
-                         
-                     }else{
-                         alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
-                     }
-
-                 })                      
-                 }, 
-             decline: function() {  }
-         });
-
-         event.preventDefault(event);
-     });
-     $("#modal-addonservicetariff-dialog").click(function(event) {
-         $('<div />').dialog2({
-             title: "{% blocktrans %}Добавить правило активации подключаемой услуги{% endblocktrans %}", 
-             content: "{% url 'tariff_addonservicetariff_edit' %}?tariff_id={{tariff.id}}", 
-             id: "ps-modal"
-         });
-
-         event.preventDefault(event);
-     });
- });
- </script>
+  {{block.super}}
 {% endblock %}
 
 {% block tariff_content %}
+  <legend>{% blocktrans %}Подключаемые услуги{% endblocktrans %}</legend>
 
-            <legend>{% blocktrans %}Подключаемые услуги{% endblocktrans %}</legend>
-<div class="alert alert-info">
-{% blocktrans %}Здесь перечислены подключаемые услуги, доступные для самостоятельной активации аккаунтами через личный кабинет.{% endblocktrans %}
-</div>
-             <fieldset>
-  {% if table %}{% render_table table %}{% endif %}
-  <div class="btn-toolbar"><a href="#" id="modal-addonservicetariff-dialog" class="btn btn-success">{% blocktrans %}Добавить{% endblocktrans %}</a></div>
-                </fieldset>
+  <div class="alert alert-info">
+    {% blocktrans %}Здесь перечислены подключаемые услуги, доступные для самостоятельной активации аккаунтами через личный кабинет.{% endblocktrans %}
+  </div>
+  <fieldset>
+    {% if table %}{% render_table table %}{% endif %}
+    <div class="btn-toolbar">
+      <a href="{% url 'tariff_addonservicetariff_edit' %}?tariff_id={{tariff.id}}" 
+          class="btn btn-success general-modal-dialog"
+          data-dlgtitle="{% blocktrans %}Добавить правило активации подключаемой услуги{% endblocktrans %}"
+          data-dlgid="ps-modal">
+        {% blocktrans %}Добавить{% endblocktrans %}
+      </a>
+    </div>
+  </fieldset>
 {% endblock %}

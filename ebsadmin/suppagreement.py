@@ -18,7 +18,7 @@ from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
-@render_to('ebsadmin/suppagreement_list.html')
+@render_to('ebsadmin/suppagreement/list.html')
 def suppagreement(request):
     if  not (request.user.account.has_perm('billservice.view_suppagreement')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -32,7 +32,7 @@ def suppagreement(request):
     return {"table": table} 
     
 @systemuser_required
-@render_to('ebsadmin/suppagreement_edit.html')
+@render_to('ebsadmin/suppagreement/edit.html')
 def suppagreement_edit(request):
 
     id = request.GET.get("id")

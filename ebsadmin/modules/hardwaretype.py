@@ -17,7 +17,7 @@ from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
-@render_to('ebsadmin/hardwaretype_list.html')
+@render_to('ebsadmin/hardwaretype/list.html')
 def hardwaretype(request):
     if  not (request.user.account.has_perm('billservice.view_hardwaretype')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -32,7 +32,7 @@ def hardwaretype(request):
     return {"table": table} 
     
 @systemuser_required
-@render_to('ebsadmin/hardwaretype_edit.html')
+@render_to('ebsadmin/hardwaretype/edit.html')
 def hardwaretype_edit(request):
     id = request.POST.get("id")
 

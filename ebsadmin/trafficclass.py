@@ -21,7 +21,7 @@ from django.utils.translation import ugettext_lazy as _
 
 
 @systemuser_required
-@render_to('ebsadmin/trafficclass_list.html')
+@render_to('ebsadmin/trafficclass/list.html')
 def trafficclass(request):
     if  not (request.user.account.has_perm('nas.view_trafficclass')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -37,7 +37,7 @@ def trafficclass(request):
     
 
 @systemuser_required
-@render_to('ebsadmin/trafficclass_upload.html')
+@render_to('ebsadmin/trafficclass/upload.html')
 def trafficclass_upload(request):
     table = None
     if request.POST:
@@ -118,7 +118,7 @@ def trafficnode_list(request):
 
 
 @systemuser_required
-@render_to('ebsadmin/trafficclass_edit.html')
+@render_to('ebsadmin/trafficclass/edit.html')
 def trafficclass_edit(request):
     id = request.GET.get("id")
     item = None

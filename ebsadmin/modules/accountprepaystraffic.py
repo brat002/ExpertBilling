@@ -17,7 +17,7 @@ from django.utils.translation import ugettext_lazy as _
 
 
 @systemuser_required
-@render_to('ebsadmin/accountprepaystraffic_list.html')
+@render_to('ebsadmin/accountprepaystraffic/list.html')
 def accountprepaystraffic(request):
         
     if  not (request.user.account.has_perm('billservice.view_accountprepaystraffic')):
@@ -70,7 +70,7 @@ def accountprepaystraffic(request):
         return { 'form':form}   
 
 @systemuser_required
-@render_to('ebsadmin/accountprepaystraffic_edit.html')
+@render_to('ebsadmin/accountprepaystraffic/edit.html')
 def accountprepaystraffic_edit(request):
     id = request.POST.get("id")
 

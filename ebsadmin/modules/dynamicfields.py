@@ -19,7 +19,7 @@ from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
-@render_to('ebsadmin/dynamicschemafield_list.html')
+@render_to('ebsadmin/dynamicschemafield/list.html')
 def dynamicschemafield(request):
     if  not (request.user.account.has_perm('dynamicmodel.change_dynamicschemafield')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -35,7 +35,7 @@ def dynamicschemafield(request):
     return {"table": table} 
     
 @systemuser_required
-@render_to('ebsadmin/dynamicschemafield_edit.html')
+@render_to('ebsadmin/dynamicschemafield/edit.html')
 def dynamicschemafield_edit(request):
     id = request.POST.get("id")
 

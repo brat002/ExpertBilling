@@ -18,7 +18,7 @@ from django.utils.translation import ugettext_lazy as _
 
 
 @systemuser_required
-@render_to('ebsadmin/payment_list.html')
+@render_to('ebsadmin/payment/list.html')
 def payment(request):
         
     if  not (request.user.account.has_perm('billservice.view_transaction')):
@@ -80,7 +80,7 @@ def payment(request):
 
 
 @systemuser_required
-@render_to('ebsadmin/payment_edit.html')
+@render_to('ebsadmin/payment/edit.html')
 def payment_edit(request):
     id = request.POST.get("id")
 
