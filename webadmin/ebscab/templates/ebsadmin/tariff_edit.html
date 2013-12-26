@@ -1,95 +1,79 @@
 {% extends "ebsadmin/base.html" %}
+
 {% load i18n %}
 {% load ebsadmin_tags %}
+{% load render_table from django_tables2 %}
+
 {% block extra_head %}
-        <script src="/media/js/smartspinner/smartspinner.js" type="text/javascript"></script>
-        <link rel="stylesheet" href="/media/js/smartspinner/smartspinner.css" type="text/css" />
-
-        <script type="text/javascript"> 
-        $(document).ready(function() {
-
-
-        
-        });
-        </script>
-
+  <script src="/media/js/smartspinner/smartspinner.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="/media/js/smartspinner/smartspinner.css" type="text/css" />
 {% endblock %}
- {% load render_table from django_tables2 %}
+
 {% block base %}
+  <div class="span12">
+    <ul class="breadcrumb">
+      <li>
+        <a href="{% url 'tariff' %}">{% blocktrans %}Тарифные планы{% endblocktrans %}</a> <span class="divider">/</span>{{tariff.name}}
+      </li>
+    </ul>
 
-<div class="span12">
-<ul class="breadcrumb">
-  <li>
-    <a href="{% url 'tariff' %}">{% blocktrans %}Тарифные планы{% endblocktrans %}</a> <span class="divider">/</span>{{tariff.name}}
-  </li>
-</ul>
+    <div class="row-fluid">
+      {%  if tariff %}
+      <div class="span3">
 
-<div class="row-fluid">
-{%  if tariff %}
-<div class="span3">
+        <ul class="nav nav-list">
+          <li class="nav-header">
+            {% blocktrans %}Параметры тарифного плана{% endblocktrans %}
+          </li>
+          <li {% if active == 'general' %}class="active"{% endif %}>
+            <a href="{% url 'tariff_edit' %}?id={{tariff.id}}">{% blocktrans %}Общее{% endblocktrans %}</a>
+          </li>
+          <li {% if active == 'accessparameters' %}class="active"{% endif %}>
+            <a href="{% url 'tariff_accessparameters' %}?tariff_id={{tariff.id}}">{% blocktrans %}Параметры доступа{% endblocktrans %}</a>
+          </li>
+          <li class="nav-header">
+            {% blocktrans %}Списания{% endblocktrans %}
+          </li>
+          <li {% if active == 'ps' %}class="active"{% endif %}>
+            <a href="{% url 'tariff_periodicalservice' %}?tariff_id={{tariff.id}}">{% blocktrans %}Периодические услуги{% endblocktrans %}</a>
+          </li>
+          <li {% if active == 'ots' %}class="active"{% endif %}>
+            <a href="{% url 'tariff_onetimeservice' %}?tariff_id={{tariff.id}}">{% blocktrans %}Разовые услуги{% endblocktrans %}</a>
+          </li>
+          <li class="nav-header">
+            {% blocktrans %}Тарификация трафика{% endblocktrans %}
+          </li>
+          <li {% if active == 'tts' %}class="active"{% endif %}>
+            <a href="{% url 'tariff_traffictransmitservice' %}?tariff_id={{tariff.id}}">NetFlow</a>
+          </li>
+          <li {% if active == 'rts' %}class="active"{% endif %}>
+            <a href="{% url 'tariff_radiustraffic' %}?tariff_id={{tariff.id}}">Radius</a>
+          </li>
+          <li {% if active == 'trafficlimit' %}class="active"{% endif %}>
+            <a href="{% url 'tariff_trafficlimit' %}?tariff_id={{tariff.id}}">{% blocktrans %}Лимиты{% endblocktrans %}</a>
+          </li>
+          <li class="nav-header">
+            {% blocktrans %}Тарификация времени{% endblocktrans %}
+          </li>
+          <li {% if active == 'timeaccess' %}class="active"{% endif %}>
+            <a href="{% url 'tariff_timeaccessservice' %}?tariff_id={{tariff.id}}">{% blocktrans %}Radius постоплата времени{% endblocktrans %}</a>
+          </li>
+          <li class="nav-header">
+            {% blocktrans %}Прочее{% endblocktrans %}
+          </li>
+          <li {% if active == 'addst' %}class="active"{% endif %}>
+            <a href="{% url 'tariff_addonservicetariff' %}?tariff_id={{tariff.id}}">{% blocktrans %}Доступные подключаемые услуги{% endblocktrans %}</a>
+          </li>
+        </ul>
 
-<ul class="nav nav-list">
-  <li class="nav-header">
-    {% blocktrans %}Параметры тарифного плана{% endblocktrans %}
-  </li>
-  <li {% if active == 'general' %}class="active"{% endif %}>
-    <a href="{% url 'tariff_edit' %}?id={{tariff.id}}">{% blocktrans %}Общее{% endblocktrans %}</a>
-  </li>
-  <li {% if active == 'accessparameters' %}class="active"{% endif %}>
-    <a href="{% url 'tariff_accessparameters' %}?tariff_id={{tariff.id}}">{% blocktrans %}Параметры доступа{% endblocktrans %}</a>
-  </li>
-  <li class="nav-header">
-    {% blocktrans %}Списания{% endblocktrans %}
-  </li>
-  <li {% if active == 'ps' %}class="active"{% endif %}>
-    <a href="{% url 'tariff_periodicalservice' %}?tariff_id={{tariff.id}}">{% blocktrans %}Периодические услуги{% endblocktrans %}</a>
-  </li>
-  <li {% if active == 'ots' %}class="active"{% endif %}>
-    <a href="{% url 'tariff_onetimeservice' %}?tariff_id={{tariff.id}}">{% blocktrans %}Разовые услуги{% endblocktrans %}</a>
-  </li>
-  <li class="nav-header">
-    {% blocktrans %}Тарификация трафика{% endblocktrans %}
-  </li>
-  <li {% if active == 'tts' %}class="active"{% endif %}>
-    <a href="{% url 'tariff_traffictransmitservice' %}?tariff_id={{tariff.id}}">NetFlow</a>
-  </li>
-  <li {% if active == 'rts' %}class="active"{% endif %}>
-    <a href="{% url 'tariff_radiustraffic' %}?tariff_id={{tariff.id}}">Radius</a>
-  </li>
-  <li {% if active == 'trafficlimit' %}class="active"{% endif %}>
-    <a href="{% url 'tariff_trafficlimit' %}?tariff_id={{tariff.id}}">{% blocktrans %}Лимиты{% endblocktrans %}</a>
-  </li>
-  <li class="nav-header">
-    {% blocktrans %}Тарификация времени{% endblocktrans %}
-  </li>
-  <li {% if active == 'timeaccess' %}class="active"{% endif %}>
-    <a href="{% url 'tariff_timeaccessservice' %}?tariff_id={{tariff.id}}">{% blocktrans %}Radius постоплата времени{% endblocktrans %}</a>
-  </li>
-  <li class="nav-header">
-    {% blocktrans %}Прочее{% endblocktrans %}
-  </li>
-  <li {% if active == 'addst' %}class="active"{% endif %}>
-    <a href="{% url 'tariff_addonservicetariff' %}?tariff_id={{tariff.id}}">{% blocktrans %}Доступные подключаемые услуги{% endblocktrans %}</a>
-  </li>
-</ul>
-
-</div>
-{% endif %}
-<div class="span9">
-{% if not tariff %}
-<div class="alert alert-info">{% blocktrans %}Сохраните тарифный план, чтобы настроить его детально{% endblocktrans %}</div>
-{% endif %}
-{% block tariff_content %}
-{% endblock %}
-
-</div>
-
-
-
-
-        </div>
-
+      </div>
+      {% endif %}
+      <div class="span9">
+        {% if not tariff %}
+        <div class="alert alert-info">{% blocktrans %}Сохраните тарифный план, чтобы настроить его детально{% endblocktrans %}</div>
+        {% endif %}
+        {% block tariff_content %}{% endblock %}
+      </div>
     </div>
-
- {% endblock %}
-
+  </div>
+{% endblock %}

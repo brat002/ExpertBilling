@@ -16,7 +16,7 @@ from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
-@render_to('ebsadmin/accountprepaystime_list.html')
+@render_to('ebsadmin/accountprepaystime/list.html')
 def accountprepaystime(request):
     if  not (request.user.account.has_perm('billservice.view_accountprepaystime')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -67,7 +67,7 @@ def accountprepaystime(request):
         return { 'form':form}   
 
 @systemuser_required
-@render_to('ebsadmin/accountprepaystime_edit.html')
+@render_to('ebsadmin/accountprepaystime/edit.html')
 def accountprepaystime_edit(request):
     id = request.POST.get("id")
 

@@ -19,7 +19,7 @@ from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
-@render_to('ebsadmin/tpchangerule_list.html')
+@render_to('ebsadmin/tpchangerule/list.html')
 def tpchangerule(request):
     if  not (request.user.account.has_perm('billservice.view_tpchangerule')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -36,7 +36,7 @@ def tpchangerule(request):
 
     
 @systemuser_required
-@render_to('ebsadmin/tpchangerule_edit.html')
+@render_to('ebsadmin/tpchangerule/edit.html')
 def tpchangerule_edit(request):
     
 
