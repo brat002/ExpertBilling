@@ -538,7 +538,7 @@ def card_manage(request):
         return {"status": False, "message": "Card not found"}
     
 @systemuser_required
-@render_to('ebsadmin/salecard/list.html')
+@render_to('ebsadmin/common/list.html')
 def salecard(request):
     if  not (request.user.account.has_perm('billservice.view_salecard')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -550,4 +550,8 @@ def salecard(request):
     if table_to_report:
         return create_report_http_response(table_to_report, request)
             
-    return {"table": table}
+    return {
+        "list_url": reverse('salecard'),
+        "list_header": _(u'Накладные на карты'),
+        "table": table
+    }

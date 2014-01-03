@@ -1335,7 +1335,7 @@ def activesessionreport(request):
 
 
 @systemuser_required
-@render_to('ebsadmin/template/list.html')
+@render_to('ebsadmin/common/list.html')
 def template(request):
     if  not (request.user.account.has_perm('billservice.view_template')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -1346,7 +1346,12 @@ def template(request):
     table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
     if table_to_report:
         return create_report_http_response(table_to_report, request)
-    return {"table": table} 
+    return {
+        "list_url": reverse('template'),
+        "list_header": _(u'Шаблоны документов'),
+        "add_btn_url": reverse('template_edit'),
+        "table": table
+    }
     
 @systemuser_required
 @render_to('ebsadmin/template/edit.html')
