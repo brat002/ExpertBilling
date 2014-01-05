@@ -4,12 +4,7 @@
 
 {% if not status %}
   
-  {% for message in messages %}
-    <div class="alert fade in {{ message.tags }}">
-      <button type="button" class="close" data-dismiss="alert">×</button>
-      {{ message }}
-    </div>
-  {% endfor %}
+  {% include "ebsadmin/common/error_messages.html" %}
 
   <script type="text/javascript"> 
     $(document).ready(function() {

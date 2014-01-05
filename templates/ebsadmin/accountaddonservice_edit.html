@@ -18,12 +18,7 @@
     });
   </script>
   
-  {% for message in messages %}
-    <div class="alert fade in {{ message.tags }}">
-      <button type="button" class="close" data-dismiss="alert">×</button>
-      {{ message }}
-      </div>
-  {% endfor %}
+  {% include "ebsadmin/common/error_messages.html" %}
   
   {% if form %}
     <form method="POST" action="{% url 'accountaddonservice' %}?id={{accountaddonservice.id}}" class="well form-horizontal  form-condensed  ajax">
