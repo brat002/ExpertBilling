@@ -107,7 +107,7 @@ def charts(request):
                 cur.execute("""select (select name from nas_nas WHERE id=gst.nas_id) as nas,  sum(bytes_in+bytes_out)/1024 FROM billservice_globalstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by nas_id;""" \
                             % (nasses_str, groups_str), ( start_date, end_date))
                 res = cur.fetchall()
-                return render_to_response('ebsadmin/charts_pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
+                return render_to_response('ebsadmin/charts/pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
             if report=='nassestraffic':
 
                 cur.execute("""select (select name from nas_nas WHERE id=gst.nas_id) as nas,  date_trunc(%%s, gst.datetime) as dt, sum(bytes_in+bytes_out)/1024 FROM billservice_globalstat as gst WHERE True %s and gst.datetime between %%s and %%s GROUP by nas_id, date_trunc(%%s, gst.datetime) order by nas,dt;""" \
@@ -123,13 +123,13 @@ def charts(request):
                         subitems=[]
                         subitems.append((item[1], item[2]))
                     previtem = item[0]
-                return render_to_response('ebsadmin/charts_multiline.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
+                return render_to_response('ebsadmin/charts/multiline.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
             
             if report=='distrtrafficgroups':
                 cur.execute("""select (select name from billservice_group WHERE id=gst.group_id) as group,  sum(bytes)/1024 FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by group_id;""" \
                             % (accounts_str, groups_str), ( start_date, end_date))
                 res = cur.fetchall()
-                return render_to_response('ebsadmin/charts_pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
+                return render_to_response('ebsadmin/charts/pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
             
             if report=='tariffstraffic':
                 cur.execute("""SELECT name,
@@ -143,7 +143,7 @@ def charts(request):
                 for name, value in res:
                     if value<>0:
                         items.append((name, value))
-                return render_to_response('ebsadmin/charts_pie.html', {'rep': rep, 'res':items, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
+                return render_to_response('ebsadmin/charts/pie.html', {'rep': rep, 'res':items, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
             
             
 
@@ -152,23 +152,23 @@ def charts(request):
                 cur.execute("""select name, COALESCE((select sum(summ) from billservice_transaction WHERE type_id=tt.internal_name and created between %%s and %%s),0) as summ FROM billservice_transactiontype as tt WHERE  True and %s  COALESCE((select sum(summ) from billservice_transaction WHERE type_id=tt.internal_name and created between %%s and %%s),0)<>0;""" \
                             % (accounts_str, ), ( start_date, end_date,  start_date, end_date))
                 res = cur.fetchall()
-                return render_to_response('ebsadmin/charts_pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
+                return render_to_response('ebsadmin/charts/pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
             if report=='disttransactiontypescount':
                 cur.execute("""select name, COALESCE((select count(summ) from billservice_transaction WHERE type_id=tt.internal_name and created between %%s and %%s),0) as summ FROM billservice_transactiontype as tt WHERE  True and %s  COALESCE((select sum(summ) from billservice_transaction WHERE type_id=tt.internal_name and created between %%s and %%s),0)<>0;""" \
                             % (accounts_str, ), ( start_date, end_date,  start_date, end_date))
                 res = cur.fetchall()
-                return render_to_response('ebsadmin/charts_pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
+                return render_to_response('ebsadmin/charts/pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
             
             if report=='distraccountstraffic':
                 cur.execute("""select (select username from billservice_account WHERE id=gst.account_id) as username,  sum(bytes)/1024 FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by account_id;""" \
                             % (accounts_str, groups_str), ( start_date, end_date))
                 res = cur.fetchall()
-                return render_to_response('ebsadmin/charts_pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
+                return render_to_response('ebsadmin/charts/pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
             if report=='distraccountstoptraffic':
                 cur.execute("""select (select username from billservice_account WHERE id=gst.account_id) as username,  sum(bytes)/(1024*1024) as b FROM billservice_groupstat as gst WHERE True %s and datetime between %%s and %%s GROUP by account_id ORDER BY b desc limit 10;""" \
                             % (groups_str,), ( start_date, end_date))
                 res = cur.fetchall()
-                return render_to_response('ebsadmin/charts_pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
+                return render_to_response('ebsadmin/charts/pie.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
     
             if report=='balancehistory':
                 cur.execute("""select (select username from billservice_account WHERE id=bh.account_id) as username, date_trunc(%%s, datetime) as dt, avg(balance)  FROM billservice_balancehistory as bh WHERE True %s and datetime between %%s and %%s GROUP BY account_id, date_trunc(%%s, datetime) ORDER BY account_id, dt asc;""" \
@@ -185,13 +185,13 @@ def charts(request):
                         subitems.append((item[1], item[2]))
                     previtem = item[0]
                 if previtem: res.append((previtem, subitems))
-                return render_to_response('ebsadmin/charts_multiline.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
+                return render_to_response('ebsadmin/charts/multiline.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
     
             if report=='accountstraffic':
                 cur.execute("""select date_trunc(%%s, datetime) as dt,  sum(bytes)/1024 FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by date_trunc(%%s, datetime) ORDER BY dt ASC;""" \
                             % (accounts_str, groups_str), ( grouping, start_date, end_date, grouping))
                 res = cur.fetchall()
-                return render_to_response('ebsadmin/charts_line.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
+                return render_to_response('ebsadmin/charts/line.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
             
             if report=='selectedaccountstraffic':
                 cur.execute("""select (select username from billservice_account WHERE id=gst.account_id) as username, date_trunc(%%s, datetime) as dt,  sum(bytes)/1024 FROM billservice_groupstat as gst WHERE True %s %s and datetime between %%s and %%s GROUP by account_id, date_trunc(%%s, datetime) ORDER BY username, dt ASC;""" \
@@ -207,7 +207,7 @@ def charts(request):
                         subitems=[]
                         subitems.append((item[1], item[2]))
                     previtem = item[0]
-                return render_to_response('ebsadmin/charts_multiline.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
+                return render_to_response('ebsadmin/charts/multiline.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form, 'report_name':report_name, 'reporttype':reporttype})
 
 
             if report=='accountsincrease':
@@ -217,7 +217,7 @@ def charts(request):
                             , (grouping,  grouping, grouping, start_date, end_date,))
                 res = cur.fetchall()
     
-                return render_to_response('ebsadmin/charts_line.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form,  'report_name':report_name, 'reporttype':reporttype})
+                return render_to_response('ebsadmin/charts/line.html', {'rep': rep, 'res':res, 'yname': yname, 'form': form,  'report_name':report_name, 'reporttype':reporttype})
             
             if report=='sessionsonline':
                 if nasses:
@@ -238,7 +238,7 @@ def charts(request):
                     data[username].append((date_start, date_end))
                     
     
-                return render_to_response('ebsadmin/charts_onlinesession.html', {'rep': rep, 'res':data, 'yname': yname, "len":100+int(len(data)/5)+len(data)*40, 'report_name':report_name, 'reporttype':reporttype, 'form': form})
+                return render_to_response('ebsadmin/charts/onlinesession.html', {'rep': rep, 'res':data, 'yname': yname, "len":100+int(len(data)/5)+len(data)*40, 'report_name':report_name, 'reporttype':reporttype, 'form': form})
                 #динамика прибыли+qiwi+webmoney  select tt.name,  (SELECT sum(summ*(-1)) FROM billservice_transaction WHERE type_id=tt.internal_name) FROM billservice_transactiontype as tt
             else:
                 print form._errors
@@ -246,7 +246,7 @@ def charts(request):
     print form._errors
     rep = chartdata.get(report)
     form = ReportForm({'report': report})
-    return render_to_response('ebsadmin/charts.html', {'rep': rep,  'res':res, 'form': form})
+    return render_to_response('ebsadmin/charts/base.html', {'rep': rep,  'res':res, 'form': form})
         
 
 

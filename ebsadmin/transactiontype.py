@@ -18,7 +18,7 @@ from django.utils.translation import ugettext_lazy as _
 
 
 @systemuser_required
-@render_to('ebsadmin/transactiontype/list.html')
+@render_to('ebsadmin/common/list.html')
 def transactiontype(request):
     if  not (request.user.account.has_perm('billservice.view_transactiontype')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -29,7 +29,12 @@ def transactiontype(request):
     table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
     if table_to_report:
         return create_report_http_response(table_to_report, request)
-    return {"table": table} 
+    return {
+        "list_url": reverse('transactiontype'),
+        "list_header": _(u'Типы проводок'),
+        "add_btn_url": reverse('transactiontype_edit'),
+        "table": table
+    }
     
 @systemuser_required
 @render_to('ebsadmin/transactiontype/edit.html')

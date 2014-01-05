@@ -4,12 +4,7 @@
 {% if not status %}
   {{message}}
   
-  {% for message in messages %}
-    <div class="alert fade in {{ message.tags }}">
-      <button type="button" class="close" data-dismiss="alert">×</button>
-      {{ message }}
-    </div>
-  {% endfor %}
+  {% include "ebsadmin/common/error_messages.html" %}
   
   {% if form %}
     <form method="POST" action="{% url 'card_generate' %}" class="well form-horizontal  form-condensed ajax">
@@ -190,10 +185,5 @@
     </form>
   {% endif %}
 {% else %}
-  {% blocktrans %}Операция произведена успешно.{% endblocktrans %}
-  <script type="text/javascript"> 
-   $(document).ready(function() {
-     location.reload();
-   });
-  </script>
+  {% include "ebsadmin/common/succ_operation.html" %}
 {% endif %}

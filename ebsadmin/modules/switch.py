@@ -18,7 +18,7 @@ from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
-@render_to('ebsadmin/switch/list.html')
+@render_to('ebsadmin/common/list.html')
 def switch(request):
     if  not (request.user.account.has_perm('billservice.view_switch')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -30,7 +30,12 @@ def switch(request):
     if table_to_report:
         return create_report_http_response(table_to_report, request)
             
-    return {"table": table} 
+    return {
+        "list_url": reverse('switch'),
+        "list_header": _(u'Коммутаторы'),
+        "add_btn_url": reverse('switch_edit'),
+        "table": table
+    }
     
 @systemuser_required
 @render_to('ebsadmin/switch/edit.html')
