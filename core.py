@@ -1359,16 +1359,23 @@ class settlement_period_service_dog(Thread):
                             blocked = True
                             cur.connection.commit()
                         elif shedl.balance_blocked is None:
-                            cur.execute('SELECT 1 FROM billservice_shedulelog WHERE account_id=%s and accounttarif_id=%s', (acc.account_id, acc.acctf_id))
+                            cur.execute('SELECT 1 FROM billservice_shedulelog WHERE account_id=%s', (acc.account_id, ))
                             if cur.fetchone():
-                                cur.execute('UPDATE billservice_shedulelog SET balance_blocked=%s WHERE account_id=%s and accounttarif_id=%s', (now, acc.account_id, acc.acctf_id))
+                                cur.execute('UPDATE billservice_shedulelog SET balance_blocked=%s WHERE account_id=%s', (now, acc.account_id))
                             else:
                                 cur.execute("INSERT INTO billservice_shedulelog(account_id, accounttarif_id, balance_blocked) VALUES(%s,%s, %s);", (acc.account_id, acc.acctf_id, now))
                             cur.connection.commit()
                             
-                        if (acc.balance_blocked or blocked) and (account_balance >= acc.cost or not acc.require_tarif_cost):
-                            cur.execute("""UPDATE billservice_account SET balance_blocked=False WHERE id=%s;""", (acc.account_id,))                            
-                            cur.connection.commit()
+                        if (acc.balance_blocked or blocked):
+                            cur.execute("select COALESCE(max(balance), 0) FROM billservice_balancehistory where account_id=%s and datetime>%s;", (acc.account_id, period_start))
+                            max_balance = cur.fetchone()
+                            if not max_balance:
+                                max_balance = account_balance
+                            else:
+                                max_balance = max_balance[0]
+                            if  (max_balance >= acc.cost or not acc.require_tarif_cost):
+                                cur.execute("""UPDATE billservice_account SET balance_blocked=False WHERE id=%s;""", (acc.account_id,))                            
+                                cur.connection.commit()
                         
                         #print repr(acc)
                         reset_traffic = caches.traffictransmitservice_cache.by_id.get(acc.traffic_transmit_service_id, (None, None))[1]                        
