@@ -1351,32 +1351,18 @@ class settlement_period_service_dog(Thread):
                         account_balance = (acc.ballance or 0) + (acc.credit or 0)
                         blocked = False
                         #Если балланса не хватает - отключить пользователя
-                        if (shedl.balance_blocked is None or shedl.balance_blocked<period_start) and acc.cost>=account_balance \
+                        if (shedl.balance_blocked is None or shedl.balance_blocked<period_start) and acc.cost>account_balance \
                          and acc.cost != 0 and acc.require_tarif_cost and not acc.balance_blocked:
-                            '''cur.execute("""SELECT transaction_block_sum(%s, %s::timestamp without time zone, %s::timestamp without time zone);""",
-                                          (acc.account_id, period_start, now))'''
-                            #cur.execute("""SELECT transaction_sum(%s, %s, %s::timestamp without time zone, %s::timestamp without time zone);""",
-                            #              (acc.account_id, acc.acctf_id, period_start, now))
-                            #cur.execute("SELECT balance FROM billservice_balancehistory WHERE datetime<%s  and account_id=%s ORDER BY datetime DESC limit 1", (now,acc.account_id,))
-                            #pstart_balance = (cur.fetchone()[0] or 0) + account_balance
-                            #pstart_balance = (cur.fetchone()[0] or 0)
-                            #if acc.cost > pstart_balance:
-                            if acc.cost > (acc.ballance + acc.credit):
-                                cur.execute("SELECT shedulelog_blocked_fn(%s, %s, %s::timestamp without time zone, %s);", 
-                                            (acc.account_id, acc.acctf_id, now, acc.cost))
-                                blocked = True
+    
+                            cur.execute("SELECT shedulelog_blocked_fn(%s, %s, %s::timestamp without time zone, %s);", 
+                                        (acc.account_id, acc.acctf_id, now, acc.cost))
+                            blocked = True
+                            cur.connection.commit()
+                        elif shedl.balance_blocked is None:
+                            cur.execute("INSERT INTO billservice_shedulelog(account_id, accounttarif_id, balance_blocked) VALUES(%s,%s, %s);", (acc.account_id, acc.acctf_id, now))
                             cur.connection.commit()
                             
                         if (acc.balance_blocked or blocked) and (account_balance >= acc.cost or not acc.require_tarif_cost):
-                            """Если пользователь отключён, но баланс уже больше разрешённой суммы-включить пользователя"""
-                            '''cur.execute("""SELECT transaction_block_sum(%s, %s::timestamp without time zone, %s::timestamp without time zone);""",
-                                          (acc.account_id, period_start, now))'''
-                            #cur.execute("""SELECT transaction_sum(%s, %s, %s::timestamp without time zone, %s::timestamp without time zone);""",
-                            #              (acc.account_id, acc.acctf_id, period_start, now))
-                            #pstart_balance = (cur.fetchone()[0] or 0) + account_balance
-                            #pstart_balance = (cur.fetchone()[0] or 0)
-                            #if acc.cost <= pstart_balance:
-                            #if acc.cost <= (pstart_balance + acc.ballance + acc.credit):
                             cur.execute("""UPDATE billservice_account SET balance_blocked=False WHERE id=%s;""", (acc.account_id,))                            
                             cur.connection.commit()
                         

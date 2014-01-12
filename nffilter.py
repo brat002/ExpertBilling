@@ -693,27 +693,7 @@ class Watcher:
             os.kill(self.child, signal.SIGKILL)
         except OSError: pass
         
-def get_file_names():
-    global vars,queues
-    try:
-        fllist = glob.glob(''.join((vars.READ_DIR, '/', vars.PREFIX + '*.dmp')))
-        if fllist:
-            with queues.databaseQueue.file_lock:
-                queues.databaseQueue.file_queue.clear()
-                for fl in fllist: queues.databaseQueue.file_queue.appendleft(fl)
-    except Exception, ex:
-        logger.error("get_files_names exception: %s", (repr(ex),))
-        
-def get_socket():
-    global vars
-    nfsock = None
-    if vars.SOCK_TYPE   == 0:
-        nfsock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        nfsock.settimeout(vars.SOCK_TIMEOUT)
-    elif vars.SOCK_TYPE == 1:
-        nfsock = socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM)
-        nfsock.settimeout(vars.SOCK_TIMEOUT)
-    return nfsock
+
 
 def SIGTERM_handler(signum, frame):
     logger.lprint("SIGTERM recieved")
@@ -797,13 +777,7 @@ def main ():
     if vars.RECOVER:
         graceful_recover()
     #recover leftover dumps?
-    if vars.RECOVER_DUMP:
-        get_file_names()
-        '''
-        recThr = RecoveryThread()
-        recThr.setName('Recovery thread')
-        recThr.start()
-        time.sleep(0.5)'''
+
         
     threads = []
     '''thrnames = [ (NfroutinePushThread, 'NfroutinePushThread'), \
@@ -921,7 +895,7 @@ if __name__=='__main__':
         
         #write profiling info predicate
         flags.writeProf = logger.writeInfoP()
-        file_test(vars.DUMP_DIR, vars.PREFIX)
+        #file_test(vars.DUMP_DIR, vars.PREFIX)
         if vars.WRITE_FLOW:
             try:
                 os.mkdir(vars.FILE_DIR)

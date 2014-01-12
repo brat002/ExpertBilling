@@ -72,6 +72,7 @@ class Worker(ConsumerMixin):
 
     def __init__(self, connection):
         self.connection = connection
+        self.lf = lambda ip: IPy.intToIp(ip, 4)
 
     def get_consumers(self, Consumer, channel):
         return [Consumer(queues=nf_write,
@@ -83,7 +84,7 @@ class Worker(ConsumerMixin):
         
         try:
             for flow in body:
-                ips = map(lambda ip: IPy.intToIp(ip, 4), flow[0:3])
+                ips = map(self.lf, flow[0:3])
     #            ips = map(lambda ip: IPy.intToIp(ip, 4), flow.getAddrSlice())
                 queues.flowSynchroBox.appendData(list(ips) + list(flow[3:]))
             queues.flowSynchroBox.checkData()
