@@ -1359,7 +1359,11 @@ class settlement_period_service_dog(Thread):
                             blocked = True
                             cur.connection.commit()
                         elif shedl.balance_blocked is None:
-                            cur.execute("INSERT INTO billservice_shedulelog(account_id, accounttarif_id, balance_blocked) VALUES(%s,%s, %s);", (acc.account_id, acc.acctf_id, now))
+                            cur.execute('SELECT 1 FROM billservice_shedulelog WHERE account_id=%s and accounttarif_id=%s', (acc.account_id, acc.acctf_id))
+                            if cur.fetchone():
+                                cur.execute('UPDATE billservice_shedulelog SET balance_blocked=%s WHERE account_id=%s and accounttarif_id=%s', (now, acc.account_id, acc.acctf_id))
+                            else:
+                                cur.execute("INSERT INTO billservice_shedulelog(account_id, accounttarif_id, balance_blocked) VALUES(%s,%s, %s);", (acc.account_id, acc.acctf_id, now))
                             cur.connection.commit()
                             
                         if (acc.balance_blocked or blocked) and (account_balance >= acc.cost or not acc.require_tarif_cost):
