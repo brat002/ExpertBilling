@@ -1375,7 +1375,7 @@ class settlement_period_service_dog(Thread):
                                 max_balance = max_balance[0]
                             if  (max_balance >= acc.cost or not acc.require_tarif_cost):
                                 cur.execute("""UPDATE billservice_account SET balance_blocked=False WHERE id=%s;""", (acc.account_id,))                            
-                                cur.connection.commit()
+                            cur.connection.commit()
                         
                         #print repr(acc)
                         reset_traffic = caches.traffictransmitservice_cache.by_id.get(acc.traffic_transmit_service_id, (None, None))[1]                        
