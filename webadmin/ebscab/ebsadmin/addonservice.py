@@ -19,7 +19,7 @@ from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
-@render_to('ebsadmin/addonservice/list.html')
+@render_to('ebsadmin/common/list.html')
 def addonservice(request):
     if  not (request.user.account.has_perm('billservice.view_addonservice')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -29,7 +29,12 @@ def addonservice(request):
     table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
     if table_to_report:
         return create_report_http_response(table_to_report, request)
-    return {"table": table} 
+    return {
+        "list_url": reverse('addonservice'),
+        "list_header": _(u'Подключаемые услуги'),
+        "add_btn_url": reverse('addonservice_edit'),
+        "table": table
+    }
     
 @systemuser_required
 @render_to('ebsadmin/addonservice/edit.html')

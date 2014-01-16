@@ -3,12 +3,7 @@
 {% load crispy_forms_tags %}
 
 {% if not status %}
-  {% for message in messages %}
-    <div class="alert fade in {{ message.tags }}">
-      <button type="button" class="close" data-dismiss="alert">×</button>
-      {{ message }}
-    </div>
-  {% endfor %}
+  {% include "ebsadmin/common/error_messages.html" %}
 
   {% if form %}
     <form method="POST" action="{% url 'tariff_prepaidtraffic_edit' %}?id={{item.id}}" class="well form-horizontal ajax form-condensed ">
@@ -20,10 +15,5 @@
     </form>
   {% endif %}
 {% else %}
-  {% blocktrans %}Операция произведена успешно.{% endblocktrans %}
-  <script type="text/javascript"> 
-    $(document).ready(function() {
-      location.reload();
-    });
-  </script>
+  {% include "ebsadmin/common/succ_operation.html" %}
 {% endif %}

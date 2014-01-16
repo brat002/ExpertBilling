@@ -1,91 +1,122 @@
 {% extends "ebsadmin/base.html" %}
+
 {% load i18n %}
 {% load ebsadmin_tags %}
 {% load render_table from django_tables2 %}
+
 {% block extra_head %}
- <script type="text/javascript"> 
- $(document).ready(function() {
-     $("#modal-{{item.id}}-{{content_type_id}}").click(function(event) {
-         a=$(this);
-         $('<div/>').dialog2({
-             title: "{% blocktrans %}Редактировать комментарий{% endblocktrans %}", 
-             content: a.attr('href'), 
-         });
+  <script type="text/javascript"> 
+    $(document).ready(function() {
+      $("#modal-{{item.id}}-{{content_type_id}}").click(function(event) {
+        a=$(this);
+        $('<div/>').dialog2({
+          title: "{% blocktrans %}Редактировать комментарий{% endblocktrans %}", 
+          content: a.attr('href'), 
+        });
 
-         event.preventDefault(event);
-     });
-     
-     $(".open-log-custom-dialog").click(function(event) {
-         $('<div />').dialog2({
-             title: "{% blocktrans %}Изменить запись{% endblocktrans %}", 
-             content: this.href, 
-         });
+        event.preventDefault(event);
+      });
 
-         event.preventDefault(event);
-     });
-     $(".comment-done").click(function(event) {
-         $('<div />').dialog2({
-             title: "{% blocktrans %}Изменить запись{% endblocktrans %}", 
-             content: this.href, 
-         });
+      $(".open-log-custom-dialog").click(function(event) {
+        $('<div />').dialog2({
+          title: "{% blocktrans %}Изменить запись{% endblocktrans %}", 
+          content: this.href, 
+        });
 
-         event.preventDefault(event);
-     });
-     $(".show-confirm").click(function(event) {
-         a=$(this);
-         $.fn.dialog2.helpers.confirm("{% blocktrans %}Вы действительно хотите удалить?{% endblocktrans %}", {
-             confirm: function() {
-                 $.getJSON(a.attr('href'),{},function(data,status){
-                     if( status=='success' ){
-                         if(data.status==true)
-                             {
-                             location.reload();
-                             }else{
-                                 alert(data.message)
-                             }
-                         
-                     }else{
-                         alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
-                     }
+        event.preventDefault(event);
+      });
 
-                 })                      
-                 }, 
-             decline: function() {  }
-         });
+      $(".comment-done").click(function(event) {
+        $('<div />').dialog2({
+          title: "{% blocktrans %}Изменить запись{% endblocktrans %}", 
+          content: this.href, 
+        });
 
-         event.preventDefault(event);
-     });
- });
- </script>
+        event.preventDefault(event);
+      });
+      
+      $(".show-confirm").click(function(event) {
+        a=$(this);
+        $.fn.dialog2.helpers.confirm("{% blocktrans %}Вы действительно хотите удалить?{% endblocktrans %}", {
+          confirm: function() {
+            $.getJSON(a.attr('href'),{},function(data,status){
+              if( status=='success' ){
+                if(data.status==true)
+                {
+                  location.reload();
+                }else{
+                  alert(data.message)
+                }
+
+              }else{
+                alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
+              }
+
+            })                      
+          }, 
+          decline: function() {  }
+        });
+
+        event.preventDefault(event);
+      });
+    });
+  </script>
 {% endblock %}
+
 {% block base %}
-
-
-
-
   <div class="row-fluid">
-  <div class='span8'>
-  <div class='alert'>
-  Последние комментарии</div>
-  {% render_table comment_table %}
-  </div>
-  <div class="span3 ">
-<div>
- 
-  <blockquote><p>{% blocktrans %}Количество аккаунтов:{% endblocktrans %} {{accounts_count}}</p></blockquote>
-  <blockquote><p>{% blocktrans %}Неактивно аккаунтов:{% endblocktrans %} {{accounts_inactive}}</p></blockquote>
-  <blockquote><p>{% blocktrans %}Аккаунтов за последнй день:{% endblocktrans %} {{accounts_today}}</p></blockquote>
-  <blockquote><p>{% blocktrans %}Аккаунтов c отрицательным балансом:{% endblocktrans %} {{accounts_minus}}</p></blockquote>
-  <blockquote><p>{% blocktrans %}Аккаунтов c положительным балансом:{% endblocktrans %} {{accounts_plus}}</p></blockquote>
-  <blockquote><p>{% blocktrans %}Платежей за последнй день:{% endblocktrans %} {{transactions_today}}</p></blockquote>
-  <blockquote><p>{% blocktrans %}RADIUS сессий:{% endblocktrans %} {{sessions_count}}</p></blockquote>
-  <blockquote><p>{% blocktrans %}Администраторов:{% endblocktrans %} {{systemusers_count}}</p></blockquote>
-  <blockquote><p>{% blocktrans %}Заявок на подключение:{% endblocktrans %} {{registrationrequest_count}}</p></blockquote>
-  </div>
-  </div>
-
+    <div class='span8'>
+      <div class='alert'>Последние комментарии</div>
+      {% render_table comment_table %}
     </div>
-  
-
- {% endblock %}
-
+    <div class="span3 ">
+      <div>
+        <blockquote>
+          <p>
+            {% blocktrans %}Количество аккаунтов:{% endblocktrans %} {{accounts_count}}
+          </p>
+        </blockquote>
+        <blockquote>
+          <p>
+            {% blocktrans %}Неактивно аккаунтов:{% endblocktrans %} {{accounts_inactive}}
+          </p>
+        </blockquote>
+        <blockquote>
+          <p>
+            {% blocktrans %}Аккаунтов за последнй день:{% endblocktrans %} {{accounts_today}}
+          </p>
+        </blockquote>
+        <blockquote>
+          <p>
+            {% blocktrans %}Аккаунтов c отрицательным балансом:{% endblocktrans %} {{accounts_minus}}
+          </p>
+        </blockquote>
+        <blockquote>
+          <p>
+            {% blocktrans %}Аккаунтов c положительным балансом:{% endblocktrans %} {{accounts_plus}}
+          </p>
+        </blockquote>
+        <blockquote>
+          <p>
+            {% blocktrans %}Платежей за последнй день:{% endblocktrans %} {{transactions_today}}
+          </p>
+        </blockquote>
+        <blockquote>
+          <p>
+            {% blocktrans %}RADIUS сессий:{% endblocktrans %} {{sessions_count}}
+          </p>
+        </blockquote>
+        <blockquote>
+          <p>
+            {% blocktrans %}Администраторов:{% endblocktrans %} {{systemusers_count}}
+          </p>
+        </blockquote>
+        <blockquote>
+          <p>
+            {% blocktrans %}Заявок на подключение:{% endblocktrans %} {{registrationrequest_count}}
+          </p>
+        </blockquote>
+      </div>
+    </div>
+  </div>
+{% endblock %}
