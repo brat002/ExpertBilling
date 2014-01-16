@@ -9,18 +9,22 @@
     <div>
       <ul class="breadcrumb">
         <li>
-          <a href="{% url 'news' %}">
-            {% blocktrans %}Компонент новостей{% endblocktrans %}
+          <a href="{{ list_url }}">
+            {{ list_header }}
           </a> <span class="divider">/</span>
         </li>
       </ul>
     </div>
 
-    <div class="btn-toolbar pull-right">
-      <a href="{% url 'news_edit' %}" id="id_btn_add" class="btn btn-success">
-        {% blocktrans %}Добавить{% endblocktrans %}
-      </a>
-    </div>
+    {% if add_btn_url %}
+      <div class="btn-toolbar pull-right">
+        <a href="{{ add_btn_url }}" 
+            id="id_btn_add"
+            class="btn btn-success">
+          {% blocktrans %}Добавить{% endblocktrans %}
+        </a>
+      </div>
+    {% endif %}
 
     <div>
       {% render_table table %}

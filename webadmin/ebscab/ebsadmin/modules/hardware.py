@@ -18,7 +18,7 @@ from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
-@render_to('ebsadmin/hardware_list.html')
+@render_to('ebsadmin/common/list.html')
 def hardware(request):
     if  not (request.user.account.has_perm('billservice.view_hardware')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -30,7 +30,12 @@ def hardware(request):
     if table_to_report:
         return create_report_http_response(table_to_report, request)
             
-    return {"table": table} 
+    return {
+        "list_url": reverse('hardware'),
+        "list_header": _(u'Устройства'),
+        "add_btn_url": reverse('hardware_edit'),
+        "table": table
+    }
     
 @systemuser_required
 @render_to('ebsadmin/common/edit_form.html')

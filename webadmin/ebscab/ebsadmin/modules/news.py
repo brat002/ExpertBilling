@@ -20,18 +20,24 @@ from django.utils.translation import ugettext_lazy as _
 
 
 @systemuser_required
-@render_to('ebsadmin/news/list.html')
+@render_to('ebsadmin/common/list.html')
 def news(request):
-    if  not (request.user.account.has_perm('billservice.view_news')):
+    if not (request.user.account.has_perm('billservice.view_news')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
     res = News.objects.all()
     table = NewsTable(res)
-    table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
+    table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate') == 'False' else True).configure(table)
     if table_to_report:
         return create_report_http_response(table_to_report, request)
-    return {"table": table} 
-    
+    return {
+        "list_url": reverse('news'),
+        "list_header": _(u'Компонент новостей'),
+        "add_btn_url": reverse('news_edit'),
+        "table": table
+    }
+
+
 @systemuser_required
 @render_to('ebsadmin/news/edit.html')
 def news_edit(request):
@@ -39,20 +45,19 @@ def news_edit(request):
 
     item = None
 
-    if request.method == 'POST': 
+    if request.method == 'POST':
 
         if id:
             model = News.objects.get(id=id)
-            form = NewsForm(request.POST, instance=model) 
-            if  not (request.user.account.has_perm('billservice.change_news')):
+            form = NewsForm(request.POST, instance=model)
+            if not (request.user.account.has_perm('billservice.change_news')):
                 messages.error(request, _(u'У вас нет прав на редактирование новости'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
-            form = NewsForm(request.POST) 
-            if  not (request.user.account.has_perm('billservice.add_news')):
+            form = NewsForm(request.POST)
+            if not (request.user.account.has_perm('billservice.add_news')):
                 messages.error(request, _(u'У вас нет прав на создание новости'), extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
-
 
         if form.is_valid():
             accounts = form.cleaned_data.get('accounts', [])
@@ -60,26 +65,27 @@ def news_edit(request):
             model.save()
             accounts_viewednews = [x.get("account__id") for x in AccountViewedNews.objects.filter(news=model).values('account__id')]
             if model.private or model.agent:
-                AccountViewedNews.objects.filter(news=model).exclude(account__in=accounts).delete() # Удалили AccountViewedNews аккаунтов, которых нет в новом списке 
-                for ac in accounts: #Досоздали недостающие аккаунты
-                    if ac in accounts_viewednews: continue
+                AccountViewedNews.objects.filter(news=model).exclude(account__in=accounts).delete()  # Удалили AccountViewedNews аккаунтов, которых нет в новом списке
+
+                for ac in accounts:  # Досоздали недостающие аккаунты
+                    if ac in accounts_viewednews:
+                        continue
                     AccountViewedNews.objects.create(news=model, account=Account.objects.get(id=ac), viewed=False)
             elif not (model.private or model.agent):
-                AccountViewedNews.objects.filter(news=model, account__in=accounts).delete() 
-    
-            log('EDIT', request.user, model) if id else log('CREATE', request.user, model) 
+                AccountViewedNews.objects.filter(news=model, account__in=accounts).delete()
+
+            log('EDIT', request.user, model) if id else log('CREATE', request.user, model)
             return HttpResponseRedirect(reverse("news"))
         else:
-
-            return {'form':form,  'status': False, 'item': model} 
+            return {'form': form, 'status': False, 'item': model}
     else:
         id = request.GET.get("id")
-        if  not (request.user.account.has_perm('billservice.view_news')):
+
+        if not (request.user.account.has_perm('billservice.view_news')):
             messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
             return HttpResponseRedirect('/ebsadmin/')
+
         if id:
-
-
             item = News.objects.get(id=id)
             accounts = [x.get("account__id") for x in AccountViewedNews.objects.filter(news=item).values('account__id')]
             print accounts
@@ -91,15 +97,16 @@ def news_edit(request):
                 form = NewsForm(initial={'accounts': accounts, 'private': private, 'created': datetime.datetime.now()})
             else:
                 form = NewsForm()
+    return {'form': form, 'status': False, 'item': item}
 
-    return { 'form':form, 'status': False, 'item': item} 
 
 @ajax_request
 @systemuser_required
 def news_delete(request):
-    if  not (request.user.account.has_perm('billservice.delete_news')):
-        return {'status':False, 'message': _(u'У вас нет прав на удаление новостей')}
-    id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
+    if not (request.user.account.has_perm('billservice.delete_news')):
+        return {'status': False, 'message': _(u'У вас нет прав на удаление новостей')}
+
+    id = int(request.POST.get('id', 0)) or int(request.GET.get('id', 0))
     if id:
         try:
             item = News.objects.get(id=id)
@@ -109,5 +116,4 @@ def news_delete(request):
         item.delete()
         return {"status": True}
     else:
-        return {"status": False, "message": "News not found"} 
-    
+        return {"status": False, "message": "News not found"}

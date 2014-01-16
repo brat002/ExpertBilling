@@ -22,7 +22,7 @@ from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
-@render_to('ebsadmin/nas_list.html')
+@render_to('ebsadmin/nas/list.html')
 def nas(request):
     if  not (request.user.account.has_perm('nas.view_nas')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -36,7 +36,7 @@ def nas(request):
     return {"table": table} 
     
 @systemuser_required
-@render_to('ebsadmin/nas_edit.html')
+@render_to('ebsadmin/nas/edit.html')
 def nas_edit(request):
 
     id = request.POST.get("id")
