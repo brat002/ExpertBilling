@@ -570,4 +570,56 @@ if __name__=='__main__':
         #print "Exception in nffilter, exiting: %s \n %s'" % (repr(ex), traceback.format_exc())
     
     
+def run():
+    global flags, vars, config, logger, queues, suicideCondition
+    flags = NfFlags()
+    vars  = NfFilterVars()
     
+   
+    config = ConfigParser.ConfigParser()
+    config.read("ebs_config.ini")
+
+    try:
+        
+        import psyco
+        psyco.full(memory=100)
+        psyco.profile(0.05, memory=100)
+        psyco.profile(0.2)
+    except:
+        print "Can`t optimize"
+        
+    try:
+        vars.get_vars(config=config, name=NAME, db_name=DB_NAME, flow_name=FLOW_NAME)
+
+        
+        logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.log_file) 
+        saver.log_adapt = logger.log_adapt
+        utilites.log_adapt = logger.log_adapt
+        install_logger(logger)
+        queues = NfQueues(dcacheNum=vars.CACHE_DICTS)
+        queues.flowSynchroBox = SynchroPacket(vars.FLOW_COUNT, vars.FLOW_TIME)
+        logger.lprint('Nf Writer start')
+        if check_running(getpid(vars.piddir, 'nfwriter'), 'nfwriter'): raise Exception ('%s already running, exiting' % 'nfwriter')
+        
+        
+        
+        
+        #write profiling info predicate
+        flags.writeProf = logger.writeInfoP()
+        #file_test(vars.DUMP_DIR, vars.PREFIX)
+        if vars.WRITE_FLOW:
+            try:
+                os.mkdir(vars.FILE_DIR)
+            except: pass
+
+            
+        suicideCondition = {}    
+        #vars.FLOW_TYPES = {5 : (header5, flow5)}        
+
+
+        #-------------------
+        #print "ebs: nfwriter: configs read, about to start"
+        main()
+    except Exception, ex:
+        print 'Exception in nfwriter, exiting: ', repr(ex)
+        #print "Exception in nffilter, exiting: %s \n %s'" % (repr(ex), traceback.format_exc())
