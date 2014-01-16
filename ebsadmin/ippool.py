@@ -17,8 +17,9 @@ log = LogItem.objects.log_action
 from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 
+
 @systemuser_required
-@render_to('ebsadmin/ippool_list.html')
+@render_to('ebsadmin/common/list.html')
 def ippool(request):
     if  not (request.user.account.has_perm('billservice.view_ippool')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -26,10 +27,15 @@ def ippool(request):
     
     res = IPPool.objects.all()
     table = IPPoolTable(res)
-    table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
+    table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate') == 'False' else True).configure(table)
     if table_to_report:
         return create_report_http_response(table_to_report, request)
-    return {"table": table} 
+    return {
+        "list_url": reverse('ippool'),
+        "list_header": _(u'IP пул'),
+        "add_btn_url": reverse('ippool_edit'),
+        "table": table
+    }
     
 @systemuser_required
 @render_to('ebsadmin/common/edit_form.html')

@@ -18,7 +18,7 @@ from django.utils.translation import ugettext_lazy as _
 
 
 @systemuser_required
-@render_to('ebsadmin/systemuser/list.html')
+@render_to('ebsadmin/common/list.html')
 def systemuser(request):
     if  not (request.user.account.has_perm('billservice.view_systemuser')):
         messages.error(request, _(u'У вас нет прав на доступ в этот раздел.'), extra_tags='alert-danger')
@@ -29,7 +29,12 @@ def systemuser(request):
     table_to_report = RequestConfig(request, paginate=False if request.GET.get('paginate')=='False' else True).configure(table)
     if table_to_report:
         return create_report_http_response(table_to_report, request)
-    return {"table": table} 
+    return {
+        "list_url": reverse('systemuser'),
+        "list_header": _(u'Системные пользователи'),
+        "add_btn_url": reverse('systemuser_edit'),
+        "table": table
+    }
     
 @systemuser_required
 @render_to('ebsadmin/systemuser/edit.html')

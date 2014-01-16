@@ -16,7 +16,7 @@ from billservice.helpers import systemuser_required
 from django.utils.translation import ugettext_lazy as _
 
 @systemuser_required
-@render_to('ebsadmin/registrationrequest_list.html')
+@render_to('ebsadmin/common/list.html')
 def registrationrequest(request):
 
     if  not (request.user.account.has_perm('billservice.view_registrationrequest')):
@@ -28,7 +28,11 @@ def registrationrequest(request):
     if table_to_report:
         return create_report_http_response(table_to_report, request)
             
-    return {"table": table} 
+    return {
+        "list_url": reverse('registrationrequest'),
+        "list_header": _(u'Запросы на подключение'),
+        "table": table
+    }
     
 
 
