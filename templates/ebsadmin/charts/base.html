@@ -5,7 +5,8 @@
 {% load render_table from django_tables2 %}
 
 {% block extra_head %}
-  <script type="text/javascript" src="/media/highcharts/js/highcharts.js"></script>  
+  <script type="text/javascript" src="/media/highcharts/js/highcharts.js"></script>
+
   <script type="text/javascript"> 
     $(document).ready(function() {
       var charts_date_start = $.cookie('charts_daterange');
@@ -22,7 +23,6 @@
       {% else %}
       $('#tab-panel a[href="#general"]').tab('show');
       {% endif %}
-
     });
   </script>
   {% block chart_block %}

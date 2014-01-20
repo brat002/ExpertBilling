@@ -6,7 +6,9 @@
     {% include "ebsadmin/common/error_messages.html" %}
 
     {% if form %}
-      <form action="{% url 'accountgroup_edit' %}?id={{item.id}}" method="POST" class="well form-horizontal  form-condensed  ajax">
+      <form action="{% url 'accountgroup_edit' %}?id={{ item.id }}" 
+          method="POST" 
+          class="well form-horizontal  form-condensed  ajax">
         <legend>{% blocktrans %}Группа абонентов{% endblocktrans %}{% objectlog item %}</legend>
 
         <fieldset>
@@ -14,6 +16,7 @@
           <div class="control-group">
             <div class="control-row">
               <label class="control-label">{{form.name.label}}: </label>
+              
               <div class="controls">
                 {{ form.name }}
 

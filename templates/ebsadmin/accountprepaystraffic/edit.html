@@ -7,12 +7,16 @@
     {% include "ebsadmin/common/error_messages.html" %}
     
     {% if form %}
-      <form action="{% url 'accountprepaystraffic_edit' %}?id={{item.id}}" method="POST" class="well  form-condensed form-horizontal ajax">
+      <form action="{% url 'accountprepaystraffic_edit' %}?id={{item.id}}" 
+          method="POST" 
+          class="well  form-condensed form-horizontal ajax">
         <legend>{% blocktrans %}Предоплаченный трафик{% endblocktrans %}</legend>
+        
         <fieldset>
           {{ form.id }}
           {{form|crispy}}              
         </fieldset>
+
         <div class="form-actions">
           <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">
           <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
