@@ -5,37 +5,5 @@
 {% include "ebsadmin/common/error_messages.html" %}
 
 {% if form %}
-  <script type="text/javascript"> 
-    $(document).ready(function() {
-      $('.datepicker').datepicker({
-        months: [
-          "{% blocktrans %}Январь{% endblocktrans %}",
-          "{% blocktrans %}Февраль{% endblocktrans %}",
-          "{% blocktrans %}Март{% endblocktrans %}",
-          "{% blocktrans %}Апрель{% endblocktrans %}",
-          "{% blocktrans %}Май{% endblocktrans %}",
-          "{% blocktrans %}Июнь{% endblocktrans %}",
-          "{% blocktrans %}Июль{% endblocktrans %}",
-          "{% blocktrans %}Август{% endblocktrans %}",
-          "{% blocktrans %}Сентябрь{% endblocktrans %}",
-          "{% blocktrans %}Октябрь{% endblocktrans %}",
-          "{% blocktrans %}Ноябрь{% endblocktrans %}",
-          "{% blocktrans %}Декабрь{% endblocktrans %}"
-        ],
-        weekStart: 1,
-        noDefault: true,
-        format: 'yyyy-mm-dd hh:ii:ss',
-        days: [
-          "{% blocktrans %}вс{% endblocktrans %}",
-          "{% blocktrans %}пн{% endblocktrans %}",
-          "{% blocktrans %}вт{% endblocktrans %}",
-          "{% blocktrans %}ср{% endblocktrans %}",
-          "{% blocktrans %}чт{% endblocktrans %}",
-          "{% blocktrans %}пт{% endblocktrans %}",
-          "{% blocktrans %}сб{% endblocktrans %}"
-        ],
-      });
-    });
-  </script>
   {{form|crispy}}
 {% endif %}

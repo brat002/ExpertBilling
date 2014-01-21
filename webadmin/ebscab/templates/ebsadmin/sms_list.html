@@ -5,16 +5,7 @@
 {% load crispy_forms_tags %}
 
 {% block extra_head %}
-  <script type="text/javascript"> 
-    $(document).ready(function() {
-
-      {% if table %}
-      $('#tab-control a[href="#result"]').tab('show');
-      {% else %}
-      $('#tab-control a[href="#filter"]').tab('show');
-      {% endif %}
-    });
-  </script>
+  {% include "ebsadmin/common/show_def_tab.html" %}
 {% endblock %}
 
 {% block base %}

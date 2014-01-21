@@ -1,5 +1,7 @@
 $(document).ready(function() {
 
+  $("#id_daterange").daterangepicker({format:'yyyy-MM-dd'});
+
   // отображение диалогового окна для подтверждения действия
   $(".show-confirm").click(function(event) {
     a = $(this);
