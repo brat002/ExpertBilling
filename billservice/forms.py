@@ -990,6 +990,11 @@ class PermissionGroupForm(ModelForm):
 
         
 class NotificationsSettingsForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(NotificationsSettingsForm, self).__init__(*args, **kwargs)
+        self.fields['payment_notifications_template'].widget.attrs['class'] = 'span9'
+        self.fields['balance_notifications_template'].widget.attrs['class'] = 'span9'
+    
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     #permissions = forms.ModelMultipleChoiceField(label=_(u'Уведомления'), queryset = Permission.objects.all(), widget = CheckboxSelectMultipleWithSelectAll)
     class Meta:
