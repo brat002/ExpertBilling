@@ -14,3 +14,4 @@ CELERY_RESULT_DBURI = "postgresql://%s:%s@%s/%s" % (config.get("db", "username")
 
 CELERY_IMPORTS = ("tasks", )
 CELERY_RESULT_PERSISTENT = True
+CELERY_ACCEPT_CONTENT = ['pickle', ]

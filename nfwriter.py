@@ -76,9 +76,9 @@ class Worker(ConsumerMixin):
 
     def get_consumers(self, Consumer, channel):
         return [Consumer(queues=nf_write,
-                         callbacks=[self.process_task])]
+                         callbacks=[self.on_message], accept=['pickle'])]
 
-    def process_task(self, body, message):
+    def on_message(self, body, message):
         body = body['data']
 
         
@@ -112,7 +112,9 @@ class nfDequeThread(Thread):
                     Worker(conn).run()
 
             except IndexError, err:
-                time.sleep(3); continue  
+                time.sleep(3); 
+                print 1
+                continue  
             except Exception, ex:
                 logger.error("NFF exception: %s \n %s", (repr(ex), traceback.format_exc()))
 
