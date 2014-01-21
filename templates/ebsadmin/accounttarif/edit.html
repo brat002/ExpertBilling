@@ -3,30 +3,23 @@
 
 {% if not status %}
   {% include "ebsadmin/common/error_messages.html" %}
-
-  <script type="text/javascript"> 
-    $(document).ready(function() {
-      $('.datepicker').datepicker({
-        months: ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
-        weekStart: 0,
-        noDefault: true,
-        format: 'yyyy-mm-dd hh:ii:ss',
-        days: ["пн","вт","ср","чт","пт","сб","вс"],});
-
-    });
-  </script>
-           
+         
   {% if form %}
-    <form action='{% url 'accounttariff_edit' %}?account_id={{account.id}}' method="POST" class="well form-horizontal  form-condensed ajax">
+    <form action='{% url 'accounttariff_edit' %}?account_id={{account.id}}' 
+        method="POST" 
+        class="well form-horizontal  form-condensed ajax">
       {{form.account}}
       <fieldset>
         <div class="control-group">
-          <label class="control-label">{{ form.tarif.label }}: </label>
+          <label class="control-label">{{ form.tarif.label }}:</label>
+
           <div class="controls">
             {{ form.tarif }}
+            
             {% if form.tarif.errors %}
             <span class="help-inline">{% for error in form.tarif.errors %}{{ error }}<br/> {% endfor %}</span>
             {% endif %}
+
             {% if form.tarif.help_text%}
             <p class="help-block">
               {{ form.tarif.help_text|safe }}
@@ -34,23 +27,26 @@
             {% endif %}
           </div>
         </div>
-        <div class="control-group">
 
+        <div class="control-group">
           <label class="control-label">{{form.datetime.label}}:</label>
+
           <div class="controls">
             {{ form.datetime }}
+
             {% if form.datetime.errors %}
             <span class="help-inline">{% for error in form.datetime.errors %}{{ error }}<br/> {% endfor %}</span>
             {% endif %}
+
             {% if form.datetime.help_text%}
             <p class="help-block">
               {{ form.datetime.help_text|safe }}
             </p>
             {% endif %}
           </div>
-
         </div>
       </fieldset>
+
       <div class="form-actions">
         <input type='submit' class="btn btn-primary" value="{% blocktrans %}Сохранить{% endblocktrans %}">
         <a class="btn close-dialog" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
