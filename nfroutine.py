@@ -68,9 +68,9 @@ class Worker(ConsumerMixin):
 
     def get_consumers(self, Consumer, channel):
         return [Consumer(queues=nf_out,
-                         callbacks=[self.process_task])]
+                         callbacks=[self.on_message], accept=['pickle'])]
 
-    def process_task(self, body, message):
+    def on_message(self, body, message):
         data = body['data']
         try:
             queues.nfIncomingQueue.append(data)
@@ -704,7 +704,7 @@ class NetFlowRoutine(Thread):
                     continue
                 '''
                 try:
-                    flows = loads(fpacket)
+                    flows = fpacket #loads(fpacket)
                     #
                 except Exception, ex:
                     logger.info("Packet consumer: peer: %s Bad packet (marshalling problems):%s ; ",(repr(ex)))

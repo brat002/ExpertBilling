@@ -22,7 +22,7 @@ import ConfigParser
 import socket, struct, datetime, time
 import  glob
 
-
+import IPy
 
 
 
@@ -81,10 +81,10 @@ class Worker(ConsumerMixin):
 
     def get_consumers(self, Consumer, channel):
         return [Consumer(queues=nf_in,
-                         callbacks=[self.process_task])]
+                         callbacks=[self.on_message], accept=['pickle'])]
 
-    def process_task(self, body, message):
-
+    def on_message(self, body, message):
+        #print body
         while queues.flowQueueSize >1500:
             time.sleep(1)
             
@@ -248,7 +248,7 @@ def nfPacketHandle(data, addr, flowCache):
         #nasses_list=[nasitem.id for nasitem in nasses]
 
         acc_src, acc_dst = find_account_by_ip(flow)
-
+        
 
         logger.debug("Account with nas for flow src(%s) dst(%s) default nas(%s)", (acc_src, acc_dst, nas_id, ))
         #Проверка на IPN сеть
@@ -273,19 +273,20 @@ def nfPacketHandle(data, addr, flowCache):
         #acc_acct_tf = (acc_src, acc_dst) if local else (acc_src or acc_dst,)
         #print repr(acc_acct_tf)
             
-        if acc_src or acc_dst:            
+        if acc_src or acc_dst:    
+            #print acc_src, acc_dst        
             flow.nas_id = nas_id
             #acc_id, acctf_id, tf_id = (acc_acct_tf)
             flow.padding = local
             
-            if acc_dst:
+            if acc_src:
                 flow.account_id = acc_src
-                flow.node_direction = 'INPUT'
+                flow.node_direction = 'OUTPUT'
             
                 flowCache.addflow5(flow)   
-            if acc_src:
+            if acc_dst:
                 flow.account_id = acc_dst
-                flow.node_direction = 'OUTPUT'
+                flow.node_direction = 'INPUT'
             
                 flowCache.addflow5(flow)   
                   
@@ -365,14 +366,14 @@ class FlowDequeThread(Thread):
         Thread.__init__(self)
     
     
-    def add_classes_groups(self, flow, classLst, nnode, acctf_id, has_groups, tarifGroups):
+    def add_classes_groups(self, flow, class_id, nnode, acctf_id, has_groups, tarifGroups):
         ptime =  time.time()
         if vars.NF_TIME_MOD:
             ptime = ptime - (ptime % vars.NF_TIME_MOD)
 
-        flow.datetime = ptime; flow.class_id = tuple(classLst)
+        flow.datetime = ptime; flow.class_id = tuple([class_id,])
         
-        flow.class_passthrough = nnode.passthrough; flow.acctf_id = acctf_id
+        flow.acctf_id = acctf_id
         flow.groups = None; flow.has_groups = has_groups
         #add groups, check if any
         #print tarifGroups
@@ -382,20 +383,23 @@ class FlowDequeThread(Thread):
             if   flow.node_direction == 'INPUT' : dr = 0
             elif flow.node_direction == 'OUTPUT': dr = 1
             groupLst = []
-            fcset = set(classLst)
+            #fcset = set(classLst)
             for tgrp in tarifGroups:
 
-                #print tgrp.direction, dr
+                #print 'tgrp.direction, dr', tgrp.direction, dr
                 if (not tgrp.trafficclass) or (int(tgrp.direction) != int(dr) and tgrp.direction!=2):
                 #if (not tgrp.trafficclass):
                     # Если у группы нет классров или направление группы равно направлению трафика
                     #print "skip", tgrp, dr
                     continue
-                group_cls = fcset.intersection(tgrp.trafficclass) # ищем пересечение классов
+                group_cls = set([class_id,]).intersection(tgrp.trafficclass) # ищем пересечение классов
+                #print 'group_cls', group_cls
                 if group_cls:
                     group_add = tgrp[:]
                     group_add[1] = tuple(group_cls)
                     groupLst.append(tuple(group_add))
+                    #print 'group_add', group_add
+            #print 'groupLst', groupLst
             flow.groups = tuple(groupLst)
 
 
@@ -434,15 +438,20 @@ class FlowDequeThread(Thread):
                     dhkey   = (key[0] + key[1] + key[3]) % vars.CACHE_DICTS
                     dhcache = queues.dcaches[dhkey]
                     dhlock  = queues.dcacheLocks[dhkey]
-                    with dhlock:
-                        qflow = dhcache.pop(key, None)
-                    if not qflow: continue
+                    #print key
+                    #with dhlock:
+                    qflow = dhcache.pop(key, None)
+                    if not qflow: 
+                        #print 'not', qflow
+                        continue
                     #get id's
                     acc = qflow.account_id
                     qflow.account_id = None
                     local = qflow.padding
                     src = True
-                    if not acc : continue
+                    if not acc : 
+                        #print 'not acc', qflow
+                        continue
                     flow = qflow
                     if 0: assert isinstance(flow, Flow5Data)
                     flow.account_id = acc.account_id
@@ -456,51 +465,92 @@ class FlowDequeThread(Thread):
                     fnode = None; classLst = []                    
                     #Direction is taken from the first approved node
                     
-                    #===========================================================
-                    # nodes = nodes[((nodes[,,0]==(nodes[,,1] & flow.src_addr) &
-                    #                 
-                    #                 )]
-                    #===========================================================
-                                   
-                    for nclass, nnodes in cacheMaster.cache.class_cache.classes:        
-                        class_found = False            
-                        for nnode in nnodes:
-
-                            if flow.node_direction == 'INPUT':
-                                
-                                if (flow.src_addr & nnode.dst_mask) != nnode.dst_ip:continue
-                                if (flow.dst_addr & nnode.src_mask) != nnode.src_ip:continue
-                            else:
-                                
-                                if (flow.dst_addr & nnode.dst_mask) != nnode.dst_ip:
-                                    continue
-                                if (flow.src_addr & nnode.src_mask) != nnode.src_ip:
-                                    continue
-                                
-                            if ((flow.protocol != nnode.protocol) and nnode.protocol): continue
-                            if ((flow.src_port != nnode.src_port) and nnode.src_port):continue
-                            if ((flow.dst_port != nnode.dst_port) and nnode.dst_port):continue
-                            if ((flow.in_index != nnode.in_index) and nnode.in_index):continue
-                            if ((flow.out_index != nnode.out_index) and nnode.out_index):continue
-                            if ((flow.next_hop != nnode.next_hop) and (nnode.next_hop and nnode.next_hop!='0.0.0.0')):continue
-                            if ((flow.src_as != nnode.src_as) and nnode.src_as):continue
-                            if ((flow.dst_as != nnode.dst_as) and nnode.dst_as):continue
-                            
-                            
-                            class_found = True
-                            if not classLst:
-                                fnode = nnode
-                            elif not fnode:
-                                continue
-                            classLst.append(nclass)
-
-                        #found passthrough=false
-                        if classLst:
-                            #logger.info("flow no pass: %s  classlst:%s nnode: %s tarifGroups: %s", (flow, classLst, nnode, tarifGroups))
-                            self.add_classes_groups(flow, classLst, fnode, acc.accounttarif_id, has_groups, tarifGroups)
-                            if nnode.store==True:
+                    nodes = cacheMaster.cache.class_cache.nodes
+                    #print IPy.IPint(flow.src_addr) 
+                    #print IPy.IPint(flow.dst_addr)
+                    #for n in nodes:
+                    #    if n[7]==0: 
+                    #        print 'n7=0'
+                    if flow.node_direction == 'INPUT':
+                       
+                        nodes = nodes[(((flow.src_addr & nodes[:,5])==nodes[:,4]) & 
+                                       ((flow.dst_addr & nodes[:,3])==nodes[:,2])  &
+                                       #(nodes[:,13]==0 | (nodes[:,13]==flow.protocol))
+                                       #(nodes[:,7]==0 | (nodes[:,7]==flow.src_port )) &
+                                       #(nodes[:,8]==0 | (nodes[:,8]==flow.dst_port )) 
+                                       (nodes[:,12]==0 | (nodes[:,12]==flow.in_index )) &
+                                       (nodes[:,13]==0 | (nodes[:,13]==flow.out_index )) 
+                                       #(nodes[:,10]==0 | (nodes[:,10]==flow.src_as )) &
+                                       #(nodes[:,11]==0 | (nodes[:,11]==flow.src_as )) 
+                                       )
+                                      ]
+                    else:
+                        nodes = nodes[(((flow.dst_addr & nodes[:,5])==nodes[:,4]) & 
+                                       ((flow.src_addr & nodes[:,3])==nodes[:,2]) & 
+                                       #(nodes[:,13]==0 | (nodes[:,13]==flow.protocol))
+                                       #(nodes[:,7]==0 | (nodes[:,7]==flow.src_port )) &
+                                       #(nodes[:,8]==0 | (nodes[:,8]==flow.dst_port )) 
+                                       (nodes[:,12]==0 | (nodes[:,12]==flow.in_index )) &
+                                       (nodes[:,13]==0 | (nodes[:,13]==flow.out_index )) 
+                                       #(nodes[:,10]==0 | (nodes[:,10]==flow.src_as )) &
+                                       #(nodes[:,11]==0 | (nodes[:,11]==flow.src_as )) 
+                                       )
+                                        ]
+                    #print 'nodes', nodes
+                    try:
+                        #print nodes
+                        if nodes[0][0]:
+                            #if has_groups:
+                                #print 'nodes[0][0]', nodes[0][0], has_groups, tarifGroups
+                            self.add_classes_groups(flow, int(nodes[0][0]), [], acc.accounttarif_id, has_groups, tarifGroups)
+                            #print nodes[0][1], nodes[0][1]==1
+                            if nodes[0][1]==1:
                                 nfwrite_list.append(tuple(flow))
-                            break                   
+                    except Exception, e:
+                        print e
+                        pass
+#===============================================================================
+#                     for nclass, nnodes in cacheMaster.cache.class_cache.classes:        
+#                         class_found = False            
+#                         for nnode in nnodes:
+# 
+#                             if flow.node_direction == 'INPUT':
+#                                 
+#                                 if (flow.src_addr & nnode.dst_mask) != nnode.dst_ip:continue
+#                                 if (flow.dst_addr & nnode.src_mask) != nnode.src_ip:continue
+#                             else:
+#                                 
+#                                 if (flow.dst_addr & nnode.dst_mask) != nnode.dst_ip:
+#                                     continue
+#                                 if (flow.src_addr & nnode.src_mask) != nnode.src_ip:
+#                                     continue
+#                                 
+#                             if ((flow.protocol != nnode.protocol) and nnode.protocol): continue
+#                             if ((flow.src_port != nnode.src_port) and nnode.src_port):continue
+#                             if ((flow.dst_port != nnode.dst_port) and nnode.dst_port):continue
+#                             
+#                             if ((flow.in_index != nnode.in_index) and nnode.in_index):continue
+#                             if ((flow.out_index != nnode.out_index) and nnode.out_index):continue
+#                             if ((flow.next_hop != nnode.next_hop) and (nnode.next_hop and nnode.next_hop!='0.0.0.0')):continue
+#                             if ((flow.src_as != nnode.src_as) and nnode.src_as):continue
+#                             if ((flow.dst_as != nnode.dst_as) and nnode.dst_as):continue
+#                             
+#                             
+#                             class_found = True
+#                             if not classLst:
+#                                 fnode = nnode
+#                             elif not fnode:
+#                                 continue
+#                             classLst.append(nclass)
+# 
+#                         #found passthrough=false
+#                         if classLst:
+#                             #logger.info("flow no pass: %s  classlst:%s nnode: %s tarifGroups: %s", (flow, classLst, nnode, tarifGroups))
+#                             self.add_classes_groups(flow, classLst, fnode, acc.accounttarif_id, has_groups, tarifGroups)
+#                             if nnode.store==True:
+#                                 nfwrite_list.append(tuple(flow))
+#                             break                   
+#===============================================================================
 
                         
                     #construct a list
@@ -508,7 +558,7 @@ class FlowDequeThread(Thread):
 
                     #append to databaseQueue
                     if fcnt == vars.PACKET_PACK:
-                        flpack = marshal.dumps(flst)
+                        flpack = flst #marshal.dumps(flst)
                         with queues.dbLock:
                             queues.databaseQueue.append(flpack)
                         flst = []; fcnt = 0
@@ -516,7 +566,7 @@ class FlowDequeThread(Thread):
                     src = False
                         
                 if len(flst) > 0:
-                    flpack = marshal.dumps(flst)
+                    flpack = flst#marshal.dumps(flst)
                     with queues.dbLock:
                         queues.databaseQueue.append(flpack)
                     flst = []

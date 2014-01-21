@@ -10,7 +10,7 @@ CELERYD_CHDIR="/opt/ebs/data/workers"
 ENV_PYTHON=$CELERYD_CHDIR/../../venv/bin/python
 VENV_DIR=/opt/ebs/venv
 
-CELERYD_MULTI="$ENV_PYTHON $VENV_DIR/bin/celeryd-multi"
+CELERYD_MULTI="$ENV_PYTHON $VENV_DIR/bin/celery multi"
 
 CELERYCTL="$ENV_PYTHON $VENV_DIR/bin/celeryctl"
 

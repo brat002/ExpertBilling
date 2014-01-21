@@ -9,7 +9,7 @@ from nf_class.NasData import NasData
 from nf_class.IpData import IpData
 from collections import defaultdict
 from IPy import parseAddress, IPint
-
+import numpy
 
 class NfCaches(CacheCollection):
     __slots__ = ('nas_cache','class_cache', 'group_cache', 'tfgroup_cache', 'ips_cache')
@@ -69,7 +69,7 @@ class IpDataCache(CacheItem):
                   
             
 class ClassCache(CacheItem):
-    __slots__ = ('classes',)
+    __slots__ = ('classes', 'nodes', 'd')
     datatype = ClassData
     sql = nf_sql['nnodes']
     
@@ -80,6 +80,7 @@ class ClassCache(CacheItem):
         if not self.data:
             return
         tc_id = self.data[0][1]
+        d = []
         for nnode in self.data:
             if nnode[1] != tc_id:
                 self.classes.append([0, []])
@@ -97,6 +98,13 @@ class ClassCache(CacheItem):
             nlist.append(s_ip.int())
             nlist.reverse()
             nclTmp[1].append(self.datatype._make(nlist))
+            'store, weight, traffic_class_id, passthrough, protocol, in_index, out_index, src_as, dst_as, dst_port, src_port, src_ip as src_ip_src_mask, dst_ip as dst_ip_dst_mask, next_hop'
+            #print (nnode[2], 1 if nnode[0] else 0, s_ip.int(), s_ip.netmask(), d_ip.int(), d_ip.netmask(), n_hp, nnode[10],  nnode[7], nnode[8], nnode[5], nnode[6], nnode[4])
+            d.append((nnode[2], 1 if nnode[0] else 0, s_ip.int(), s_ip.netmask(), d_ip.int(), d_ip.netmask(), n_hp, nnode[10],  nnode[9], nnode[7], nnode[8], nnode[5], nnode[6], nnode[4]))
+        
+        self.nodes =  numpy.asarray(d, dtype=numpy.int64)
+        #print self.nodes
+
 
             
 class GroupsCache(CacheItem):
