@@ -215,11 +215,11 @@ footer
 }
 
 .table tbody tr.inactive:hover td {
-  background-color: #9AA;
+  background-color: #EEE;
 }
 
 .table tbody tr.inactive td {
-  background-color: #9AA;
+  background-color: #EEE;
 }
 
 .table tbody tr.inactive-light:hover td {
