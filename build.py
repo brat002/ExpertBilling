@@ -36,7 +36,7 @@ def update_demo():
     with cd('mikrobill'):
         run('cp builds/demo1.5_`uname -i`.tar.gz ../')
     run('tar -xvzf demo1.5_`uname -i`.tar.gz fabfile.py')
-
+    sudo('echo >/opt/ebs/web/ebscab/log/django.log')
     sudo('fab upgrade:demo1.5_`uname -i`.tar.gz')
     
     
