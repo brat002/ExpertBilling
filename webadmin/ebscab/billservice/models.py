@@ -2544,7 +2544,7 @@ class NotificationsSettings(models.Model):
     #account = models.ForeignKey(Account)
     tariffs = models.ManyToManyField(Tariff)
     payment_notifications = models.BooleanField(verbose_name=u'Уведомления при пополнении баланса') 
-    payment_notifications_template = models.TextField(verbose_name=u'Шаблон уведомления о платеже', default='')
+    payment_notifications_template = models.TextField(verbose_name=u'Шаблон уведомления о платеже', help_text = _(u'Можно использовать переменные account, transaction. Для рендеринга используоется Django Template Engine.'), default='')
     balance_notifications = models.BooleanField(verbose_name=u'Уведомления о недостатке баланса')
     balance_edge = models.FloatField(verbose_name=u'Граница баланса',
                                      help_text=u'Граница, с которой слать уведомления  о недостатке баланса', default=0)
@@ -2552,9 +2552,9 @@ class NotificationsSettings(models.Model):
                                                      help_text=u'В днях', default=1)
     balance_notifications_limit = models.IntegerField(verbose_name=u'Количество уведомлений о балансе',
                                                       help_text=u'Не слать более уведомлений о балансе при исчерпании указанного количества', default=1)
-    balance_notifications_template = models.TextField(verbose_name=u'Шаблон уведомления о недостатке денег', default='')
+    balance_notifications_template = models.TextField(verbose_name=u'Шаблон уведомления о недостатке денег', help_text = _(u'Можно использовать переменные account. Для рендеринга используоется Django Template Engine.'), default='')
     notification_type = models.CharField(max_length=64, choices = (('SMS', 'SMS'), ('EMAIL', 'EMAIL'), ), default='SMS')
-    provider = models.CharField(max_length=64, blank=True, choices = settings.SENDSMS_BACKENDS)
+    backend = models.CharField(max_length=64, blank=True, choices = settings.SENDSMS_BACKENDS)
 
 
 class AccountNotification(models.Model):
@@ -2562,6 +2562,7 @@ class AccountNotification(models.Model):
     notificationsettings = models.ForeignKey(NotificationsSettings)
     ballance_notification_count = models.IntegerField(blank=True, default=0)
     ballance_notification_last_date = models.DateTimeField(blank=True, null=True)
+    payment_notification_last_date = models.DateTimeField(blank=True, null=True)
     
 """
 ballance_sms_notification_count

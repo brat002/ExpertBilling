@@ -983,7 +983,7 @@ def clear_ipinuse_function():
     conn.close()
 
 
-def process_notifications()::
+def process_notifications():
     conn = get_connection()
     cur = conn.cursor()
     cur.execute('SELECT id, ballance FROM billservice_account WHERE status==1')
