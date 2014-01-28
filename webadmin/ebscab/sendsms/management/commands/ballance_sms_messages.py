@@ -25,7 +25,7 @@ class Command(BaseCommand):
             item.to = acc.phone_m
             item.body = body.body
             item.save() 
-
+            item.send()
 
 
 

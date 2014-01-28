@@ -331,7 +331,7 @@ class PaymentProcessor(PaymentProcessorBase):
                                          'RESULT': 0,
                                          'COMMENT': term_codes[0],
                                          }
-        return ret
+
 
 
     @staticmethod
