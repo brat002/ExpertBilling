@@ -54,28 +54,22 @@
     
     $(".hide-alert").fadeOut(3000 );
 
-    $('.datepicker').datepicker({
-      months: month_list,
+    $('.datepicker').datetimepicker({
       weekStart: 1,
-      noDefault: true,
-      format: 'yyyy-mm-dd hh:ii:ss',
-      days: weekday_list,
+      language: 'ru',
+      format: 'yyyy-mm-dd hh:ii'
     });
 
     $('.dateonlypicker').datepicker({
-      months: month_list,
       weekStart: 1,
-      noDefault: true,
-      format: 'yyyy-mm-dd',
-      days: weekday_list,
+      language: 'ru',
+      format: 'yyyy-mm-dd'
     });
 
     $('.dateinput').datepicker({
-      months: month_list,
       weekStart: 1,
-      noDefault: true,
-      format: 'yyyy-mm-dd hh:ii:ss',
-      days: weekday_list,
+      language: 'ru',
+      format: 'yyyy-mm-dd hh:ii:ss'
     });
 
     $(".timepicker").mask("99:99:99");
