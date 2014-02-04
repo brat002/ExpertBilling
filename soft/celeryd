@@ -5,7 +5,7 @@ CELERYD_NODES="w1"
 #CELERYD_NODES="w1 w2 w3"
 
 # Where to chdir at start.
-CELERYD_CHDIR="/opt/ebs/data/workers"
+CELERYD_CHDIR=/opt/ebs/data/workers
 
 ENV_PYTHON=$CELERYD_CHDIR/../../venv/bin/python
 VENV_DIR=/opt/ebs/venv
