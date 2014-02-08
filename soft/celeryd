@@ -9,7 +9,8 @@ CELERYD_CHDIR=/opt/ebs/data/workers
 
 ENV_PYTHON=$CELERYD_CHDIR/../../venv/bin/python
 VENV_DIR=/opt/ebs/venv
-
+CELERY_BIN="/opt/ebs/venv/bin/celery"
+#CELERY_APP=tasks
 CELERYD_MULTI="$ENV_PYTHON $VENV_DIR/bin/celery multi"
 
 CELERYCTL="$ENV_PYTHON $VENV_DIR/bin/celeryctl"
@@ -22,4 +23,8 @@ CELERY_CONFIG_MODULE="celeryconfig"
 
 # %n will be replaced with the nodename.
 CELERYD_LOG_FILE="/opt/ebs/data/log/celery_%n.log"
-CELERYD_PID_FILE="/var/run/celery/%n.pid"
+CELERYD_PID_FILE="/opt/ebs/data/pid/%n.pid"
+
+chmod 0777 /opt/ebs/data/pid
+chmod 0777 /opt/ebs/data/log
+

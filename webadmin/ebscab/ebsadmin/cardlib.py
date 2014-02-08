@@ -6,6 +6,7 @@ from django.db.models import Q
 from billservice.utility import settlement_period_info
 from billservice.utility import in_period
 from django.utils.translation import ugettext as _
+from django.conf import settings
 
 def activate_card(login, pin):
     status_ok = 1
@@ -79,7 +80,10 @@ def activate_pay_card(account_id,  card_id, pin):
     account = Account.objects.get(id=account_id)
     if pin and card_id and account_id:
         return_value = ''
-        card = Card.objects.filter(type=0, id=card_id, pin=pin,  disabled=False)
+        if settings.HOTSPOT_ONLY_PIN:
+            card = Card.objects.filter(pin=pin,  disabled=False)
+        else:
+            card = Card.objects.filter(type=0, id=card_id, pin=pin,  disabled=False)
         if card:
             card = card[0]            
             if not card.salecard: 

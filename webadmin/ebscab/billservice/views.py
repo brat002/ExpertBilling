@@ -917,13 +917,13 @@ def card_acvation(request):
                 'error_message': _(u'Вам не доступна услуга активации карт экспресс оплаты.'),
                 }
 
-
+    status=False
     if request.method == 'POST':
         form = ActivationCardForm(request.POST)
         error_message = ''
         if form.is_valid():
-
-            res = activate_pay_card(user.id, form.cleaned_data['card_id'], form.cleaned_data['pin'])
+            
+            res = activate_pay_card(user.id, form.cleaned_data.get('card_id'), form.cleaned_data['pin'])
             #print res
             if res == 'CARD_NOT_FOUND':
                 error_message = _(u'Ошибка активации. Карта не найдена.')
@@ -935,6 +935,7 @@ def card_acvation(request):
                 error_message = _(u'Ошибка активации. Срок действия карты истёк.')
             elif res == 'CARD_ACTIVATED':
                 error_message = _(u'Карта успешно активирована.')
+                status = True
             elif res == 'CARD_ACTIVATION_ERROR':
                 error_message = _(u'Ошибка активации карты.')
 
@@ -945,6 +946,7 @@ def card_acvation(request):
             #form = CardForm(request.POST)
             return {
                     'error_message':error_message,
+                    'status': status
                     #'form': form,
                     }
         else:
@@ -954,12 +956,14 @@ def card_acvation(request):
             #    cache.add(user.id, {'count':count+1,'last_date':cache_user['last_date'],'blocked':False,})
             return {
                     'error_message': _(u"Проверьте заполнение формы"),
+                    'status': status,
                     #'form': form,
                     }
     else:
         #form = CardForm()
         return {
                 'error_message': _(u"Ошибка активации карточки"),
+                'status': status,
                 #'form':form,
                 }
 

@@ -206,9 +206,10 @@ HIDE_PASSWORDS = False
 ENABLE_SELECT2_MULTI_PROCESS_SUPPORT = False
 CURRENCY = u' руб'
 
-#GETPAID_BACKENDS = ('getpaid.backends.easypay',
+HOTSPOT_ONLY_PIN = False
+GETPAID_BACKENDS = ('getpaid.backends.easypay',
 'getpaid.backends.platezhkaua',
-#                    )
+                   )
 PROVIDER_LOGO = 'img/ebs.jpg' # in media dir
 GETPAID_BACKENDS_SETTINGS = {
     # Please provide your settings for backends

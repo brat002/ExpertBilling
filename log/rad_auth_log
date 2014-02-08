@@ -1,8 +1,0 @@
-2013-11-10 23:27:10,549 ERROR    Exception in rad_auth, exiting: NameError("global name 'CacheRoutine' is not defined",) 
- Traceback (most recent call last):
-  File "rad_auth.py", line 1392, in <module>
-    main()
-  File "rad_auth.py", line 1292, in main
-    cacheThr = CacheRoutine()
-NameError: global name 'CacheRoutine' is not defined
-
