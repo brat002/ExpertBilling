@@ -4,6 +4,11 @@ from celery.task import task
 import os, sys
 sys.path.insert(0, '/opt/ebs/data/cmodules/')
 
+from celery import Celery
+app = Celery('tasks')#, broker=BROKER_URL, backend=CELERY_RESULT_BACKEND)
+app.config_from_object('celeryconfig')
+
+
 import decimal
 import commands
 from pyrad import dictionary
@@ -31,6 +36,15 @@ import logging
 DSN = "dbname='%s' user='%s' host='%s' port='%s' password='%s'" % (config.get(db_name, "name"), config.get(db_name, "username"), \
                                                                          config.get(db_name, "host"), config.get(db_name, "port"), config.get(db_name, "password"))
 
+from urllib import quote_plus
+
+def urlencode_utf8(params):
+    if hasattr(params, 'items'):
+        params = params.items()
+    return '&'.join(
+        (quote_plus(k.encode('utf8'), safe='/') + '=' + quote_plus(v.encode('utf8'), safe='/')
+            for k, v in params))
+    
 def get_connection():
     conn = psycopg2.connect(DSN)
     conn.set_client_encoding('UTF8')
@@ -88,7 +102,7 @@ def convert_values(value):
     else:
         return str(value)
 
-@task
+@app.task
 def update_vpn_speed_state(nas_id, nas_port_id, session_id, newspeed):
 
     conn = get_connection()
@@ -99,7 +113,7 @@ def update_vpn_speed_state(nas_id, nas_port_id, session_id, newspeed):
     cur.close()
     conn.close()
 
-@task
+@app.task
 def update_ipn_speed_state(subaccount_id, newspeed):
 
     conn = get_connection()
@@ -109,7 +123,7 @@ def update_ipn_speed_state(subaccount_id, newspeed):
     cur.close()
     conn.close()
 
-@task
+@app.task
 def ipn_add_state(subaccount_id, cb):
 
     conn = get_connection()
@@ -119,7 +133,7 @@ def ipn_add_state(subaccount_id, cb):
     cur.close()
     conn.close()
         
-@task
+@app.task
 def ipn_del_state(subaccount_id, cb):
 
     conn = get_connection()
@@ -131,7 +145,7 @@ def ipn_del_state(subaccount_id, cb):
     if cb:
         cb.apply()
     
-@task
+@app.task
 def adds_enable_state(id, cb):
 
     conn = get_connection()
@@ -143,7 +157,7 @@ def adds_enable_state(id, cb):
     if cb:
         cb.apply()
         
-@task
+@app.task
 def adds_disable_state(id, cb):
 
     conn = get_connection()
@@ -155,7 +169,7 @@ def adds_disable_state(id, cb):
     if cb:
         cb.apply()
         
-@task
+@app.task
 def ipn_enable_state(subaccount_id, cb):
 
     conn = get_connection()
@@ -167,7 +181,7 @@ def ipn_enable_state(subaccount_id, cb):
     if cb:
         cb.apply()
         
-@task
+@app.task
 def ipn_disable_state(subaccount_id, cb):
 
     conn = get_connection()
@@ -180,7 +194,7 @@ def ipn_disable_state(subaccount_id, cb):
         cb.apply()
 
 
-@task
+@app.task
 def update_pod_state(nas_id, nas_port_id, session_id):
 
     conn = get_connection()
@@ -206,7 +220,7 @@ def speed_list_to_dict(spList):
     return dict(zip(dkeys, spList))
 
 
-@task
+@app.task
 def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', caller_id='', nas_port_id='', format_string='', cb=None):
     """
     @param account_id: ID of account
@@ -323,7 +337,7 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
             logger.error('PoD SSH exception: %s' % repr(e))
             return False
 
-@task
+@app.task
 def change_speed(account, subacc ,nas, session_id='', vpn_ip_address='', access_type='', format_string='', speed='', cb=None):
     
     access_type = access_type.lower()
@@ -476,7 +490,7 @@ def change_speed(account, subacc ,nas, session_id='', vpn_ip_address='', access_
     return status
 
 
-@task
+@app.task
 def cred(account, subacc, access_type, nas, addonservice={},format_string='', cb=None):
     logging.basicConfig(filename='log/workers_pod.log', level=logging.INFO)
     logger = logging
@@ -722,24 +736,24 @@ class HttpBot(object):
         logger.debug("%s %s" % (url, parameters))
         try:
             if type(parameters)==dict:
-                return self._opener.open(url, urllib.urlencode(parameters)).read()
+                return self._opener.open(url, urlencode_utf8(parameters)).read()
             else:
                 return self._opener.open(url, parameters).read()
         except urllib2.HTTPError, e:
             logger.error(e)
         except urllib2.URLError, e:
             logger.error(e)
-@task
+@app.task
 def http_get(url):
     return HttpBot().GET(url)
 
-@task
+@app.task
 def http_post(url, parameters):
     st = HttpBot().POST(url, parameters)
 
     return st
 
-@task
+@app.task
 def sendsms_post(url, parameters, id=None):
     response = HttpBot().POST(url, parameters)
     logging.basicConfig(filename='log/workers_sendsms.log', level=logging.INFO)
@@ -756,7 +770,7 @@ def sendsms_post(url, parameters, id=None):
     conn.close()
 
 
-@task
+@app.task
 def sendsmsru_post(url, parameters, id=None):
     response = HttpBot().POST(url, parameters)
     logging.basicConfig(filename='log/workers_sendsms.log', level=logging.INFO)
@@ -770,7 +784,7 @@ def sendsmsru_post(url, parameters, id=None):
     cur.close()
     conn.close()
     
-@task
+@app.task
 def sendsmspilotru_post(url, parameters, id=None):
     headers = {
         'Content-type': 'application/json',
@@ -789,7 +803,7 @@ def sendsmspilotru_post(url, parameters, id=None):
     conn.close()
 
 
-@task
+@app.task
 def sendmainsmsru_post(url, parameters, id=None):
 
 
@@ -804,20 +818,20 @@ def sendmainsmsru_post(url, parameters, id=None):
     cur.close()
     conn.close()
     
-@task
+@app.task
 def subass_recreate(acc, subacc, nas, access_type='IPN'):
     cb = cred.s(acc, subacc, access_type, nas, format_string=nas.get('subacc_delete_action'), cb=ipn_del_state.s(subacc.get('id')))
     bcb = cred.s(acc, subacc, access_type, nas, format_string=nas.get('subacc_add_action'), cb = ipn_add_state.s(id, cb = cb))
     cred.delay(acc, subacc, access_type, nas, format_string=nas.get('subacc_enable_action'), cb = ipn_enable_state.s(id, cb = bcb)).apply_async()
     
     
-@task
+@app.task
 def subass_delete(acc, subacc, nas, access_type='IPN'):
     cb = cred.s(acc, subacc, access_type, nas, format_string=nas.get('subacc_disable_action'), cb=ipn_disable_state.s(subacc.get('id')))
     cred.delay(acc, subacc, access_type, nas, format_string=nas.get('subacc_delete_action'), cb=ipn_del_state.s(subacc.get('id'), cb=cb)).apply()
 
     
-@task
+@app.task
 def pinger(subaccount_id, ip):
     status, output = commands.getstatusoutput('ping -c 3 %s' % ip)
     
@@ -834,7 +848,7 @@ u"""
 9. Комментарий к порту iso.0.8802.1.1.2.1.3.7.1.4.
 10. Возможность включить/отключить порт 1.3.6.1.2.1.2.2.1.7 (1-up, 2-down, 3-testing)
 """
-@task
+@app.task
 def get_mac_by_port(switch_ip, community='public', snmp_version='2c', port=None):
     status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s 1.3.6.1.2.1.17.4.3.1.2' % (snmp_version, community, switch_ip))
     
@@ -847,7 +861,7 @@ def get_mac_by_port(switch_ip, community='public', snmp_version='2c', port=None)
         port_mac[port].append(mac)
     
     return port_mac
-@task
+@app.task
 def get_port_oper_status(switch_ip, community='public', snmp_version='2c', port=''):
     status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s 1.3.6.1.2.1.2.2.1.8%s' % (snmp_version, community, switch_ip, '.%s' % port if port else ''))
     
@@ -859,7 +873,7 @@ def get_port_oper_status(switch_ip, community='public', snmp_version='2c', port=
     if port:
         return port_status[port]
     return port_status
-@task
+@app.task
 def get_port_speed(switch_ip, community='public', snmp_version='2c', port=None):
     status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s .1.3.6.1.2.1.2.2.1.5' % (snmp_version, community, switch_ip))
     
@@ -871,7 +885,7 @@ def get_port_speed(switch_ip, community='public', snmp_version='2c', port=None):
     
     return port_status
 
-@task
+@app.task
 def get_ports_comment(switch_ip, community='public', snmp_version='2c', port=None):
     status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s iso.0.8802.1.1.2.1.3.7.1.4.' % (snmp_version, community, switch_ip))
     
@@ -882,7 +896,7 @@ def get_ports_comment(switch_ip, community='public', snmp_version='2c', port=Non
         port_status[port]= status
     return port_status
 
-@task
+@app.task
 def get_port_inout(switch_ip, community='public', snmp_version='2c', port=None):
     #in
     status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s .1.3.6.1.2.1.2.2.1.16' % (snmp_version, community, switch_ip))
@@ -909,7 +923,7 @@ def get_port_inout(switch_ip, community='public', snmp_version='2c', port=None):
     
     return port_status
 
-@task
+@app.task
 def get_port_errors(switch_ip, community='public', snmp_version='2c', port=None):
     #in
     status, output = commands.getstatusoutput('snmpwalk -v %s -c %s -O fnqT %s .1.3.6.1.2.1.2.2.1.14' % (snmp_version, community, switch_ip))
@@ -937,11 +951,11 @@ def get_port_errors(switch_ip, community='public', snmp_version='2c', port=None)
     return port_status
 
 
-@task
+@app.task
 def get_switch_fw_version(switch_ip, community='public', snmp_version='2c'):
     status, output = commands.getstatusoutput('snmpget -v %s -c %s -O fnqT %s 1.3.6.1.2.1.16.19.2.0' % (snmp_version, community, switch_ip))
 
-@task
+@app.task
 def set_switch_port_admin_status(switch_ip, port, community='private', snmp_version='2c', status=True):
     status, output = commands.getstatusoutput('snmpset -v %s -c %s -O fnqT %s 1.3.6.1.2.1.2.2.1.7.%s integer %s' % (snmp_version, community, switch_ip, port, 1 if status else 2))
 
