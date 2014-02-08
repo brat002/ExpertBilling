@@ -1,34 +1,39 @@
 {% load i18n %}
 {% if form %}
 <script>
+function sleep(delay) {
+    var start = new Date().getTime();
+    while (new Date().getTime() < start + delay);
+  }
 	function activate_car() {
+
 		$('#id_button_send').hide();
-		var pin=document.getElementById("id_pin");
+		var pin=$("#id_pin").val();
 		var message=document.getElementById("message_in_form");
-        var card_id=document.getElementById("id_card_id");
+        var card_id=$("#id_card_id").val();
 	 	jQuery.ajax({
         	type: "POST",
         	cache: false,
         	url: '/card/activation/',
-        	data: {'pin': pin.value, 'card_id': card_id.value},
-        	timeout: 15000,
+        	data: {'pin': pin, 'card_id': card_id},
+        	dataType: 'json',
+        	timeout: 5000,
 			contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
         	//beforeSend: function(XMLHttpRequest){},
         	success: function(data, status){
-				var ret = eval('('+data+')');
-				if (typeof ret['redirect'] != 'undefined') {
-					window.location.href = ret['redirect'];
-				} 
-				message.innerHTML = ret['error_message'];
-				pin.value='';
-                card_id.value='';
+				message.innerHTML = data['error_message'];
+				
+				$("#id_pin").val('');
+                $("#id_card_id").val('');
 				//window.location.reload();	
                 $('#id_button_send').show();
+                if (data['status']==true) {
+                    window.location.reload();
+                }
 			},
         	error: function(data, status){
-				var ret = eval('('+data+')'); 
-				message.innerHTML = ret['error_message'];
-				pin.value='';
+				message.innerHTML = data['error_message'];
+				$("#id_pin").val('');
 				$('#id_button_send').show();
 			 },
         	complete: function(data, status){  }
