@@ -790,7 +790,7 @@ def flatten(x):
         if hasattr(el, "__iter__") and not isinstance(el, basestring):
             result.extend(flatten(el))
         else:
-            result.append(int(el))
+            result.append(int(convert_values(el)))
     return result
 
 def speedlimit_logic(speed, limitspeed, speed_unit, speed_change_type):
