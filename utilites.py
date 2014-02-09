@@ -1,23 +1,17 @@
 #-*-coding=utf-8-*-
 
 from __future__ import with_statement
-from distutils.dist import command_re
-from dateutil.relativedelta import relativedelta
 #from log_adapter import log_debug_, log_info_, log_warning_, log_error_
 from period_utilities import in_period, in_period_info, settlement_period_info
-import encodings
-from encodings import idna, ascii #DONT REMOVE, BLATS!
 import re
-import glob
 import packet
 import socket
-import cPickle
 import logging
 import psycopg2
 import commands
 import traceback
 import datetime, calendar, time
-import os, os.path, sys, time, binascii, socket, select
+import os, os.path, sys, time, binascii
 from hashlib import md5
 
 
@@ -461,220 +455,6 @@ def create_speed_string(params, ipn=True):
     return str(result)
 
 # Parsers
-
-class ActiveSessionsParser:
-    """
-    parse strings like
-    Flags: R - radius
-    0 R name=dolphinik service=pptp caller-id=10.10.1.2 address=192.168.12.3 uptime=1h56m6s encoding="" session-id=0x81A00000 limit-bytes-in=0 limit-bytes-out=0
-    1   name=ppp1 service=pptp caller-id=10.10.1.3 address=192.168.12.2 uptime=51s encoding=MPPE128 stateless session-id=0x81A00001 limit-bytes-in=0 limit-bytes-out=0
-    giving
-
-    Usage:
-
-    asp = ActiveSessionsParser(test_string)
-    list = sap.parse()
-
-    print list
-    >> [{'caller-id': '10.10.1.2', 'session-id': '0x81A00000', 'name': 'dolphinik', 'service': 'pptp', 'address': '192.168.12.3'},
-    >> {'caller-id': '10.10.1.3', 'session-id': '0x81A00001', 'name': 'ppp1', 'service': 'pptp', 'address': '192.168.12.2'}]
-
-    """
-    start_field = 'name'
-    fields = ('name','service','caller-id','address','session-id','target-addresses')
-    strings = []
-    ar = []
-
-    def __init__(self, string):
-        import re
-        #sts = string.split('\n')
-        for s in string :
-            m = re.search('(%s.*)' % self.start_field,s)
-            try:
-                self.strings.append(m.groups()[0])
-            except:
-                pass
-        #print self.strings
-
-
-    def parse(self):
-        """
-        return list of dicts
-        """
-        for s in self.strings:
-            strstr = {}
-            for s in [x.strip() for x in s.split(' ') if len(x) >0] :
-                try:
-                    x,y = s.split('=')
-                    if x in self.fields :
-                        strstr[x] = y
-                except ValueError :
-                    pass
-            self.ar.append(strstr)
-        return self.ar
-
-class ApiRos:
-    "Routeros api"
-    def __init__(self, sk):
-        self.sk = sk
-        self.currenttag = 0
-        
-    def login(self, username, pwd):
-        for repl, attrs in self.talk(["/login"]):
-            chal = binascii.unhexlify(attrs['=ret'])
-        md = md5.new()
-        md.update('\x00')
-        md.update(pwd)
-        md.update(chal)
-        self.talk(["/login", "=name=" + username,
-                   "=response=00" + binascii.hexlify(md.digest())])
-
-    def talk(self, words):
-        if self.writeSentence(words) == 0: return
-        r = []
-        while 1:
-            i = self.readSentence();
-            if len(i) == 0: continue
-            reply = i[0]
-            attrs = {}
-            for w in i[1:]:
-                j = w.find('=', 1)
-                if (j == -1):
-                    attrs[w] = ''
-                else:
-                    attrs[w[:j]] = w[j+1:]
-            r.append((reply, attrs))
-            if reply == '!done': return r
-
-    def writeSentence(self, words):
-        ret = 0
-        for w in words:
-            self.writeWord(w)
-            ret += 1
-        self.writeWord('')
-        return ret
-
-    def readSentence(self):
-        r = []
-        while 1:
-            w = self.readWord()
-            if w == '': return r
-            r.append(w)
-            
-    def writeWord(self, w):
-        print "<<< " + w
-        self.writeLen(len(w))
-        self.writeStr(w)
-
-    def readWord(self):
-        ret = self.readStr(self.readLen())
-        #print ">>> " + ret
-        return ret
-
-    def writeLen(self, l):
-        if l < 0x80:
-            self.writeStr(chr(l))
-        elif l < 0x4000:
-            l |= 0x8000
-            self.writeStr(chr((l >> 8) & 0xFF))
-            self.writeStr(chr(l & 0xFF))
-        elif l < 0x200000:
-            l |= 0xC00000
-            self.writeStr(chr((l >> 16) & 0xFF))
-            self.writeStr(chr((l >> 8) & 0xFF))
-            self.writeStr(chr(l & 0xFF))
-        elif l < 0x10000000:        
-            l |= 0xE0000000         
-            self.writeStr(chr((l >> 24) & 0xFF))
-            self.writeStr(chr((l >> 16) & 0xFF))
-            self.writeStr(chr((l >> 8) & 0xFF))
-            self.writeStr(chr(l & 0xFF))
-        else:                       
-            self.writeStr(chr(0xF0))
-            self.writeStr(chr((l >> 24) & 0xFF))
-            self.writeStr(chr((l >> 16) & 0xFF))
-            self.writeStr(chr((l >> 8) & 0xFF))
-            self.writeStr(chr(l & 0xFF))
-
-    def readLen(self):              
-        c = ord(self.readStr(1))    
-        if (c & 0x80) == 0x00:      
-            pass                    
-        elif (c & 0xC0) == 0x80:    
-            c &= ~0xC0              
-            c <<= 8                 
-            c += ord(self.readStr(1))    
-        elif (c & 0xE0) == 0xC0:    
-            c &= ~0xE0              
-            c <<= 8                 
-            c += ord(self.readStr(1))    
-            c <<= 8                 
-            c += ord(self.readStr(1))    
-        elif (c & 0xF0) == 0xE0:    
-            c &= ~0xF0              
-            c <<= 8                 
-            c += ord(self.readStr(1))    
-            c <<= 8                 
-            c += ord(self.readStr(1))    
-            c <<= 8                 
-            c += ord(self.readStr(1))    
-        elif (c & 0xF8) == 0xF0:    
-            c = ord(self.readStr(1))     
-            c <<= 8                 
-            c += ord(self.readStr(1))    
-            c <<= 8                 
-            c += ord(self.readStr(1))    
-            c <<= 8                 
-            c += ord(self.readStr(1))    
-        return c                    
-
-    def writeStr(self, str):        
-        n = 0;                      
-        while n < len(str):         
-            r = self.sk.send(str[n:])
-            if r == 0: raise RuntimeError, "connection closed by remote end"
-            n += r                  
-
-    def readStr(self, length):      
-        ret = ''                    
-        while len(ret) < length:    
-            s = self.sk.recv(length - len(ret))
-            if s == '': raise RuntimeError, "connection closed by remote end"
-            ret += s
-        return ret
-    
-def rosClient(host, login, password, command):
-    """
-    @param host: IP address or Hostname
-    @param login: Username of System user
-    @param password: Password os system user
-    @param commant: command for execution    
-    """
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((host, 8728))
-    except Exception, e:
-        print e
-        return []
-        
-    apiros = ApiRos(s);
-    apiros.login(str(login), str(password))
-    x=['']
-    commands = command.split(" ")
-
-    commands.append(" ")
-    result = []
-    apiros.writeSentence(commands)
-    while True:
-        x = apiros.readSentence()
-        #print x
-        if x[0]=='!done':
-            break
-        result.append(x)
-        
-    s.close()
-    return result
-
 
     
 def convert(alist):
