@@ -499,7 +499,7 @@ class Cache(object):
                                 speedlimit.min_tx, speedlimit.min_rx, speedlimit.priority, speedlimit.speed_units, speedlimit.change_speed_type
                                 FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
                                 WHERE accountspeedlimit.speedlimit_id=speedlimit.id 
-                                and accountspeedlimit.account_id=%s ORDER BY ID DESC LIMIT 1;""", (account_id, ))
+                                and accountspeedlimit.account_id=%s ORDER BY accountspeedlimit.id DESC LIMIT 1;""", (account_id, ))
             res = cursor.fetchone()
             if res:
                 obj = self.memcached_connection.set(cache_key, res, ACC_CACHE_TIMEOUT)
