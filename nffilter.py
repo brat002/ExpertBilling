@@ -507,7 +507,7 @@ class FlowDequeThread(Thread):
                             if nodes[0][1]==1:
                                 nfwrite_list.append(tuple(flow))
                     except Exception, e:
-                        print e
+                        #print e
                         pass
 #===============================================================================
 #                     for nclass, nnodes in cacheMaster.cache.class_cache.classes:        
