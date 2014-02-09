@@ -86,7 +86,7 @@ def activate_pay_card(account_id,  card_id, pin):
             card = Card.objects.filter(type=0, id=card_id, pin=pin,  disabled=False)
         if card:
             card = card[0]            
-            if not card.salecard: 
+            if not card.salecard and not settings.HOTSPOT_ONLY_PIN:
                 return_value = "CARD_NOT_SOLD"                
             elif card.activated: 
                 return_value = "CARD_ALREADY_ACTIVATED"                
