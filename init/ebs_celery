@@ -225,7 +225,7 @@ _get_pids() {
 
 _chuid () {
     #su "$CELERYD_USER" -c "$CELERYD_MULTI $*"
-    $CELERYD_MULTI $*
+    C_FORCE_ROOT=1 $CELERYD_MULTI $*
 }
 
 
