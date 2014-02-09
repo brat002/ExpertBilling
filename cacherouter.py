@@ -491,12 +491,12 @@ class Cache(object):
         try:
             #id, account_id, max_tx, max_rx, burst_tx, burst_rx, burst_treshold_tx, burst_treshold_rx, burst_time_tx, burst_time_rx, priority, min_tx, min_rx, speed_units, change_speed_type
             cursor = self.connection.cursor()
-            cursor.execute("""SELECT accountspeedlimit.id, accountspeedlimit.account_id, speedlimit.max_tx, speedlimit.max_rx, 
+            cursor.execute("""SELECT speedlimit.max_tx, speedlimit.max_rx, 
                                 speedlimit.burst_tx, speedlimit.burst_rx, 
                                 speedlimit.burst_treshold_tx, speedlimit.burst_treshold_rx, 
                                 speedlimit.burst_time_tx, speedlimit.burst_time_rx, 
-                                speedlimit.priority,
-                                speedlimit.min_tx, speedlimit.min_rx, speedlimit.speed_units, speedlimit.change_speed_type
+                                
+                                speedlimit.min_tx, speedlimit.min_rx, speedlimit.priority, speedlimit.speed_units, speedlimit.change_speed_type
                                 FROM billservice_speedlimit as speedlimit, billservice_accountspeedlimit as accountspeedlimit
                                 WHERE accountspeedlimit.speedlimit_id=speedlimit.id 
                                 and accountspeedlimit.account_id=%s ORDER BY ID DESC LIMIT 1;""", (account_id, ))
