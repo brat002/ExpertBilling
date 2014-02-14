@@ -1,6 +1,31 @@
 {% load i18n %}
 
 <script type="text/javascript">
+
+  function activatedatepicker() {
+    $('.datepicker').datetimepicker({
+      weekStart: 1,
+      language: 'ru',
+      format: 'yyyy-mm-dd hh:ii:ss'
+    });
+
+    $('.dateonlypicker').datepicker({
+      weekStart: 1,
+      language: 'ru',
+      format: 'yyyy-mm-dd'
+    });
+
+    $('.dateinput').datepicker({
+      weekStart: 1,
+      language: 'ru',
+      format: 'yyyy-mm-dd hh:ii:ss'
+    });
+
+    $(".timepicker").mask("99:99:99");
+
+    $(".daterange").daterangepicker({format:'yyyy-MM-dd'});
+  };
+  
   $(document).ready(function() {
     var month_list = [
         "{% blocktrans %}Январь{% endblocktrans %}",
@@ -54,33 +79,7 @@
     
     $(".hide-alert").fadeOut(3000 );
 
-    $('.datepicker').datepicker({
-      months: month_list,
-      weekStart: 1,
-      noDefault: true,
-      format: 'yyyy-mm-dd hh:ii:ss',
-      days: weekday_list,
-    });
-
-    $('.dateonlypicker').datepicker({
-      months: month_list,
-      weekStart: 1,
-      noDefault: true,
-      format: 'yyyy-mm-dd',
-      days: weekday_list,
-    });
-
-    $('.dateinput').datepicker({
-      months: month_list,
-      weekStart: 1,
-      noDefault: true,
-      format: 'yyyy-mm-dd hh:ii:ss',
-      days: weekday_list,
-    });
-
-    $(".timepicker").mask("99:99:99");
-
-    $(".daterange").daterangepicker({format:'yyyy-MM-dd'});
+    activatedatepicker();
 
   });
 </script>
