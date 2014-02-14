@@ -1320,7 +1320,7 @@ def activesessionreport(request):
     
         else:
     
-            return {"table": table,  'form':form}
+            return {'form':form}
     else:
         table = None
         res = ActiveSession.objects.filter(session_status='ACTIVE').prefetch_related()
