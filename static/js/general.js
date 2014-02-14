@@ -40,7 +40,7 @@ $(document).ready(function() {
       content: element.attr('href'), 
       id: element.data('dlgbodyid')
     });
-
+    
     event.preventDefault(event);
   });
 });
