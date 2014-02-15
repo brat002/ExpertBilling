@@ -110,16 +110,17 @@ class PaymentProcessor(PaymentProcessorBase):
             try:
                 payment = Payment.objects.get(id=data['InvId'])
             except:
-                return u'Платёж не найден'
+                return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=%s' % urllib.quote_plus(u'Платёж не найден')
         else:
-            return u'Ошибка цифровой подписи'
+            return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=%s' % urllib.quote_plus(u'Ошибка цифровой подписи')
 
         
-            payment.on_success(amount=data['OutSum'])
-            payment.save()
-            return 'WMI_RESULT=OK&WMI_DESCRIPTION=%s' % urllib.quote_plus(u'Order successfully processed')
-        else:
-            return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=%s' % urllib.quote_plus(u'Ошибка обработки платежа')
+        payment.on_success(amount=data['OutSum'])
+        payment.save()
+        return 'WMI_RESULT=OK&WMI_DESCRIPTION=%s' % urllib.quote_plus(u'Order successfully processed')
+        
+
+            
     
 
     

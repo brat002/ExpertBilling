@@ -7,6 +7,12 @@
 
   <script type="text/javascript"> 
    $(document).ready(function() {
+	   
+	   $("#id_template").change(function(event){
+		   
+		   $('#id_sendsms_body').val($(this).val());
+	   }	   
+	   );
      $("#id_body").bind('keyup', function(){
 
        n = $(this).val().length;
