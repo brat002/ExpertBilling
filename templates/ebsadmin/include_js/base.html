@@ -79,6 +79,10 @@
     
     $(".hide-alert").fadeOut(3000 );
 
+    $('body').bind('dialog2.focussed', function(e){
+      activatedatepicker();
+    });
+
     activatedatepicker();
 
   });
