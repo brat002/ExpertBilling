@@ -33,7 +33,10 @@ class NewPaymentView(FormView):
 
     def get_form(self, form_class=None):
         processor = Payment(backend = self.request.GET.get('backend') or self.request.POST.get('backend')).get_processor()
-        return processor.form()(**self.get_form_kwargs())
+        a = self.get_form_kwargs()
+        a.update({'initial': {'backend':self.request.GET.get('backend')}})
+        return processor.form()(**a)
+
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data()
