@@ -75,11 +75,11 @@ class PaymentProcessor(PaymentProcessorBase):
     
     @staticmethod
     def compute_sig(params):
-        return md5(':'.join([params.get('MrchLogin'), params.get('OutSum'), params.get('InvId'), PaymentProcessor.get_backend_setting('PASSWORD1', '')])).hexdigest().upper()
+        return md5(':'.join([params.get('MrchLogin'), str(params.get('OutSum')), str(params.get('InvId')), PaymentProcessor.get_backend_setting('PASSWORD1', '')])).hexdigest().upper()
     
     @staticmethod
     def check_sig(params):
-        return md5(':'.join([params.get('OutSum'), params.get('InvId'), PaymentProcessor.get_backend_setting('PASSWORD2', '')])).hexdigest().upper()
+        return md5(':'.join([str(params.get('OutSum')), str(params.get('InvId')), PaymentProcessor.get_backend_setting('PASSWORD2', '')])).hexdigest().upper()
     
 
     @staticmethod
@@ -94,7 +94,7 @@ class PaymentProcessor(PaymentProcessorBase):
             def clean(self):
                 try:
                     signature = self.cleaned_data['SignatureValue'].upper()
-                    if signature != self.check_sig(self.cleaned_data):
+                    if signature != PaymentProcessor.check_sig(self.cleaned_data):
                         raise forms.ValidationError(u'Ошибка в контрольной сумме')
                 except KeyError:
                     raise forms.ValidationError(u'Пришли не все необходимые параметры')
@@ -110,15 +110,15 @@ class PaymentProcessor(PaymentProcessorBase):
             try:
                 payment = Payment.objects.get(id=data['InvId'])
             except:
-                return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=%s' % urllib.quote_plus(u'Платёж не найден')
+                #return u'Платёж не найден'
+                return 'PAYMENT_NOT_FOUND'
         else:
-            return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=%s' % urllib.quote_plus(u'Ошибка цифровой подписи')
+            return 'SIGN_ERROR'
 
-        
+
         payment.on_success(amount=data['OutSum'])
         payment.save()
-        return 'WMI_RESULT=OK&WMI_DESCRIPTION=%s' % urllib.quote_plus(u'Order successfully processed')
-        
+        return 'OK%s' % data['InvId']
 
             
     

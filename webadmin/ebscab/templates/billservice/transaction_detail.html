@@ -8,6 +8,7 @@
     {% csrf_token %}
     <table>
     {{ payment_form.as_table }}
+    <input name='backend' type='hidden' value='{{payment_form.backend.value}}'>
     </table>
     <center><input type="submit" value="Продолжить"></center>
 </form>
