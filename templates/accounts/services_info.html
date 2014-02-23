@@ -1,0 +1,49 @@
+{% extends 'base_extended.html' %}
+{% load i18n %}
+{% load billservice_tags %}
+{% load custom_filters %}
+
+{% block content %}
+{% if services %}
+<table class="wide statistic_table" cellpadding="0" cellspacing="0">
+	<tr>
+		<th class="white bold s-11 blue_caption a-left">{% blocktrans %}ИСТОРИЯ ПОДКЛЮЧАЕМЫХ УСЛУГ{% endblocktrans %}</th>
+	</tr>
+	<tr>
+		<td>
+			<table class="wide extra_table" cellpadding="0" cellspacing="0">
+				<tr>
+					<th>{% blocktrans %}Название услуги{% endblocktrans %}</th>
+					<th>{% blocktrans %}Дата подключения услуги{% endblocktrans %}</th>
+					<th>{% blocktrans %}Дата отключения услуги{% endblocktrans %}</th>
+					<th>{% blocktrans %}Списано средств за услугу{% endblocktrans %}</th>
+				</tr>
+				{% for service in services %}
+					<tr>
+						<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service.service.name }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service.activated|date:"d.m.Y H:i" }}&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service.deactivated|date:"d.m.Y H:i" }}&nbsp;&nbsp;</td>
+						<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last not is_range %}no_border{% endif %}">{{ service|service_cost|floatformat:2 }}&nbsp;{{ CURRENCY }}</td>
+					</tr>
+				{% endfor %}
+				{% if is_range %}
+					<tr>
+						<td align="right" colspan="3" class="bold {{ rec_count|coll_bg  }} no_border">{% blocktrans %}Всего на странице:<br>Всего:{% endblocktrans %}</td>
+						<td class="left_border {{ rec_count|coll_bg  }} no_border">{{ summ_on_page|floatformat:2 }}&nbsp;{{ CURRENCY }}<br>{{ summ|floatformat:2 }}&nbsp;{{ CURRENCY }}</td>
+					</tr>
+				{% endif %}
+			</table>
+			{% include 'paginator.html' %}
+		</td>
+	</tr>
+</table>
+
+{% else %}
+ <h2 align="center">{% blocktrans %}Данных нет!{% endblocktrans %}</h2>
+{% endif %}
+{% endblock %}
+
+
+{% block title %}
+    {% blocktrans %}ИСТОРИЯ ПОДКЛЮЧАЕМЫХ УСЛУГ{% endblocktrans %}
+{% endblock %}

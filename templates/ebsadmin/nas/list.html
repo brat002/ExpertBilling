@@ -1,0 +1,33 @@
+{% extends "ebsadmin/base.html" %}
+
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load render_table from django_tables2 %}
+
+{% block base %}
+  <div class="row-fluid">
+    <div class="alert alert-info">
+      {% blocktrans %}Настройки серверов доступа являются важными составляющими логики работы системы. Не допускайте несанкционированного доступа к настройкам.{% endblocktrans %} 
+    </div>
+
+    <div>
+      <ul class="breadcrumb">
+        <li>
+          <a href="{% url 'nas' %}">
+            {% blocktrans %}Серверы доступа{% endblocktrans %}
+          </a> <span class="divider">/</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="btn-toolbar pull-right">
+      <a href="{% url 'nas_edit' %}" id="id_btn_add" class="btn btn-success">
+        {% blocktrans %}Добавить{% endblocktrans %}
+      </a>
+    </div>
+    
+    <div>
+      {% render_table table %}
+    </div>
+  </div>
+{% endblock %}

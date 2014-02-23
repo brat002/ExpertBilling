@@ -1,0 +1,89 @@
+{% load i18n %}
+
+<script type="text/javascript">
+
+  function activatedatepicker() {
+    $('.datepicker').datetimepicker({
+      weekStart: 1,
+      language: 'ru',
+      format: 'yyyy-mm-dd hh:ii:ss'
+    });
+
+    $('.dateonlypicker').datepicker({
+      weekStart: 1,
+      language: 'ru',
+      format: 'yyyy-mm-dd'
+    });
+
+    $('.dateinput').datepicker({
+      weekStart: 1,
+      language: 'ru',
+      format: 'yyyy-mm-dd hh:ii:ss'
+    });
+
+    $(".timepicker").mask("99:99:99");
+
+    $(".daterange").daterangepicker({format:'yyyy-MM-dd'});
+  };
+  
+  $(document).ready(function() {
+    var month_list = [
+        "{% blocktrans %}Январь{% endblocktrans %}",
+        "{% blocktrans %}Февраль{% endblocktrans %}",
+        "{% blocktrans %}Март{% endblocktrans %}",
+        "{% blocktrans %}Апрель{% endblocktrans %}",
+        "{% blocktrans %}Май{% endblocktrans %}",
+        "{% blocktrans %}Июнь{% endblocktrans %}",
+        "{% blocktrans %}Июль{% endblocktrans %}",
+        "{% blocktrans %}Август{% endblocktrans %}",
+        "{% blocktrans %}Сентябрь{% endblocktrans %}",
+        "{% blocktrans %}Октябрь{% endblocktrans %}",
+        "{% blocktrans %}Ноябрь{% endblocktrans %}",
+        "{% blocktrans %}Декабрь{% endblocktrans %}"
+      ],
+      weekday_list = [
+        "{% blocktrans %}вс{% endblocktrans %}",
+        "{% blocktrans %}пн{% endblocktrans %}",
+        "{% blocktrans %}вт{% endblocktrans %}",
+        "{% blocktrans %}ср{% endblocktrans %}",
+        "{% blocktrans %}чт{% endblocktrans %}",
+        "{% blocktrans %}пт{% endblocktrans %}",
+        "{% blocktrans %}сб{% endblocktrans %}"
+      ];
+
+    $('.dropdown-toggle').dropdown()
+
+    $('form').attr("autocomplete", "off");
+      
+    $('#tab-control a').click(function (e) {
+      e.preventDefault(e);
+      $(this).tab('show');
+    });
+
+    $(document).on("selectedTemplate", documentPrintHandler);
+    // newMessage event handler
+    
+    function documentPrintHandler(e) {
+      {% if account %}
+      var data = {template:e.message, account:{{account.id}}};
+      var $form = $('<form target="_blank" method="POST" action="{% url 'documentrender' %}">');
+
+      $.each(data, function(k,v){
+        $form.append('<input type="hidden" name="' + k + '" value="' + v + '">');
+      });
+
+      $form.append('</form>');
+      $form.submit();
+      {% endif %}
+    }
+    
+    $(".hide-alert").fadeOut(3000 );
+
+    $('body').bind('dialog2.focussed', function(e){
+      activatedatepicker();
+    });
+
+    activatedatepicker();
+
+  });
+</script>

@@ -1,0 +1,9 @@
+﻿{% load custom_filters %}
+{% load billservice_tags %}
+<tr>
+	<td class="{{ iter_num|coll_bg  }} {% if last %}no_border{% endif %}">{{ subaccount.username }}&nbsp;</td>
+	<td class="left_border {{ iter_num|coll_bg  }} {% if last %}no_border{% endif %}">{% if subaccount.password %}<center><a href="/subaccount/password/form/{{subaccount.id}}/?height=300&width=380&modal=true" class="thickbox text">*****</a></center>{% endif %}</td>
+   	<td class="left_border {{ iter_num|coll_bg  }} {% if last %}no_border{% endif %}">{{ subaccount.vpn_ip_address }}&nbsp;</td>
+   	<td class="left_border {{ iter_num|coll_bg  }} {% if last %}no_border{% endif %}">{{ subaccount.ipn_ip_address }}&nbsp;</td>
+   	<td class="left_border {{ iter_num|coll_bg  }} {% if last %}no_border{% endif %}">{{ subaccount.ipn_mac_address }}&nbsp;{% if subaccount.ipn_mac_address and subaccount.allow_mac_update %}<a href='/?update_mac=True&subaccount_id={{subaccount.id}}'> обновить</a>{% endif %}</td>
+</tr>

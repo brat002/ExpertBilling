@@ -1,0 +1,38 @@
+{% load ebsadmin_tags %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% if not status %}
+  
+  {% include "ebsadmin/common/error_messages.html" %}
+
+  <script type="text/javascript"> 
+    $(document).ready(function() {
+      function check_tpd(){
+        if ($("#id_cash_method").val()=='GRADUAL'){
+          $("#div_id_tpd").show();
+
+        }else{
+          $("#div_id_tpd").hide();
+          $("#div_id_tpd").val('');
+        }
+      };
+      check_tpd();
+      $("#id_cash_method").change(check_tpd);
+      activatedatepicker();
+    });
+  </script>
+
+  {% if form %}
+    <form method="POST" action="{% url 'tariff_periodicalservice_edit' %}?id={{item.id}}" class="well form-horizontal form-condensed ajax">
+      {{form|crispy}}
+
+      <div class="form-actions">
+        <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">
+        <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
+      </div>
+    </form>
+  {% endif %}
+{% else %}
+  {% include "ebsadmin/common/succ_operation.html" %}
+{% endif %}

@@ -1,0 +1,138 @@
+{% extends "ebsadmin/base.html" %}
+
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load render_table from django_tables2 %}
+{% load ebsadmin_tags %}
+
+{% block extra_head %}
+  <script type="text/javascript"> 
+    $(document).ready(function() {
+      $('#id_house').autocomplete({
+        source: function( request, response )
+        {                      
+          $.ajax(
+          { 
+            url: "{% url 'house' %}",
+            data: {
+              term: request.term, 
+              street_name: $('#id_street').val(),
+              city_id: $('#id_city').val()
+            },        
+            type: "POST",
+            dataType: "json",                     
+            success: function( data ) 
+            {
+              response( $.map( data.records, function( item ) 
+              {
+                return item.name
+              }));
+            }
+          });                
+        },
+        minChars: 0,
+        maxHeight: 400,
+        width: 300,
+        zIndex: 9999,
+        deferRequestBy: 300,
+        onSelect: function(data, value){ },
+      });
+      
+      $('#id_street').autocomplete({
+        source: function( request, response )
+        {                      
+          $.ajax(
+          { 
+            url: "{% url 'street' %}",
+            data: {
+              term: request.term, 
+              city_id: $('#id_city').val()
+            },        
+            type: "POST",
+            dataType: "json",                                                                                                                  
+            success: function( data ) 
+            {
+              response( $.map( data.records, function( item ) 
+              {
+                return item.name
+              }));
+            }
+          });                
+        },
+        minChars: 0,
+        maxHeight: 400,
+        width: 300,
+        zIndex: 9999,
+        deferRequestBy: 300,
+        onSelect: function(data, value){ },
+      });
+
+      $("#id_main_table input[type=checkbox]").change(function(){
+        $.ajax(
+        { 
+          url: "{% url 'switch_port_status' %}",
+          data: {
+            port_type: $(this).attr('name'), 
+            port: $(this).closest('tr').find('td:first').find('input[type=hidden]').val(),
+            port_state: $(this).attr('checked'),
+            switch_id: $('#id_id').val(),
+          },        
+          type: "POST",
+          dataType: "json",                                                                                                                      
+          success: function( data ) 
+          {
+
+          },
+          error: function( data ) 
+          {
+            alert('{% blocktrans %}Во время обращения к серверу возникла ошибка{% endblocktrans %}');
+          },
+        });   
+      })
+    });
+  </script>
+{% endblock %}
+
+{% block base %}
+  <ul class="breadcrumb">
+    <li>
+      <a href="{% url 'switch' %}">{% blocktrans %}Коммутаторы{% endblocktrans %}</a> <span class="divider">/</span>
+    </li>
+    <li class="active">{{form.name.value}}</li>
+  </ul>
+
+  <div class="row-fluid">
+    <div class="span9">
+      <ul class="nav nav-tabs" id="tab-panel">
+        <li><a href="#general" class='active' data-toggle="tab">{% blocktrans %}Общее{% endblocktrans %}</a></li>
+        <li><a href="#ports" data-toggle="tab">{% blocktrans %}Порты{% endblocktrans %}</a></li>
+      </ul>
+      <form method="POST" action="{% url 'switch_edit' %}?id={{item.id}}"class="well form-horizontal form-condensed">
+        <div class="tab-content">
+          <div class="tab-pane active" id="general">
+            <div>{% objectlog item %}</div>
+            {% crispy form %}
+          </div>
+          <div class="tab-pane" id="ports">
+            {% if  ports_table%}
+              {% render_table ports_table %}
+            {% else %}
+              <div class="alert alert-success">{% blocktrans %}Укажите количество портов и сохраните коммутатор, чтобы приступить к редактированию портов{% endblocktrans %}</div>
+            {% endif %}
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="span2">
+      <ul class="nav nav-list">
+        <li class="nav-header">Информация</li>
+        <div>Прошивка: 1.23</div>
+        <div>Активен: Да</div>
+        <div>Последний опрос: 01.01.2012 00:00:00</div>
+        ...
+      </ul>
+
+    </div>
+  </div>
+{% endblock %}

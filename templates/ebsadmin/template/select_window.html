@@ -1,0 +1,37 @@
+{% load ebsadmin_tags %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% if not status %}
+  {% include "ebsadmin/common/error_messages.html" %}
+
+  {% if form %}
+    <script type="text/javascript"> 
+      $(document).ready(function() {
+        $("#dialog-accept").on("click", SendMessage);
+        function SendMessage(e) {
+          var msg = $("#id_template").val();
+          if (msg) {
+            $.event.trigger({
+              type: 'selectedTemplate',
+              message: msg
+            });
+          }
+        }
+      })
+    </script>
+
+    <form id="template-select-form" action="#" class="well form-horizontal ajax form-condensed ">
+      <fieldset>
+        {{form|crispy}}
+      </fieldset>
+
+      <div class="form-actions">
+        <a class="btn btn-primary close-dialog" id='dialog-accept'>{% blocktrans %}Выбрать{% endblocktrans %}</a>
+        <a class="btn close-dialog" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
+      </div>
+    </form>
+  {% endif %}
+{% else %}
+  {% include "ebsadmin/common/succ_operation.html" %}
+{% endif %}
