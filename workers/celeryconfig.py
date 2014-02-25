@@ -14,7 +14,7 @@ CELERY_RESULT_BACKEND = "db+postgresql://%s:%s@%s/%s" % (config.get("db", "usern
 
 CELERY_IMPORTS = ("tasks", )
 CELERY_RESULT_PERSISTENT = True
-CELERY_ACCEPT_CONTENT = ['json', ]
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ['pickle', ]
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_RESULT_SERIALIZER = 'pickle'
 
