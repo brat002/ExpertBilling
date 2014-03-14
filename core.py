@@ -175,7 +175,12 @@ class check_vpn_access(Thread):
                                     or \
                                     (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit))))
                         acstatus_guest = rs.guest_pool
-                        acstatus = acstatus or (acstatus_guest and not acstatus) #and not  (((subacc.allow_vpn_with_null and acc.ballance+acc.credit ==0) or (subacc.allow_vpn_with_minus and acc.ballance+acc.credit<=0) or acc.ballance+acc.credit>0)\
+                        
+                        if acstatus and acstatus_guest:
+                            acstatus=False
+                        if not acstatus and acstatus_guest:
+                            acstatus=True
+                        #acstatus = acstatus and not (acstatus_guest and not acstatus) #and not  (((subacc.allow_vpn_with_null and acc.ballance+acc.credit ==0) or (subacc.allow_vpn_with_minus and acc.ballance+acc.credit<=0) or acc.ballance+acc.credit>0)\
                                     #and \
                                     #(subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit)))
 
