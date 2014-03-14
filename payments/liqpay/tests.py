@@ -18,14 +18,7 @@ class SimpleTest(TestCase):
         acc.created = datetime.datetime.now()
         acc.contract = '010001'
         acc.save()
-        response = c.post(reverse('getpaid-easypay-pay'), """<Request>
-<DateTime>yyyy-MM-ddTHH:mm:ss</DateTime>
-<Sign></Sign>
-<Check>
-<ServiceId>int</ServiceId>
-<Account>010001</Account>
-</Check>
-</Request>""", content_type='text/xml')
+        response = c.post(reverse('getpaid-easypay-pay'), "")
         print response.content
         
 
@@ -38,16 +31,7 @@ class SimpleTest(TestCase):
         acc.created = datetime.datetime.now()
         acc.contract = '010001'
         acc.save()
-        response = c.post(reverse('getpaid-easypay-pay'), """<Request>
-<DateTime>yyyy-MM-ddTHH:mm:ss</DateTime>
-<Sign></Sign>
-<Payment>
-<ServiceId>1</ServiceId>
-<OrderId>1</OrderId>
-<Account>010001</Account>
-<Amount>10.11</Amount>
-</Payment>
-</Request>""", content_type='text/xml')
+        response = c.post(reverse('getpaid-easypay-pay'), "")
         print response.content
         
     def test_confirm(self):
