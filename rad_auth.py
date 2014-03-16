@@ -415,7 +415,7 @@ class HandleSAuth(HandleSBase):
                         break    
                 if br: break
                 
-        logger.info("Account speed data account_id=%s defaults=%s speeds=%s correction=%s addonservicespeed", (account_id, repr(defaults), repr(speeds), repr(correction), repr(addonservicespeed)))
+        logger.info("Account speed data account_id=%s defaults=%s speeds=%s correction=%s addonservicespeed=%s", (account_id, repr(defaults), repr(speeds), repr(correction), repr(addonservicespeed)))
         
         speed = create_speed(defaults, speeds,  correction, addonservicespeed, speed, now, fMem)
         
