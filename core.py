@@ -224,7 +224,7 @@ class check_vpn_access(Thread):
                             speed = create_speed(defspeed, speeds,account_limit_speed, addonservicespeed, subacc.vpn_speed, dateAT, fMem)                            
                             
                             speed = get_decimals_speeds(speed)
-                            logger.debug("%s: account=%s sessionid=%s total_speed=%s", (self.getName(), acc.account_id, str(rs.sessionid) ))
+                            logger.debug("%s: account=%s sessionid=%s total_speed=%s", (self.getName(), acc.account_id, str(rs.sessionid), repr(speed) ))
                             newspeed = ''.join([unicode(spi) for spi in speed])
 
                             if rs.speed_string != newspeed:                         
