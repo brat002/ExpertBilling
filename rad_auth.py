@@ -386,6 +386,10 @@ class HandleSAuth(HandleSBase):
         defaults = self.cache.get_defspeed_by_tarif_id(tarif_id)
         speeds   = self.cache.get_speed_by_tarif_id(tarif_id) or []
         correction = self.cache.get_speedlimit_by_account_id(account_id)
+        
+        logger.info("Account speed status account_id=%s subaccount_id=%s tarif_id=%s speed=%s", (account_id, subacc_id, tarif_id, speed))
+
+        
         now=datetime.datetime.now()
         addonservicespeed=[]  
         br = False
@@ -395,7 +399,7 @@ class HandleSAuth(HandleSBase):
                 service = self.cache.get_addonservice_by_id(accservice.service_id)     
                 for pnode in self.cache.get_timeperiodnode_by_timeperiod_id(service.timeperiod_id) or []:                                       
                     if not accservice.deactivated  and service.change_speed and fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, now)[3]:                                                                        
-                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.min_tx, service.min_rx, service.priority,  service.speed_units, service.change_speed_type)                                    
                         br = True
                         break   
                 if br: break
@@ -406,13 +410,17 @@ class HandleSAuth(HandleSBase):
                 service = self.cache.get_addonservice_by_id(accservice.service_id)           
                 for pnode in self.cache.get_timeperiodnode_by_timeperiod_id(service.timeperiod_id) or []:                     
                     if not accservice.deactivated  and service.change_speed and fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, now)[3]:                                                                        
-                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                        addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.min_tx, service.min_rx, service.priority, service.speed_units, service.change_speed_type)                                    
                         br = True
                         break    
                 if br: break
                 
+        logger.info("Account speed data account_id=%s defaults=%s speeds=%s correction=%s addonservicespeed", (account_id, repr(defaults), repr(speeds), repr(correction), repr(addonservicespeed)))
         
         speed = create_speed(defaults, speeds,  correction, addonservicespeed, speed, now, fMem)
+        
+        logger.info("Account speed account_id=%s result speed %s", (account_id, repr(speed)))
+        
         
         self.session_speed = newspeed = ''.join([unicode(spi) for spi in speed]) 
         #print speed_sess

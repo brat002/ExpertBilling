@@ -613,11 +613,11 @@ def correct_speed(speed, correction):
     #burst time
     res.append(correction[6]) 
     res.append(correction[7])
-    res.append(speedlimit_logic(speed[9], correction[9], correction[11], correction[12]))
+    res.append(speedlimit_logic(speed[8], correction[8], correction[11], correction[12]))
     
-    res.append(speedlimit_logic(speed[10], correction[10], correction[11], correction[12]))
+    res.append(speedlimit_logic(speed[9], correction[9], correction[11], correction[12]))
     #priority
-    res.append(correction[8])
+    res.append(correction[10] or speed[10])
     #min
 
     return res
@@ -628,6 +628,7 @@ def correct_speed(speed, correction):
 def get_corrected_speed(speed, correction):
     #12 - speed_units
     #13 - speed_change_type
+    
     if correction:
         return correct_speed(get_decimals_speeds(speed), correction)
     else:

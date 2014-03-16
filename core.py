@@ -188,7 +188,7 @@ class check_vpn_access(Thread):
                             dublicated_ips[rs.framed_ip_address]=[]
                         dublicated_ips[rs.framed_ip_address].append(rs)
                         
-                        if acstatus and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id) and not rs.speed_change_queued:
+                        if acstatus and not rs.speed_change_queued: # caches.timeperiodaccess_cache.in_period.get(acc.tarif_id) - not need
                             #chech whether speed has changed
                             account_limit_speed = caches.speedlimit_cache.by_account_id.get(acc.account_id, [])
                             
@@ -201,7 +201,7 @@ class check_vpn_access(Thread):
                                     service = caches.addonservice_cache.by_id.get(accservice.service_id)           
                                     for pnode in caches.timeperiodnode_cache.by_id.get(service.timeperiod_id, []):                     
                                         if not accservice.deactivated  and service.change_speed and fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, now)[3]:                                                                        
-                                            addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                                            addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.min_tx, service.min_rx, service.priority, service.speed_units, service.change_speed_type)                                    
                                             br = True
                                             break   
                                     if br: break
@@ -213,18 +213,22 @@ class check_vpn_access(Thread):
                                     service = caches.addonservice_cache.by_id.get(accservice.service_id)          
                                     for pnode in caches.timeperiodnode_cache.by_id.get(service.timeperiod_id, []):
                                         if not accservice.deactivated  and service.change_speed and fMem.in_period_(pnode.time_start,pnode.length,pnode.repeat_after, now)[3]:                                                                        
-                                            addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.priority, service.min_tx, service.min_rx, service.speed_units, service.change_speed_type)                                    
+                                            addonservicespeed = (service.max_tx, service.max_rx, service.burst_tx, service.burst_rx, service.burst_treshold_tx, service.burst_treshold_rx, service.burst_time_tx, service.burst_time_rx, service.min_tx, service.min_rx, service.priority, service.speed_units, service.change_speed_type)                                    
                                             br = True
                                             break    
                                         if br: break
 
-                            speed = create_speed(caches.defspeed_cache.by_id.get(acc.tarif_id), caches.speed_cache.by_id.get(acc.tarif_id, []),account_limit_speed, addonservicespeed, subacc.vpn_speed, dateAT, fMem)                            
-
+                            defspeed = caches.defspeed_cache.by_id.get(acc.tarif_id)
+                            speeds = caches.speed_cache.by_id.get(acc.tarif_id, [])
+                            logger.debug("%s: account=%s sessionid=%s defspeed=%s speeds=%s speedlimit=%s addonservicespeed=%s vpn_speed=%s ", (self.getName(), acc.account_id, str(rs.sessionid), repr(defspeed), repr(speeds), repr(account_limit_speed), repr(addonservicespeed), subacc.vpn_speed))
+                            speed = create_speed(defspeed, speeds,account_limit_speed, addonservicespeed, subacc.vpn_speed, dateAT, fMem)                            
+                            
                             speed = get_decimals_speeds(speed)
+                            logger.debug("%s: account=%s sessionid=%s total_speed=%s", (self.getName(), acc.account_id, str(rs.sessionid) ))
                             newspeed = ''.join([unicode(spi) for spi in speed])
 
                             if rs.speed_string != newspeed:                         
-                                logger.debug("%s: about to change speed for: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))   
+                                logger.debug("%s:send request for change speed for: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))   
                                 change_speed.delay(account=acc._asdict(), subacc=subacc._asdict(), nas=nas._asdict(), 
                                                     access_type=str(rs.access_type),
                                                     format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address,
