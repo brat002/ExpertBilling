@@ -21,7 +21,8 @@ class PaymentProcessor(PaymentProcessorBase):
     BACKEND = 'payments.liqpay'
     BACKEND_NAME = _(u'Liqpay Украина')
     PAY_WAY = ('card', 'liqpay', 'delayed')
-    CURRENCY = 'UAH'
+    BACKEND_ACCEPTED_CURRENCY = ('UAH', )
+    DEFAULT_CURRENCY = 'UAH'
     LANGUAGE = 'ru'
     GATEWAY_URL = 'https://www.liqpay.com/api/pay'
     
@@ -46,7 +47,7 @@ class PaymentProcessor(PaymentProcessorBase):
         res = {}
         res['public_key'] = PaymentProcessor.get_backend_setting('PUBLIC_KEY')
         res['amount'] = amount
-        res['currency'] = PaymentProcessor.get_backend_setting('CURRENCY')
+        res['currency'] = PaymentProcessor.get_backend_setting('DEFAULT_CURRENCY')
         res['description'] = u'Internet payment'
         res['order_id'] = payment.id
         res['result_url'] = "http://%s" % (site, )
@@ -57,15 +58,15 @@ class PaymentProcessor(PaymentProcessorBase):
 
         #operation_xml = b64encode(xml)
         res['signature'] = b64encode(hashlib.sha1(PaymentProcessor.get_backend_setting('PRIVATE_KEY')+
-                                           res['amount']+
+                                           str(res['amount'])+
                                            res['currency']+
                                            res['public_key']+
-                                           res['order_id']+
+                                           str(res['order_id'])+
                                            res['type']+
                                            res['description']+
-                                           res['amount']+
                                            res['result_url']+
                                            res['server_url']).digest())
+
         
         return self.GATEWAY_URL, "POST", res
     
