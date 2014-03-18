@@ -177,7 +177,7 @@ class check_vpn_access(Thread):
                         
                         if acstatus and acstatus_guest or not (acc.account_status==1 and acc.tarif_active==True):
                             acstatus=False
-                        if not acstatus and acstatus_guest:
+                        elif not acstatus and acstatus_guest:
                             acstatus=True
                         #acstatus = acstatus and not (acstatus_guest and not acstatus) #and not  (((subacc.allow_vpn_with_null and acc.ballance+acc.credit ==0) or (subacc.allow_vpn_with_minus and acc.ballance+acc.credit<=0) or acc.ballance+acc.credit>0)\
                                     #and \
