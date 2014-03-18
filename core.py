@@ -155,8 +155,7 @@ class check_vpn_access(Thread):
                                     FROM radius_activesession AS rs WHERE rs.date_end IS NULL AND rs.date_start <= %s and session_status='ACTIVE';""", ( dateAT,))
                 rows=cur.fetchall()
                 cur.connection.commit()
-                #try:
-                #    sessions = convert(rosClient('10.10.1.100', 'admin', 'Wind0za', r"/queue/simple/getall"))
+
                 for row in rows:
                     try:
                         rs = RadiusSession(*row)
@@ -171,12 +170,12 @@ class check_vpn_access(Thread):
                         if 0: assert isinstance(nas, NasData); assert isinstance(acc, AccountData)
                         
 
-                        acstatus = acc.account_status==1 and acc.tarif_active==True and (((subacc.allow_vpn_with_null and acc.ballance+acc.credit ==0) or (subacc.allow_vpn_with_minus and acc.ballance+acc.credit<=0) or acc.ballance+acc.credit>0\
+                        acstatus =  (subacc.allow_vpn_with_null and acc.ballance+acc.credit ==0) or (subacc.allow_vpn_with_minus and acc.ballance+acc.credit<0) or acc.ballance+acc.credit>0\
                                     or \
-                                    (subacc.allow_vpn_with_block or (not subacc.allow_vpn_with_block and not acc.balance_blocked and not acc.disabled_by_limit))))
+                                    (subacc.allow_vpn_with_block and (acc.balance_blocked or acc.disabled_by_limit))
                         acstatus_guest = rs.guest_pool
                         
-                        if acstatus and acstatus_guest:
+                        if acstatus and acstatus_guest or not (acc.account_status==1 and acc.tarif_active==True):
                             acstatus=False
                         if not acstatus and acstatus_guest:
                             acstatus=True
@@ -235,7 +234,7 @@ class check_vpn_access(Thread):
                                                     speed=speed, cb=tasks.update_vpn_speed_state.s(nas_id=rs.nas_id, nas_port_id=rs.nas_port_id, session_id=rs.id, newspeed=newspeed))
 
                                 logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
-                        elif not rs.pod_queued and ( not acstatus or not caches.timeperiodaccess_cache.in_period.get(acc.tarif_id)):
+                        elif not rs.pod_queued and not acstatus:
                             logger.debug("%s: Send POD: account:  %s| subacc: %s| nas: %s | sessionid: %s", (self.getName(), acc, subacc, nas.id, str(rs.sessionid)))
                             PoD.delay(acc._asdict(), subacc._asdict(), nas._asdict(), access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, nas_port_id=rs.nas_port_id, caller_id=str(rs.caller_id), format_string=str(nas.reset_action), cb=tasks.update_pod_state.s(nas_id=rs.nas_id, nas_port_id=rs.nas_port_id, session_id=rs.id))
                             logger.debug("%s: POD sended: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
@@ -1245,7 +1244,7 @@ class addon_service(Thread):
                         
                         if allow==False or ((accountaddonservice.deactivated or accountaddonservice.temporary_blocked or deactivated or (service.deactivate_service_for_blocked_account==True and ((acc.ballance or 0 +acc.credit or 0)<=0 or acc.disabled_by_limit==True or acc.balance_blocked==True or acc.account_status!=1 ))) and accountaddonservice.action_status==True):
                             #выполняем service_deactivation_action
-                            sended = cred.delay(acc, subacc, 'ipn', nas, addonservice=service._asdict(), format_string=service.service_deactivation_action, cb=tasks.adds_disable_state.s(accountaddonservice.id))
+                            sended = cred.delay(acc._asdict(), subacc._asdict(), 'ipn', nas._asdict(), addonservice=service._asdict(), format_string=service.service_deactivation_action, cb=tasks.adds_disable_state.s(accountaddonservice.id))
 
 
                     cur.connection.commit()
