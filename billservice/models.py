@@ -704,7 +704,7 @@ class TrafficLimit(models.Model):
     settlement_period = models.ForeignKey(to=SettlementPeriod, verbose_name=_(u'Период'), blank=True, null=True,
                                           on_delete=models.SET_NULL, help_text=_(
             u"Если период не указан-берётся период тарифного плана. Если установлен автостарт-началом периода будет считаться день привязки тарифного плана пользователю. Если не установлен-старт берётся из расчётного периода"))
-    size = models.IntegerField(verbose_name=_(u'Размер в килобайтах'), default=0)
+    size = models.IntegerField(verbose_name=_(u'Размер в байтах'), default=0)
     group = models.ForeignKey("Group", verbose_name=_(u"Группа"))
     mode = models.BooleanField(default=False, blank=True, verbose_name=_(u'За длинну расчётного периода'), help_text=_(
         u'Если флаг установлен-то количество трафика считается за последние N секунд, указанные в расчётном периоде'))

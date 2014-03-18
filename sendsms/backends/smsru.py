@@ -42,7 +42,7 @@ class SmsBackend(BaseSmsBackend):
                          'translit': self.translit,
                          'test': self.test,
                          'to': message.to,
-                         'text': message.body.encode('utf-8'),
+                         'text': message.body, #.encode('utf-8'),
                          }
         
         resp = sendsmsru_post.delay(self.SEND_ADDR, parameters, id=message.id)
