@@ -6,10 +6,10 @@ nf_sql = {'nas':"SELECT id, ipaddress from nas_nas;",
           'tgroups':"SELECT tarif_id, int_array_aggregate(group_id) AS group_ids FROM (SELECT tarif_id, group_id FROM billservice_trafficlimit UNION SELECT bt.id, btn.group_id FROM billservice_tariff AS bt JOIN billservice_traffictransmitnodes AS btn ON bt.traffic_transmit_service_id=btn.traffic_transmit_service_id WHERE btn.group_id IS NOT NULL UNION SELECT bt.id, bpt.group_id FROM billservice_tariff AS bt JOIN billservice_prepaidtraffic AS bpt ON bt.traffic_transmit_service_id=bpt.traffic_transmit_service_id WHERE bpt.group_id IS NOT NULL) AS tarif_group GROUP BY tarif_id;",
           'nas_port':"select account_id, nas_int_id, nas_port_id FROM radius_activesession WHERE nas_port_id is not Null and (session_status='ACTIVE' or (session_status!='ACTIVE' and date_end is not null and date_end + interval '5 minutes'>=now()));",
           'active_sessions': """
-                SELECT ip2int(vpn_ip_address::text), account_id, get_tarif(account_id), (SELECT max(id) FROM billservice_accounttarif WHERE account_id=billservice_subaccount.account_id) FROM billservice_subaccount
+                SELECT ip2int(replace(vpn_ip_address::text, '/32', '')), account_id, get_tarif(account_id), (SELECT max(id) FROM billservice_accounttarif WHERE account_id=billservice_subaccount.account_id) FROM billservice_subaccount
                 WHERE vpn_ip_address!='0.0.0.0' and ipn_ip_address!='0.0.0.0/32' and ipn_ip_address is not null
                 UNION ALL
-                SELECT ip2int(ipn_ip_address::text), account_id, get_tarif(account_id), (SELECT max(id) FROM billservice_accounttarif WHERE account_id=billservice_subaccount.account_id) FROM billservice_subaccount
+                SELECT ip2int(replace(ipn_ip_address::text, '/32', ''), account_id, get_tarif(account_id), (SELECT max(id) FROM billservice_accounttarif WHERE account_id=billservice_subaccount.account_id) FROM billservice_subaccount
                 WHERE ipn_ip_address!='0.0.0.0' and ipn_ip_address!='0.0.0.0/32' and ipn_ip_address is not null
                 UNION ALL
                 SELECT ip2int(framed_ip_address), account_id, get_tarif(account_id), (SELECT max(id) FROM billservice_accounttarif WHERE account_id=radius_activesession.account_id) FROM radius_activesession WHERE session_status='ACTIVE';
