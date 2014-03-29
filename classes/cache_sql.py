@@ -9,7 +9,7 @@ nf_sql = {'nas':"SELECT id, ipaddress from nas_nas;",
                 SELECT ip2int(replace(vpn_ip_address::text, '/32', '')), account_id, get_tarif(account_id), (SELECT max(id) FROM billservice_accounttarif WHERE account_id=billservice_subaccount.account_id) FROM billservice_subaccount
                 WHERE vpn_ip_address!='0.0.0.0' and ipn_ip_address!='0.0.0.0/32' and ipn_ip_address is not null
                 UNION ALL
-                SELECT ip2int(replace(ipn_ip_address::text, '/32', ''), account_id, get_tarif(account_id), (SELECT max(id) FROM billservice_accounttarif WHERE account_id=billservice_subaccount.account_id) FROM billservice_subaccount
+                SELECT ip2int(replace(ipn_ip_address::text, '/32', '')), account_id, get_tarif(account_id), (SELECT max(id) FROM billservice_accounttarif WHERE account_id=billservice_subaccount.account_id) FROM billservice_subaccount
                 WHERE ipn_ip_address!='0.0.0.0' and ipn_ip_address!='0.0.0.0/32' and ipn_ip_address is not null
                 UNION ALL
                 SELECT ip2int(framed_ip_address), account_id, get_tarif(account_id), (SELECT max(id) FROM billservice_accounttarif WHERE account_id=radius_activesession.account_id) FROM radius_activesession WHERE session_status='ACTIVE';
