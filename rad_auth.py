@@ -877,7 +877,7 @@ class HandleHotSpotAuth(HandleSAuth):
         if pin:
             logger.info("Activating account username %s pin %s ip %s mac %s", (user_name, pin[0], ip,mac))
             self.cursor.execute("""SELECT * FROM card_activate_fn(%s, %s, %s::inet, %s::text) AS 
-                             A(account_id int, subaccount_id int, "password" text, nas_id int, tarif_id int, account_status int, 
+                             A(account_id int, subaccount_id int, "password" text, nas_id int, tarif_id int, status int, 
                              balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean,ipv4_vpn_pool_id int, tarif_vpn_ippool_id int,vpn_ip_address inet,ipn_ip_address inet,ipn_mac_address text,access_type text)
                             """, (user_name, pin[0], ip,mac))
     

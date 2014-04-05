@@ -85,7 +85,7 @@ class Worker(ConsumerMixin):
 
     def on_message(self, body, message):
         #print body
-        while queues.flowQueueSize >1500:
+        while queues.flowQueueSize >15000:
             time.sleep(1)
             
         body = body['data']
