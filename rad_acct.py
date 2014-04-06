@@ -93,20 +93,27 @@ def show_packet(packetobject):
     return b
 
 
-def get_accesstype(packetobject):
+def get_accesstype(packetobject, caches):
     """
     Returns access type name by which a user connects to the NAS
     """
     #print show_packet(packetobject)
     try:
+        nas_type = None
         nas_port_type = packetobject.get('NAS-Port-Type', (None,))[0]
+        nas_identifier = packetobject.get('NAS-Identifier', (None,))[0]
+        if nas_identifier:
+            nas_type = caches.get_nas_type_by_id(nas_identifier)
+            if nas_type in ('accel-ipoe', 'lISG', 'accel-ipoe-l3'):
+                return nas_type
+
         calling_station = packetobject.get('Calling-Station-Id', [''])[0]
         logger.info('Nas port type: %s Service Type %s Calling-Station-Id %s', (nas_port_type, packetobject.get('Service-Type', [''])[0], calling_station ))
         if nas_port_type == 'Virtual' and packetobject.get('Service-Type', [''])[0]=='Framed-User':
             return 'PPTP'
-        elif (nas_port_type in ['Ethernet', 'Async'] or (len(calling_station)==17 and calling_station.rfind(':')!=-1)) and packetobject.get('Service-Type', [''])[0]=='Framed-User': 
+        elif (nas_port_type in ['Ethernet', 'Async'] or (len(calling_station)==17 and calling_station.rfind(':')!=-1)) and packetobject.get('Service-Type', [''])[0]=='Framed-User':
             return 'PPPOE'
-        elif nas_port_type == None and packetobject.get('Service-Type', [''])[0]=='Framed-User': 
+        elif nas_port_type == (None,) and packetobject.get('Service-Type', [''])[0]=='Framed-User': 
             return 'Wireless'        
         elif nas_port_type == 'Wireless-802.11':
             return 'W802.1x'
@@ -173,7 +180,8 @@ class AcctHandler(Thread):
 
                 acct_time = time.time()
                 dbCur = self.dbconn.cursor()
-                coreconnect = HandleSAcct(packetobject=packetobject, dbCur=dbCur, transport = transport, addrport = addrport)
+                access_type=get_accesstype(packetobject, self.cache)
+                coreconnect = HandleSAcct(access_type=access_type, packetobject=packetobject, dbCur=dbCur, transport = transport, addrport = addrport)
                 coreconnect.cache = self.cache        
 
                 coreconnect.handle()
@@ -332,7 +340,7 @@ class HandleSAcct(HandleSBase):
     """ Если это аккаунтинг хотспот-сервиса, при поступлении Accounting-Start пишем в профиль пользователя IP адрес, который ему выдал микротик"""
     __slots__ = () + ('cur', 'access_type')
 
-    def __init__(self, packetobject, dbCur, transport, addrport):
+    def __init__(self, access_type, packetobject, dbCur, transport, addrport):
         super(HandleSAcct, self).__init__()
         self.packetobject=packetobject
         nas_ip = str(packetobject.get('NAS-IP-Address', [''])[0])
@@ -340,7 +348,7 @@ class HandleSAcct(HandleSBase):
             nas_ip = addrport[0]
         self.nasip=nas_ip
         self.replypacket=packetobject.CreateReply()
-        self.access_type=get_accesstype(packetobject)
+        self.access_type = access_type
         #print self.access_type
         self.cur = dbCur
         self.userName = ''
