@@ -39,7 +39,7 @@
       <fieldset>
         {% if prepaidtraffic_table %}{% render_table prepaidtraffic_table %}{% endif %}
         <div class="btn-toolbar">
-          <a href="{% url 'tariff_prepaidtraffic_edit' %}?tariff_id={{tariff.id}"
+          <a href="{% url 'tariff_prepaidtraffic_edit' %}?tariff_id={{tariff.id}}"
               class="btn btn-success general-modal-dialog"
               data-dlgtitle="{% blocktrans %}Предоплаченный трафик{% endblocktrans %}"
               data-dlgid="traffictransmitnode-modal">
