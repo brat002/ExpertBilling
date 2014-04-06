@@ -188,7 +188,8 @@ class Cache(object):
             self.cursor.execute('''SELECT type
                        FROM nas_nas WHERE identify=%s;''' , (identify, ))
             res = self.cursor.fetchone()
-    
+            if res:
+                res = res.type
             obj = self.memcached_connection.set(cache_key, res, NAS_TYPE_CACHE_TIMEOUT)
         except Exception as ex:
             self.logger.error("%s database or memcached subsystem error: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
