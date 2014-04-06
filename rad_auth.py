@@ -807,7 +807,7 @@ class HandlelISGAuth(HandleSAuth):
 
         logger.info("Authorization user:%s allowed_time:%s User Status:%s Balance:%s Disabled by limit:%s Balance blocked:%s Tarif Active:%s", ( self.packetobject['User-Name'][0], allow_dial, acc.status, acc.ballance, acc.disabled_by_limit, acc.balance_blocked, acc.tariff_active))
         if allow_dial and acc.tariff_active:
-            self.replypacket.code(2)
+            self.replypacket.code=2
             self.replypacket.username = '' #Нельзя юникод
             self.replypacket.password = '' #Нельзя юникод
             if subacc.vpn_ip_address not in ['', '0.0.0.0', '0.0.0.0/0']:
