@@ -77,7 +77,7 @@ def show_packet(packetobject):
 def authNA(packet):
     return packet.ReplyPacket()
 
-def get_accesstype(packetobject, caches):
+def get_accesstype(packetobject, cache):
     """
     Returns access type name by which a user connects to the NAS
     """
@@ -87,7 +87,7 @@ def get_accesstype(packetobject, caches):
         nas_port_type = packetobject.get('NAS-Port-Type', (None,))[0]
         nas_identifier = packetobject.get('NAS-Identifier', (None,))[0]
         if nas_identifier:
-            nas_type = caches.get_nas_type_by_id(nas_identifier)
+            nas_type = cache.get_nas_type_by_id(nas_identifier)
             if nas_type in ('accel-ipoe', 'lISG', 'accel-ipoe-l3'):
                 return nas_type
 
@@ -166,7 +166,7 @@ class AuthHandler(Thread):
                 nas_ip = str(packetobject.get('NAS-IP-Address', [''])[0])
                 if not nas_ip:
                     nas_ip = addrport[0]
-                access_type = get_accesstype(packetobject, self.caches)
+                access_type = get_accesstype(packetobject, self.cache)
                 logger.debug("%s: Access type: %s, packet: %s", (self.getName(), access_type, packetobject.code))
                 user_name = ''
                 try:
