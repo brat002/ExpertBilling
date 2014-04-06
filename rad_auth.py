@@ -191,7 +191,7 @@ class AuthHandler(Thread):
 
                     
                 elif access_type in ['lISG', 'accel-ipoe', 'accel-ipoe-l3'] :
-                    coreconnect = HandlelISGAuth(packetobject=packetobject, access_type=access_type, transport = transport, addrport = addrport)
+                    coreconnect = HandlelISGAuth(packetobject=packetobject, access_type=access_type, dbconn=self.dbconn, transport = transport, addrport = addrport)
                     coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
                     coreconnect.cache = self.cache
                     authobject, packetfromcore = coreconnect.handle()
