@@ -83,11 +83,13 @@ def get_accesstype(packetobject, cache):
     """
     #print show_packet(packetobject)
     try:
+        
         nas_type = None
         nas_port_type = packetobject.get('NAS-Port-Type', (None,))[0]
         nas_identifier = packetobject.get('NAS-Identifier', (None,))[0]
         if nas_identifier:
             nas_type = cache.get_nas_type_by_id(nas_identifier)
+            logger.debug('Nas type %s for identify %s', (nas_type, nas_identifier))
             if nas_type in ('accel-ipoe', 'lISG', 'accel-ipoe-l3'):
                 return nas_type
 
@@ -160,7 +162,7 @@ class AuthHandler(Thread):
                 else:
                     continue
 
-
+                logger.debug('Packet: %s \n %s', (repr(packetobject), ))
                 auth_time = time.time()
                 returndata = ''
                 nas_ip = str(packetobject.get('NAS-IP-Address', [''])[0])
