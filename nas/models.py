@@ -20,6 +20,9 @@ NAS_LIST=(
                 (u'common_ssh',u'common_ssh'),
                 (u'localhost',u'Выполнение команд локально'),
                 (u'switch',u'Коммутатор(switch)'),
+                (u'accel-ipoe',u'Accel IPOE'),
+                (u'accel-ipoe-l3',u'Accel IPOE L3'),
+                (u'lISG',u'lISG'),
                 )
 
 DIRECTIONS_LIST=(
