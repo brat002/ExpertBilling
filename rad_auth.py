@@ -782,7 +782,7 @@ class HandlelISGAuth(HandleSAuth):
         
 
         self.nas_type = nas.type
-        self.replypacket = self.packetobject.CreteReply()
+        self.replypacket = self.packetobject.CreateReply()
         self.replypacket.secret=str(nas.secret)
         
         logger.debug("Account data : %s", repr(acc))
