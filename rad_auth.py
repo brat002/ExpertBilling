@@ -731,7 +731,7 @@ class HandlelISGAuth(HandleSAuth):
         
         #if 0: assert isinstance(nas, NasData)
 
-
+        nas = nasses[0]
         #station_id = self.packetobject.get('Calling-Station-Id', [''])[0]
         station_id = str(self.packetobject['User-Name'][0]) if self.access_type=='lISG' else \
                         str(self.packetobject['Calling-Station-Id'][0])
@@ -751,13 +751,13 @@ class HandlelISGAuth(HandleSAuth):
             logger.warning("Subcccount for %s not found for ip address %s", (self.access_type, station_id,))
             sqlloggerthread.add_message(type="AUTH_SUBACC_NOT_FOUND", service=self.access_type, cause=u'Субаккаунт с логином  ipn ip/mac %s в системе не найден.' % (station_id,), datetime=self.datetime)
             #Не учитывается сервер доступа
-            return 
+            return self.auth_NA(nas.secret) 
         acc = self.cache.get_account_by_id(subacc.account_id)
         
         if not acc:
             logger.warning("Account with username  %s not found", (user_name,))
             sqlloggerthread.add_message(type="AUTH_ACC_NOT_FOUND", service=self.access_type, cause=u'Аккаунт для субаккаунта с логином %s в системе не найден.' % (subacc.username, ), datetime=self.datetime)
-            return 
+            return self.auth_NA(nas.secret)
             
         nas_id = subacc.nas_id
 
