@@ -702,6 +702,17 @@ class HandleSAuth(HandleSBase):
 
 class HandlelISGAuth(HandleSAuth):
     
+    
+    def auth_NA(self, secret=''):
+        """
+        Denides access
+        """        
+        reply = self.packetobject.CreateReply()
+        reply.code = packet.AccessReject
+        reply.secret = secret
+        logger.debug("REPLY packet: %s", repr(reply)) 
+        self.transport.write(reply.ReplyPacket(), self.addrport)
+        
     def handle(self):
         global sqlloggerthread
         self.datetime = datetime.datetime.now()
@@ -709,7 +720,7 @@ class HandlelISGAuth(HandleSAuth):
         if not nasses:
             logger.warning("Requested NAS IP (%s) not found in nasses %s", (self.nasip, str(nasses),))
             sqlloggerthread.add_message(type="AUTH_NAS_NOT_FOUND", service=self.access_type, cause=u'Сервер доступа с IP %s не найден ' % self.nasip, datetime=self.datetime) 
-            return '',None
+            return 
         
         #if 0: assert isinstance(nas, NasData)
 
@@ -733,13 +744,13 @@ class HandlelISGAuth(HandleSAuth):
             logger.warning("Subcccount for %s not found for ip address %s", (self.access_type, station_id,))
             sqlloggerthread.add_message(type="AUTH_SUBACC_NOT_FOUND", service=self.access_type, cause=u'Субаккаунт с логином  ipn ip/mac %s в системе не найден.' % (station_id,), datetime=self.datetime)
             #Не учитывается сервер доступа
-            return self.auth_NA(self.authobject)
+            return 
         acc = self.cache.get_account_by_id(subacc.account_id)
         
         if not acc:
             logger.warning("Account with username  %s not found", (user_name,))
             sqlloggerthread.add_message(type="AUTH_ACC_NOT_FOUND", service=self.access_type, cause=u'Аккаунт для субаккаунта с логином %s в системе не найден.' % (subacc.username, ), datetime=self.datetime)
-            return self.auth_NA(self.authobject)
+            return 
             
         nas_id = subacc.nas_id
 
@@ -753,7 +764,7 @@ class HandlelISGAuth(HandleSAuth):
             """
             logger.warning("Account nas(%s) is not in sended nasses and IGNORE_NAS_FOR_VPN is False %s", (repr(nas), nasses,))
             sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_BAD_NAS", service=self.access_type, cause=u'Субаккаунт привязан к конкретному серверу доступа, но запрос на авторизацию поступил с IP %s.' % (self.nasip), datetime=self.datetime)
-            return self.auth_NA(self.authobject)
+            return self.auth_NA(nas.secret)
         elif not nas_id:
             """
             Иначе, если указан любой NAS - берём первый из списка совпавших по IP
@@ -761,48 +772,23 @@ class HandlelISGAuth(HandleSAuth):
             nas = nasses[0]
 
         nas_id = nas.id    
-        self.authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type=self.access_type, challenges = queues.challenges)
+        
 
         self.nas_type = nas.type
         self.replypacket = packet.Packet(secret=str(nas.secret),dict=vars.DICT)
         
         logger.debug("Account data : %s", repr(acc))
 
-        process, ok, left = self.authobject._HandlePacket()
-        if not process:
-            logger.warning(left, ())
-            logger.debug("Auth object : %s" , self.authobject)
-            #self.cur.close()
-            if ok:
-                return self.authobject, self.replypacket
-            else:
-                return self.auth_NA(self.authobject)
- 
- 
-        process, ok, left = self.authobject._ProcessPacket()
-        if not process:
-            logger.warning(left, ())
-            logger.debug("Auth object : %s" , self.authobject)
-            if ok:
-                return self.authobject, self.replypacket
-            else:
-                return self.auth_NA(self.authobject)
- 
-        check_auth, left = self.authobject.check_auth()
-        logger.debug("Auth object : %s" , self.authobject)
-        if not check_auth:
-            logger.warning(left, ())
-            return self.auth_NA(self.authobject) 
 
         if acc.status != 1:
             sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_ACCOUNT_DISABLED", service=self.access_type, cause=u'Аккаунт отключен', datetime=self.datetime)
-            return self.auth_NA(self.authobject)  
+            return self.auth_NA(nas.secret)  
         
         #print common_vpn,access_type,self.access_type
         if (acc.access_type is None) or (acc.access_type != self.access_type):
             logger.warning("Unallowed Access Type for user %s. Access type - %s; packet access type - %s", (user_name, acc.access_type, self.access_type))
             sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_WRONG_ACCESS_TYPE", service=self.access_type, cause=u'Способ доступа %s не совпадает с разрешённым в параметрах тарифного плана %s.' % (self.access_type, acc.access_type), datetime=self.datetime)
-            return self.auth_NA(self.authobject)
+            return self.auth_NA(nas.secret)
 
         acstatus = (((subacc.allow_vpn_with_null and acc.ballance >=0) or (subacc.allow_vpn_with_minus and acc.ballance<=0) or acc.ballance>0)\
                     and \
@@ -811,7 +797,7 @@ class HandlelISGAuth(HandleSAuth):
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (subacc.username, subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.status))
             sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_VPN_BALLANCE_ERROR", service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
-            return self.auth_NA(self.authobject)     
+            return self.auth_NA(nas.secret)     
 
      
 
@@ -843,7 +829,7 @@ class HandlelISGAuth(HandleSAuth):
             self.reply()
         else:
             sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_BAD_TIME", service=self.access_type, cause=u'Тариф неактивен(%s) или запрещённое время %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)
-            return self.auth_NA(self.authobject)
+            return self.auth_NA(nas.secret)
              
 #HotSpot_class
 #auth_class
