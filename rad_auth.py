@@ -194,11 +194,8 @@ class AuthHandler(Thread):
                     coreconnect = HandlelISGAuth(packetobject=packetobject, access_type=access_type, dbconn=self.dbconn, transport = transport, addrport = addrport)
                     coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
                     coreconnect.cache = self.cache
-                    authobject, packetfromcore = coreconnect.handle()
-                    if packetfromcore is None: 
-                        logger.info("Unknown NAS or Account %s", str(nas_ip))
-                        self.dbconn.commit()
-                        continue
+                    coreconnect.handle()
+
 
                     #authobject.ReturnPacket(packetfromcore)                    
                     
