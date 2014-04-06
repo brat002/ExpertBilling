@@ -703,6 +703,8 @@ class HandleSAuth(HandleSBase):
 class HandlelISGAuth(HandleSAuth):
     
     
+
+        
     def auth_NA(self, secret=''):
         """
         Denides access
@@ -739,7 +741,7 @@ class HandlelISGAuth(HandleSAuth):
             subacc = self.cache.get_subaccount_by_ipn_ip(station_id)
         else:
             subacc = self.cache.get_subaccount_by_ipn_mac(station_id)
-        #self.authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)
+        self.authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)
         if not subacc:
             logger.warning("Subcccount for %s not found for ip address %s", (self.access_type, station_id,))
             sqlloggerthread.add_message(type="AUTH_SUBACC_NOT_FOUND", service=self.access_type, cause=u'Субаккаунт с логином  ipn ip/mac %s в системе не найден.' % (station_id,), datetime=self.datetime)
