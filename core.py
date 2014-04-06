@@ -175,7 +175,7 @@ class check_vpn_access(Thread):
                                     (subacc.allow_vpn_with_block and (acc.balance_blocked or acc.disabled_by_limit))
                         acstatus_guest = rs.guest_pool
                         
-                        if not (acc.account_status==1 and acc.tarif_active==True):
+                        if not (acc.account_status==1 and acc.tarif_active==True and caches.timeperiodaccess_cache.in_period.get(acc.tarif_id)):
                             ##dont check next if account disabled
                             acstatus=False
                         elif acstatus and acstatus_guest:
