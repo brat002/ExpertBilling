@@ -200,7 +200,7 @@ class AuthHandler(Thread):
                         self.dbconn.commit()
                         continue
 
-                    authobject.ReturnPacket(packetfromcore)                    
+                    #authobject.ReturnPacket(packetfromcore)                    
                     
                 else:
                     a = time.time()
