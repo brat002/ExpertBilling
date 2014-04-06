@@ -739,7 +739,7 @@ class HandlelISGAuth(HandleSAuth):
             subacc = self.cache.get_subaccount_by_ipn_ip(station_id)
         else:
             subacc = self.cache.get_subaccount_by_ipn_mac(station_id)
-        self.authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)
+        #self.authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)
         if not subacc:
             logger.warning("Subcccount for %s not found for ip address %s", (self.access_type, station_id,))
             sqlloggerthread.add_message(type="AUTH_SUBACC_NOT_FOUND", service=self.access_type, cause=u'Субаккаунт с логином  ipn ip/mac %s в системе не найден.' % (station_id,), datetime=self.datetime)
@@ -785,7 +785,7 @@ class HandlelISGAuth(HandleSAuth):
             return self.auth_NA(nas.secret)  
         
         #print common_vpn,access_type,self.access_type
-        if (acc.access_type is None) or (acc.access_type != self.access_type):
+        if acc.access_type is None:
             logger.warning("Unallowed Access Type for user %s. Access type - %s; packet access type - %s", (user_name, acc.access_type, self.access_type))
             sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_WRONG_ACCESS_TYPE", service=self.access_type, cause=u'Способ доступа %s не совпадает с разрешённым в параметрах тарифного плана %s.' % (self.access_type, acc.access_type), datetime=self.datetime)
             return self.auth_NA(nas.secret)
