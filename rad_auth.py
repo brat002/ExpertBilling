@@ -77,13 +77,20 @@ def show_packet(packetobject):
 def authNA(packet):
     return packet.ReplyPacket()
 
-def get_accesstype(packetobject):
+def get_accesstype(packetobject, caches):
     """
     Returns access type name by which a user connects to the NAS
     """
     #print show_packet(packetobject)
     try:
+        nas_type = None
         nas_port_type = packetobject.get('NAS-Port-Type', (None,))[0]
+        nas_identifier = packetobject.get('NAS-Identifier', (None,))[0]
+        if nas_identifier:
+            nas_type = caches.get_nas_type_by_id(nas_identifier)
+            if nas_type in ('accel-ipoe', 'lISG', 'accel-ipoe-l3'):
+                return nas_type
+
         calling_station = packetobject.get('Calling-Station-Id', [''])[0]
         logger.info('Nas port type: %s Service Type %s Calling-Station-Id %s', (nas_port_type, packetobject.get('Service-Type', [''])[0], calling_station ))
         if nas_port_type == 'Virtual' and packetobject.get('Service-Type', [''])[0]=='Framed-User':
@@ -159,7 +166,7 @@ class AuthHandler(Thread):
                 nas_ip = str(packetobject.get('NAS-IP-Address', [''])[0])
                 if not nas_ip:
                     nas_ip = addrport[0]
-                access_type = get_accesstype(packetobject)
+                access_type = get_accesstype(packetobject, self.caches)
                 logger.debug("%s: Access type: %s, packet: %s", (self.getName(), access_type, packetobject.code))
                 user_name = ''
                 try:
@@ -181,7 +188,7 @@ class AuthHandler(Thread):
                     coreconnect.handle()
 
                     
-                elif access_type in ['lISG'] :
+                elif access_type in ['lISG', 'accel-ipoe', 'accel-ipoe-l3'] :
                     coreconnect = HandlelISGAuth(packetobject=packetobject, access_type=access_type, transport = transport, addrport = addrport)
                     coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
                     coreconnect.cache = self.cache
@@ -709,19 +716,23 @@ class HandlelISGAuth(HandleSAuth):
 
 
         #station_id = self.packetobject.get('Calling-Station-Id', [''])[0]
-        station_id = str(self.packetobject['User-Name'][0])
+        station_id = str(self.packetobject['User-Name'][0]) if self.access_type=='lISG' else \
+                        str(self.packetobject['Calling-Station-Id'][0])
         user_name = station_id
         #print station_id
         #row = get_account_data_by_username(self.cur, self.packetobject['User-Name'][0], self.access_type, station_id=station_id, multilink = self.multilink, common_vpn = common_vpn)
         #print self.caches.account_cache.by_ipn_ip_nas
-        logger.warning("Searching lISG account for ip address %s", station_id)
+        logger.warning("Searching %s account for ip address %s", (self.access_type,station_id))
         #acc = self.caches.account_cache.by_ipn_ip_nas.get((station_id, nas.id))
         #subacc = SubAccount()
-        subacc = self.cache.get_subaccount_by_ipn_ip(station_id)
+        if '.' in station_id:
+            subacc = self.cache.get_subaccount_by_ipn_ip(station_id)
+        else:
+            subacc = self.cache.get_subaccount_by_ipn_mac(station_id)
         self.authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nasses[0].secret), access_type=self.access_type, challenges = queues.challenges)
         if not subacc:
-            logger.warning("Subcccount for lISG not found for ip address %s", (station_id,))
-            sqlloggerthread.add_message(type="AUTH_SUBACC_NOT_FOUND", service=self.access_type, cause=u'Субаккаунт с логином  ipn ip %s в системе не найден.' % (station_id,), datetime=self.datetime)
+            logger.warning("Subcccount for %s not found for ip address %s", (self.access_type, station_id,))
+            sqlloggerthread.add_message(type="AUTH_SUBACC_NOT_FOUND", service=self.access_type, cause=u'Субаккаунт с логином  ipn ip/mac %s в системе не найден.' % (station_id,), datetime=self.datetime)
             #Не учитывается сервер доступа
             return self.auth_NA(self.authobject)
         acc = self.cache.get_account_by_id(subacc.account_id)
@@ -1056,7 +1067,6 @@ class HandleSDHCP(HandleSAuth):
 
         self.packetobject = packetobject
         self.secret = ""
-        self.access_type=get_accesstype(packetobject)
         self.replypacket = packetobject
         self.transport = transport
         self.addrport = addrport

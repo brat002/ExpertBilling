@@ -7,6 +7,7 @@ NAS_CACHE_TIMEOUT = 120
 SUBACC_CACHE_TIMEOUT = 120
 ACC_CACHE_TIMEOUT = 120
 COMMON_CACHE_TIMEOUT = 180
+NAS_TYPE_CACHE_TIMEOUT = 300
 
 class RealDictRow(dict):
     """A `!dict` subclass representing a data record."""
@@ -174,6 +175,26 @@ class Cache(object):
             res = None
         return res
     
+    
+    def get_nas_type_by_id(self,  identify):
+        current_key = 'nas_type_by_id_%s'
+        cache_key = str((self.cache_prefix+current_key) % id)
+        obj = self.memcached_connection.get(cache_key)
+        if obj: return obj
+        
+        
+
+        try:
+            self.cursor.execute('''SELECT type
+                       FROM nas_nas WHERE identify=%s;''' , (identify, ))
+            res = self.cursor.fetchone()
+    
+            obj = self.memcached_connection.set(cache_key, res, NAS_TYPE_CACHE_TIMEOUT)
+        except Exception as ex:
+            self.logger.error("%s database or memcached subsystem error: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+            res = None
+        return res
+    
     #@memoize_with_expiry(30)
     def get_subaccount_by_ipn_ip(self,  ipn_ip_address):
         current_key = 'subaccount__by_ipn_ip_address_%s'
@@ -203,6 +224,34 @@ class Cache(object):
             
         return res
     
+    
+    def get_subaccount_by_ipn_mac(self,  ipn_mac_address):
+        current_key = 'subaccount__by_ipn_mac_%s'
+        cache_key = str((self.cache_prefix+current_key) % ipn_mac_address)
+        obj = self.memcached_connection.get(cache_key)
+        if obj: 
+            
+            return obj
+
+        try:
+            self.cursor.execute("""SELECT id, account_id, username, decrypt_pw(password, %s)::text as password, 
+                                              vpn_ip_address, ipn_ip_address, ipn_mac_address, nas_id, 
+                                              switch_id, switch_port, allow_dhcp, allow_dhcp_with_null, 
+                                              allow_dhcp_with_minus, allow_dhcp_with_block, allow_vpn_with_null, 
+                                              allow_vpn_with_minus, allow_vpn_with_block, associate_pptp_ipn_ip,
+                                               associate_pppoe_ipn_mac, vpn_speed, ipn_speed, vlan, 
+                                               vpn_ipv6_ip_address, ipv4_vpn_pool_id, sessionscount 
+                                               FROM billservice_subaccount
+                                               WHERE ipn_mac_address=%s
+                                               ;""", (self.crypt_key, ipn_mac_address))
+            res = self.cursor.fetchone()
+
+            obj = self.memcached_connection.set(cache_key, res, SUBACC_CACHE_TIMEOUT)
+        except Exception as ex:
+            self.logger.error("%s database or memcached subsystem error: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+            res = None
+            
+        return res
     
     #@memoize_with_expiry(30)
     def get_subaccount_by_mac(self,  ipn_mac_address):
