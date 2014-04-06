@@ -162,7 +162,7 @@ class AuthHandler(Thread):
                 else:
                     continue
 
-                logger.debug('Packet: %s \n %s', (repr(packetobject), ))
+                logger.debug('Packet: %s', (repr(packetobject), ))
                 auth_time = time.time()
                 returndata = ''
                 nas_ip = str(packetobject.get('NAS-IP-Address', [''])[0])
