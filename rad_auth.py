@@ -293,8 +293,8 @@ class HandleSBase(object):
 
     def reply(self):
         #self.transport.write(self.replypacket.ReplyPacket(), self.addrport)
-        returndata, replypacket = self.authobject.ReturnPacket(self.replypacket, mppe_support=vars.MPPE_SUPPORT) 
-        logger.debug("REPLY packet: %s", repr(replypacket))               
+        returndata = self.replypacket.ReplyPacket()
+        logger.debug("REPLY packet: %s", repr(self.replypacket))               
 
         self.transport.write(returndata, self.addrport)
         
@@ -777,7 +777,7 @@ class HandlelISGAuth(HandleSAuth):
         
 
         self.nas_type = nas.type
-        self.replypacket = packet.Packet(secret=str(nas.secret),dict=vars.DICT)
+        self.replypacket = self.packetobject.CreateReply()# packet.Packet(secret=str(nas.secret),dict=vars.DICT)
         
         logger.debug("Account data : %s", repr(acc))
 
