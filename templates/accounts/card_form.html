@@ -74,10 +74,12 @@ function sleep(delay) {
 						<td colspan="2">
 							<div class="card_text f-left">
 								<span>{% blocktrans %}Для активации карточек необходимо выполнить следующие действия:{% endblocktrans %}</span>
-								<ol type="1">
-									<li>{% blocktrans %}Ввести в поля «пин», «серия», «номер карты» пин, серию и номер, которые указаны на Вашей карточке;{% endblocktrans %}</li>
-									<li>{% blocktrans %}Если карточка еще не была активирована, то Ваш баланс пополняется автоматически на указанную сумму;{% endblocktrans %}</li>
-								</ol>
+                                                                <ol type="1">
+                                                                        <li>{% blocktrans %}Ввести в поля «номер карты», «пин» номер карты и пин, которые указаны на Вашей карточке;{% endblocktrans %}</li>
+                                                                        <li>{% blocktrans %}Нажать кнопку «Активировать».{% endblocktrans %}</li>
+                                                                </ol>
+                                                                <span>{% blocktrans %}Если карточка еще не была активирована, Ваш баланс пополнится автоматически на указанную сумму.{% endblocktrans %}</span>
+
 							</div>
 						</td>
 					</tr>
