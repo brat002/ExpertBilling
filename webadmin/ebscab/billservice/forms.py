@@ -262,7 +262,7 @@ class SimplePasswordForm(forms.Form):
 class ActivationCardForm(forms.Form):
     #series = forms.IntegerField(label=_(u"Введите серию"), required = True, error_messages={'required':_(u'Обязательное поле!')})
     if not settings.HOTSPOT_ONLY_PIN:
-        card_id = forms.IntegerField(label=_(u"Введите ID карты"), required = True, error_messages={'required':_(u'Обязательное поле!')})
+        card_id = forms.IntegerField(label=_(u"Номер карты"), required = True, error_messages={'required':_(u'Обязательное поле!')})
     pin = forms.CharField(label=_(u"ПИН"), required = True, widget=forms.PasswordInput, error_messages={'required':_(u'Обязательное поле!')})
     
 class ChangeTariffForm(forms.Form):
