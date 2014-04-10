@@ -241,16 +241,21 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
     #logging.basicConfig(level=logging.DEBUG)
     logger = logging
     access_type = access_type.lower()
-    if (nas.get('speed_value1') or nas.get('speed_value2')) and ((format_string=='' and access_type in ['pptp', 'l2tp', 'pppoe', 'lisg'] ) or access_type=='hotspot' or nas.get('type')=='cisco'):
+    if (nas.get('speed_value1') or nas.get('speed_value2')) and ((format_string=='' and access_type in ['pptp', 'l2tp', 'pppoe', 'lisg', 'accel-ipoe', 'accel-ipoe-l3'] ) or access_type=='hotspot' or nas.get('type')=='cisco'):
         logger.info("Send PoD")
         conn = get_connection()
         cur = conn.cursor()
+        if account.get('account_id'):
+            uid = account.get('id')
+        else:
+            uid = account.get('account_id')
+            
         cur.execute("""
             SELECT ap.access_type FROM billservice_account as a
             JOIN billservice_tariff as t ON t.id=get_tarif(a.id)
             JOIN billservice_accessparameters as ap ON ap.id=t.access_parameters_id
             WHERE a.id=%s
-        """, (account.get('account_id'),))
+        """, (uid,))
         conn.commit()
         tariff_access_type = cur.fetchone()[0]
         cur.close()
@@ -264,8 +269,8 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
         if nas.get('type')!='cisco' and nas.get('identify'):
             doc.AddAttribute('NAS-Identifier', str(nas.get('identify')))
             
-        if access_type=='lisg':
-            doc.AddAttribute('User-Name', str(subacc.get('ipn_ip_address')))
+        if access_type in ['lisg', 'accel-ipoe', 'accel-ipoe-l3']:
+            doc.AddAttribute('User-Name', str(subacc.get('ipn_ip_address')).replace('/32', ''))
         elif subacc.get('username') and tariff_access_type not in ['HotSpotIp+Mac', 'HotSpotIp+Password', 'HotSpotMac', 'HotSpotMac+Password']:
             doc.AddAttribute('User-Name', unicode(subacc.get('username')))
             
@@ -358,7 +363,7 @@ def change_speed(account, subacc ,nas, session_id='', vpn_ip_address='', access_
     speed = get_decimals_speeds(speed)
     speed = speed_list_to_dict(speed)
     status = False
-    if (nas.get('speed_value1') or nas.get('speed_value2')) and ((format_string=='' and access_type in ['pptp', 'l2tp', 'pppoe', 'lisg']) or access_type=='hotspot' or nas.get('type')=='cisco'):
+    if (nas.get('speed_value1') or nas.get('speed_value2')) and ((format_string=='' and access_type in ['pptp', 'l2tp', 'pppoe', 'lisg', 'accel-ipoe', 'accel-ipoe-l3']) or access_type=='hotspot' or nas.get('type')=='cisco'):
 
         logger.info('send CoA')
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -368,8 +373,8 @@ def change_speed(account, subacc ,nas, session_id='', vpn_ip_address='', access_
         doc.AddAttribute('NAS-IP-Address', str(nas.get('ipaddress')))
         if nas.get('type')!='cisco' and nas.get('identify'):
             doc.AddAttribute('NAS-Identifier', str(nas.get('identify')))
-        if access_type=='lisg':
-            doc.AddAttribute('User-Name', str(subacc.get('ipn_ip_address')))
+        if access_type=='lisg' or access_type == 'accel-ipoe-l3':
+            doc.AddAttribute('User-Name', str(subacc.get('ipn_ip_address')).replace('/32', ''))
         else:
             doc.AddAttribute('User-Name', unicode(subacc.get('username')))
         if nas.get('type')=='cisco':
