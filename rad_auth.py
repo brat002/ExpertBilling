@@ -1057,7 +1057,7 @@ class HandleSDHCP(HandleSAuth):
     __slots__ = () + ('secret', 'nas_id', 'nas_type', 'transport', 'addrport')
     def __init__(self,  packetobject, transport, addrport):
         super(HandleSAuth, self).__init__()
-
+        self.acccess_type='DHCP'
         self.packetobject = packetobject
         self.secret = ""
         self.replypacket = packetobject
