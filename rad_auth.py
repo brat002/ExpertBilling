@@ -1054,7 +1054,7 @@ class HandleHotSpotAuth(HandleSAuth):
 
 #auth_class
 class HandleSDHCP(HandleSAuth):
-    __slots__ = () + ('secret', 'acccess_type', 'nas_id', 'nas_type', 'transport', 'addrport')
+    #__slots__ = () + ('secret', 'acccess_type', 'nas_id', 'nas_type', 'transport', 'addrport')
     def __init__(self,  packetobject, access_type,  transport, addrport):
         super(HandleSAuth, self).__init__()
         self.acccess_type=access_type
