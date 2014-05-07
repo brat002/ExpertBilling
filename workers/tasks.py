@@ -417,25 +417,25 @@ def change_speed(account, subacc ,nas, session_id='', vpn_ip_address='', access_
         command_dict.update(speed)
         command_dict.update({'framed_ip_address': vpn_ip_address})
         if nas.get('speed_value1'):
-            result_params = unicode(command_string_parser(command_string=nas.get('speed_value1'), command_dict=speed))
+            result_params = str(command_string_parser(command_string=nas.get('speed_value1'), command_dict=speed))
             if result_params and nas.get('speed_vendor_1'):
                 doc.AddAttribute((nas.get('speed_vendor_1'), nas.get('speed_attr_id1')),result_params)
             elif result_params and not nas.get('speed_vendor_1'):
-                doc.AddAttribute(nas.get('speed_attr_id1'),unicode(result_params))
+                doc.AddAttribute(nas.get('speed_attr_id1'),str(result_params))
 
         if nas.get('speed_value2'):
-            result_params = unicode(command_string_parser(command_string=nas.get('speed_value2'), command_dict=speed))
+            result_params = str(command_string_parser(command_string=nas.get('speed_value2'), command_dict=speed))
             if result_params and nas.get('speed_vendor_2'):
                 doc.AddAttribute((nas.get('speed_vendor_2'), nas.get('speed_attr_id2')),result_params)
             elif result_params and not nas.get('speed_vendor_2'):
-                doc.AddAttribute(nas.get('speed_attr_id2'),unicode(result_params))
+                doc.AddAttribute(nas.get('speed_attr_id2'),str(result_params))
                     
         doc_data=doc.RequestPacket()
         #logger.info('CoA socket send: %s' % unicode(nas.ipaddress))
         sock.sendto(doc_data,(nas.get('ipaddress'), 1700))
         (data, addrport) = sock.recvfrom(8192)
         logger.info('CoA socket get: %s' % str(addrport))
-        doc=packet.AcctPacket(secret=str(nas.get('secret')), dict=dict, packet=data)
+        doc=packet.AcctPacket(secret=str(nas.get('secret')), dict=DICT, packet=data)
 
         sock.close()
 
@@ -819,6 +819,22 @@ def sendmainsmsru_post(url, parameters, id=None):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("UPDATE sendsms_message SET sended=now(), response=%s WHERE id=%s",  (response, id))
+    conn.commit()
+    cur.close()
+    conn.close()
+    
+@app.task
+def sendsmsfly_post(url, parameters, id=None):
+    response = HttpBot().POST(url, parameters)
+    logging.basicConfig(filename='log/workers_sendsms.log', level=logging.INFO)
+    logger = logging
+    response = BeautifulSoup.BeautifulSoup(response)    
+    attributes = dict(response.find('state').attrs)
+    status = attributes['code']
+    
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE sendsms_message SET sended=now(), response=%s WHERE id=%s",  (status, id))
     conn.commit()
     cur.close()
     conn.close()

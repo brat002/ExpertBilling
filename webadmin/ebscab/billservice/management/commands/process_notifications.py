@@ -12,12 +12,12 @@ class Command(BaseCommand):
     help = 'Process email/sms ballance notifications'
 
     def handle(self, *args, **options):
-        now = datetime.datetime.now()
+
         items = NotificationsSettings.objects.all()
         notifications = {}
         now = datetime.datetime.now()
         for n in items:
-            for t in n.tariffs:
+            for t in n.tariffs.all():
                 notifications[t.id] = n
         
         accounts = Account.objects.extra(select={'tarif_id': 'get_tarif(billservice_account.id)'})
@@ -45,7 +45,7 @@ class Command(BaseCommand):
 
                     continue
                 
-                if an.ballance_notification_count>=notification.balance_notifications_limit or (now-an.ballance_notification_last_date)<an.balance_notifications_each:
+                if an.ballance_notification_count>=notification.balance_notifications_limit or (an.ballance_notification_last_date and an.ballance_notification_last_date<(now-datetime.timedelta(days=notification.balance_notifications_each))):
                     """
                     if notifications count reached and nothing changed
                     """
@@ -77,7 +77,7 @@ class Command(BaseCommand):
                     an.payment_notification_last_date = now
                     an.save()
                     continue
-                for item in Transaction.objects.filter(account = account, datetime__gte=an.payment_notification_last_date):
+                for item in Transaction.objects.filter(account = account, created__gte=an.payment_notification_last_date):
                     item = Message()
                     item.account = account
                     item.backend = notification.backend
