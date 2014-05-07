@@ -184,7 +184,7 @@ class AuthHandler(Thread):
 
 
                 elif access_type in ['DHCP', 'Wireless'] :
-                    coreconnect = HandleSDHCP(packetobject=packetobject, transport = transport, addrport = addrport)
+                    coreconnect = HandleSDHCP(packetobject=packetobject, access_type=access_type, transport = transport, addrport = addrport)
                     coreconnect.nasip = nas_ip; coreconnect.caches = self.caches
                     coreconnect.cache = self.cache
                     coreconnect.handle()
@@ -1055,9 +1055,9 @@ class HandleHotSpotAuth(HandleSAuth):
 #auth_class
 class HandleSDHCP(HandleSAuth):
     __slots__ = () + ('secret', 'acccess_type', 'nas_id', 'nas_type', 'transport', 'addrport')
-    def __init__(self,  packetobject, transport, addrport):
+    def __init__(self,  packetobject, access_type,  transport, addrport):
         super(HandleSAuth, self).__init__()
-        self.acccess_type='DHCP'
+        self.acccess_type=access_type
         self.packetobject = packetobject
         self.secret = ""
         self.replypacket = packetobject
