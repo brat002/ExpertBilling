@@ -246,9 +246,9 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
         conn = get_connection()
         cur = conn.cursor()
         if account.get('account_id'):
-            uid = account.get('id')
-        else:
             uid = account.get('account_id')
+        else:
+            uid = account.get('id')
             
         cur.execute("""
             SELECT ap.access_type FROM billservice_account as a
