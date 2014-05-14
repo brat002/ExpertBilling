@@ -169,7 +169,6 @@ class check_vpn_access(Thread):
                         
                         if 0: assert isinstance(nas, NasData); assert isinstance(acc, AccountData)
                         
-
                         acstatus =  (subacc.allow_vpn_with_null and acc.ballance+acc.credit ==0) or (subacc.allow_vpn_with_minus and acc.ballance+acc.credit<0) or acc.ballance+acc.credit>0\
                                     or \
                                     (subacc.allow_vpn_with_block and (acc.balance_blocked or acc.disabled_by_limit))
@@ -230,16 +229,24 @@ class check_vpn_access(Thread):
                             newspeed = ''.join([unicode(spi) for spi in speed])
 
                             if rs.speed_string != newspeed:                         
-                                logger.debug("%s:send request for change speed for: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))   
+                                logger.debug("%s:send request for change speed for: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
+                                cur.execute("""UPDATE radius_activesession SET speed_string=%s, speed_change_queued=now() WHERE id=%s and nas_int_id=%s and nas_port_id=%s;
+                                            """ , (newspeed, rs.sessionid, rs.nas_id, rs.nas_port_id))   
                                 change_speed.delay(account=acc._asdict(), subacc=subacc._asdict(), nas=nas._asdict(), 
                                                     access_type=str(rs.access_type),
                                                     format_string=str(nas.vpn_speed_action),session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address,
                                                     speed=speed, cb=tasks.update_vpn_speed_state.s(nas_id=rs.nas_id, nas_port_id=rs.nas_port_id, session_id=rs.id, newspeed=newspeed))
 
+                                cur.connection.commit()
                                 logger.debug("%s: speed change over: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                         elif not rs.pod_queued and not acstatus:
                             logger.debug("%s: Send POD: account:  %s| subacc: %s| nas: %s | sessionid: %s", (self.getName(), acc, subacc, nas.id, str(rs.sessionid)))
+                            
+                            
+                            cur.execute("""UPDATE radius_activesession SET pod_queued=now() WHERE id=%s and nas_int_id=%s and nas_port_id=%s;
+                                        """ , ( rs.sessionid, rs.nas_id, rs.nas_port_id))
                             PoD.delay(acc._asdict(), subacc._asdict(), nas._asdict(), access_type=rs.access_type, session_id=str(rs.sessionid), vpn_ip_address=rs.framed_ip_address, nas_port_id=rs.nas_port_id, caller_id=str(rs.caller_id), format_string=str(nas.reset_action), cb=tasks.update_pod_state.s(nas_id=rs.nas_id, nas_port_id=rs.nas_port_id, session_id=rs.id))
+                            cur.connection.commit()
                             logger.debug("%s: POD sended: account:  %s| nas: %s | sessionid: %s", (self.getName(), acc.account_id, nas.id, str(rs.sessionid)))
                             continue
 
