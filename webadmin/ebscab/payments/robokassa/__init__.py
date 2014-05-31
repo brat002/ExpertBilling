@@ -54,7 +54,7 @@ class PaymentProcessor(PaymentProcessorBase):
         data = {
          'MrchLogin': PaymentProcessor.get_backend_setting('MERCHANT_LOGIN',''),
         'OutSum': "%.2f" % amount,
-        'Desc': u'Оплата за интернет'.encode('1251'),
+        'Desc': u'Оплата за интернет',
         'InvId': payment.id,
         }
         

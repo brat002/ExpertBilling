@@ -773,7 +773,7 @@ class RadiusAccessBill(Thread):
                 cur.execute("""SELECT rs.id, rs.account_id, rs.sessionid, rs.session_time, rs.bytes_in, rs.bytes_out, rs.interrim_update, rs.date_start, rs.date_end, acc_t.id, rs.lt_time, rs.lt_bytes_in, rs.lt_bytes_out,rs.nas_port_id,rs.nas_int_id  
                                  FROM radius_activesession AS rs
                                  LEFT JOIN billservice_accounttarif AS acc_t ON acc_t.id=(SELECT id FROM billservice_accounttarif WHERE account_id=rs.account_id and datetime<rs.date_start ORDER BY datetime DESC LIMIT 1) 
-                                 WHERE ((rs.lt_time<rs.session_time) or (rs.lt_bytes_in<rs.bytes_in or rs.lt_bytes_out<rs.bytes_out))
+                                 WHERE (rs.need_traffic_co=True or rs.need_time_co=True) and ((rs.lt_time<rs.session_time) or (rs.lt_bytes_in<rs.bytes_in or rs.lt_bytes_out<rs.bytes_out))
                                   ORDER BY rs.interrim_update ASC LIMIT 20000;""")
                 rows=cur.fetchall()
                 cur.connection.commit()
