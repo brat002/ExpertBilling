@@ -126,7 +126,9 @@ def setup_webcab():
         
         local('ln -sf %s /etc/apache2/sites-enabled/ebs ' % os.path.join(WEBCAB_ROOT_PATH, 'default'))
         local('ln -sf  %s /etc/apache2/sites-enabled/ebs_blankpage'  % os.path.join(WEBCAB_ROOT_PATH, 'blankpage_config'))
-        local('a2dissite default')
+        with settings(warn_only=True):
+            local('a2dissite default')
+            local('a2dissite 000-default')
         local('a2enmod rewrite')
     local('/etc/init.d/apache2 restart')
     with settings(warn_only=True):

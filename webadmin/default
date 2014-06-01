@@ -3,29 +3,49 @@
 
         DocumentRoot /opt/ebs/web/ebscab
         <Directory />
-                Options FollowSymLinks
-                AllowOverride None
+              <IfVersion < 2.3 >
+                Order allow,deny
+                Allow from all
+              </IfVersion>
+              <IfVersion >= 2.3>
+                Require all granted
+              </IfVersion>
         </Directory>
 
         Alias /media/ /opt/ebs/web/ebscab/media/
 
         <Directory /opt/ebs/web/ebscab/media>
-            Order deny,allow
-            Allow from all
+              <IfVersion < 2.3 >
+                Order allow,deny
+                Allow from all
+              </IfVersion>
+              <IfVersion >= 2.3>
+                Require all granted
+              </IfVersion>
         </Directory>
         
         Alias /static/ /opt/ebs/web/ebscab/static/
 
         <Directory /opt/ebs/web/ebscab/static>
-            Order deny,allow
-            Allow from all
+              <IfVersion < 2.3 >
+                Order allow,deny
+                Allow from all
+              </IfVersion>
+              <IfVersion >= 2.3>
+                Require all granted
+              </IfVersion>
         </Directory>
         
         Alias /admin_media/ /opt/ebs/venv/lib/python2.7/site-packages/django/contrib/admin/media/
 
         <Directory /opt/ebs/venv/lib/python2.7/site-packages/django/contrib/admin/media/>
-            Order deny,allow
-            Allow from all
+              <IfVersion < 2.3 >
+                Order allow,deny
+                Allow from all
+              </IfVersion>
+              <IfVersion >= 2.3>
+                Require all granted
+              </IfVersion>
         </Directory>
         
 		WSGIApplicationGroup %{GLOBAL}
