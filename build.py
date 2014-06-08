@@ -9,25 +9,25 @@ from fabric.operations import sudo
 
 
 @hosts(['brat002@m4.diggit.ru', 'brat002@m8.diggit.ru'])
-def build(key=None, users=200):
+def build(key=None, users=200, name=''):
     with cd('mikrobill'):
         run('git pull')
-        run('sh build_all.sh %s %s %s' % (key if key else 'demo1.5_`uname -i`', users, key if key else ''))
+        run('sh build_all.sh %s %s %s' % (key if key else name or 'demo1.5_`uname -i`', users, key if key else ''))
         run('scp builds/%s.tar.gz brat002@m3.diggit.ru:/opt/ebs/media/builds/' % (key if key else 'demo1.5_`uname -i`'))
        
        
 @hosts(['brat002@m4.diggit.ru', ])
-def build_x64(key=None, users=200):
+def build_x64(key=None, users=200, name=''):
     with cd('mikrobill'):
         run('git pull')
-        run('sh build_all.sh %s %s %s' % (key if key else 'demo1.5_`uname -i`', users, key if key else ''))
+        run('sh build_all.sh %s %s %s' % (key if key else name or 'demo1.5_`uname -i`', users, key if key else ''))
         run('scp builds/%s.tar.gz brat002@m3.diggit.ru:/opt/ebs/media/builds/' % (key if key else 'demo1.5_`uname -i`'))
         
 @hosts(['brat002@m8.diggit.ru', ])
-def build_x32(key=None, users=200):
+def build_x32(key=None, users=200, name=''):
     with cd('mikrobill'):
         run('git pull')
-        run('sh build_all.sh %s %s %s' % (key if key else 'demo1.5_`uname -i`', users, key if key else ''))
+        run('sh build_all.sh %s %s %s' % (key if key else name or 'demo1.5_`uname -i`', users, key if key else ''))
         run('scp builds/%s.tar.gz brat002@m3.diggit.ru:/opt/ebs/media/builds/' % (key if key else 'demo1.5_`uname -i`'))
         
         
