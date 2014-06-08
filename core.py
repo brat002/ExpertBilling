@@ -380,7 +380,7 @@ class periodical_service_bill(Thread):
                 #Смотрим на какую сумму должны были снять денег и снимаем её
                 while chk_date <= dateAT:    
                     if chk_date >self.NOW:
-                        logger.error('%s: Periodical Service: GRADUAL %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date))
+                        logger.info('%s: Periodical Service: GRADUAL %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date))
                         return 
                     delta_coef = Decimal('1.00')
                     if pss_type == PERIOD and vars.USE_COEFF_FOR_PS==True and next_date and chk_date+PER_DAY_DELTA>next_date:# если следующая проверка будет в новом расчётном периоде - считаем дельту
