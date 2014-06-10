@@ -3,8 +3,9 @@
 
         DocumentRoot /opt/ebs/web/ebscab
         <Directory />
-                Order allow,deny #COMMENT FOR APACHE <2.4
-                Allow from all #COMMENT FOR APACHE <2.4
+#COMMENT NEXT TWO LINES FOR APACHE <2.4
+                Order allow,deny
+                Allow from all
 ###UNKOMMENT FOR APACHE 2.4
 #              <IfVersion < 2.3 > 
 #                Order allow,deny
@@ -18,8 +19,9 @@
         Alias /media/ /opt/ebs/web/ebscab/media/
 
         <Directory /opt/ebs/web/ebscab/media>
-                Order allow,deny #COMMENT FOR APACHE <2.4
-                Allow from all #COMMENT FOR APACHE <2.4
+#COMMENT NEXT TWO LINES FOR APACHE <2.4
+                Order allow,deny
+                Allow from all
 ###UNKOMMENT FOR APACHE 2.4
 #              <IfVersion < 2.3 > 
 #                Order allow,deny
@@ -33,8 +35,9 @@
         Alias /static/ /opt/ebs/web/ebscab/static/
 
         <Directory /opt/ebs/web/ebscab/static>
-                Order allow,deny #COMMENT FOR APACHE <2.4
-                Allow from all #COMMENT FOR APACHE <2.4
+#COMMENT NEXT TWO LINES FOR APACHE <2.4
+                Order allow,deny
+                Allow from all
 ###UNKOMMENT FOR APACHE 2.4
 #              <IfVersion < 2.3 > 
 #                Order allow,deny
@@ -48,8 +51,9 @@
         Alias /admin_media/ /opt/ebs/venv/lib/python2.7/site-packages/django/contrib/admin/media/
 
         <Directory /opt/ebs/venv/lib/python2.7/site-packages/django/contrib/admin/media/>
-                Order allow,deny #COMMENT FOR APACHE <2.4
-                Allow from all #COMMENT FOR APACHE <2.4
+#COMMENT NEXT TWO LINES FOR APACHE <2.4
+                Order allow,deny
+                Allow from all
 ###UNKOMMENT FOR APACHE 2.4
 #              <IfVersion < 2.3 > 
 #                Order allow,deny

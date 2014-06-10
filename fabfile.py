@@ -188,6 +188,7 @@ def upgrade_14(tarfile):
     virtualenv()
     
     db_backup()
+    stop()
     data_backup()
     webcab_backup()
     cleanup_14()
@@ -212,6 +213,7 @@ def upgrade(tarfile):
 
     
     db_backup()
+    stop()
     data_backup()
     webcab_backup()
 
@@ -220,7 +222,7 @@ def upgrade(tarfile):
         local('adduser --disabled-password ebs')
     prepare_deploy()
     configure_rabbit()
-    stop()
+    
     virtualenv()
     
 
