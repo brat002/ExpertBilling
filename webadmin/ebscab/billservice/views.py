@@ -332,6 +332,13 @@ def get_promise(request):
         last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
         error_message = _(u"Ваш баланс меньше разрешённого для взятия обещанного платежа. Минимальный баланс: %(MIN_BALLANCE)s %(CURRENCY)s") % {'MIN_BALLANCE': promise_min_ballance, 'CURRENCY': settings.CURRENCY}
         return {'error_message': error_message, 'MAX_PROMISE_SUM': promise_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
+
+    last_promise_date = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0].created
+    reactivation_date = last_promise_date+datetime.timedelta(days = settings.PROMISE_REACTIVATION_DAYS)
+    if  settings.ALLOW_PROMISE==True and reactivation_date > datetime.datetime.now():
+        last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
+        error_message = _(u"Вы уже воспользовались услугой обещанного платежа %(LAST_PROMISE_DATE)s. Услуга обещанного платежа станет доступна %(REACTIVATION_DATE)s ") % {'LAST_PROMISE_DATE': last_promise_date, 'REACTIVATION_DATE': reactivation_date}
+        return {'error_message': error_message, 'MAX_PROMISE_SUM': promise_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
     
     
     if request.method == 'POST':

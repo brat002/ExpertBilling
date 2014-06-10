@@ -1,5 +1,6 @@
  #-*- coding=UTF-8 -*-
 from hashlib import md5
+import datetime
 
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.models import User 
@@ -40,6 +41,9 @@ class LoginUserBackend(ModelBackend):
         if account and check_password(account, password):
             if isinstance(account, SystemUser) and not account.status:
                 return
+            if isinstance(account, SystemUser):
+                account.last_login=datetime.datetime.now()
+                account.save()
             user, created = User.objects.get_or_create(username=username)
             log.debug("User %s was %s" % (user, created and 'created' or 'found'))
             if created:

@@ -3,49 +3,61 @@
 
         DocumentRoot /opt/ebs/web/ebscab
         <Directory />
-              <IfVersion < 2.3 >
-                Order allow,deny
-                Allow from all
-              </IfVersion>
-              <IfVersion >= 2.3>
-                Require all granted
-              </IfVersion>
+                Order allow,deny #COMMENT FOR APACHE <2.4
+                Allow from all #COMMENT FOR APACHE <2.4
+###UNKOMMENT FOR APACHE 2.4
+#              <IfVersion < 2.3 > 
+#                Order allow,deny
+#                Allow from all
+#              </IfVersion>
+#              <IfVersion >= 2.3>
+#                Require all granted
+#              </IfVersion>
         </Directory>
 
         Alias /media/ /opt/ebs/web/ebscab/media/
 
         <Directory /opt/ebs/web/ebscab/media>
-              <IfVersion < 2.3 >
-                Order allow,deny
-                Allow from all
-              </IfVersion>
-              <IfVersion >= 2.3>
-                Require all granted
-              </IfVersion>
+                Order allow,deny #COMMENT FOR APACHE <2.4
+                Allow from all #COMMENT FOR APACHE <2.4
+###UNKOMMENT FOR APACHE 2.4
+#              <IfVersion < 2.3 > 
+#                Order allow,deny
+#                Allow from all
+#              </IfVersion>
+#              <IfVersion >= 2.3>
+#                Require all granted
+#              </IfVersion>
         </Directory>
         
         Alias /static/ /opt/ebs/web/ebscab/static/
 
         <Directory /opt/ebs/web/ebscab/static>
-              <IfVersion < 2.3 >
-                Order allow,deny
-                Allow from all
-              </IfVersion>
-              <IfVersion >= 2.3>
-                Require all granted
-              </IfVersion>
+                Order allow,deny #COMMENT FOR APACHE <2.4
+                Allow from all #COMMENT FOR APACHE <2.4
+###UNKOMMENT FOR APACHE 2.4
+#              <IfVersion < 2.3 > 
+#                Order allow,deny
+#                Allow from all
+#              </IfVersion>
+#              <IfVersion >= 2.3>
+#                Require all granted
+#              </IfVersion>
         </Directory>
         
         Alias /admin_media/ /opt/ebs/venv/lib/python2.7/site-packages/django/contrib/admin/media/
 
         <Directory /opt/ebs/venv/lib/python2.7/site-packages/django/contrib/admin/media/>
-              <IfVersion < 2.3 >
-                Order allow,deny
-                Allow from all
-              </IfVersion>
-              <IfVersion >= 2.3>
-                Require all granted
-              </IfVersion>
+                Order allow,deny #COMMENT FOR APACHE <2.4
+                Allow from all #COMMENT FOR APACHE <2.4
+###UNKOMMENT FOR APACHE 2.4
+#              <IfVersion < 2.3 > 
+#                Order allow,deny
+#                Allow from all
+#              </IfVersion>
+#              <IfVersion >= 2.3>
+#                Require all granted
+#              </IfVersion>
         </Directory>
         
 		WSGIApplicationGroup %{GLOBAL}
