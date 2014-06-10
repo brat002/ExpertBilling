@@ -493,7 +493,7 @@ class ActiveSessionTable(EbsadminTableReport):
     session_time = django_tables.Column(verbose_name=_(u'Онлайн'), empty_values=())
     date_end = FormatDateTimeColumn()
     nas_int = django_tables.Column(verbose_name=_(u'NAS'), accessor=A('nas_int__name'))
-    bytes = django_tables.TemplateColumn("{{record.bytes_in|filesizeformat}}/{{record.bytes_out|filesizeformat}}", verbose_name=_(u'Байт'))
+    bytes = django_tables.TemplateColumn("{{record.bytes_in|filesizeformat}}/{{record.bytes_out|filesizeformat}}", verbose_name=_(u'Байт'), orderable=False)
     #account = django_tables.LinkColumn('account_edit', get_params={'id':A('account.id')})
     subaccount__username = django_tables.LinkColumn('subaccount', get_params={'id': A('subaccount')}, verbose_name=_(u'Субаккаунт'))
     action = django_tables.TemplateColumn(
