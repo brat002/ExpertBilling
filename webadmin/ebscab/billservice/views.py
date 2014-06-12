@@ -333,7 +333,7 @@ def get_promise(request):
         error_message = _(u"Ваш баланс меньше разрешённого для взятия обещанного платежа. Минимальный баланс: %(MIN_BALLANCE)s %(CURRENCY)s") % {'MIN_BALLANCE': promise_min_ballance, 'CURRENCY': settings.CURRENCY}
         return {'error_message': error_message, 'MAX_PROMISE_SUM': promise_summ, 'LEFT_PROMISE_DATE': LEFT_PROMISE_DATE, 'disable_promise': True, 'last_promises': last_promises, 'allow_ballance_transfer':tarif.allow_ballance_transfer, 'allow_transfer_summ':allow_transfer_summ, 'active_class':'promise-img',}
 
-    last_promise_date = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0].created
+    last_promise_date = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).count()>0 and Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0].created
     reactivation_date = last_promise_date+datetime.timedelta(days = settings.PROMISE_REACTIVATION_DAYS)
     if  settings.ALLOW_PROMISE==True and reactivation_date > datetime.datetime.now():
         last_promises = Transaction.objects.filter(account=user, type=TransactionType.objects.get(internal_name='PROMISE_PAYMENT')).order_by('-created')[0:10]
