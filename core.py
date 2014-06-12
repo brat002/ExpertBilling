@@ -1069,6 +1069,7 @@ class limit_checker(Thread):
 
                     if not acc.account_status == 1: continue
                     limits = caches.trafficlimit_cache.by_id.get(acc.tarif_id, [])
+                    logger.debug("LIMIT_CHECKER: %s: acc_id: %s disabled_by_limit: %s limits: %s", (self.getName(), acc.account_id, acc.disabled_by_limit, limits))
                     if not limits:
                         if acc.disabled_by_limit:
                             cur.execute("""UPDATE billservice_account SET disabled_by_limit=False WHERE id=%s;""", (acc.account_id,))
