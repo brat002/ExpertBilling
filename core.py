@@ -1073,8 +1073,8 @@ class limit_checker(Thread):
                     if not limits:
                         if acc.disabled_by_limit:
                             cur.execute("""UPDATE billservice_account SET disabled_by_limit=False WHERE id=%s;""", (acc.account_id,))
-                            cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (acc.account_id,))
-                            cur.connection.commit()
+                        cur.execute("""DELETE FROM billservice_accountspeedlimit WHERE account_id=%s;""", (acc.account_id,))
+                        cur.connection.commit()
                         continue
                     block, speed_changed = (False, False)
                     for limit in limits:
