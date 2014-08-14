@@ -124,12 +124,26 @@ def setup_webcab():
         with lcd(WEBCAB_PATH):
             local('cp settings_local.py.tmpl settings_local.py')
         
-        local('ln -sf %s /etc/apache2/sites-enabled/ebs ' % os.path.join(WEBCAB_ROOT_PATH, 'default'))
-        local('ln -sf  %s /etc/apache2/sites-enabled/ebs_blankpage'  % os.path.join(WEBCAB_ROOT_PATH, 'blankpage_config'))
+        if os.path.exists('/etc/apache2/sites-enabled/ebs'):
+            local('mv /etc/apache2/sites-enabled/ebs /etc/apache2/sites-enabled/ebs.conf')
+        
+        if os.path.exists('/etc/apache2/sites-enabled/ebs_blankpage'):
+            local('mv /etc/apache2/sites-enabled/ebs_blankpage /etc/apache2/sites-enabled/ebs_blankpage.conf')
+
+        apache_ver = local('apache2 -v | head -n 1', True)
+        
+        if 'Apache/2.4' in apache_ver:
+            local('ln -sf %s /etc/apache2/sites-enabled/ebs.conf ' % os.path.join(WEBCAB_ROOT_PATH, 'default2.4'))
+        else:
+            local('ln -sf %s /etc/apache2/sites-enabled/ebs.conf ' % os.path.join(WEBCAB_ROOT_PATH, 'default'))
+        
+        local('ln -sf  %s /etc/apache2/sites-enabled/ebs_blankpage.conf'  % os.path.join(WEBCAB_ROOT_PATH, 'blankpage_config'))
         with settings(warn_only=True):
             local('a2dissite default')
             local('a2dissite 000-default')
         local('a2enmod rewrite')
+    
+
     local('/etc/init.d/apache2 restart')
     with settings(warn_only=True):
         local(''' su postgres -c 'psql ebs -c "ALTER TABLE billservice_account ALTER COLUMN fullname TYPE varchar(2000);"' ''')
