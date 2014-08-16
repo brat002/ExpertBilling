@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import url, patterns
+from django.conf.urls import url, patterns
 
 urlpatterns = patterns('object_log.views',
     url(r'^user/(?P<pk>\d+)/actions/?$', 'list_user_actions', name="user-object_log-actions"),

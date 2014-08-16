@@ -553,7 +553,7 @@ class AccountForm(DynamicForm):
     #created = forms.DateTimeField(label=u'Создан', required = True, widget=forms.widgets.SplitDateTimeWidget(attrs={'class':'input-small'}))
     #credit = forms.CharField(label =u"Кредит", required=True, widget = forms.TextInput(attrs={'class': 'input-small'}))
     #--Organization fields
-    
+    disable_notifications = forms.BooleanField(label=_(u"Отключить уведомления"), required=False, widget = forms.widgets.CheckboxInput)
     
 
     
@@ -607,7 +607,11 @@ class AccountForm(DynamicForm):
 
         if settings.HIDE_PASSWORDS and not data.get('password'):
             data['password'] = self.instance.password
-
+        
+        if data['disable_notifications']:
+            data['disable_notifications'] = datetime.now()
+        else:
+            data['disable_notifications']=None
         return data
         
 class AccountExtraForm(DynamicExtraForm):

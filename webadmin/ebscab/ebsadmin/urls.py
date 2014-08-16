@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 import wi
 
 urlpatterns = patterns('ebsadmin.transactionreport',
@@ -26,7 +26,11 @@ urlpatterns += patterns('ebsadmin.wi',
     url(r'^transaction/edit/', wi.transaction, name='transaction_edit'),
     url(r'^totaltransaction/delete/', wi.totaltransaction_delete, name='totaltransaction_delete'),
     
+    
+    url(r'^accountaddonservice/delete/', wi.accountaddonservice_delete, name='accountaddonservice_delete'),
+    url(r'^accountaddonservice/deactivate/', wi.accountaddonservice_deactivate, name='accountaddonservice_deactivate'),
     url(r'^accountaddonservice/', wi.accountaddonservice_edit, name='accountaddonservice'),
+    
     url(r'^subaccount/delete/', wi.subaccount_delete, name='subaccount_delete'),
     url(r'^subaccount/', wi.subaccountedit, name='subaccount'),
     url(r'^accounthardware/delete/$', wi.accounthardware_delete, name="accounthardware_delete"),
@@ -301,6 +305,7 @@ urlpatterns += patterns('ebsadmin.modules.card',
 
 urlpatterns += patterns('ebsadmin.modules.tariff',
     url(r'^tariff/edit/$', 'tariff_edit', name='tariff_edit'),
+    url(r'^tariff/hide/$', 'tariff_hide', name='tariff_hide'),
     url(r'^tariff/periodicalservice/edit/$', 'tariff_periodicalservice_edit', name='tariff_periodicalservice_edit'),
     url(r'^tariff/prepaidtraffic/edit/$', 'tariff_prepaidtraffic_edit', name='tariff_prepaidtraffic_edit'),
     url(r'^tariff/prepaidtraffic/delete/$', 'prepaidtraffic_delete', name='prepaidtraffic_delete'),

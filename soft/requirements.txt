@@ -1,3 +1,4 @@
+setuptools
 BeautifulSoup
 Django==1.5.4
 Django-Select2

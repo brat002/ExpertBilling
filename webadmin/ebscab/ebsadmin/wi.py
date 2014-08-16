@@ -671,6 +671,7 @@ def accountedit(request):
     suspendedperiod_table = None
     accountaddonservice_table = None
     accountsuppagreement_table = None
+    accountsupp = None
     account_id = request.GET.get("id")
 
     account = None
@@ -714,6 +715,8 @@ def accountedit(request):
         DTRequestConfig(request, paginate = False).configure(accountaddonservice_table)
         
         res = AccountSuppAgreement.objects.filter(account=account)
+        accountsupp = AccountSuppAgreement.objects.filter(account=account, closed__isnull=True)
+
         accountsuppagreement_table = AccountSuppAgreementTable(res)
         DTRequestConfig(request, paginate = False).configure(AccountSuppAgreementTable(res))
         try:
@@ -731,7 +734,7 @@ def accountedit(request):
     subaccount_form = None
     subaccounts_count = 0
     if account and request.method=='POST':
-        print 33
+    
         subaccounts_count = SubAccount.objects.filter(account=account).count()
     
     
@@ -739,7 +742,7 @@ def accountedit(request):
             subaccount = SubAccount.objects.filter(account=account)[0]
             subaccount_form = SubAccountPartialForm(request.POST, instance=subaccount, prefix='subacc')
     elif account and request.method=='GET':
-        print 44
+  
         subaccounts_count = SubAccount.objects.filter(account=account).count()
     
     
@@ -747,12 +750,12 @@ def accountedit(request):
             subaccount = SubAccount.objects.filter(account=account)[0]
             subaccount_form = SubAccountPartialForm( instance=subaccount, prefix='subacc')        
     else:
-        print 55
+
         subaccount_form = SubAccountPartialForm(request.POST, prefix='subacc')
     
-    print 66
+
     if request.method=='POST':
-        print 77
+     
         if account and request.POST:
             form = AccountForm(request.POST, instance=account)
             org = Organization.objects.filter(account=account)
@@ -779,16 +782,16 @@ def accountedit(request):
             form = AccountForm(request.POST)
             org_form = OrganizationForm(request.POST, prefix='org')
             bank_form = BankDataForm(request.POST, prefix='bankdata')
-            print 88
         
-        print 99
+        
+     
         extra_form = AccountExtraForm(request.POST, instance=account)
         
         
 
           
         if form.is_valid():
-            print 10
+        
             if not org_form.is_valid():
 
                 return {'subaccount_form': subaccount_form, 
@@ -805,13 +808,14 @@ def accountedit(request):
                         'accounthardware_table': accounthardware_table, 
                         'suspendedperiod_table': suspendedperiod_table,  
                         'accountsuppagreement_table': accountsuppagreement_table,
+                        'accountsupp': accountsupp,
                         'form':form}
             
-            print 11
+      
             model =form.save(commit=False)
             model.save()
             contract_num = form.cleaned_data.get("contract_num")
-            print 'ACCOUNT SAVED', subaccounts_count
+
             if subaccounts_count<=1:
 
                 new = False
@@ -826,7 +830,7 @@ def accountedit(request):
                 subaccount_form = SubAccountPartialForm(request.POST, instance=subaccount, prefix='subacc')
                     
                 if subaccount_form.is_valid():
-                    print 'form valid'
+
                     
                     subacc_model = subaccount_form.save(commit=False)
                     if subacc_model.username or subacc_model.nas or subacc_model.ipn_ip_address or subacc_model.vpn_ip_address or subacc_model.vpn_ipv6_ip_address or subacc_model.ipv4_vpn_pool or subacc_model.ipv4_ipn_pool or subacc_model.switch:
@@ -855,9 +859,10 @@ def accountedit(request):
                             'accounthardware_table': accounthardware_table, 
                             'suspendedperiod_table': suspendedperiod_table,  
                             'accountsuppagreement_table': accountsuppagreement_table,
+                            'accountsupp': accountsupp,
                             'form':form}
 
-            print 12       
+
             if not model.contract and contract_num:
                 contract_template = contract_num.template
                 contract_counter = contract_num.counter or 1
@@ -904,8 +909,7 @@ def accountedit(request):
             messages.success(request, u'Аккаунт сохранён.', extra_tags='alert-success')
             return HttpResponseRedirect("%s?id=%s" % (reverse("account_edit"), model.id))
         else:
-            print 'DEBUG'
-            print form._errors
+
             if form._errors:
                 for k, v in form._errors.items():
                     messages.error(request, '%s=>%s' % (k, ','.join(v)), extra_tags='alert-danger')
@@ -935,6 +939,7 @@ def accountedit(request):
                     'accounthardware_table': accounthardware_table, 
                     'suspendedperiod_table': suspendedperiod_table,  
                     'accountsuppagreement_table': accountsuppagreement_table,
+                    'accountsupp': accountsupp, 
                     'form':form}
     if account:
         
@@ -962,7 +967,7 @@ def accountedit(request):
     if not subaccount_form and subaccounts_count==0:
         subaccount_form = SubAccountPartialForm(request.POST, prefix='subacc')
     return { 'form':form, 'subaccount_form': subaccount_form, 'extra_form': extra_form, 'org_form':org_form, 'bank_form': bank_form,  "accounttarif_table": accounttarif_table, 'accountaddonservice_table':accountaddonservice_table, "account":account, 'subaccounts_table':subaccounts_table, 'accounthardware_table': accounthardware_table, 'suspendedperiod_table': suspendedperiod_table, 
-            'accountsuppagreement_table': accountsuppagreement_table, 'ticket_table': ticket_table} 
+            'accountsuppagreement_table': accountsuppagreement_table, 'ticket_table': ticket_table, 'accountsupp': accountsupp} 
 
 @systemuser_required
 @render_to('ebsadmin/subaccount_edit.html')
@@ -1468,6 +1473,35 @@ def accounthardware_delete(request):
     else:
         return {"status": False, "message": "AccountHardware not found"}
 
+@ajax_request
+@systemuser_required
+def accountaddonservice_deactivate(request):
+    if  not (request.user.account.has_perm('billservice.change_accountaddonservice')):
+        return {'status':False, 'message': _(u'У вас нет прав на изменение подключаемых услуг аккаунта')}
+    id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
+    if id:
+        model = AccountAddonService.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.deactivated = datetime.datetime.now()
+        model.save()
+        return {"status": True}
+    else:
+        return {"status": False, "message": "AccountAddonService not found"}
+    
+@ajax_request
+@systemuser_required
+def accountaddonservice_delete(request):
+    if  not (request.user.account.has_perm('billservice.delete_accountaddonservice')):
+        return {'status':False, 'message': _(u'У вас нет прав на удаление подключаемых услуг аккаунта')}
+    id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
+    if id:
+        model = AccountAddonService.objects.get(id=id)
+        log('DELETE', request.user, model)
+        model.delete()
+        return {"status": True}
+    else:
+        return {"status": False, "message": "AccountAddonService not found"}
+    
 @ajax_request
 @systemuser_required
 def suspendedperiod_delete(request):

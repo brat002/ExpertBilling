@@ -78,7 +78,7 @@ core_sql = \
                         tariff.id
                         FROM billservice_accessparameters as accessparameters
                         JOIN billservice_tariff as tariff ON tariff.access_parameters_id=accessparameters.id
-                        WHERE tariff.deleted is not True
+                        WHERE tariff.deleted is NULL
                         ;""",
           'newsp'   :"""SELECT timespeed.max_tx, timespeed.max_rx, timespeed.burst_tx,timespeed.burst_rx, 
                         timespeed.burst_treshold_tx, timespeed.burst_treshold_rx,  timespeed.burst_time_tx, 
@@ -88,9 +88,9 @@ core_sql = \
                         FROM billservice_timespeed as timespeed
                         JOIN billservice_tariff as tariff ON tariff.access_parameters_id=timespeed.access_parameters_id
                         JOIN billservice_timeperiodnode as timenode ON timenode.time_period_id=timespeed.time_id
-                        WHERE tariff.deleted is not True;""",
+                        WHERE tariff.deleted is NULL;""",
           'periodtf':"""SELECT id, settlement_period_id FROM billservice_tariff  as tarif
-                        WHERE id in (SELECT tarif_id FROM billservice_periodicalservice WHERE deleted=False or deleted is Null) AND tarif.active=True and tarif.deleted is not True""",
+                        WHERE id in (SELECT tarif_id FROM billservice_periodicalservice WHERE deleted=False or deleted is Null) AND tarif.active=True and tarif.deleted is NULL""",
           'periodset':"""SELECT b.id, b.name, b.cost, b.cash_method, c.name, date_trunc('second', c.time_start),
                         c.length, c.length_in, c.autostart, b.tarif_id, b.ps_condition, b.condition_summ, date_trunc('second', b.created), b.deactivated, b.deleted, b.tpd
                         FROM billservice_periodicalservice as b 
@@ -122,7 +122,7 @@ core_sql = \
                         FROM billservice_timeperiodnode as tpn
                         JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpn.time_period_id
                         JOIN billservice_tariff AS bst ON bst.access_parameters_id=ap.id
-                        WHERE bst.deleted is not True""",
+                        WHERE bst.deleted is NULL""",
           'speed_lmt':"""SELECT accountspeedlimit.id, accountspeedlimit.account_id, speedlimit.max_tx, speedlimit.max_rx, 
                       speedlimit.burst_tx, speedlimit.burst_rx, 
                       speedlimit.burst_treshold_tx, speedlimit.burst_treshold_rx, 
@@ -170,13 +170,13 @@ rad_sql = \
                         JOIN billservice_accounttarif AS act ON act.id=(SELECT max(id) FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and date_trunc('second', att.datetime)<%s)
                         JOIN billservice_tariff AS bt ON bt.id=act.tarif_id
                         LEFT JOIN billservice_accessparameters as accps on accps.id = bt.access_parameters_id 
-                        WHERE bt.deleted is not True;""",
+                        WHERE bt.deleted is NULL;""",
          'nas'      :"""SELECT id, decrypt_pw(secret, %s)::text, type, multilink, ipaddress, identify, speed_vendor_1, speed_vendor_2, speed_attr_id1, speed_attr_id2, speed_value1, speed_value2, acct_interim_interval FROM nas_nas ORDER BY id, ipaddress, identify;""",
          'period'   :"""SELECT date_trunc('second', tpn.time_start::timestamp without time zone)as time_start, tpn.length as length, tpn.repeat_after as repeat_after, bst.id
                         FROM billservice_timeperiodnode as tpn
                         JOIN billservice_accessparameters AS ap ON ap.access_time_id=tpn.time_period_id
                         JOIN billservice_tariff AS bst ON bst.access_parameters_id=ap.id
-                        WHERE bst.deleted is not True
+                        WHERE bst.deleted is NULL
                         """,
          'defspeed' :"""SELECT accessparameters.max_tx, accessparameters.max_rx, accessparameters.burst_tx, 
                              accessparameters.burst_rx, accessparameters.burst_treshold_tx, accessparameters.burst_treshold_rx,  
@@ -185,7 +185,7 @@ rad_sql = \
                         tariff.id
                         FROM billservice_accessparameters as accessparameters
                         JOIN billservice_tariff as tariff ON tariff.access_parameters_id=accessparameters.id
-                        WHERE tariff.deleted is not True;""",
+                        WHERE tariff.deleted is NULL;""",
          'speed'    :"""SELECT timespeed.max_tx, timespeed.max_rx, timespeed.burst_tx, timespeed.burst_rx, 
                          timespeed.burst_treshold_tx, timespeed.burst_treshold_rx,  timespeed.burst_time_tx, 
                          timespeed.burst_time_rx, timespeed.min_tx, timespeed.min_rx,  timespeed.priority,
@@ -194,7 +194,7 @@ rad_sql = \
                         FROM billservice_timespeed as timespeed
                         JOIN billservice_tariff as tariff ON tariff.access_parameters_id=timespeed.access_parameters_id
                         JOIN billservice_timeperiodnode as timenode ON timespeed.time_id=timenode.time_period_id
-                        WHERE tariff.deleted is not True;""",
+                        WHERE tariff.deleted is NULL;""",
          'limit'    :"""SELECT accountspeedlimit.id, accountspeedlimit.account_id, speedlimit.max_tx, speedlimit.max_rx, 
                         speedlimit.burst_tx, speedlimit.burst_rx, 
                         speedlimit.burst_treshold_tx, speedlimit.burst_treshold_rx, 

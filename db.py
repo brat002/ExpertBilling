@@ -98,7 +98,7 @@ def get_acctf_history(cursor, account_id):
     """
     cursor.execute("""SELECT id, date_trunc('second', datetime) as datetime, (SELECT min(id) FROM billservice_accounttarif WHERE account_id=at.account_id and
                         datetime>at.datetime) as next_accounttarif_id,
-                        (SELECT datetime FROM billservice_accounttarif WHERE datetime>at.datetime and id=(SELECT min(id) FROM billservice_accounttarif WHERE account_id=at.account_id and datetime>at.datetime)) as next_date
+                        date_trunc('second', (SELECT datetime FROM billservice_accounttarif WHERE datetime>at.datetime and id=(SELECT min(id) FROM billservice_accounttarif WHERE account_id=at.account_id and datetime>at.datetime))) as next_date
                         , tarif_id
                         FROM billservice_accounttarif as at WHERE account_id=%s
                         and date_trunc('second', datetime)<now()
