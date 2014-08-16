@@ -42,6 +42,7 @@ from lib.decorators import render_to, ajax_request#, login_required
 from paymentgateways.qiwi.models import Invoice as QiwiInvoice
 from paymentgateways.qiwi.forms import QiwiPaymentRequestForm
 import math
+import IPy
 
 #rpc_protocol.install_logger(logger)
 #client_networking.install_logger(logger)
@@ -126,6 +127,25 @@ def login(request):
                 log_in(request, user)
                 
                 if isinstance(user.account, SystemUser):
+                    try:
+                        if not (IPy.IP(request.META.get("REMOTE_ADDR")) in IPy.IP(user.account.host)):
+                            #return {"status":False,"message": _(u"Access for your IP address forbidden")}
+                            return {
+                                'message': _('Access for your ip is forbidden'),
+                                'login_form':login_form,
+                                'register_form': RegisterForm(prefix = 'register'),
+                                }
+
+                    except Exception, e:
+                            return {
+                                'message': _('Error in access rule for your account'),
+                                'login_form':login_form,
+                                'register_form': RegisterForm(prefix = 'register'),
+                                }
+                            
+                    user.account.last_login = datetime.datetime.now()
+                    user.account.last_ip = request.META.get("REMOTE_ADDR")
+                    user.account.save()
                     if user.account.permissiongroup and user.account.permissiongroup.role and user.account.permissiongroup.role=='CASHIER':
                         return HttpResponseRedirect(reverse("cashier_index"))
                     

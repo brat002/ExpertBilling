@@ -10,5 +10,5 @@ class Version(object):
             # assumed that user is Anonimous
             request.webcab_version = 0
             request.server_version = 0
-            pass
+
 

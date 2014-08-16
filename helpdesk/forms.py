@@ -579,7 +579,7 @@ class FilterForm(forms.Form):
     date_start = forms.DateTimeField(label=_(u'Создана с'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     date_end = forms.DateTimeField(label=_(u'Создана по'), required = False, widget=forms.widgets.DateTimeInput(attrs={'class':'datepicker'}))
     queue = forms.ModelMultipleChoiceField(queryset = Queue.objects.all(), required=False)
-    status = forms.ChoiceField(choices=Ticket.STATUS_CHOICES_FORM, required=False, label=_(u'Статус'))
+    status = forms.MultipleChoiceField(choices=Ticket.STATUS_CHOICES_FORM, required=False, label=_(u'Статус'))
     priority = forms.ChoiceField(choices=Ticket.PRIORITY_CHOICES_FORM, required=False, label=_(u'Приоритет'))
 
     owner = forms.ModelChoiceField(
@@ -662,4 +662,4 @@ class FilterForm(forms.Form):
         super(FilterForm, self).__init__(*args, **kwargs)
         
 class RunSubmitQuery(forms.Form):
-        saved_query = forms.ModelChoiceField(label=_(u'Сохранённые фильтры'), required=False, queryset=SavedSearch.objects.filter(Q(shared=True)))
+    saved_query = forms.ModelChoiceField(label=_(u'Сохранённые фильтры'), required=False, queryset=SavedSearch.objects.filter(Q(shared=True)))

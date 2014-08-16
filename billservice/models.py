@@ -760,7 +760,7 @@ class Tariff(models.Model):
                                                         u"Производить ли списывание денег по периодическим услугам при достижении нулевого балланса или исчерпании кредита?"),
                                                     blank=True, default=False)
     active = models.BooleanField(verbose_name=_(u"Активен"), default=False, blank=True)
-    deleted = models.BooleanField(default=False, blank=True)
+    deleted = models.DateTimeField(_(u'Удален'), null=False, blank=True)
     allow_express_pay = models.BooleanField(verbose_name=_(u'Оплата экспресс картами'), blank=True, default=False)
     require_tarif_cost = models.BooleanField(verbose_name=_(u"Требовать наличия стоимости пакета"), default=False,
                                              blank=True)
@@ -777,7 +777,8 @@ class Tariff(models.Model):
                                    related_name='tariff_vpn_ippool_set', on_delete=models.SET_NULL)
     vpn_guest_ippool = models.ForeignKey("IPPool", verbose_name=_(u"Гостевой VPN IP пул"), blank=True, null=True,
                                          related_name='tariff_guest_vpn_ippool_set', on_delete=models.SET_NULL)
-    objects = SoftDeleteManager()
+    
+    objects = SoftDeletedDateManager()
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -807,6 +808,9 @@ class Tariff(models.Model):
     def get_row_class(self):
         return STATUS_CLASS.get(self.active)
 
+    def get_hide_url(self):
+        return "%s?id=%s" % (reverse('tariff_hide'), self.id)
+    
 
 ACTIVE = 1
 NOT_ACTIVE_NOT_WRITING_OFF = 2
@@ -903,9 +907,7 @@ class Account(DynamicModel):
     private_passport_number = models.CharField(verbose_name=_(u'Идент. номер'), blank=True, max_length=128)
 
     birthday = models.DateField(verbose_name=_(u'День рождения'), blank=True, null=True)
-    #allow_ipn_with_null = models.BooleanField()
-    #allow_ipn_with_minus = models.BooleanField()
-    #allow_ipn_with_block = models.BooleanField()
+
     deleted = models.DateTimeField(blank=True, null=True, db_index=True)
     promise_summ = models.IntegerField(_(u'Максимальный обещанный платёж'), blank=True, default=0)
     promise_min_ballance = models.IntegerField(_(u'Минимальный баланс для обещанного платежа'), blank=True, default=0)
@@ -914,6 +916,7 @@ class Account(DynamicModel):
     #block_after_summ = models.IntegerField(_(u'Блокировка списаний после суммы'), blank=True, default=0)
     account_group = models.ForeignKey(AccountGroup, verbose_name=_(u'Группа'), blank=True, null=True,
                                       on_delete=models.SET_NULL)
+    disable_notifications = models.DateTimeField(verbose_name=_(u'Отключить SMS/Email уведомления'), blank=True, null=True)
     objects = SoftDeletedDateManager()
 
 
@@ -1899,6 +1902,12 @@ class AccountAddonService(models.Model):
             ("accountaddonservice_view", _(u"Просмотр")),
         )
 
+    def get_remove_url(self):
+        return "%s?id=%s" % (reverse('accountaddonservice_delete'), self.id)
+
+    def get_deactivate_url(self):
+        return "%s?id=%s" % (reverse('accountaddonservice_deactivate'), self.id)
+    
 
 class AddonServiceTransaction(models.Model):
     service = models.ForeignKey(AddonService)
@@ -2598,6 +2607,8 @@ class AccountSuppAgreement(models.Model):
     def get_remove_url(self):
         return "%s?id=%s" % (reverse('accountsuppagreement_delete'), self.id)
     
+    def to_end(self):
+        return ((self.created+datetime.timedelta(days = self.suppagreement.length))-datetime.datetime.now()).days
 
 class SuppAgreement(models.Model):
     name = models.CharField(max_length=128, verbose_name=_(u"Название"))

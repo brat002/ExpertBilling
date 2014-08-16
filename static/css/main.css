@@ -122,3 +122,8 @@ min-height: 100%;
   margin-top: -2px;
   color: grey;
 }
+
+.container
+{
+    min-width: 1000px !important;
+}

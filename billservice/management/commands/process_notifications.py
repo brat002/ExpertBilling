@@ -28,6 +28,7 @@ class Command(BaseCommand):
             print account
             if not notification: continue
             
+            
             an = AccountNotification.objects.filter(account = account, notificationsettings=notification)
             if an:
                 an = an[0]
@@ -55,19 +56,20 @@ class Command(BaseCommand):
 
                     an.ballance_notification_count+=1
                     an.ballance_notification_last_date = now
-                    item = Message()
-                    item.account = account
-                    item.backend = notification.backend
-                    if notification.notification_type=='SMS':
-                        item.to = account.phone_m
-                    else:
-                        item.to = account.email
-                    t = Template(notification.balance_notifications_template)
-                    c = Context({"account": account})
-                    item.body = t.render(c)
-                    item.publish_date = now
-                    item.save() 
-                    item.send()
+                    if account.disable_notifications: 
+                        item = Message()
+                        item.account = account
+                        item.backend = notification.backend
+                        if notification.notification_type=='SMS':
+                            item.to = account.phone_m
+                        else:
+                            item.to = account.email
+                        t = Template(notification.balance_notifications_template)
+                        c = Context({"account": account})
+                        item.body = t.render(c)
+                        item.publish_date = now
+                        item.save() 
+                        item.send()
                 an.save()
             if notification.payment_notifications:
                 if not an.payment_notification_last_date:
@@ -78,21 +80,23 @@ class Command(BaseCommand):
                     an.save()
                     continue
                 for item in Transaction.objects.filter(account = account, created__gte=an.payment_notification_last_date):
-                    item = Message()
-                    item.account = account
-                    item.backend = notification.backend
-                    if notification.notification_type=='SMS':
-                        item.to = account.phone_m
-                    else:
-                        item.to = account.email
-                    t = Template(notification.payment_notifications_template)
-                    c = Context({"account": account, 'transaction': item})
-                    item.body = t.render(c)
-                    item.publish_date = now
-                    item.save() 
-                    an.payment_notification_last_date = now
+                    if account.disable_notifications: 
+                        item = Message()
+                        item.account = account
+                        item.backend = notification.backend
+                        if notification.notification_type=='SMS':
+                            item.to = account.phone_m
+                        else:
+                            item.to = account.email
+                        t = Template(notification.payment_notifications_template)
+                        c = Context({"account": account, 'transaction': item})
+                        item.body = t.render(c)
+                        item.publish_date = now
+                        item.save() 
+                        an.payment_notification_last_date = now
+                        
+                        item.send()
                     an.save()
-                    item.send()
                 
 
 

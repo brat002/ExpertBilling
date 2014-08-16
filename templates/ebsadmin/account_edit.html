@@ -1224,7 +1224,45 @@
 
           <fieldset>
             <legend>{% blocktrans %}Прочее{% endblocktrans %}</legend>
-
+            <div class="control-group">
+              <label class="control-label" for="input-max">{% blocktrans %}Опции{% endblocktrans %}</label>
+              <div class="controls docs-input-sizes">
+                <label class="checkbox">
+                  {{ form.allow_webcab }}{{form.allow_webcab.label}}
+                  {% if form.allow_webcab.errors %}
+                  <span class="help-inline">{% for error in form.allow_webcab.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.allow_webcab.help_text%}
+                  <p class="help-block">
+                    {{ form.allow_webcab.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </label>
+                <label class="checkbox">
+                  {{ form.disable_notifications }}{{form.disable_notifications.label}}
+                  {% if form.disable_notifications.errors %}
+                  <span class="help-inline">{% for error in form.disable_notifications.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.disable_notifications.help_text%}
+                  <p class="help-block">
+                    {{ form.disable_notifications.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </label>
+                <label class="checkbox">
+                  {{ form.allow_expresscards }}{{form.allow_expresscards.label}}
+                  {% if form.allow_expresscards.errors %}
+                  <span class="help-inline">{% for error in form.allow_expresscards.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.allow_expresscards.help_text%}
+                  <p class="help-block">
+                    {{ form.allow_expresscards.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </label>
+              </div>
+            </div>
+            
             <div class="control-group">
               <label class="control-label" for="input-max">{{form.promise_summ.label}}</label>
               <div class="controls">
@@ -1270,34 +1308,7 @@
               </div>
             </div>
 
-            <div class="control-group">
-              <label class="control-label" for="input-max">{% blocktrans %}Опции{% endblocktrans %}</label>
-              <div class="controls docs-input-sizes">
-                <label class="checkbox">
-                  {{ form.allow_webcab }}{{form.allow_webcab.label}}
-                  {% if form.allow_webcab.errors %}
-                  <span class="help-inline">{% for error in form.allow_webcab.errors %}{{ error }}<br/> {% endfor %}</span>
-                  {% endif %}
-                  {% if form.allow_webcab.help_text%}
-                  <p class="help-block">
-                    {{ form.allow_webcab.help_text|safe }}
-                  </p>
-                  {% endif %}
-                </label>
 
-                <label class="checkbox">
-                  {{ form.allow_expresscards }}{{form.allow_expresscards.label}}
-                  {% if form.allow_expresscards.errors %}
-                  <span class="help-inline">{% for error in form.allow_expresscards.errors %}{{ error }}<br/> {% endfor %}</span>
-                  {% endif %}
-                  {% if form.allow_expresscards.help_text%}
-                  <p class="help-block">
-                    {{ form.allow_expresscards.help_text|safe }}
-                  </p>
-                  {% endif %}
-                </label>
-              </div>
-            </div>
           </fieldset>
         </div>
 
@@ -1334,7 +1345,22 @@
           </li>
         </ul>
       </div>
-
+      
+      {% if accountsupp %}
+      <div class="well sidebar-nav">
+        <ul class="nav nav-list">
+          <li class="nav-header">{% blocktrans %}Доп. соглашения{% endblocktrans %}</li>
+            <li>
+            <strong>
+             {% for x in accountsupp.all %}
+             <a href="{% url 'accountsuppagreement_edit' %}?id={{x.id}}"><i class="icon-list-alt"></i>{{x.suppagreement}}, До конца: {{x.to_end}} дней</a>
+             {% endfor %}
+             </strong>
+          </li>
+        </ul>
+      </div>
+      {% endif %}
+ 
       <div class="well sidebar-nav">
         <ul class="nav nav-list">
           <li class="nav-header">{% blocktrans %}Итоговый баланс{% endblocktrans %}</li>
