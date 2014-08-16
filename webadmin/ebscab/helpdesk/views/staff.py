@@ -856,7 +856,7 @@ def tickets(request):
                 status =  form.cleaned_data.get('status')
                 
                 if status and str(status)!='0':
-                    filter.update({'status': status})
+                    filter.update({'status__in': status})
                 
                 
                 priority =  form.cleaned_data.get('priority')

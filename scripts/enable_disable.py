@@ -23,7 +23,7 @@ print sys.argv
 if sys.argv[1]=='enable':
     cur.execute("UPDATE billservice_account SET status = 1 WHERE id=%s" % sys.argv[2])
 elif sys.argv[1]=='disable':
-    cur.execute("UPDATE billservice_account SET status = 2 WHERE id=%s" % sys.argv[2])
+    cur.execute("UPDATE billservice_account SET status = 3 WHERE id=%s" % sys.argv[2])
 
 
 cur.connection.commit()

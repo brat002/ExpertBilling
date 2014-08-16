@@ -1,5 +1,7 @@
 # -*-coding: utf-8 -*-
 
+import datetime
+
 from ebscab.lib.decorators import render_to, ajax_request
 
 from django.core.urlresolvers import reverse
@@ -1216,3 +1218,24 @@ def prepaidtraffic_delete(request):
         messages.error(request, _(u'При удалении предоплаченного трафика произошла ошибка.'), extra_tags='alert-danger')
         return {"status": False, "message": "AddonServiceTarif not found"} 
 
+
+@ajax_request
+@systemuser_required
+def tariff_hide(request):
+    if  not (request.user.account.has_perm('billservice.delete_tariff')):
+        return {'status':False, 'message': _(u'У вас нет прав на удаление тарифных планов')}
+    id = int(request.POST.get('id',0)) or int(request.GET.get('id',0))
+    if id:
+        try:
+            item = Tariff.objects.get(id=id)
+        except Exception, e:
+            return {"status": False, "message": _(u"Указанная запись не найдена %s") % str(e)}
+        log('DELETE', request.user, item)
+        item.deleted=datetime.datetime.now()
+        item.save()
+        messages.success(request, _(u'Запись успешно скрыта.'), extra_tags='alert-success')
+        return {"status": True}
+    else:
+        messages.error(request, _(u'Ошибка при сокрытии записи.'), extra_tags='alert-danger')
+        return {"status": False, "message": "Tariff not found"} 
+    

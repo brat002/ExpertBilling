@@ -8,7 +8,7 @@ urls.py - Mapping of URL's to our various views. Note we always used NAMED
 """
 
 from django.conf import settings
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 from django.contrib.auth.decorators import login_required
 from django.contrib.syndication.views import Feed as django_feed
 from django.contrib import admin

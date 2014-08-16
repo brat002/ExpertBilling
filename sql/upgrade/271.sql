@@ -1,0 +1,23 @@
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS allow_ipn_with_null ;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS nas_id;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS vpn_ip_address;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS assign_ipn_ip_from_dhcp;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS ipn_ip_address;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS ipn_mac_address;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS ipn_status;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS ipn_speed;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS vpn_speed;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS netmask;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS ipn_added;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS assign_dhcp_null;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS assign_dhcp_block;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS allow_vpn_null;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS allow_vpn_block;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS vpn_ipinuse_id;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS ipn_ipinuse_id;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS associate_pptp_ipn_ip;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS associate_pppoe_mac;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS allow_ipn_with_null;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS allow_ipn_with_minus;
+ALTER TABLE billservice_account DROP COLUMN IF EXISTS allow_ipn_with_block;
+

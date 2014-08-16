@@ -1,7 +1,7 @@
 #-*- coding=utf-8 -*-
 
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 from django.db.models import Sum
 
 from billservice.models import Account, SuspendedPeriod, AccountHardware, Transaction, SettlementPeriod, SystemUser, \
@@ -58,11 +58,11 @@ class EbsadminTableReport(TableReport):
 
 ###############################################################################
 
-def showconfirmcolumn(href='{{record.get_remove_url}}', message=''):
+def showconfirmcolumn(href='{{record.get_remove_url}}', message=_(u'Удалить?'), verbose_name=' ', icon_type='icon-remove'):
     return django_tables.TemplateColumn(
-        '<a href="%s" class="show-confirm" data-clickmessage="%s">'
-        '<i class="icon-remove"></i></a>' % (href, message),
-        verbose_name=' ',
+        '<a href="%s" class="show-confirm" title="%s" data-clickmessage="%s">'
+        '<i class="%s"></i></a>' % (href, message, message, icon_type),
+        verbose_name=verbose_name,
         orderable=False
     )
 
@@ -71,11 +71,12 @@ def modallinkcolumn(url_name='', modal_title='', modal_id=''):
     return django_tables.LinkColumn(
         url_name,
         get_params={'id': A('pk')},
-        attrs={
+        attrs={ 'a': {
             'rel': 'alert3',
             'class': 'general-modal-dialog',
             'data-dlgtitle': modal_title,
             'data-dlgid': modal_id
+            }
         }
     )
 
@@ -152,7 +153,7 @@ class AccountHardwareTable(EbsadminTable):
     id = django_tables.LinkColumn(
         'accounthardware',
         get_params={'id': A('pk')},
-        attrs={'rel': "alert3", 'class': "open-custom-dialog"}
+        attrs={'a': {'rel': "alert3", 'class': "open-custom-dialog"}}
     )
     d = showconfirmcolumn()
 
@@ -165,24 +166,26 @@ class AccountAddonServiceTable(EbsadminTable):
     id = django_tables.LinkColumn(
         'accountaddonservice',
         get_params={'id': A('pk')},
-        attrs={'rel': "alert3", 'class': "open-custom-dialog"}
+        attrs={'a': {'rel': "alert3", 'class': "open-custom-dialog"}}
     )
-    account = FormatBlankColumn()
     service = django_tables.Column()
     subaccount = django_tables.LinkColumn(
         'subaccount',
         get_params={'id': A('subaccount.id')},
-        attrs={'rel': "alert3", 'class': "open-custom-dialog"}
+        attrs={'a': {'rel': "alert3", 'class': "open-custom-dialog"}}
     )
     #service = django_tables.LinkColumn('subaccount_detail', args=[A('pk')])
     cost = django_tables.TemplateColumn('{{record.cost|default:record.service.cost|floatformat}}')
     activated = FormatDateTimeColumn()
     deactivated = FormatDateTimeColumn()
-    temporary_blocked = FormatDateTimeColumn(verbose_name=_(u'Отключена'))
-
+    #temporary_blocked = FormatDateTimeColumn(verbose_name=_(u'Отключена c'))
+    deactivate = showconfirmcolumn(href='{{record.get_deactivate_url}}', message='Отключить подклюачемую услугу?', verbose_name='Отключить', icon_type='icon-ban-circle')
+    d = showconfirmcolumn()
+    
     class Meta(EbsadminTable.Meta):
         model = AccountAddonService
         #sequence = ('id', 'service', 'cost', 'activated', 'deactivated', 'temporary_blocked', '')
+        fields = ('id', 'service', 'subaccount', 'cost', 'activated', 'deactivated', 'deactivate', 'd')
 
 
 class SuspendedPeriodTable(EbsadminTable):
@@ -570,7 +573,7 @@ class NasTable(EbsadminTableReport):
     id = django_tables.LinkColumn(
         'nas_edit',
         get_params={'id': A('pk')},
-        attrs={'rel': "alert3", 'class': "open-custom-dialog"}
+        attrs={'a': {'rel': "alert3", 'class': "open-custom-dialog"}}
     )
     d = showconfirmcolumn(message='Удалить? Все связанные с сервером доступа записи будут '
                                   'сброшены на значение по умолчанию для выбранной записи')
@@ -587,8 +590,8 @@ class NasTable(EbsadminTableReport):
 
 
 class TemplateTable(EbsadminTableReport):
-    id = django_tables.LinkColumn('template_edit', get_params={'id': A('pk')}, attrs={'rel': "alert3", 'class': "open-custom-dialog"})
-    name = django_tables.LinkColumn('template_edit', get_params={'id': A('pk')}, attrs={'rel': "alert3", 'class': "open-custom-dialog"})
+    id = django_tables.LinkColumn('template_edit', get_params={'id': A('pk')}, attrs={'a': {'rel': "alert3", 'class': "open-custom-dialog"}})
+    name = django_tables.LinkColumn('template_edit', get_params={'id': A('pk')}, attrs={'a': {'rel': "alert3", 'class': "open-custom-dialog"}})
     d = showconfirmcolumn()
 
     class Meta(EbsadminTableReport.Meta):
@@ -660,7 +663,7 @@ class IPPoolTable(EbsadminTableReport):
 
 
 class CommentTable(EbsadminTableReport):
-    id = django_tables.LinkColumn('comment_edit', get_params={'id': A('pk')}, attrs={'rel': "alert3", 'class': "open-log-custom-dialog"})
+    id = django_tables.LinkColumn('comment_edit', get_params={'id': A('pk')}, attrs={'a': {'rel': "alert3", 'class': "open-log-custom-dialog"}})
     done = django_tables.TemplateColumn(
         "<a href='{% url 'comment_edit' %}?id={{record.id}}&done=True' class='btn btn-mini btn-success comment-done'>"
         "<i class='icon-ok icon-white'></i></a>&nbsp;"
@@ -960,11 +963,12 @@ class TariffTable(EbsadminTableReport):
         "{{record.accounts_count}} <i class='icon-arrow-right'></i></a>",
         verbose_name=_(u'Аккаунтов')
     )
-
+    delete = showconfirmcolumn(href='{{record.get_hide_url}}', message='Скрыть?', verbose_name='Скрыть', icon_type='icon-ban-circle')
+    
     class Meta(EbsadminTableReport.Meta):
         model = Tariff
         configurable = True
-        available_fields = ('name', 'settlement_period', 'cost', 'access_type', 'reset_tarif_cost', 'accounts_count', 'radiusattrs')
+        available_fields = ('name', 'settlement_period', 'cost', 'access_type', 'reset_tarif_cost', 'accounts_count', 'radiusattrs', 'delete')
 
 
 class PeriodicalServiceTable(EbsadminTableReport):
@@ -1449,7 +1453,7 @@ class MessageTable(EbsadminTableReport):
 
 
 class SuppAgreementTable(EbsadminTableReport):
-    id = django_tables.LinkColumn('suppagreement_edit', get_params={'id': A('pk')}, attrs={'rel': "alert3", 'class': "open-custom-dialog"})
+    id = django_tables.LinkColumn('suppagreement_edit', get_params={'id': A('pk')}, attrs={'a': {'rel': "alert3", 'class': "open-custom-dialog"}})
     #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('pk')})
     #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('account.id')})
     accounts_count = django_tables.TemplateColumn(
@@ -1469,7 +1473,7 @@ class SuppAgreementTable(EbsadminTableReport):
 
 
 class AccountSuppAgreementTable(EbsadminTableReport):
-    id = django_tables.LinkColumn('accountsuppagreement_edit', get_params={'id': A('pk')}, attrs={'rel': "alert3", 'class': "open-custom-dialog"})
+    id = django_tables.LinkColumn('accountsuppagreement_edit', get_params={'id': A('pk')}, attrs={'a': {'rel': "alert3", 'class': "open-custom-dialog"}})
     #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('pk')})
     #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('account.id')})
     #accounts_count = django_tables.TemplateColumn("<a href='{% url 'account_list' %}?suppagreement={{record.id}}' class='btn btn-mini'>{{record.accounts_count}} <i class='icon-arrow-right'></i></a>", verbose_name=_(u'Аккаунтов'), accessor=A('accounts_count'))

@@ -443,7 +443,7 @@ class periodical_service_bill(Thread):
                 
                 chk_date = last_checkout
                 if chk_date >self.NOW:
-                    logger.error('%s: Periodical Service: AT_START %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date))
+                    logger.debug('%s: Periodical Service: AT_START %s Can not bill future ps account: %s chk_date: %s', (self.getName(), ps.ps_id,  acc.account_id, chk_date))
                     return 
                 if ps.created and ps.created >= chk_date and not last_checkout == ps.created:
                     # если указана дата начала перид. услуги и она в будующем - прпускаем её списание
@@ -454,12 +454,12 @@ class periodical_service_bill(Thread):
                                     
 
                 #Если следующее списание произойдёт уже на новом тарифе - отмечаем, что тарификация произведена
-                if  pss_type == PERIOD and ((next_date and chk_date>=next_date) or (ps.deactivated and ps.deactivated < chk_date)):
+                if  pss_type == PERIOD and vars.USE_COEFF_FOR_PS==False and ((next_date and chk_date>=next_date) or (ps.deactivated and ps.deactivated < chk_date)):
                     logger.debug('%s: Periodical Service: AT_START last billed is True for account: %s service:%s type:%s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, next_date))  
                     cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
                     cur.connection.commit()
                     return
-                
+
                 mult = 0 if check_in_suspended(cur, acc.account_id, chk_date)==True else 1 #Если на момент списания был в блоке - списать 0
                 cash_summ = mult*ps.cost # Установить сумму равной нулю, если пользователь в блокировке
                 
@@ -472,8 +472,6 @@ class periodical_service_bill(Thread):
                     logger.warning('%s: Periodical Service: %s Use coeff for ps account: %s', (self.getName(), ps.ps_id, acc.account_id))
                     delta_coef=float((period_end_ast-acctf_datetime).days*86400+(period_end_ast-acctf_datetime).seconds)/float(delta_ast)        
                     cash_summ=Decimal(str(cash_summ))*Decimal(str(delta_coef))
-
-                            
 
                 if pss_type == PERIOD and (ps.deactivated is None or (ps.deactivated and ps.deactivated > chk_date)):
                     cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::numeric, %s::character varying, %s::numeric, %s::timestamp without time zone, %s, %s::numeric) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, acc.credit,  'PS_AT_START', cash_summ, chk_date, ps.condition, ps.condition_summ))
