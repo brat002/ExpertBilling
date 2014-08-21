@@ -437,7 +437,7 @@ class Cache(object):
                                 JOIN billservice_accounttarif AS act ON act.id=(SELECT max(id) FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and date_trunc('second', att.datetime)<%s)
                                 JOIN billservice_tariff AS bt ON bt.id=act.tarif_id
                                 LEFT JOIN billservice_accessparameters as accps on accps.id = bt.access_parameters_id 
-                                WHERE bt.deleted is not True and ba.id=%s;""", (datetime.datetime.now(), id, ))
+                                WHERE bt.deleted is NULL and ba.id=%s;""", (datetime.datetime.now(), id, ))
             res = self.cursor.fetchone()
     
             obj = self.memcached_connection.set(cache_key, res, ACC_CACHE_TIMEOUT)
@@ -466,7 +466,7 @@ class Cache(object):
                                 JOIN billservice_accounttarif AS act ON act.id=(SELECT max(id) FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and date_trunc('second', att.datetime)<%s)
                                 JOIN billservice_tariff AS bt ON bt.id=act.tarif_id
                                 LEFT JOIN billservice_accessparameters as accps on accps.id = bt.access_parameters_id 
-                                WHERE bt.deleted is not True and username=%s;""", (username,))
+                                WHERE bt.deleted is NULL and username=%s;""", (username,))
             res = self.cursor.fetchone()
             obj = self.memcached_connection.set(cache_key, res, COMMON_CACHE_TIMEOUT)
         except Exception as ex:
@@ -491,7 +491,7 @@ class Cache(object):
                                 tariff.id
                                 FROM billservice_accessparameters as accessparameters
                                 JOIN billservice_tariff as tariff ON tariff.access_parameters_id=accessparameters.id
-                                WHERE tariff.deleted is not True and tariff.id=%s;""", (tarif_id, ))
+                                WHERE tariff.deleted is NULL and tariff.id=%s;""", (tarif_id, ))
             res = cursor.fetchone()
             cursor.close()
             obj = self.memcached_connection.set(cache_key, res, COMMON_CACHE_TIMEOUT)
@@ -519,7 +519,7 @@ class Cache(object):
                                 FROM billservice_timespeed as timespeed
                                 JOIN billservice_tariff as tariff ON tariff.access_parameters_id=timespeed.access_parameters_id
                                 JOIN billservice_timeperiodnode as timenode ON timespeed.time_id=timenode.time_period_id
-                                WHERE tariff.deleted is not True
+                                WHERE tariff.deleted is NULL
                                 and tariff.id=%s;""", (tarif_id, ))
             res = cursor.fetchall()
             cursor.close()
