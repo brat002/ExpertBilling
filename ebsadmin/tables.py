@@ -1,7 +1,7 @@
 #-*- coding=utf-8 -*-
 
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 from django.db.models import Sum
 
 from billservice.models import Account, SuspendedPeriod, AccountHardware, Transaction, SettlementPeriod, SystemUser, \
@@ -575,8 +575,8 @@ class NasTable(EbsadminTableReport):
         get_params={'id': A('pk')},
         attrs={'a': {'rel': "alert3", 'class': "open-custom-dialog"}}
     )
-    d = showconfirmcolumn(message='Удалить? Все связанные с сервером доступа записи будут '
-                                  'сброшены на значение по умолчанию для выбранной записи')
+    d = showconfirmcolumn(message=_('Удалить? Все связанные с сервером доступа записи будут '
+                                  'сброшены на значение по умолчанию для выбранной записи'))
 
     class Meta(EbsadminTableReport.Meta):
         model = Nas
@@ -689,7 +689,7 @@ class CommentTable(EbsadminTableReport):
 class TransactionTypeTable(EbsadminTableReport):
     id = django_tables.LinkColumn('transactiontype_edit', get_params={'id': A('pk')})
     name = django_tables.LinkColumn('transactiontype_edit', get_params={'id': A('pk')})
-    d = showconfirmcolumn(message='Удалить проводку #{{ record.id }}?')
+    d = showconfirmcolumn(message=_(u'Удалить проводку #{{ record.id }}?'))
 
     class Meta(EbsadminTableReport.Meta):
         model = TransactionType
@@ -820,8 +820,8 @@ class ModelTable(EbsadminTableReport):
         modal_title=_(u'Изменить модель'),
         modal_id='model-modal'
     )
-    d = showconfirmcolumn(message='Удалить? Удаление модели оборудования вызовет удаление всех связаных '
-                                  'объектов в системе.')
+    d = showconfirmcolumn(message=_('Удалить? Удаление модели оборудования вызовет удаление всех связаных '
+                                  'объектов в системе.'))
 
     class Meta(EbsadminTableReport.Meta):
         model = Model
@@ -838,7 +838,7 @@ class HardwareTypeTable(EbsadminTableReport):
         modal_title=_(u'Изменить тип'),
         modal_id='hardwaretype-modal'
     )
-    d = showconfirmcolumn(message='Удалить? Удаление типа оборудования вызовёт удаление всех связанных объектов в системе.')
+    d = showconfirmcolumn(message=_('Удалить? Удаление типа оборудования вызовёт удаление всех связанных объектов в системе.'))
 
     class Meta(EbsadminTableReport.Meta):
         model = HardwareType
@@ -848,7 +848,7 @@ class HardwareTable(EbsadminTableReport):
     id = django_tables.LinkColumn('hardware_edit', get_params={'id': A('pk')})
     model = django_tables.LinkColumn('hardware_edit', get_params={'id': A('pk')})
     name = django_tables.LinkColumn('hardware_edit', get_params={'id': A('pk')})
-    d = showconfirmcolumn(message='Удалить? Удаление устройства вызовет удаление всех связаных с ним объектов в системе.')
+    d = showconfirmcolumn(message=_(u'Удалить? Удаление устройства вызовет удаление всех связаных с ним объектов в системе.'))
 
     class Meta(EbsadminTableReport.Meta):
         model = Hardware
@@ -858,7 +858,7 @@ class HardwareTable(EbsadminTableReport):
 class SwitchTable(EbsadminTableReport):
     id = django_tables.LinkColumn('switch_edit', get_params={'id': A('pk')})
     name = django_tables.LinkColumn('switch_edit', get_params={'id': A('pk')})
-    d = showconfirmcolumn(message='Удалить? Перед удалением коммутатора убедитесь, что он не используется в биллинг-системе')
+    d = showconfirmcolumn(message=_(u'Удалить? Перед удалением коммутатора убедитесь, что он не используется в биллинг-системе'))
 
     class Meta(EbsadminTableReport.Meta):
         model = Switch
@@ -982,8 +982,8 @@ class PeriodicalServiceTable(EbsadminTableReport):
         modal_title=_(u'Периодическая услуга'),
         modal_id='periodicalservice-modal'
     )
-    d = showconfirmcolumn(message='Удалить? Удаление периодической услуги вызовет обнуление информации о списаниях по ней. '
-                                  'Вместо этого рекомемендуется воспользоваться отключением услуги.')
+    d = showconfirmcolumn(message=_('Удалить? Удаление периодической услуги вызовет обнуление информации о списаниях по ней. '
+                                  'Вместо этого рекомемендуется воспользоваться отключением услуги.'))
     created = FormatDateTimeColumn()
     deactivated = FormatDateTimeColumn()
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
@@ -995,7 +995,7 @@ class PeriodicalServiceTable(EbsadminTableReport):
 
 class GroupTable(EbsadminTableReport):
     id = django_tables.LinkColumn('group_edit', get_params={'id': A('pk')})
-    d = showconfirmcolumn(message='Удалить? Удаление группы трафика вызовет её удаление во всех тарифных планах.')
+    d = showconfirmcolumn(message=_(u'Удалить? Удаление группы трафика вызовет её удаление во всех тарифных планах.'))
 
     class Meta(EbsadminTableReport.Meta):
         model = Group
@@ -1010,7 +1010,7 @@ class RegistrationRequestTable(EbsadminTableReport):
 
 class ContractTemplateTable(EbsadminTableReport):
     id = django_tables.LinkColumn('contracttemplate_edit', get_params={'id': A('pk')})
-    d = showconfirmcolumn(message='Удалить шаблон номера договора?')
+    d = showconfirmcolumn(message=_(u'Удалить шаблон номера договора?'))
 
     class Meta(EbsadminTableReport.Meta):
         model = ContractTemplate
@@ -1023,7 +1023,7 @@ class TrafficTransmitNodesTable(EbsadminTableReport):
         modal_id='periodicalservice-modal'
     )
     group = django_tables.LinkColumn('group_edit', get_params={'id': A('group.id')})
-    d = showconfirmcolumn(message='Удалить? Вы уверены, что хотите удалить запись?')
+    d = showconfirmcolumn(message=_(u'Удалить? Вы уверены, что хотите удалить запись?'))
 
     class Meta(EbsadminTableReport.Meta):
         model = TrafficTransmitNodes
@@ -1049,7 +1049,7 @@ class TimeSpeedTable(EbsadminTableReport):
         modal_title=_(u'Правило изменения скорости'),
         modal_id='timespeed-modal'
     )
-    d = showconfirmcolumn(message='Удалить? Вы уверены, что хотите удалить строку?')
+    d = showconfirmcolumn(message=_(u'Удалить? Вы уверены, что хотите удалить строку?'))
     #group = django_tables.LinkColumn('group_edit', get_params={'id':A('group.id')})
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
 
@@ -1070,8 +1070,8 @@ class OneTimeServiceTable(EbsadminTableReport):
         modal_title=_(u'Периодическая услуга'),
         modal_id='periodicalservice-modal'
     )
-    d = showconfirmcolumn(message='Удалить? Удаление разовой услуги вызовет обнуление информации о списаниях по ней. '
-                                  'Вместо этого рекомемендуется воспользоваться отключением услуги.')
+    d = showconfirmcolumn(message=_('Удалить? Удаление разовой услуги вызовет обнуление информации о списаниях по ней. '
+                                  'Вместо этого рекомемендуется воспользоваться отключением услуги.'))
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
 
     class Meta(EbsadminTableReport.Meta):
@@ -1126,7 +1126,7 @@ class TimeAccessNodeTable(EbsadminTableReport):
         modal_title=_(u'Правило тарификации времени'),
         modal_id='timeaccessnode-modal'
     )
-    d = showconfirmcolumn(message='Удалить правило тарификации времени?')
+    d = showconfirmcolumn(message=_(u'Удалить правило тарификации времени?'))
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
 
     class Meta(EbsadminTableReport.Meta):
@@ -1140,7 +1140,7 @@ class AddonServiceTarifTable(EbsadminTableReport):
         modal_title=_(u'Подключаемая услуга'),
         modal_id='periodicalservice-modal'
     )
-    d = showconfirmcolumn(message='Вы действительно хотите удалить правило активации подключаемых услуг?')
+    d = showconfirmcolumn(message=_(u'Вы действительно хотите удалить правило активации подключаемых услуг?'))
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
 
     class Meta(EbsadminTableReport.Meta):
@@ -1149,8 +1149,8 @@ class AddonServiceTarifTable(EbsadminTableReport):
 
 
 class PeriodicalServiceLogTable(EbsadminTableReport):
-    d = showconfirmcolumn(message='Удалить? Удаление записи приведёт к повторной тарификации указанной услуги с начала '
-                                  'подключения пользователя на тарифный план.')
+    d = showconfirmcolumn(message=_('Удалить? Удаление записи приведёт к повторной тарификации указанной услуги с начала '
+                                  'подключения пользователя на тарифный план.'))
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
     datetime = FormatDateTimeColumn(verbose_name=_(u'Дата'))
 
@@ -1217,7 +1217,7 @@ class AccountGroupTable(EbsadminTableReport):
         modal_id='hardwaretype-modal'
     )
     cnt = django_tables.TemplateColumn('{{record.account_set.count}}', verbose_name=_(u'Количество'))
-    d = showconfirmcolumn(message='Удалить?')
+    d = showconfirmcolumn(message=_(u'Удалить?'))
 
     class Meta(EbsadminTableReport.Meta):
         model = AccountGroup
@@ -1416,8 +1416,8 @@ class PaymentTable(EbsadminTableReport):
         verbose_name=_(u'Аккаунт'),
         get_params={'id': A('account.id')}
     )
-    d = showconfirmcolumn(message='Внимание. Удаление платежа может вызвать нежелательные последствия при перетарификации. '
-                                  'Если вы не уверены в своих действиях - лучше откажитесь от удаления.')
+    d = showconfirmcolumn(message=_('Внимание. Удаление платежа может вызвать нежелательные последствия при перетарификации. '
+                                  'Если вы не уверены в своих действиях - лучше откажитесь от удаления.'))
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
 
     class Meta(EbsadminTableReport.Meta):
@@ -1444,7 +1444,7 @@ class MessageTable(EbsadminTableReport):
     #id = django_tables.LinkColumn('sessage_edit', get_params={'id':A('pk')}, attrs= {'rel': "alert3", 'class': "open-custom-dialog"})
     #account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id':A('pk')})
     account = django_tables.LinkColumn('account_edit', verbose_name=u'Аккаунт', get_params={'id': A('account.id')})
-    d = showconfirmcolumn(message='Удалить SMS сообщение?')
+    d = showconfirmcolumn(message=_(u'Удалить SMS сообщение?'))
     #access_type = FormatBlankColumn(verbose_name=u'Тип доступа', accessor=A('access_parameters.access_type'))
 
     class Meta(EbsadminTableReport.Meta):
