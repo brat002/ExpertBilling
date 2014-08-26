@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load i18n %}
 {% block logo %}{% endblock %}
 
 {% block base %}
@@ -8,39 +8,39 @@
 			<td valign="top" width="100px"><a href="http://www.expertbilling.ru/"><img src="{{ MEDIA_URL }}img/logo.gif"></a></td>
 			<td class="horizontal-menu">
 				<div>
-					<a href="/" class="text user-img">Моя учетная запись</a>
+					<a href="/" class="text user-img">{% blocktrans %} Моя учетная запись{% endblocktrans %}</a>
 				</div>
 				<div>
-					<a href="/password/form/?height=400&width=400&modal=true" class="thickbox text password-img">Смена пароля</a>
+					<a href="/password/form/?height=400&width=400&modal=true" class="thickbox text password-img">{% blocktrans %}Смена пароля{% endblocktrans %}</a>
 				</div>
 				<div>
-					<a href="/tariff/form/?height=600&width=800&modal=true" class="thickbox text tariff-img">Смена тарифного плана</a>
+					<a href="/tariff/form/?height=600&width=800&modal=true" class="thickbox text tariff-img">{% blocktrans %}Смена тарифного плана{% endblocktrans %}</a>
 				</div>
 				<div>
-					<a href="/card/form/?height=400&width=400&modal=true" class="thickbox text card-img">Активация карточки</a>
+					<a href="/card/form/?height=400&width=400&modal=true" class="thickbox text card-img">{% blocktrans %}Активация карточки{% endblocktrans %}</a>
 				</div>
 				<div>
-					<a href="/accounts/logout/" class="text exit-img">Выход из системы</a>
+					<a href="/accounts/logout/" class="text exit-img">{% blocktrans %}Выход из системы{% endblocktrans %}</a>
 				</div>
 			</td>
 		</tr>
 		<tr>
 			<td class="vertical-menu for-content" valign="top" rowspan="2">
 				<div>
-					<a href="/promise/" class="text promise-img">Операции с балансом</a>
+					<a href="/promise/" class="text promise-img">{% blocktrans %}Операции с балансом{% endblocktrans %}</a>
 				</div>
 				<div>
-					<a href="/payment/" class="text payment-img">Пополнить счёт</a>
+					<a href="/payment/" class="text payment-img">{% blocktrans %}Пополнить счёт{% endblocktrans %}</a>
 				</div>
 
 				<div>
-					<a href="/services/" class="text services-img">Подключаемые услуги</a>
+					<a href="/services/" class="text services-img">{% blocktrans %}Подключаемые услуги{% endblocktrans %}</a>
 				</div>
 				<div>
-					<a href="/statistics/" class="text statistic-img">Статистика</a>
+					<a href="/statistics/" class="text statistic-img">{% blocktrans %}Статистика{% endblocktrans %}</a>
                </div>
                 <div>
-					<a href="/helpdesk/" class="text helpdesk-img">Служба поддержки</a>
+					<a href="/helpdesk/" class="text helpdesk-img">{% blocktrans %}Служба поддержки{% endblocktrans %}</a>
 				</div>
 			</td>
 			<td valign="top" class="for-content">
@@ -55,7 +55,7 @@
 							<div class="s-11">
 								<div class="footer operator s-11 bold">
 									{% for oper in operator %}
-										<div><span class="bold">Информация о провайдере:</span> {{ oper.organization }}, {{ oper.postaddress }}, тел. {{ oper.phone }}, факс {{ oper.fax }}</div>
+										<div><span class="bold">{% blocktrans %}Информация о провайдере{% endblocktrans %}:</span> {{ oper.organization }}, {{ oper.postaddress }}, тел. {{ oper.phone }}, факс {{ oper.fax }}</div>
 										<div><span class="bold">E-mail:</span> {{ oper.email }}</div>
 									{% endfor %}
 								</div>

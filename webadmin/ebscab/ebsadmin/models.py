@@ -6,6 +6,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from billservice.models import SystemUser
 from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext_lazy as _
+
 
 class TableSettings(models.Model):
     user = models.ForeignKey(User)
@@ -31,13 +33,13 @@ class Comment(models.Model):
     content_type    = models.ForeignKey(ContentType, related_name="comments_set", null=True, blank=True)
     object_id       = models.PositiveIntegerField(null=True, blank=True)
     object  = generic.GenericForeignKey(ct_field='content_type', fk_field='object_id')
-    comment = models.TextField(verbose_name=u'Комментарий')
-    done_comment = models.TextField(verbose_name=u'Финальный комментарий', blank=True, null=True)
-    created = models.DateTimeField(verbose_name=u'Создан', auto_now_add=True, blank=True, null=True)
-    done_date = models.DateTimeField(verbose_name=u'Когда выполнен', blank=True, null=True)
-    done_systemuser = models.ForeignKey(SystemUser, verbose_name=u'Кем выполнен', on_delete=models.SET_NULL, blank=True, null=True)
-    due_date = models.DateTimeField(verbose_name=u'Выполнить до ', blank=True, null=True)
-    deleted = models.DateTimeField(verbose_name=u'Удалён', blank=True, null=True)
+    comment = models.TextField(verbose_name=_(u'Комментарий'))
+    done_comment = models.TextField(verbose_name=_(u'Финальный комментарий'), blank=True, null=True)
+    created = models.DateTimeField(verbose_name = _(u'Создан'), auto_now_add=True, blank=True, null=True)
+    done_date = models.DateTimeField(verbose_name=_(u'Когда выполнен'), blank=True, null=True)
+    done_systemuser = models.ForeignKey(SystemUser, verbose_name=_(u'Кем выполнен'), on_delete=models.SET_NULL, blank=True, null=True)
+    due_date = models.DateTimeField(verbose_name=_(u'Выполнить до '), blank=True, null=True)
+    deleted = models.DateTimeField(verbose_name=_(u'Удалён'), blank=True, null=True)
    
     def get_remove_url(self):
         return "%s?id=%s" % (reverse('comment_delete'), self.id)

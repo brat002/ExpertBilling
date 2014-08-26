@@ -2271,7 +2271,7 @@ class RadiusTrafficNode(models.Model):
 
 
 class ContractTemplate(models.Model):
-    template = models.CharField(max_length=128, verbose_name=u'Шаблон', help_text=u'''%(contract_num)i - номер заключаемого договора этого типа
+    template = models.CharField(max_length=128, verbose_name=_(u'Шаблон'), help_text=u'''%(contract_num)i - номер заключаемого договора этого типа
 %(account_id)i - идентификатор аккаунта
 %(day)i,%(month)i,%(year)i,%(hour)i,%(minute)i,%(second)i - дата подключения на тариф''')
     counter = models.IntegerField()
@@ -2552,16 +2552,16 @@ class PermissionGroup(models.Model):
 class NotificationsSettings(models.Model):
     #account = models.ForeignKey(Account)
     tariffs = models.ManyToManyField(Tariff)
-    payment_notifications = models.BooleanField(verbose_name=u'Уведомления при пополнении баланса') 
-    payment_notifications_template = models.TextField(verbose_name=u'Шаблон уведомления о платеже', help_text = _(u'Можно использовать переменные account, transaction. Для рендеринга используоется Django Template Engine.'), default='')
-    balance_notifications = models.BooleanField(verbose_name=u'Уведомления о недостатке баланса')
-    balance_edge = models.FloatField(verbose_name=u'Граница баланса',
-                                     help_text=u'Граница, с которой слать уведомления  о недостатке баланса', default=0)
-    balance_notifications_each = models.IntegerField(verbose_name=u'Периодичность между уведомлениями о балансе',
-                                                     help_text=u'В днях', default=1)
-    balance_notifications_limit = models.IntegerField(verbose_name=u'Количество уведомлений о балансе',
-                                                      help_text=u'Не слать более уведомлений о балансе при исчерпании указанного количества', default=1)
-    balance_notifications_template = models.TextField(verbose_name=u'Шаблон уведомления о недостатке денег', help_text = _(u'Можно использовать переменные account. Для рендеринга используоется Django Template Engine.'), default='')
+    payment_notifications = models.BooleanField(verbose_name=_(u'Уведомления при пополнении баланса'))
+    payment_notifications_template = models.TextField(verbose_name=_(u'Шаблон уведомления о платеже'), help_text = _(u'Можно использовать переменные account, transaction. Для рендеринга используоется Django Template Engine.'), default='')
+    balance_notifications = models.BooleanField(verbose_name=_(u'Уведомления о недостатке баланса'))
+    balance_edge = models.FloatField(verbose_name=_(u'Граница баланса'),
+                                     help_text=_(u'Граница, с которой слать уведомления  о недостатке баланса'), default=0)
+    balance_notifications_each = models.IntegerField(verbose_name=_(u'Периодичность между уведомлениями о балансе'),
+                                                     help_text=_(u'В днях'), default=1)
+    balance_notifications_limit = models.IntegerField(verbose_name=_(u'Количество уведомлений о балансе'),
+                                                      help_text=_(u'Не слать более уведомлений о балансе при исчерпании указанного количества'), default=1)
+    balance_notifications_template = models.TextField(verbose_name=_(u'Шаблон уведомления о недостатке денег'), help_text = _(u'Можно использовать переменные account. Для рендеринга используоется Django Template Engine.'), default='')
     notification_type = models.CharField(max_length=64, choices = (('SMS', 'SMS'), ('EMAIL', 'EMAIL'), ), default='SMS')
     backend = models.CharField(max_length=64, blank=True, choices = settings.SENDSMS_BACKENDS)
 

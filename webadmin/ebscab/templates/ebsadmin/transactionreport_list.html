@@ -76,8 +76,8 @@
 
 {% block base %}
   <ul class="nav nav-tabs" id="tab-control">
-    <li ><a href="#filter">Фильтр</a></li>
-    <li><a  href="#result">Отчёт</a></li>  
+    <li ><a href="#filter">{% blocktrans %}Фильтр{% endblocktrans %}</a></li>
+    <li><a  href="#result">{% blocktrans %}Отчёт{% endblocktrans %}</a></li>  
   </ul>
 
   <div class="tab-content">
@@ -173,7 +173,7 @@
     <div class="tab-pane" id="result">
       {% if total %}
         <div class="alert">
-          Общий отчёт содержит ряд связанных с производительностью ограниений на отображение данных. Для просмотра детальной информации об операциях - выберите однотипные типы списаний/пополнений.
+          {% blocktrans %}Общий отчёт содержит ряд связанных с производительностью ограниений на отображение данных. Для просмотра детальной информации об операциях - выберите однотипные типы списаний/пополнений.{% endblocktrans %}
         </div>
       {% endif %}
       {{table_type}}

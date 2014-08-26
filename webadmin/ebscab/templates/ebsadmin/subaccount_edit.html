@@ -823,7 +823,7 @@
     <div class="span3">
       <div class="well sidebar-nav">
         <ul class="nav nav-list">
-          <li class="nav-header">Информация</li>
+          <li class="nav-header">{% blocktrans %}Информация{% endblocktrans %}</li>
           {% get_switch_port subaccount.switch.id subaccount.switch_port as switch_port%}
           {% if switch_port %}
           {{switch_port}}

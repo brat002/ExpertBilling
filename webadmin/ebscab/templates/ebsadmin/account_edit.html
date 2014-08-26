@@ -169,7 +169,7 @@
                 </div>
               {% else %}
                 <div class="control-row">
-                  <label class="control-label">Шаблон договора:</label>
+                  <label class="control-label">{% blocktrans %}Шаблон договора{% endblocktrans %}:</label>
                   <div class="controls">
                     {{ form.contract_num }}
                     {% if form.contract_num.errors %}
@@ -251,7 +251,7 @@
 
             <div class="control-group">
               <div class="control-row {% if form.created.errors %}error{% endif %}">
-                <label class="control-label" for="input-created"><strong>Дата создания</strong></label>
+                <label class="control-label" for="input-created"><strong>{% blocktrans %}Дата создания{% endblocktrans %}</strong></label>
                 <div class="controls">
                   {{ form.created }}
                   {% if form.created.errors %}
@@ -285,7 +285,7 @@
             {% if subaccount_form %}
               {{subaccount_form.id}}
               {{subaccount_form.account}}
-              <legend>Параметры доступа (упрощённый интерфейс)</legend>
+              <legend>{% blocktrans %}Параметры доступа (упрощённый интерфейс){% endblocktrans %}</legend>
 
               <div class="control-group">
                 <div class="control-row">
@@ -973,7 +973,7 @@
               {% if subaccounts_table %}{% render_table subaccounts_table %}{% endif %}
               <a href="{% url 'subaccount' %}?account_id={{account.id}}" class="btn btn-success align-right">Добавить</a>
 
-              <legend>Подключаемые услуги</legend>
+              <legend>{% blocktrans %}Подключаемые услуги{% endblocktrans %}</legend>
 
               {% if accountaddonservice_table %}{% render_table accountaddonservice_table %}{% endif %}
               <a href="{% url 'accountaddonservice' %}?account_id={{account.id}}" 
@@ -1187,7 +1187,7 @@
 
         <div class="tab-pane" id="tab-third">
           <fieldset>
-            <legend>Предыдущие тарифные планы </legend>
+            <legend>{% blocktrans %}Предыдущие тарифные планы{% endblocktrans %} </legend>
             {% if accounttarif_table %}{% render_table accounttarif_table %}{% endif %}
             <a href="{% url 'accounttariff_edit' %}?account_id={{account.id}}" class="btn btn-success  align-right general-modal-dialog" data-dlgbodyid="server-notice" data-dlgtitle="{% trans 'Изменение тарифного плана' %}">Добавить</a>
           </fieldset>
@@ -1212,7 +1212,7 @@
           </fieldset>
 
           <fieldset>
-            <legend>Периоды без списаний</legend>
+            <legend>{% blocktrans %}Периоды без списаний{% endblocktrans %}</legend>
             {% if suspendedperiod_table %}{% render_table suspendedperiod_table  %}{% endif %}
             <a href="{% url 'suspendedperiod' %}?account_id={{account.id}}"
                 class="btn btn-success align-right general-modal-dialog" 
