@@ -1,4 +1,4 @@
 django-getpaid
 django-tables2
 django-tables2-reports
-setuptools
+
