@@ -6,7 +6,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Интелеком &middot; АВТОРИЗАЦИЯ</title>
+    <title>{% blocktrans %}АВТОРИЗАЦИЯ{% endblocktrans %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -101,15 +101,15 @@
     <div id="Zayavka" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h4 id="myModalLabel">Заявка на подключение</h4>
+    <h4 id="myModalLabel">{% blocktrans %}Заявка на подключение{% endblocktrans %}</h4>
     </div>
     <div class="modal-body">
         {{register_form|crispy}}
     </div>
 
     <div class="modal-footer">
-    <button class="btn btn-small" data-dismiss="modal" aria-hidden="true">Закрыть</button>
-    <button class="btn btn-small btn-success" type='submit'>Подать заявку</button>
+    <button class="btn btn-small" data-dismiss="modal" aria-hidden="true">{% blocktrans %}Закрыть{% endblocktrans %}</button>
+    <button class="btn btn-small btn-success" type='submit'>{% blocktrans %}Подать заявку{% endblocktrans %}</button>
     </div>
     </div>
     </form>

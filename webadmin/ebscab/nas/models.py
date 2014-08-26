@@ -7,6 +7,7 @@ from lib.fields import IPNetworkField
 from django.core.urlresolvers import reverse
 from django.db.models import Max
 from lib.fields import EncryptedTextField
+from django.utils.translation import ugettext_lazy as _
 
 NAS_LIST=(
                 (u'mikrotik2.8', u'MikroTik 2.8'),
@@ -16,10 +17,10 @@ NAS_LIST=(
                 (u'mikrotik5',u'Mikrotik 5'),
                 (u'mikrotik6',u'Mikrotik 6'),
                 (u'cisco',u'cisco'),
-                (u'common_radius',u'Общий RADIUS интерфейс'),
+                (u'common_radius',_('Общий RADIUS интерфейс')),
                 (u'common_ssh',u'common_ssh'),
-                (u'localhost',u'Выполнение команд локально'),
-                (u'switch',u'Коммутатор(switch)'),
+                (u'localhost',_('Выполнение команд локально')),
+                (u'switch',_('Коммутатор(switch)')),
                 (u'accel-ipoe',u'Accel IPOE'),
                 (u'accel-ipoe-l3',u'Accel IPOE L3'),
                 (u'lISG',u'lISG'),
@@ -303,21 +304,21 @@ class Nas(models.Model):
     /ip firewall address-list remove $user_id
     """
     type = models.CharField(choices=NAS_LIST, max_length=32, default='mikrotik3')
-    identify = models.CharField(verbose_name=u'RADIUS имя', max_length=255)
-    name = models.CharField(verbose_name=u'Имя',  max_length=255, unique=True)
-    ipaddress = models.IPAddressField(verbose_name=u'IP адрес', max_length=255)
-    secret = EncryptedTextField(verbose_name=u'Секретная фраза', help_text=u"Смотрите вывод команды /radius print", max_length=255)
-    login = models.CharField(verbose_name=u'Имя пользователя', max_length=255, blank=True, default='admin')
-    password = EncryptedTextField(verbose_name=u'Пароль', max_length=255, blank=True, default='')
-    snmp_version = models.CharField(verbose_name=u'Версия SNMP', choices=SNMP_VERSIONS, max_length=10, blank=True, null=True)
+    identify = models.CharField(verbose_name=_(u'RADIUS имя'), max_length=255)
+    name = models.CharField(verbose_name=_(u'Имя'),  max_length=255, unique=True)
+    ipaddress = models.IPAddressField(verbose_name=_(u'IP адрес'), max_length=255)
+    secret = EncryptedTextField(verbose_name=_(u'Секретная фраза'), help_text=_(u"Смотрите вывод команды /radius print"), max_length=255)
+    login = models.CharField(verbose_name=_(u'Имя пользователя'), max_length=255, blank=True, default='admin')
+    password = EncryptedTextField(verbose_name=_(u'Пароль'), max_length=255, blank=True, default='')
+    snmp_version = models.CharField(verbose_name=_(u'Версия SNMP'), choices=SNMP_VERSIONS, max_length=10, blank=True, null=True)
     #description = models.TextField(verbose_name=u'Описание', blank=True, default='')
     #allow_pptp = models.BooleanField(verbose_name=u'Разрешить серверу работать с PPTP', default=True)
     #allow_pppoe = models.BooleanField(verbose_name=u'Разрешить серверу работать с PPPOE', default=True)
     #allow_ipn = models.BooleanField(verbose_name=u'Сервер поддерживает IPN', help_text=u"IPN - технология, которая позволяет предоставлять доступ в интернет без установления VPN соединения с сервером доступа", default=True)
-    user_add_action = models.TextField(verbose_name=u'Действие при создании пользователя',blank=True, null=True, default="")
-    user_enable_action = models.TextField(verbose_name=u'Действие при разрешении работы пользователя',blank=True, null=True, default="")
-    user_disable_action = models.TextField(verbose_name=u'Действие при запрещении работы пользователя',blank=True, null=True, default="")
-    user_delete_action = models.TextField(verbose_name=u'Действие при удалении пользователя',blank=True, null=True, default="")
+    user_add_action = models.TextField(verbose_name=_(u'Действие при создании пользователя'),blank=True, null=True, default="")
+    user_enable_action = models.TextField(verbose_name=_(u'Действие при разрешении работы пользователя'),blank=True, null=True, default="")
+    user_disable_action = models.TextField(verbose_name=_(u'Действие при запрещении работы пользователя'),blank=True, null=True, default="")
+    user_delete_action = models.TextField(verbose_name=_(u'Действие при удалении пользователя'),blank=True, null=True, default="")
     vpn_speed_action = models.TextField(max_length=255, blank=True, null=True, default="")
     ipn_speed_action = models.TextField(max_length=255, blank=True, null=True, default="")
     reset_action = models.TextField(max_length=255, blank=True, null=True, default="")
@@ -342,10 +343,10 @@ class Nas(models.Model):
           list_display = ('name','ipaddress')
 
     class Meta:
-        verbose_name = u"Сервер доступа"
-        verbose_name_plural = u"Сервера доступа"
+        verbose_name = _(u"Сервер доступа")
+        verbose_name_plural = _(u"Сервера доступа")
         permissions = (
-           ("nas_view", u"Просмотр"),
+           ("nas_view", _(u"Просмотр")),
            )
         
     def get_remove_url(self):
@@ -360,11 +361,11 @@ class TrafficClass(models.Model):
     Классы трафика не должны пересекаться, ноды внутри одного класса не должны указывать сразу входящие
     и исходящие направления. Правило: Один класс на одно направление (вх/исх/межабонентский)
     """
-    name = models.CharField(verbose_name=u'Навзание класса', max_length=255, unique=True)
-    weight = models.IntegerField(verbose_name=u'Вес класа в цепочке классов', blank=True, null=True)
+    name = models.CharField(verbose_name=_(u'Навзание класса'), max_length=255, unique=True)
+    weight = models.IntegerField(verbose_name=_(u'Вес класа в цепочке классов'), blank=True, null=True)
     #color = models.CharField(verbose_name=u'Цвет на графиках', max_length=16, blank=True, default='#FFFFFF')
-    store    = models.BooleanField(verbose_name=u"Хранить сырую статистику по классу", help_text=u"Хранить NetFlow статистику в текстовом виде", blank=True, default=True)
-    passthrough = models.BooleanField(verbose_name=u"Пометить и продолжить", blank=True, default=False)
+    store    = models.BooleanField(verbose_name=_(u"Хранить сырую статистику по классу"), help_text=_(u"Хранить NetFlow статистику в текстовом виде"), blank=True, default=True)
+    passthrough = models.BooleanField(verbose_name=_(u"Пометить и продолжить"), blank=True, default=False)
     
     def __unicode__(self):
         return u"%s" % self.name
@@ -393,15 +394,15 @@ class TrafficNode(models.Model):
     Направления трафика. Внутри одного класса не должно быть пересекающихся направлений
     """
     traffic_class = models.ForeignKey(TrafficClass)
-    name = models.CharField(verbose_name=u'Название', max_length=255)
+    name = models.CharField(verbose_name=_(u'Название'), max_length=255)
     #direction = models.CharField(verbose_name=u"Направление", choices=DIRECTIONS_LIST, max_length=32)
     protocol = models.IntegerField(choices=PROTOCOLS, default=0)
 
-    src_ip  = IPNetworkField(verbose_name=u'Наша сеть', blank=True, default='0.0.0.0/0')
+    src_ip  = IPNetworkField(verbose_name=_(u'Наша сеть'), blank=True, default='0.0.0.0/0')
 #    src_mask  = models.IPAddressField(verbose_name=u'Маска сети источника', default='0.0.0.0')
     src_port  = models.IntegerField(verbose_name=u'Src port', blank=True, default=0)
 
-    dst_ip = IPNetworkField(verbose_name=u'Удалённая сеть', blank=True, default='0.0.0.0/0')
+    dst_ip = IPNetworkField(verbose_name=_(u'Удалённая сеть'), blank=True, default='0.0.0.0/0')
 #    dst_mask = models.IPAddressField(verbose_name=u'Маска сети получателя', default='0.0.0.0')
     dst_port  = models.IntegerField(verbose_name=u'Dst port', blank=True, default=0)
 
@@ -420,10 +421,10 @@ class TrafficNode(models.Model):
         pass
 
     class Meta:
-        verbose_name = u"Направление трафика"
-        verbose_name_plural = u"Направления трафика"
+        verbose_name = _(u"Направление трафика")
+        verbose_name_plural = _(u"Направления трафика")
         permissions = (
-           ("trafficnode_view", u"Просмотр"),
+           ("trafficnode_view", _(u"Просмотр")),
            )
         
 

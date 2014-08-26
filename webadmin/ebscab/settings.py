@@ -108,6 +108,10 @@ TEMPLATE_DIRS = (
     '%s/templates/' % os.path.abspath('.'),
 
 )
+LOCALE_PATHS = (
+    os.path.abspath('locale'),
+)
+
 
 INSTALLED_APPS = (
     'django.contrib.auth',
