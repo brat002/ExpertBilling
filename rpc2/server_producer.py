@@ -314,7 +314,7 @@ class DBProcessingThread(Thread):
                 logger.error('PROTOCOL ERROR: %s', repr(ex))
                 self.protocol._FAIL_CODE = self.protocol._FAIL_CODES['PROTOCOL_ERROR']
                 rpc_processed = (input_packet[0], 'error', (Exception('Protocol error'),))
-            else:
+            else:http://candygram.sourceforge.net
                 #processed_time = time.clock()
                 rpc_processed = (input_packet[0],) + self.process(*get_processed)
                 #logger.debug('RPC processing thread: prc processed time: %s', time.clock() - processed_time)

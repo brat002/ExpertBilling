@@ -34,7 +34,7 @@ def prepare_deploy():
     #local('wget http://www.rabbitmq.com/rabbitmq-signing-key-public.asc && apt-key add rabbitmq-signing-key-public.asc')
     #local('apt-get update')
     #local('apt-get -y install g++ postgresql-9.1 postgresql-contrib-9.1 postgresql-server-dev-9.1 htop mc python-dev mc openssh-server openssl python-paramiko python-crypto libapache2-mod-wsgi python-simplejson rrdtool snmp python-pexpect python-pip python-virtualenv rabbitmq-server ')
-    local('apt-get  -y --force-yes  install libjpeg-dev libfreetype6 libfreetype6-dev zlib1g-dev g++ postgresql postgresql-contrib postgresql-server-dev-all htop mc python-dev mc openssh-server openssl python-paramiko python-crypto libapache2-mod-wsgi python-simplejson rrdtool snmp python-pexpect python-pip python-virtualenv redis-server rabbitmq-server libmemcached-dev memcached')
+    local('apt-get  -y --force-yes  install libjpeg-dev libfreetype6 libfreetype6-dev zlib1g-dev g++ postgresql postgresql-contrib postgresql-server-dev-all htop mc python-dev mc openssh-server openssl python-paramiko python-crypto libapache2-mod-wsgi python-simplejson rrdtool snmp python-pexpect python-pip python-virtualenv redis-server rabbitmq-server libmemcached-dev memcached libjpeg-dev libfreetype6-dev zlib1g-dev')
     local('pip install psycopg2')
 
 def configure_rabbit():
@@ -46,6 +46,18 @@ def configure_rabbit():
 
     
 def requirements():
+    
+    with settings(warn_only=True):
+        local("sudo ln -s /usr/lib/`uname -i`-linux-gnu/libfreetype.so /usr/lib/")
+        local("sudo ln -s /usr/lib/`uname -i`-linux-gnu/libjpeg.so /usr/lib/")
+        local("sudo ln -s /usr/lib/`uname -i`-linux-gnu/libz.so /usr/lib/")
+        
+        
+    with settings(warn_only=True):
+        with prefix('. /opt/ebs/venv/bin/activate'):
+            local('pip install -U setuptools')
+            
+            
     with settings(warn_only=True):
         with prefix('. /opt/ebs/venv/bin/activate'):
             local("for line in `cat /opt/ebs/data/soft/del_requirements.txt`; do pip uninstall -y -q $line; done")
