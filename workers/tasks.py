@@ -780,7 +780,7 @@ def sendsmsru_post(url, parameters, id=None):
     response = HttpBot().POST(url, parameters)
     logging.basicConfig(filename='log/workers_sendsms.log', level=logging.INFO)
     logger = logging
-    print response
+    #print response
 
     conn = get_connection()
     cur = conn.cursor()
