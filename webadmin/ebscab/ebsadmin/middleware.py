@@ -1,4 +1,4 @@
-
+import subprocess
 
 
 class Version(object):
@@ -10,5 +10,8 @@ class Version(object):
             # assumed that user is Anonimous
             request.webcab_version = 0
             request.server_version = 0
-
+        try:
+            request.uptime=subprocess.check_output('uptime')
+        except Exception, e:
+            request.uptime = 'unknown'
 

@@ -8,6 +8,8 @@ SUBACC_CACHE_TIMEOUT = 120
 ACC_CACHE_TIMEOUT = 120
 COMMON_CACHE_TIMEOUT = 180
 NAS_TYPE_CACHE_TIMEOUT = 300
+MINUTE_CACHE_TIMEOUT = 60
+
 
 class RealDictRow(dict):
     """A `!dict` subclass representing a data record."""
@@ -432,7 +434,10 @@ class Cache(object):
                                 bt.id as tarif_id, accps.access_type, 
                                 ba.status, ba.balance_blocked, (ba.ballance+ba.credit) as ballance, 
                                 ba.disabled_by_limit, bt.active as tariff_active, 
-                                bt.radius_traffic_transmit_service_id, bt.vpn_ippool_id, bt.vpn_guest_ippool_id, accps.sessionscount, bt.time_access_service_id
+                                bt.radius_traffic_transmit_service_id, bt.vpn_ippool_id, 
+                                bt.vpn_guest_ippool_id, accps.sessionscount, 
+                                bt.time_access_service_id,
+                                NULL as ipv4_vpn_pool_id
                                 FROM billservice_account as ba
                                 JOIN billservice_accounttarif AS act ON act.id=(SELECT max(id) FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and date_trunc('second', att.datetime)<%s)
                                 JOIN billservice_tariff AS bt ON bt.id=act.tarif_id
@@ -733,3 +738,27 @@ class Cache(object):
             res = None
             
         return res
+
+    def get_periodicalservices(self):
+        current_key = 'core_periodicalservices_'
+        cache_key = str(self.cache_prefix+current_key)
+        obj = self.memcached_connection.get(cache_key)
+        if obj: return obj
+
+        try:
+            self.cursor.execute("""SELECT b.id, b.name, b.cost, b.cash_method, date_trunc('second', c.time_start) as time_start,
+                        c.length, c.length_in, c.autostart, b.tarif_id, date_trunc('second', b.created) as created, b.deactivated, b.deleted, b.tpd
+                        FROM billservice_periodicalservice as b 
+                        JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
+                        WHERE deleted=False or deleted is Null;""")
+            res = self.cursor.fetchall()
+            obj = self.memcached_connection.set(cache_key, res, MINUTE_CACHE_TIMEOUT)
+        except Exception as ex:
+            self.logger.error("%s database or memcached subsystem error: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+            res = None
+            
+        return res
+    
+
+                        
+                        
