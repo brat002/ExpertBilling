@@ -882,7 +882,7 @@ class HandleHotSpotAuth(HandleSAuth):
             logger.info("Activating account username %s pin %s ip %s mac %s", (user_name, pin[0], ip,mac))
             self.cursor.execute("""SELECT * FROM card_activate_fn(%s, %s, %s::inet, %s::text) AS 
                              A(account_id int, subaccount_id int, "password" text, nas_id int, tarif_id int, status int, 
-                             balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean,ipv4_vpn_pool_id int, tarif_vpn_ippool_id int,vpn_ip_address inet,ipn_ip_address inet,ipn_mac_address text,access_type text)
+                             balance_blocked boolean, ballance numeric, disabled_by_limit boolean, tariff_active boolean, ipv4_vpn_pool_id int, tarif_vpn_ippool_id int,vpn_ip_address inet,ipn_ip_address inet,ipn_mac_address text,access_type text)
                             """, (user_name, pin[0], ip,mac))
     
             acct_card = self.cursor.fetchone()
@@ -996,7 +996,7 @@ class HandleHotSpotAuth(HandleSAuth):
             with vars.cursor_lock:
                 try:
                     #self.create_cursor()
-                    pool_id=acc.ipv4_vpn_pool_id if acc.ipv4_vpn_pool_id else acc.vpn_ippool_id
+                    pool_id=subacc.ipv4_vpn_pool_id if subacc.ipv4_vpn_pool_id else acc.vpn_ippool_id
                     self.cursor.execute('SELECT get_free_ip_from_pool(%s, %s);', (pool_id, nas.acct_interim_interval))
                     vpn_ip_address = self.cursor.fetchone()[0]
                     if not vpn_ip_address:

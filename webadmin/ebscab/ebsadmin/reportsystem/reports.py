@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
 
 
-from ebsadmin.reportsystem.forms import AccountBallanceForm, CachierReportForm, ReportForm
+from ebsadmin.reportsystem.forms import AccountBallanceForm, CachierReportForm, ReportForm, SwitchReportForm
 
 from ebscab.lib.decorators import render_to, ajax_request
 from billservice.helpers import systemuser_required
@@ -9,13 +9,17 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
-from billservice.models import Account, AccountAddonService, Transaction, TotalTransactionReport, Tariff
+from billservice.models import Account, SubAccount, AccountAddonService, Transaction, TotalTransactionReport, Tariff, Switch
 from django_tables2_reports.tables import TableReport
 import django_tables2 as django_tables
 from django.db.models import Sum
 #from ebsadmin.tables import AccountsCashierReportTable, CashierReportTable
 import datetime
 from ebsadmin.tables import FormatFloatColumn
+from django.utils.translation import ugettext_lazy as _
+from django.db import connection
+from django_tables2.utils import A
+
 
 class FormatFloatColumn(django_tables.Column):
     def render(self, value):
@@ -101,7 +105,7 @@ def cashierdailyreport(request, slug):
         form = CachierReportForm(request.GET)
         if form.is_valid():
             class TypeTransactionsSumm(TableReport):
-                type__name = django_tables.Column(verbose_name=u'Тип операции')
+                type__name = django_tables.Column(verbose_name=_(u'Тип операции'))
                 summ = FormatFloatColumn()
                 
                 def __init__(self, form, *args, **kwargs):
@@ -151,7 +155,7 @@ def totaltransactionreport(request, slug):
         form = ReportForm(request.GET)
         if form.is_valid():
             class TotalTransactionsSumm(TableReport):
-                type__name = django_tables.Column(verbose_name=u'Тип операции')
+                type__name = django_tables.Column(verbose_name=_(u'Тип операции'))
                 summ = FormatFloatColumn()
                 
                 def __init__(self, form, *args, **kwargs):
@@ -202,17 +206,17 @@ def accountperiodreport(request, slug):
         form = AccountBallanceForm(request.GET)
         if form.is_valid():
             class AccountPeriodReportTable(TableReport):
-                username = django_tables.Column(verbose_name=u'Логин')
-                fullname = django_tables.Column(verbose_name=u'ФИО')
+                username = django_tables.Column(verbose_name=_(u'Логин'))
+                fullname = django_tables.Column(verbose_name=_(u'ФИО'))
                 #ballance = FormatFloatColumn(verbose_name=u'Текущий баланс')
-                balance_start = FormatFloatColumn(verbose_name=u'Начальный баланс')
-                periodic_summ = FormatFloatColumn(verbose_name=u'Списания по период. услугам')
-                addonservice_summ = FormatFloatColumn(verbose_name=u'Списания под подкл. услугам')
-                traffictransaction_summ = FormatFloatColumn(verbose_name=u'Списания за трафик')
-                timetransaction_summ = FormatFloatColumn(verbose_name=u'Списания за время')
-                transaction_summ_pos = FormatFloatColumn(verbose_name=u'Пополнений баланса')
-                transaction_summ_neg = FormatFloatColumn(verbose_name=u'Вычеты и баланса')
-                balance_end = FormatFloatColumn(verbose_name=u'Конечный баланс')
+                balance_start = FormatFloatColumn(verbose_name=_(u'Начальный баланс'))
+                periodic_summ = FormatFloatColumn(verbose_name=_(u'Списания по период. услугам'))
+                addonservice_summ = FormatFloatColumn(verbose_name=_(u'Списания под подкл. услугам'))
+                traffictransaction_summ = FormatFloatColumn(verbose_name=_(u'Списания за трафик'))
+                timetransaction_summ = FormatFloatColumn(verbose_name=_(u'Списания за время'))
+                transaction_summ_pos = FormatFloatColumn(verbose_name=_(u'Пополнений баланса'))
+                transaction_summ_neg = FormatFloatColumn(verbose_name=_(u'Вычеты и баланса'))
+                balance_end = FormatFloatColumn(verbose_name=_(u'Конечный баланс'))
                 #summ = FormatFloatColumn()
                 
                 #===============================================================
@@ -326,7 +330,7 @@ def accountperiodreport(request, slug):
     form = AccountBallanceForm()
     return {'form': form, 'name': name, 'slug': slug}
 
-def A():
+def A__():
 
             
     name = rep.get(slug)[1]
@@ -335,16 +339,8 @@ def A():
         if form.is_valid():
             class TariffStatReportTable(TableReport):
                 name = django_tables.Column()
-                
                 accounts_count = django_tables.Column()
                 
-                #summ = FormatFloatColumn()
-                
-                #===============================================================
-                # def __init__(self, form, *args, **kwargs):
-                #    super(TotalTransactionsSumm, self).__init__(form, *args, **kwargs)
-                #    self.footer_data = self.TableDataClass(data=[pp.aggregate(summ=Sum('summ'))], table=self)
-                #    self.footer = django_tables.rows.BoundRows(self.footer_data, self)    
                 class Meta:
                     attrs = {'class': 'table table-striped table-bordered table-condensed"'}
                     #annotations = ('summ', )
@@ -355,7 +351,7 @@ def A():
             date_end = form.cleaned_data.get('date_end')
 
             #transactiontype = form.cleaned_data.get('transactiontype')
-            from django.db import connection
+            
             cursor = connection.cursor()
             res = Tariff.objects.all()
             now = datetime.datetime.now()
@@ -398,12 +394,67 @@ def A():
     form = AccountBallanceForm()
     return {'form': form, 'name': name, 'slug': slug}
 
+@systemuser_required
+@render_to("reportsystem/generic.html")
+def switchports_report(request, slug):
+
+    name = rep.get(slug)[1]
+    if request.GET and request.method=='GET':
+        class SwitchPortsReportTable(TableReport):
+            account = django_tables.LinkColumn('account_edit', get_params={'id': A('account_id')}, verbose_name=_(u'Аккаунт'))
+            switch = django_tables.LinkColumn('switch', get_params={'id': A('switch_id')}, verbose_name=_(u'Switch'))
+            port = django_tables.Column()
+            
+            class Meta:
+                attrs = {'class': 'table table-striped table-bordered table-condensed"'}
+                fields = ('port', 'switch', 'account')
+            #===============================================================
+
+            
+        form = SwitchReportForm(request.GET)
+        if form.is_valid():
+            switches = form.cleaned_data.get('switch')
+            
+
+            if not switches:
+                switches = Switch.objects.all()
+                
+            res = []
+            for switch in switches:
+                
+                for i in xrange(1, switch.ports_count+1):
+                    subaccount = SubAccount.objects.filter(switch=switch, 
+                                    switch_port = i) if SubAccount.objects.filter(
+                                                                               switch=switch, 
+                                                                               switch_port = i
+                                                                               ).exists() else None
+
+                                    
+                    res.append({'port': i, 'switch': switch.name, 
+                                'switch_id': switch.id, 'account': subaccount[0].account.fullname  if subaccount and len(subaccount)==1 else ','.join([x.account.fullname for x in subaccount]) if subaccount else None,
+                                'account_id': subaccount[0].account.id if subaccount and len(subaccount)==1 else None})
+                    
+                
+            res = sorted(res, key=lambda x: x.get('switch'))
+            table = SwitchPortsReportTable(res)
+            table_to_report = RequestConfig(request, paginate=True if not request.GET.get('paginate')=='False' else False).configure(table)
+            if table_to_report:
+                return create_report_http_response(table_to_report, request)
+            #print res[0].SUMM
+            return {'form': form, 'table': table, 'name': name, 'slug': slug}
+        else:
+            return {'form': form, 'name': name, 'slug': slug}
+    form = SwitchReportForm()
+    return {'form': form, 'name': name, 'slug': slug}
+
+
 rep = {
        'blabla': (render_report, u'Отчёт по сумме платежей за период'),
        'accountaddonservicereport': (accountaddonservicereport, u'Отчёт по подключенным подключаемым услугам'),
        'cashierdailyreport': (cashierdailyreport, u'Отчёт по платежам за период'),
        'totaltransactionreport': (totaltransactionreport, u'Отчёт по сумме списаний за период'),
-       'accountperiodreport': (accountperiodreport, u'Отчёт за период')
+       'accountperiodreport': (accountperiodreport, u'Отчёт за период'),
+       'switchports_report': (switchports_report, u'Занятые порты на коммутаторах'),
        
        
        }

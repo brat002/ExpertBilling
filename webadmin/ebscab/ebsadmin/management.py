@@ -83,9 +83,6 @@ def get_nas_data(nas):
             'secret':nas.secret, 
             'login':nas.login, 
             'password':nas.password, 
-            'allow_pptp':nas.allow_pptp, 
-            'allow_pppoe':nas.allow_pppoe, 
-            'allow_ipn':nas.allow_ipn, 
             'user_add_action':nas.user_add_action, 
             'user_enable_action':nas.user_enable_action, 
             'user_disable_action':nas.user_disable_action, 
@@ -103,7 +100,7 @@ def get_nas_data(nas):
             'subacc_add_action':nas.subacc_add_action, 
             'subacc_enable_action':nas.subacc_enable_action, 
             'subacc_disable_action':nas.subacc_disable_action, 
-            'subacc_del_action':nas.subacc_del_action,  
+            'subacc_del_action':nas.subacc_delete_action,  
             'subacc_ipn_speed_action':nas.subacc_ipn_speed_action,  
             'acct_interim_interval':nas.acct_interim_interval, 
             }

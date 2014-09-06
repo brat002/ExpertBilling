@@ -383,9 +383,14 @@
   </div>
 
   <footer class='well'>
-    <div class='span4'>Время сервера: {{time}}</div>
-    <div class='span4'>Версия ядра: {{request.server_version}}</div>
-    <div class='span4'>Версия веб-кабинета: {{request.webcab_version}}</div>
+    <div class="row-fluid">
+     <div class='span4'>Время сервера: {{time}}</div>
+     <div class='span4'>Версия ядра: {{request.server_version}}</div>
+     <div class='span4'>Версия веб-кабинета: {{request.webcab_version}}</div>
+    </div>
+    <div class="row-fluid">
+     <div >Server status: {{request.uptime}}</div>
+    </div>
   </footer>
 
 </body>
