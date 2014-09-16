@@ -27,5 +27,4 @@ class ReportForm(forms.Form):
     transactiontype = forms.ModelMultipleChoiceField(label = _(u'Тип операции'), queryset = TransactionType.objects.all(), required=False, widget = forms.widgets.SelectMultiple(attrs={'size': 20}))
     
 class SwitchReportForm(forms.Form):
-    switch = forms.ModelMultipleChoiceField(label = _('Switch'), queryset = Switch.objects.all().order_by('name', required=False, widget = forms.widgets.SelectMultiple(attrs={'size': 20}))
-    
+    switch = forms.ModelMultipleChoiceField(label = _('Switch'), queryset = Switch.objects.all().order_by('name'), required=False, widget = forms.widgets.SelectMultiple(attrs={'size': 20}))

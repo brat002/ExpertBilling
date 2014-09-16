@@ -52,37 +52,6 @@ class AttrDict(dict):
 psycopg2.extras.RealDictRow = RealDictRow
 
 from time import time
-class memoize_with_expiry(object):
-    def __init__(self, expiry_time=0, cache=None, num_args=None):
-        self.cache = cache
-        self.expiry_time = expiry_time
-        self.num_args = num_args
-    
-    def __call__(self, func):
-        def wrapped(*args, **kw):
-            if self.cache is None and not hasattr(func, '_cache'):
-                func._cache = {}
-            cache = self.cache or func._cache
-            
-            if self.num_args:
-                mem_args = args[:self.num_args]
-            else:
-                mem_args = args
-            # frozenset is used to ensure hashability
-            if kw: 
-                key = mem_args, frozenset(kw.iteritems())
-            else:
-                key = mem_args
-            if key in cache:
-                result, timestamp = cache[key]
-                # Check the age.
-                age = time() - timestamp
-                if not self.expiry_time or age < self.expiry_time:
-                    return result
-            result = func(*args, **kw)
-            cache[key] = (result, time())
-            return result
-        return wrapped
 
 class Cache(object):
     
@@ -739,7 +708,27 @@ class Cache(object):
             
         return res
 
-    def get_periodicalservices(self):
+    def get_periodicalservices_by_id(self):
+        current_key = 'core_periodicalservices_'
+        cache_key = str(self.cache_prefix+current_key)
+        obj = self.memcached_connection.get(cache_key)
+        if obj: return obj
+
+        try:
+            self.cursor.execute("""SELECT b.id, b.name, b.cost, b.cash_method, date_trunc('second', c.time_start) as time_start,
+                        c.length, c.length_in, c.autostart, b.tarif_id, date_trunc('second', b.created) as created, b.deactivated, b.deleted, b.tpd
+                        FROM billservice_periodicalservice as b 
+                        JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
+                        WHERE deleted=False or deleted is Null;""")
+            res = {x.id:x for x in self.cursor.fetchall()}
+            obj = self.memcached_connection.set(cache_key, res, MINUTE_CACHE_TIMEOUT)
+        except Exception as ex:
+            self.logger.error("%s database or memcached subsystem error: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+            res = None
+            
+        return res
+    
+    def get_periodicalservices_by_tariff_id(self):
         current_key = 'core_periodicalservices_'
         cache_key = str(self.cache_prefix+current_key)
         obj = self.memcached_connection.get(cache_key)
@@ -752,6 +741,7 @@ class Cache(object):
                         JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
                         WHERE deleted=False or deleted is Null;""")
             res = self.cursor.fetchall()
+            res = {x.tarif_id:x for x in self.cursor.fetchall()}
             obj = self.memcached_connection.set(cache_key, res, MINUTE_CACHE_TIMEOUT)
         except Exception as ex:
             self.logger.error("%s database or memcached subsystem error: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
@@ -759,6 +749,28 @@ class Cache(object):
             
         return res
     
+    def get_accounts(self):
+        current_key = 'core_accounts_'
+        cache_key = str(self.cache_prefix+current_key)
+        obj = self.memcached_connection.get(cache_key)
+        if obj: return obj
 
+        try:
+            self.cursor.execute("""SELECT ba.id, ba.ballance, ba.credit, date_trunc('second', act.datetime), bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, FALSE, date_trunc('second', ba.created), ba.disabled_by_limit, ba.balance_blocked,  bt.ps_null_ballance_checkout, bt.deleted, bt.allow_express_pay, ba.status,  ba.username, 
+         decrypt_pw(password, %s)::text, 
+         bt.require_tarif_cost, act.periodical_billed, TRUE, False, bt.radius_traffic_transmit_service_id,bt.userblock_max_days  
+                        FROM billservice_account as ba
+                        LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT max(id) FROM billservice_accounttarif AS att WHERE att.account_id=ba.id and date_trunc('second', att.datetime)<%s)
+                        LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id
+                        WHERE ba.deleted is Null""" % self.crypt_key)
+            res = self.cursor.fetchall()
+            obj = self.memcached_connection.set(cache_key, res, MINUTE_CACHE_TIMEOUT)
+        except Exception as ex:
+            self.logger.error("%s database or memcached subsystem error: %s \n %s", (self.getName(), repr(ex), traceback.format_exc()))
+            res = None
+            
+        return res
+
+                        
                         
                         
