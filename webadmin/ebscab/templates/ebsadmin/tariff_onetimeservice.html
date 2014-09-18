@@ -45,7 +45,7 @@
     {% if table %}{% render_table table %}{% endif %}
     
     <div class="btn-toolbar">
-      <a href="{% url 'onetimeservice_edit' %}?tariff_id={{item.id}}"
+      <a href="{% url 'onetimeservice_edit' %}?tariff_id={{tariff.id}}"
           class="btn btn-success general-modal-dialog"
           data-dlgtitle="{% blocktrans %}Добавить разовую услугу{% endblocktrans %}"
           data-dlgid="ps-modal">
