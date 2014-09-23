@@ -1065,24 +1065,31 @@ class HandleSDHCP(HandleSAuth):
         self.addrport = addrport
         #logger.debugfun('%s', show_packet, (packetobject,))
 
+    def reply(self):
+        #self.transport.write(self.replypacket.ReplyPacket(), self.addrport)
+        returndata = self.replypacket.ReplyPacket()
+        logger.debug("REPLY packet: %s", repr(self.replypacket))               
 
-    def auth_NA(self, authobject):
+        self.transport.write(returndata, self.addrport)
+        
+
+    def auth_NA(self):
         """
         Deny access
         """
         if vars.DHCP_FRAMED_GUEST_POOL:
             self.replypacket.AddAttribute('Framed-Pool', vars.DHCP_FRAMED_GUEST_POOL)
             self.replypacket.AddAttribute('Session-Timeout',   vars.DHCP_GUEST_SESSION_TIMEOUT)
-            self.authobject.code = packet.AccessAccept
+            
         else:
             self.replypacket.username=None
             self.replypacket.password=None
             # Access denided
-            self.authobject.code = packet.AccessReject
+        self.replypacket.code = packet.AccessAccept
 
 
-        returndata, replypacket = self.authobject.ReturnPacket(self.replypacket) 
-        logger.debug("REPLY packet: %s", repr(replypacket))               
+        returndata = self.replypacket.ReplyPacket()
+        logger.debug("REPLY packet: %s", repr(self.replypacket))               
 
         self.transport.write(returndata, self.addrport)
 
@@ -1101,7 +1108,8 @@ class HandleSDHCP(HandleSAuth):
         subacc = self.cache.get_subaccount_by_mac(mac)
         subaccount_switch=None
         nas=nasses[0]
-        self.replypacket=packet.Packet(secret=nas.secret,dict=vars.DICT)
+        self.packetobject.secret = nas.secret
+        self.replypacket=self.packetobject.CreateReply()
         nas_id=nas.id
         acc=None
         if subacc:
@@ -1117,7 +1125,7 @@ class HandleSDHCP(HandleSAuth):
             logger.warning("DHCP option82 remote_id, port %s %s", (identify, port,))
             if not switch:
                 sqlloggerthread.add_message(nas=nas_id, type="DHCP_CANT_FIND_SWITH_BY_REMOTE_ID", service=self.access_type, cause=u'Невозможно найти коммутатор с remote-id %s ' % (identify, ), datetime=self.datetime)
-                return self.auth_NA(self.authobject)  
+                return self.auth_NA()  
 
 
             if not subacc:
@@ -1137,28 +1145,28 @@ class HandleSDHCP(HandleSAuth):
                 logger.warning("Account not found for DHCP request with mac address %s", (mac, ))
                 #Не учитывается сервер доступа
                 sqlloggerthread.add_message(type="AUTH_ACC_NOT_FOUND", service=self.access_type, cause=u'Аккаунт для субаккаунта с mac %s в системе не найден.' % (mac, ), datetime=self.datetime)
-                return self.auth_NA(self.authobject)
+                return self.auth_NA()
             if subaccount_switch.option82_auth_type==0 and (subaccount_switch.remote_id!=switch.remote_id or subacc.switch_port!=port):
                 sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="DHCP_PORT_WRONG", service=self.access_type, cause=u'Remote-id или порт не совпадают %s %s' % (identify, port), datetime=self.datetime)
-                return self.auth_NA(self.authobject)  
+                return self.auth_NA()  
             elif subaccount_switch.option82_auth_type==1 and (subaccount_switch.remote_id!=switch.remote_id or subacc.switch_port!=port):
                 sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="DHCP_PORT_WRONG", service=self.access_type, cause=u'Remote-id или порт не совпадают %s %s' % (identify, port), datetime=self.datetime)
-                return self.auth_NA(self.authobject)  
+                return self.auth_NA()  
             elif subaccount_switch.option82_auth_type==2 and subaccount_switch.id!=switch.id:
                 sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="DHCP_SWITCH_WRONG", service=self.access_type, cause=u'Свитч c remote-id=%s не совпадает с указанным в настройках субаккаунта' % (identify, port), datetime=self.datetime)
-                return self.auth_NA(self.authobject)  
+                return self.auth_NA()  
                     
           
         if not subacc:
             logger.warning("Subaccount not found for DHCP request with mac address %s", (mac, ))
             #Не учитывается сервер доступа
             sqlloggerthread.add_message(type="AUTH_SUBACC_NOT_FOUND", service=self.access_type, cause=u'Субаккаунт с ipn_mac %s в системе не найден.' % (mac, ), datetime=self.datetime)
-            return self.auth_NA(self.authobject)
+            return self.auth_NA()
         
         if not subacc.allow_dhcp and self.access_type=='DHCP':
             logger.warning("Subaccount with mac %s have no rights for DHCP ", (mac, ))
             sqlloggerthread.add_message(type="AUTH_DHCP_DONT_ALLOW", service=self.access_type, cause=u'Субаккаунту с mac %s запрещена выдача IP по DHCP.' % (mac,), datetime=self.datetime)
-            return self.auth_NA(self.authobject)            
+            return self.auth_NA()            
         if not acc:
             acc = self.cache.get_account_by_id(subacc.account_id)
             
@@ -1166,7 +1174,7 @@ class HandleSDHCP(HandleSAuth):
             logger.warning("Account not found for %s request with mac address %s", (self.access_type, mac, ))
             #Не учитывается сервер доступа
             sqlloggerthread.add_message(type="AUTH_ACC_NOT_FOUND", service=self.access_type, cause=u'Аккаунт для субаккаунта с mac %s в системе не найден.' % (mac, ), datetime=self.datetime)
-            return self.auth_NA(self.authobject)
+            return self.auth_NA()
         
         nas_id = subacc.nas_id
 
@@ -1178,16 +1186,16 @@ class HandleSDHCP(HandleSAuth):
             """
             logger.warning("Account nas(%s) is not in sended nasses and IGNORE_NAS_FOR_%s is False %s", (repr(nas), nasses,self.access_type))
             sqlloggerthread.add_message(account=acc.id, subaccount=subacc.id, type="AUTH_BAD_NAS", service=self.access_type, cause=u'Субаккаунт привязан к конкретному серверу доступа, но запрос на авторизацию поступил с IP %s.' % (self.nasip), datetime=self.datetime)
-            return self.auth_NA(self.authobject)
+            return self.auth_NA()
         elif not nas_id:
             """
             Иначе, если указан любой NAS - берём первый из списка совпавших по IP
             """
             nas = nasses[0]
         nas_id = nas.id
-        self.replypacket=packet.Packet(secret=nas.secret,dict=vars.DICT)
+        #self.replypacket=packet.Packet(secret=nas.secret,dict=vars.DICT)
  
-        self.authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type='DHCP')
+        #self.authobject=Auth(packetobject=self.packetobject, username='', password = '',  secret=str(nas.secret), access_type='DHCP')
 
 
         #print dir(acc)
@@ -1197,18 +1205,18 @@ class HandleSDHCP(HandleSAuth):
         
         if acc.status != 1:
             sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_ACCOUNT_DISABLED", service=self.access_type, cause=u'Аккаунт отключен', datetime=self.datetime)
-            return self.auth_NA(self.authobject)   
+            return self.auth_NA()   
         
         if not acstatus:
             logger.warning("Unallowed account status for user %s: account_status is false(allow_vpn_null=%s, ballance=%s, allow_vpn_with_minus=%s, allow_vpn_block=%s, ballance_blocked=%s, disabled_by_limit=%s, account_status=%s)", (mac,subacc.allow_vpn_with_null,acc.ballance, subacc.allow_vpn_with_minus, subacc.allow_vpn_with_block, acc.balance_blocked, acc.disabled_by_limit, acc.status))
             sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="AUTH_%s_BALLANCE_ERROR" % self.access_type, service=self.access_type, cause=u'Баланс %s, блокировка по лимитам %s, блокировка по недостатку баланса в начале р.п. %s' % (acc.ballance, acc.disabled_by_limit, acc.balance_blocked), datetime=self.datetime)
-            return self.auth_NA(self.authobject)      
+            return self.auth_NA()      
 
         allow_dial = True
         if acc.access_type in ['DHCP', 'Wireless']:
             allow_dial = True #self.caches.period_cache.in_period.get(acc.tarif_id, False)
         if acstatus and allow_dial and acc.tariff_active:
-            self.authobject.set_code(2)
+            self.replypacket.code = 2
             self.replypacket.AddAttribute('Framed-IP-Address', subacc.ipn_ip_address)
             #self.replypacket.AddAttribute('Framed-IP-Netmask', "255.255.255.0")
             self.replypacket.AddAttribute('Session-Timeout',   vars.SESSION_TIMEOUT)
@@ -1220,7 +1228,7 @@ class HandleSDHCP(HandleSAuth):
             self.reply()
         else:
             sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="%s_AUTH_BAD_TIME" % self.access_type, service=self.access_type, cause=u'Тариф пользователя неактивен(%s) или время доступа выходит за рамки разрешённого %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)
-            return self.auth_NA(self.authobject)
+            return self.auth_NA()
 
 
 
