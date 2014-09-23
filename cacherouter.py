@@ -658,7 +658,7 @@ class Cache(object):
 
     def get_switch_by_identify(self, identify):
         current_key = 'switch_by_identify_%s'
-        cache_key = str((self.cache_prefix+current_key) % (id,))
+        cache_key = str((self.cache_prefix+current_key) % (identify,))
         obj = self.memcached_connection.get(cache_key)
         if obj: return obj
         
