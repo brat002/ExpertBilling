@@ -1080,12 +1080,11 @@ class HandleSDHCP(HandleSAuth):
         if vars.DHCP_FRAMED_GUEST_POOL:
             self.replypacket.AddAttribute('Framed-Pool', vars.DHCP_FRAMED_GUEST_POOL)
             self.replypacket.AddAttribute('Session-Timeout',   vars.DHCP_GUEST_SESSION_TIMEOUT)
-            
+            self.replypacket.code = packet.AccessAccept
         else:
-            self.replypacket.username=None
-            self.replypacket.password=None
+            self.replypacket.code = packet.AccessReject
             # Access denided
-        self.replypacket.code = packet.AccessAccept
+        
 
 
         returndata = self.replypacket.ReplyPacket()
