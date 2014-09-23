@@ -1132,7 +1132,7 @@ class HandleSDHCP(HandleSAuth):
                 если субаккаунт не найден по маку первоначально, ищем субаккаунт по id свитча и порту
                 """
                 subacc=self.cache.get_by_switch_port(switch.id, port)    
-                logger.debug("Searching subaccount by port %s %s, subacc=%s", (identify, port, subacc))
+                logger.debug("Searching subaccount by port switch=%s identify=%s port=%s, subacc=%s", (switch, identify, port, subacc))
                 
                 if subacc:
                     subaccount_switch= self.cache.get_switch_by_id(subacc.switch_id)
