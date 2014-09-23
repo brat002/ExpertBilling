@@ -1133,13 +1133,13 @@ class HandleSDHCP(HandleSAuth):
                 если субаккаунт не найден по маку первоначально, ищем субаккаунт по id свитча и порту
                 """
                 subacc=self.cache.get_by_switch_port(switch.id, port)    
-                #logger.debug("Searching DHCP option82 remote_id, port %s %s", (identify, port,))
+                logger.debug("Searching subaccount by port %s %s, subacc=%s", (identify, port, subacc))
                 
                 if subacc:
                     subaccount_switch= self.cache.get_switch_by_id(subacc.switch_id)
                 else:
                     sqlloggerthread.add_message(nas=nas_id,  type="DHCP_PORT_SWITCH_WRONG", service=self.access_type, cause=u'Субаккаунт с remote-id %s и портом %s не найден' % (identify, port), datetime=self.datetime)
-                    return self.auth_NA(self.authobject)  
+                    return self.auth_NA()  
             acc = self.cache.get_account_by_id(subacc.account_id)
             if not acc:
                 logger.warning("Account not found for DHCP request with mac address %s", (mac, ))
