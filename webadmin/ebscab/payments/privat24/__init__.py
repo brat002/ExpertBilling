@@ -87,7 +87,7 @@ class PaymentProcessor(PaymentProcessorBase):
         type = data['pay_way']
         status = data['state']
         transaction_id = data['ref']
-        sender_phone = data['sender_phone']
+        sender_phone = data.get('sender_phone')
         
         from getpaid.models import Payment
         try:
