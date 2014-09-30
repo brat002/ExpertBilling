@@ -87,13 +87,13 @@ def payment(request):
         
         try:    
             model=Transaction()
-            model.summ=amount*(-1)
+            model.summ=amount
             model.account=account
             model.approved=True
             #model.bill=u'kPay'
             model.created=payment_date
             model.promise=False
-            model.bill=reciept
+            model.bill=txn_id
             #model.description=u"Автоматический платёж через систему  %s" % reciept
 
             model.type_id='RAPIDA_PAYMENT'
