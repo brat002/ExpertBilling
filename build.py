@@ -6,10 +6,16 @@ from fabric.api import env
 from fabric.api import task
 from fabric.api import hosts
 from fabric.operations import sudo
-
+from fabric.contrib.files import exists
 
 @hosts(['brat002@m4.diggit.ru', 'brat002@m8.diggit.ru'])
 def build(key=None, users=200, name=''):
+    
+    if not exists('nf'):
+        run('git clone ssh://brat002@m3.diggit.ru/home/brat002/nf/')
+    with cd('nf'):
+        run('sh make.sh')
+        
     with cd('mikrobill'):
         run('git pull')
         run('sh build_all.sh %s %s %s' % (key if key else name or 'demo1.5_`uname -i`', users, key if key else ''))
@@ -18,6 +24,12 @@ def build(key=None, users=200, name=''):
        
 @hosts(['brat002@m4.diggit.ru', ])
 def build_x64(key=None, users=200, name=''):
+    if not exists('nf'):
+        run('git clone ssh://brat002@m3.diggit.ru/home/brat002/nf/')
+    with cd('nf'):
+        run('git pull && sh make.sh')
+        
+        
     with cd('mikrobill'):
         run('git pull')
         run('sh build_all.sh %s %s %s' % (key if key else name or 'demo1.5_`uname -i`', users, key if key else ''))

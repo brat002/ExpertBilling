@@ -24,7 +24,7 @@ import  glob
 
 import IPy
 
-
+import msgpack
 
 
 import isdlogger
@@ -81,20 +81,69 @@ class Worker(ConsumerMixin):
 
     def get_consumers(self, Consumer, channel):
         return [Consumer(queues=nf_in,
-                         callbacks=[self.on_message], accept=['pickle'])]
+                         callbacks=[self.on_message], accept=['msgpack'])]
 
     def on_message(self, body, message):
         #print body
         while queues.flowQueueSize >15000:
             time.sleep(1)
             
-        body = body['data']
-        data_bulk = body.split("_|_|_")
-        for data in data_bulk:
+        #body = body['data']
+        
+        """
+            Src_addr uint32
+            Dst_addr uint32
+            Nexthop uint32
+            Snmp_in uint16
+            Snmp_out uint16
+            Packets_count uint32
+            Bytes uint32
+            Sysuptime uint32
+            LastUptime uint32
+            SrcPort uint16
+            DstPort uint16
+            A    uint8
+            Tcpflags int8
+            Protocol uint8
+            Tos uint8
+            SrcAs    uint16
+            DstAs    uint16
+            SrcMask    uint8
+            DstMask    uint8
+            B    int16
+        """
+        for item in body:
             try:
-                data, addr = data.split("|<>|")
-            
-                nfPacketHandle(data, addr, queues.nfFlowCache)
+                flow = item.get('Flow')
+                f = Flow5Data(
+                    empty=False,
+                    src_addr = flow.get('Src_addr'),
+                    dst_addr = flow.get('Dst_addr'),
+                    next_hop = flow.get('Nexthop'),
+                    in_index = flow.get('Snmp_in'),
+                    out_index = flow.get('Snmp_out'),
+                    packets = flow.get('Packets_count'),
+                    octets = flow.get('Bytes'),
+                    start = flow.get('Sysuptime'),
+                    finish = flow.get('LastUptime'),
+                    src_port = flow.get('SrcPort'),
+                    dst_port = flow.get('DstPort'),
+                    nas_id = item.get('Nas_id'),
+                    tcp_flags = flow.get('Tcpflags'),
+                    protocol = flow.get('Protocol'),
+                    tos = flow.get('Tos'),
+                    src_as = flow.get('SrcAs'),
+                    dst_as = flow.get('DstAs'),
+                    src_netmask_length = flow.get('SrcMask'),
+                    dst_netmask_length = flow.get('DstMask'),
+                    account_id = item.get('Account').get('Account_id'),
+                    node_direction = 'INPUT' if item.get('Direction')==0 else 'OUTPUT',
+                    acctf_id = item.get('Account').get('AccountTarif_id'),
+                    tariff_id = item.get('Account').get('Tarif_id')
+                    )
+                #print f
+                queues.nfFlowCache.addflow5(f)
+                #nfPacketHandle(data, addr, queues.nfFlowCache)
             except Exception, ex:
                 logger.error("NFF exception: %s \n %s", (repr(ex), traceback.format_exc()))
 
@@ -133,163 +182,7 @@ class nfDequeThread(Thread):
                 logger.error("NFF exception: %s \n %s", (repr(ex), traceback.format_exc()))
 
 
-def flow5(data):
-    if len(data) != vars.flowLENGTH:
-        raise ValueError, "Short flow: data length: %d; LENGTH: %d" % (len(data), vars.flowLENGTH)
-    #must turn tuples into lists because they are to be modified
-    return Flow5Data(False, *struct.unpack(FLOW_FORMAT, data))
 
-
-def header5(data):
-    """
-    Function that unpacks Netflow packet header binary string into a tuple.
-    data legend:
-        _nh = struct.unpack("!HHIIIIBBH", data)
-        self.version = _nh[0]
-        self.num_flows = _nh[1]
-        self.sys_uptime = _nh[2]
-        self.time_secs = _nh[3]
-        self.time_nsecs = _nh[4]
-    """
-    if len(data) != vars.headerLENGTH:
-        raise ValueError, "Short flow header"
-    return struct.unpack(HEADER_FORMAT, data)
-
-def find_account_by_port(nasses,flow):
-    #global caches
-    caches = cacheMaster.cache
-    if not caches.nas_port_cache.by_nas_id: 
-        #logger.debug("Nas ports cache is empty return", ())
-        return None, None, None
-    acc_data_src,acc_data_dst = None, None
-    for nasitem in nasses:
-        #logger.debug("Checking flow port for nas_id=: %s. Nas-Port. In index=%s, out index=%s. cache len=%s", (nasitem.id, flow.in_index,flow.out_index, len(caches.nas_port_cache.by_nas_id)))
-        if not acc_data_src:
-            acc_data_src = caches.nas_port_cache.by_nas_id.get(nasitem.id,{}).get(flow.in_index,None)
-            #logger.debug("Search for flow src port  account=%s", (acc_data_src, ))
-            nas_id = nasitem.id
-        if not acc_data_dst: 
-            acc_data_dst = caches.nas_port_cache.by_nas_id.get(nasitem.id,{}).get(flow.out_index,None)
-            #logger.debug("Search for flow dst port account=%s", (acc_data_dst, ))
-            nas_id = nasitem.id
-        if acc_data_dst and acc_data_src: return caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
-    return caches.account_cache.by_id.get(acc_data_src) if acc_data_src is not None else None,caches.account_cache.by_id.get(acc_data_dst) if acc_data_dst is not None else None, nas_id
-
-def find_account_by_activesession(nasses,flow):
-    #global caches
-    caches = cacheMaster.cache
-    if not caches.active_session_cache.by_ip: 
-        #logger.debug("Nas ports cache is empty return", ())
-        return None, None, None
-    acc_data_src,acc_data_dst = None, None
-    for nasitem in nasses:
-        #logger.debug("Checking flow port for nas_id=: %s. Nas-Port. In index=%s, out index=%s. cache len=%s", (nasitem.id, flow.in_index,flow.out_index, len(caches.nas_port_cache.by_nas_id)))
-        if not acc_data_src:
-            acc_data_src = caches.active_session_cache.by_ip.get((flow.src_addr, nasitem.id))
-            #logger.debug("Search for flow src port  account=%s", (acc_data_src, ))
-            nas_id = nasitem.id
-        if not acc_data_dst: 
-            acc_data_dst = caches.active_session_cache.by_ip.get((flow.dst_addr, nasitem.id))
-            #logger.debug("Search for flow dst port account=%s", (acc_data_dst, ))
-            nas_id = nasitem.id
-        if acc_data_dst and acc_data_src: return caches.account_cache.by_id.get(acc_data_src),caches.account_cache.by_id.get(acc_data_dst), nas_id
-    return caches.account_cache.by_id.get(acc_data_src),caches.account_cache.by_id.get(acc_data_dst), nas_id
-
-
-def find_account_by_ip(flow):
-
-    caches = cacheMaster.cache
-
-    acc_data_src = caches.ips_cache.by_ip.get(flow.src_addr)
-
-    acc_data_dst = caches.ips_cache.by_ip.get(flow.dst_addr)
-
-            
-    return acc_data_src,acc_data_dst
-
-
-def nfPacketHandle(data, addr, flowCache):
-    '''
-    Function receiving a binary Netflow packet, sender addr and FlowCache reference.
-    Gets, unpacks and checks flows from packets.
-    Approved packets are added to FlowCache.
-    '''    
-    if len(data) < MIN_NETFLOW_PACKET_LEN:
-        #raise ValueError, "Short packet"
-        logger.warning("Small packet, discarded: %s", repr(addr))
-        return
-    caches = cacheMaster.cache
-    if 0: assert isinstance(caches, NfCaches)
-    nasses = caches.nas_cache.by_ip.get(addr)
-    if not caches: return
-    if not nasses: logger.warning("NAS %s not found in our beautiful system. May be it hackers?", repr(addr)); return    
-    nas_id = nasses[0].id
-    flows=[]
-    _nf = struct.unpack("!H", data[:2])
-    pVersion = _nf[0]
-    if not pVersion in vars.FLOW_TYPES.keys():
-        raise RuntimeWarning, "NetFlow version %d is not yet implemented" % pVersion
-    hdr_class, flow_class  = vars.FLOW_TYPES[pVersion]
-    hdr = hdr_class(data[:vars.headerLENGTH])
-    #======
-    #runs through flows
-    
-    
-
-    for n in xrange(hdr[1]):
-        offset = vars.headerLENGTH + (vars.flowLENGTH * n)
-        flow_data = data[offset:offset + vars.flowLENGTH]
-        flow = flow_class(flow_data)
-
-        if vars.SKIP_INDEX_CHECK==False and (flow.out_index == 0 or flow.in_index == flow.out_index):
-            logger.debug("flow int index==flow out index %s==%s or out index==0 rejecting", (flow.in_index,flow.out_index,))
-            continue
-
-        #nasses_list=[nasitem.id for nasitem in nasses]
-
-        acc_src, acc_dst = find_account_by_ip(flow)
-        
-
-        logger.debug("Account with nas for flow src(%s) dst(%s) default nas(%s)", (acc_src, acc_dst, nas_id, ))
-        #Проверка на IPN сеть
-        #=======================================================================
-        # if not acc_data_src and caches.account_cache.ipn_range:
-        #    for src_ip, src_mask, acc_nas_id, account_data in caches.account_cache.ipn_range:
-        #        if (acc_nas_id in nasses_list or acc_nas_id is None) and (flow.src_addr & src_mask) == src_ip:
-        #            acc_data_src = account_data
-        #            nas_id=acc_nas_id
-        #            break
-        # if not acc_data_dst and caches.account_cache.ipn_range:
-        #    for dst_ip, dst_mask, acc_nas_id, account_data in caches.account_cache.ipn_range:
-        #        if (acc_nas_id in nasses_list  or acc_nas_id is None) and (flow.dst_addr & dst_mask) == dst_ip:
-        #            acc_data_dst = account_data
-        #            nas_id=acc_nas_id
-        #            break
-        # logger.debug("IPN Account for flow src(%s) dst(%s)", (acc_data_src, acc_data_dst, ))
-        #=======================================================================
-        local = bool(acc_src and acc_dst)
-        if local:
-            logger.debug("Flow is local",())
-        #acc_acct_tf = (acc_src, acc_dst) if local else (acc_src or acc_dst,)
-        #print repr(acc_acct_tf)
-            
-        if acc_src or acc_dst:    
-            #print acc_src, acc_dst        
-            flow.nas_id = nas_id
-            #acc_id, acctf_id, tf_id = (acc_acct_tf)
-            flow.padding = local
-            
-            if acc_src:
-                flow.account_id = acc_src
-                flow.node_direction = 'OUTPUT'
-            
-                flowCache.addflow5(flow)   
-            if acc_dst:
-                flow.account_id = acc_dst
-                flow.node_direction = 'INPUT'
-            
-                flowCache.addflow5(flow)   
-                  
                 
                         
 
@@ -454,12 +347,12 @@ class FlowDequeThread(Thread):
                         continue
                     flow = qflow
                     if 0: assert isinstance(flow, Flow5Data)
-                    flow.account_id = acc.account_id
-                    flow.acctf_id = acc.accounttarif_id
+                    #flow.account_id = acc.account_id
+                    #flow.acctf_id = acc.accounttarif_id
                     #get groups for tarif
-                    tarifGroups = cacheMaster.cache.tfgroup_cache.by_tarif.get(acc.tariff_id)
+                    tarifGroups = cacheMaster.cache.tfgroup_cache.by_tarif.get(flow.tariff_id)
                     has_groups = True if tarifGroups else False
-                    direction = ((src and 'INPUT') or 'OUTPUT') if local else None
+                    #direction = flow.node_direction
                     passthr = True
                     #checks classes                    
                     fnode = None; classLst = []                    
@@ -956,7 +849,7 @@ if __name__=='__main__':
             file_test(vars.FLOW_DIR)
             
         suicideCondition = {}    
-        vars.FLOW_TYPES = {5 : (header5, flow5)}        
+
 
 
         #-------------------
