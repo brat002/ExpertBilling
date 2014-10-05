@@ -28,7 +28,7 @@ start)
         echo "Starting ebs nf"
 		olddir=`pwd`
         cd $DPATH
-        $DAEMON &
+        nohup $DAEMON &
         cd $olddir
 
 		;;
