@@ -142,6 +142,7 @@ class Worker(ConsumerMixin):
                     tariff_id = item.get('Account').get('Tarif_id')
                     )
                 #print f
+                logger.info("%s", flow)
                 queues.nfFlowCache.addflow5(f)
                 #nfPacketHandle(data, addr, queues.nfFlowCache)
             except Exception, ex:
