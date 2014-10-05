@@ -10,6 +10,13 @@ from fabric.contrib.files import exists
 
 @hosts(['brat002@m4.diggit.ru', 'brat002@m8.diggit.ru'])
 def build(key=None, users=200, name=''):
+    if not exists('nf'):
+        """
+        https://godeb.s3.amazonaws.com/godeb-386.tar.gz
+        """
+        run('git clone ssh://brat002@m3.diggit.ru/home/brat002/nf/')
+    with cd('nf'):
+        run('git pull && sh make.sh')
         
     with cd('mikrobill'):
         run('git pull')
