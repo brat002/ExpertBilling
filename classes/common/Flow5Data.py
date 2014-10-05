@@ -35,36 +35,36 @@ class Flow5Data(list):
 
     __slots__ = () 
 
-    _fields = ('src_addr', 'dst_addr', 'next_hop', 'in_index', 'out_index', 'packets', 'octets', 'start', 'finish', 'src_port', 'dst_port', 'nas_id', 'tcp_flags', 'protocol', 'tos', 'src_as', 'dst_as', 'src_netmask_length', 'dst_netmask_length', 'padding', 'account_id', 'datetime', 'class_id', 'node_direction', 'class_store', 'class_passthrough', 'acctf_id', 'has_groups', 'groups') 
+    _fields = ('src_addr', 'dst_addr', 'next_hop', 'in_index', 'out_index', 'packets', 'octets', 'start', 'finish', 'src_port', 'dst_port', 'nas_id', 'tcp_flags', 'protocol', 'tos', 'src_as', 'dst_as', 'src_netmask_length', 'dst_netmask_length', 'padding', 'account_id', 'datetime', 'class_id', 'node_direction', 'class_store', 'class_passthrough', 'acctf_id', 'has_groups', 'groups', 'tariff_id') 
 
-    def __init__(self, empty=True, src_addr=None, dst_addr=None, next_hop=None, in_index=None, out_index=None, packets=None, octets=None, start=None, finish=None, src_port=None, dst_port=None, nas_id=None, tcp_flags=None, protocol=None, tos=None, src_as=None, dst_as=None, src_netmask_length=None, dst_netmask_length=None, padding=None, account_id=None, datetime=None, class_id=None, node_direction=None, class_store=None, class_passthrough=None, acctf_id=None, has_groups=None, groups=None):
+    def __init__(self, empty=True, src_addr=None, dst_addr=None, next_hop=None, in_index=None, out_index=None, packets=None, octets=None, start=None, finish=None, src_port=None, dst_port=None, nas_id=None, tcp_flags=None, protocol=None, tos=None, src_as=None, dst_as=None, src_netmask_length=None, dst_netmask_length=None, padding=None, account_id=None, datetime=None, class_id=None, node_direction=None, class_store=None, class_passthrough=None, acctf_id=None, has_groups=None, groups=None, tariff_id=None):
         if empty:
             pass
         else:
-            self.extend((src_addr, dst_addr, next_hop, in_index, out_index, packets, octets, start, finish, src_port, dst_port, nas_id, tcp_flags, protocol, tos, src_as, dst_as, src_netmask_length, dst_netmask_length, padding, account_id, datetime, class_id, node_direction, class_store, class_passthrough, acctf_id, has_groups, groups)) 
+            self.extend((src_addr, dst_addr, next_hop, in_index, out_index, packets, octets, start, finish, src_port, dst_port, nas_id, tcp_flags, protocol, tos, src_as, dst_as, src_netmask_length, dst_netmask_length, padding, account_id, datetime, class_id, node_direction, class_store, class_passthrough, acctf_id, has_groups, groups, tariff_id)) 
                 
     @classmethod
     def _make(cls, iterable):
         'Make a new Flow5Data object from a sequence or iterable'
         result = cls()
         result.extend(iterable)
-        if len(result) < 29:
-            result.extend([None for i in xrange(29 - len(result))])
+        if len(result) < 30:
+            result.extend([None for i in xrange(30 - len(result))])
         return result 
 
     def __repr__(self):
         try:
-            return 'Flow5Data(src_addr=%r, dst_addr=%r, next_hop=%r, in_index=%r, out_index=%r, packets=%r, octets=%r, start=%r, finish=%r, src_port=%r, dst_port=%r, nas_id=%r, tcp_flags=%r, protocol=%r, tos=%r, src_as=%r, dst_as=%r, src_netmask_length=%r, dst_netmask_length=%r, padding=%r, account_id=%r, datetime=%r, class_id=%r, node_direction=%r, class_store=%r, class_passthrough=%r, acctf_id=%r, has_groups=%r, groups=%r)' % tuple(self) 
+            return 'Flow5Data(src_addr=%r, dst_addr=%r, next_hop=%r, in_index=%r, out_index=%r, packets=%r, octets=%r, start=%r, finish=%r, src_port=%r, dst_port=%r, nas_id=%r, tcp_flags=%r, protocol=%r, tos=%r, src_as=%r, dst_as=%r, src_netmask_length=%r, dst_netmask_length=%r, padding=%r, account_id=%r, datetime=%r, class_id=%r, node_direction=%r, class_store=%r, class_passthrough=%r, acctf_id=%r, has_groups=%r, groups=%r, tariff_id=%r)' % tuple(self) 
         except:
             return repr(tuple(self)) 
 
     def _asdict(t):
         'Return a new dict which maps field names to their values'
-        return {'src_addr': t[0], 'dst_addr': t[1], 'next_hop': t[2], 'in_index': t[3], 'out_index': t[4], 'packets': t[5], 'octets': t[6], 'start': t[7], 'finish': t[8], 'src_port': t[9], 'dst_port': t[10], 'nas_id': t[11], 'tcp_flags': t[12], 'protocol': t[13], 'tos': t[14], 'src_as': t[15], 'dst_as': t[16], 'src_netmask_length': t[17], 'dst_netmask_length': t[18], 'padding': t[19], 'account_id': t[20], 'datetime': t[21], 'class_id': t[22], 'node_direction': t[23], 'class_store': t[24], 'class_passthrough': t[25], 'acctf_id': t[26], 'has_groups': t[27], 'groups': t[28]} 
+        return {'src_addr': t[0], 'dst_addr': t[1], 'next_hop': t[2], 'in_index': t[3], 'out_index': t[4], 'packets': t[5], 'octets': t[6], 'start': t[7], 'finish': t[8], 'src_port': t[9], 'dst_port': t[10], 'nas_id': t[11], 'tcp_flags': t[12], 'protocol': t[13], 'tos': t[14], 'src_as': t[15], 'dst_as': t[16], 'src_netmask_length': t[17], 'dst_netmask_length': t[18], 'padding': t[19], 'account_id': t[20], 'datetime': t[21], 'class_id': t[22], 'node_direction': t[23], 'class_store': t[24], 'class_passthrough': t[25], 'acctf_id': t[26], 'has_groups': t[27], 'groups': t[28], 'tariff_id': t[29]} 
 
     def _replace(self, **kwds):
         'Return a new Flow5Data object replacing specified fields with new values'
-        result = self._make(map(kwds.pop, ('src_addr', 'dst_addr', 'next_hop', 'in_index', 'out_index', 'packets', 'octets', 'start', 'finish', 'src_port', 'dst_port', 'nas_id', 'tcp_flags', 'protocol', 'tos', 'src_as', 'dst_as', 'src_netmask_length', 'dst_netmask_length', 'padding', 'account_id', 'datetime', 'class_id', 'node_direction', 'class_store', 'class_passthrough', 'acctf_id', 'has_groups', 'groups'), self))
+        result = self._make(map(kwds.pop, ('src_addr', 'dst_addr', 'next_hop', 'in_index', 'out_index', 'packets', 'octets', 'start', 'finish', 'src_port', 'dst_port', 'nas_id', 'tcp_flags', 'protocol', 'tos', 'src_as', 'dst_as', 'src_netmask_length', 'dst_netmask_length', 'padding', 'account_id', 'datetime', 'class_id', 'node_direction', 'class_store', 'class_passthrough', 'acctf_id', 'has_groups', 'groups', 'tariff_id'), self))
         if kwds:
             raise ValueError('Got unexpected field names: %r' % kwds.keys())
         return result 
@@ -73,7 +73,7 @@ class Flow5Data(list):
         return tuple(self)
     
     def getBaseSlice(self):
-        return self.__getslice__(3,29)
+        return self.__getslice__(3,30)
     
     def getAddrSlice(self):
         return self.__getslice__(0,3)
@@ -107,3 +107,4 @@ class Flow5Data(list):
     acctf_id = property(itemgetter(26), lambda self_, value_: setitem(self_, 26, value_))
     has_groups = property(itemgetter(27), lambda self_, value_: setitem(self_, 27, value_))
     groups = property(itemgetter(28), lambda self_, value_: setitem(self_, 28, value_))
+    tariff_id = property(itemgetter(29), lambda self_, value_: setitem(self_, 29, value_))
