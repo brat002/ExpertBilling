@@ -114,36 +114,36 @@ class Worker(ConsumerMixin):
         """
         for item in body:
             try:
-                flow = item.get('NFlow')
+                flow = item.get('Flow')
                 f = Flow5Data(
                     empty=False,
-                    src_addr = flow.get('Src_addr'),
-                    dst_addr = flow.get('Dst_addr'),
-                    next_hop = flow.get('Nexthop'),
-                    in_index = flow.get('Snmp_in'),
-                    out_index = flow.get('Snmp_out'),
-                    packets = flow.get('Packets_count'),
-                    octets = flow.get('Bytes'),
-                    start = flow.get('Sysuptime'),
-                    finish = flow.get('LastUptime'),
-                    src_port = flow.get('SrcPort'),
-                    dst_port = flow.get('DstPort'),
-                    nas_id = item.get('Nas_id'),
-                    tcp_flags = flow.get('Tcpflags'),
-                    protocol = flow.get('Protocol'),
-                    tos = flow.get('Tos'),
-                    src_as = flow.get('SrcAs'),
-                    dst_as = flow.get('DstAs'),
-                    src_netmask_length = flow.get('SrcMask'),
-                    dst_netmask_length = flow.get('DstMask'),
-                    account_id = item.get('Account').get('Account_id'),
+                    src_addr = abs(flow.get('Src_addr')),
+                    dst_addr = abs(flow.get('Dst_addr')),
+                    next_hop = abs(flow.get('Nexthop')),
+                    in_index = abs(flow.get('Snmp_in')),
+                    out_index = abs(flow.get('Snmp_out')),
+                    packets = abs(flow.get('Packets_count')),
+                    octets = abs(flow.get('Bytes')),
+                    start = abs(flow.get('Sysuptime')),
+                    finish = abs(flow.get('LastUptime')),
+                    src_port = abs(flow.get('SrcPort')),
+                    dst_port = abs(flow.get('DstPort')),
+                    nas_id = abs(item.get('Nas_id')),
+                    tcp_flags = abs(flow.get('Tcpflags')),
+                    protocol = abs(flow.get('Protocol')),
+                    tos = abs(flow.get('Tos')),
+                    src_as = abs(flow.get('SrcAs')),
+                    dst_as = abs(flow.get('DstAs'),
+                    src_netmask_length = abs(flow.get('SrcMask')),
+                    dst_netmask_length = abs(flow.get('DstMask')),
+                    account_id = item.get('Account').get('Account_id')),
                     node_direction = 'INPUT' if item.get('Direction')==0 else 'OUTPUT',
                     acctf_id = item.get('Account').get('AccountTarif_id'),
                     tariff_id = item.get('Account').get('Tarif_id')
                     )
                 #print f
                 
-                logger.info("%s", f)
+                #logger.info("%s", f)
                 
                 queues.nfFlowCache.addflow5(f)
                 #nfPacketHandle(data, addr, queues.nfFlowCache)
