@@ -340,14 +340,9 @@ class FlowDequeThread(Thread):
                     if not qflow: 
                         #print 'not', qflow
                         continue
-                    #get id's
-                    acc = qflow.account_id
-                    qflow.account_id = None
-                    local = qflow.padding
+
                     src = True
-                    if not acc : 
-                        #print 'not acc', qflow
-                        continue
+
                     flow = qflow
                     if 0: assert isinstance(flow, Flow5Data)
                     #flow.account_id = acc.account_id
@@ -398,7 +393,7 @@ class FlowDequeThread(Thread):
                         if nodes[0][0]:
                             #if has_groups:
                                 #print 'nodes[0][0]', nodes[0][0], has_groups, tarifGroups
-                            self.add_classes_groups(flow, int(nodes[0][0]), [], acc.accounttarif_id, has_groups, tarifGroups)
+                            self.add_classes_groups(flow, int(nodes[0][0]), [], flow.acctf_id, has_groups, tarifGroups)
                             #print nodes[0][1], nodes[0][1]==1
                             if nodes[0][1]==1:
                                 nfwrite_list.append(tuple(flow))
