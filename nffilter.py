@@ -143,7 +143,7 @@ class Worker(ConsumerMixin):
                     )
                 #print f
                 
-                #logger.info("%s", f)
+                logger.info("%s", f)
                 
                 queues.nfFlowCache.addflow5(f)
                 #nfPacketHandle(data, addr, queues.nfFlowCache)
