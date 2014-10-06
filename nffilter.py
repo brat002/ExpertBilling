@@ -133,7 +133,7 @@ class Worker(ConsumerMixin):
                     protocol = abs(flow.get('Protocol')),
                     tos = abs(flow.get('Tos')),
                     src_as = abs(flow.get('SrcAs')),
-                    dst_as = abs(flow.get('DstAs'),
+                    dst_as = abs(flow.get('DstAs')),
                     src_netmask_length = abs(flow.get('SrcMask')),
                     dst_netmask_length = abs(flow.get('DstMask')),
                     account_id = item.get('Account').get('Account_id'),
