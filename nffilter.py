@@ -136,7 +136,7 @@ class Worker(ConsumerMixin):
                     dst_as = abs(flow.get('DstAs'),
                     src_netmask_length = abs(flow.get('SrcMask')),
                     dst_netmask_length = abs(flow.get('DstMask')),
-                    account_id = item.get('Account').get('Account_id')),
+                    account_id = item.get('Account').get('Account_id'),
                     node_direction = 'INPUT' if item.get('Direction')==0 else 'OUTPUT',
                     acctf_id = item.get('Account').get('AccountTarif_id'),
                     tariff_id = item.get('Account').get('Tarif_id')
