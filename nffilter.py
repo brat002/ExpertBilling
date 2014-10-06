@@ -114,7 +114,7 @@ class Worker(ConsumerMixin):
         """
         for item in body:
             try:
-                flow = item.get('Flow')
+                flow = item.get('NFlow')
                 f = Flow5Data(
                     empty=False,
                     src_addr = flow.get('Src_addr'),
@@ -142,7 +142,9 @@ class Worker(ConsumerMixin):
                     tariff_id = item.get('Account').get('Tarif_id')
                     )
                 #print f
+                
                 logger.info("%s", f)
+                
                 queues.nfFlowCache.addflow5(f)
                 #nfPacketHandle(data, addr, queues.nfFlowCache)
             except Exception, ex:
