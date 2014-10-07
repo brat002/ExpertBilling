@@ -341,8 +341,6 @@ class FlowDequeThread(Thread):
                         #print 'not', qflow
                         continue
 
-                    src = True
-
                     flow = qflow
                     if 0: assert isinstance(flow, Flow5Data)
                     #flow.account_id = acc.account_id
@@ -353,7 +351,7 @@ class FlowDequeThread(Thread):
                     #direction = flow.node_direction
                     passthr = True
                     #checks classes                    
-                    fnode = None; classLst = []                    
+                                       
                     #Direction is taken from the first approved node
                     
                     nodes = cacheMaster.cache.class_cache.nodes
@@ -400,48 +398,6 @@ class FlowDequeThread(Thread):
                     except Exception, e:
                         #print e
                         pass
-#===============================================================================
-#                     for nclass, nnodes in cacheMaster.cache.class_cache.classes:        
-#                         class_found = False            
-#                         for nnode in nnodes:
-# 
-#                             if flow.node_direction == 'INPUT':
-#                                 
-#                                 if (flow.src_addr & nnode.dst_mask) != nnode.dst_ip:continue
-#                                 if (flow.dst_addr & nnode.src_mask) != nnode.src_ip:continue
-#                             else:
-#                                 
-#                                 if (flow.dst_addr & nnode.dst_mask) != nnode.dst_ip:
-#                                     continue
-#                                 if (flow.src_addr & nnode.src_mask) != nnode.src_ip:
-#                                     continue
-#                                 
-#                             if ((flow.protocol != nnode.protocol) and nnode.protocol): continue
-#                             if ((flow.src_port != nnode.src_port) and nnode.src_port):continue
-#                             if ((flow.dst_port != nnode.dst_port) and nnode.dst_port):continue
-#                             
-#                             if ((flow.in_index != nnode.in_index) and nnode.in_index):continue
-#                             if ((flow.out_index != nnode.out_index) and nnode.out_index):continue
-#                             if ((flow.next_hop != nnode.next_hop) and (nnode.next_hop and nnode.next_hop!='0.0.0.0')):continue
-#                             if ((flow.src_as != nnode.src_as) and nnode.src_as):continue
-#                             if ((flow.dst_as != nnode.dst_as) and nnode.dst_as):continue
-#                             
-#                             
-#                             class_found = True
-#                             if not classLst:
-#                                 fnode = nnode
-#                             elif not fnode:
-#                                 continue
-#                             classLst.append(nclass)
-# 
-#                         #found passthrough=false
-#                         if classLst:
-#                             #logger.info("flow no pass: %s  classlst:%s nnode: %s tarifGroups: %s", (flow, classLst, nnode, tarifGroups))
-#                             self.add_classes_groups(flow, classLst, fnode, acc.accounttarif_id, has_groups, tarifGroups)
-#                             if nnode.store==True:
-#                                 nfwrite_list.append(tuple(flow))
-#                             break                   
-#===============================================================================
 
                         
                     #construct a list
@@ -454,7 +410,7 @@ class FlowDequeThread(Thread):
                             queues.databaseQueue.append(flpack)
                         flst = []; fcnt = 0
                         
-                    src = False
+         
                         
                 if len(flst) > 0:
                     flpack = flst#marshal.dumps(flst)
