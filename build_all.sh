@@ -39,7 +39,7 @@ echo "Additional keys: " $5
 
 
 #crypto_build="core rad_auth rad_acct nf nfroutine nffilter nfwriter"
-simple_build="core rad_auth rad_acct nffilter nfroutine nfwriter"
+simple_build="core rad_auth rad_acct nfroutine nfwriter"
 total_build="$crypto_build $simple_build"
 
 modules="db utilites dictionary packet auth bidict cacherouter IPy isdlogger log_adapter logger option_parser period_utilities saver ssh_paramiko ssh_utilities syslog_dummy tools dictfile queues"
@@ -90,6 +90,7 @@ cp license_$1.lic builds/$1/data/license.lic
 cp -r cmodules builds/$1/data/
 cp -r workers builds/$1/data/workers
 cp ../nf/output/bin/nf builds/$1/data/
+cp ../nf/output/bin/nffilter builds/$1/data/
 
 cp license.lic.old license.lic
 cp ebs_config.ini.tmpl builds/$1/data/ebs_config.ini.tmpl

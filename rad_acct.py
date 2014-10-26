@@ -139,9 +139,17 @@ class Reception_UDP(DatagramProtocol):
     Twisted Asynchronous server that recieves datagrams with RAD ACCT packets
     and appends them to 'radAcctQueue' queue.
     '''
-
+    
         
     def datagramReceived(self, data, addrport):
+        #=======================================================================
+        # try:
+        #     self.transport.setsockopt()
+        #     self.transport.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # except:
+        #     logger.error("Can`t set reuseaddr")
+        #=======================================================================
+            
         if len(data) <= vars.MAX_DATAGRAM_LEN:
             acct_queue.put((data, addrport, self.transport))
         else:
@@ -737,6 +745,7 @@ def main():
     print "ebs: rad_acct: started"
     savepid(vars.piddir, vars.name)
     reactor.listenUDP(1813, Reception_UDP())
+    
     #reactor.listenTCP(8002, server.Site(HelloResource()))
     reactor.run(installSignalHandlers=False)
 

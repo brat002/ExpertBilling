@@ -15,6 +15,7 @@ import asyncore
 import datetime
 import traceback
 import ConfigParser
+import socket
 
 import isdlogger
 import saver, utilites
@@ -128,6 +129,13 @@ class Reception_UDP(DatagramProtocol):
 
         
     def datagramReceived(self, data, addrport):
+        #=======================================================================
+        # try:
+        #     self.transport.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # except:
+        #     logger.error("Can`t set reuseaddr")
+        #=======================================================================
+            
         if len(data) <= vars.MAX_DATAGRAM_LEN:
             auth_queue.put((data, addrport, self.transport))
         else:
@@ -949,7 +957,7 @@ class HandleHotSpotAuth(HandleSAuth):
             else:
                 pin = acc.password
 
-        
+
         if str(acc.access_type) in ['HotSpot','HotSpotIp+Password', 'HotSpotMac+Password']:
             self.authobject.plainusername = str(user_name)
             if subacc:

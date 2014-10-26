@@ -6,6 +6,7 @@ from random import random, randint, choice
 from struct import pack
 from copy import copy, deepcopy
 from datetime import datetime
+import time
 #("!LLLHHIIIIHHBBBBHHBBH")
 
 class PseudoFile(object):
@@ -32,7 +33,7 @@ def runTests(tests, sock, addrport, output):
         sleepTime  = tdct['sleep'] 
         totalOctets = tdct['octets']        
         flowPrePack = [777L, 777L, tdct['next_hop'],2,3,0, 777, 0,0, 0, 0,0,0, tdct['protocol'],0,0,0,0,0,0]
-        headPrePack = [5, 777, 0,0,0,0,0,0,0]
+        headPrePack = [5, 777, 0, time.time(),0,0,0,0,0]
         output.write('%s Running test #%s opts %s \n' % (now(), testCount, tdct))
         if testByPair:            
             for pair in tpairs:

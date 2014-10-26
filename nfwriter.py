@@ -76,17 +76,52 @@ class Worker(ConsumerMixin):
 
     def get_consumers(self, Consumer, channel):
         return [Consumer(queues=nf_write,
-                         callbacks=[self.on_message], accept=['pickle'])]
+                         callbacks=[self.on_message], accept=['msgpack'])]
 
     def on_message(self, body, message):
-        body = body['data']
+        #body = body['data']
 
         
         try:
-            for flow in body:
-                ips = map(self.lf, flow[0:3])
+            for item in body:
+                if not item.get('Store'):
+                 
+                    continue
+                flow = item.get('Flow')
+                f = Flow5Data(
+                    empty=False,
+                    src_addr = abs(flow.get('Src_addr')),
+                    dst_addr = abs(flow.get('Dst_addr')),
+                    next_hop = abs(flow.get('Nexthop')),
+                    in_index = abs(flow.get('Snmp_in')),
+                    out_index = abs(flow.get('Snmp_out')),
+                    packets = abs(flow.get('Packets_count')),
+                    octets = abs(flow.get('Bytes')),
+                    start = abs(flow.get('Sysuptime')),
+                    finish = abs(flow.get('LastUptime')),
+                    src_port = abs(flow.get('SrcPort')),
+                    dst_port = abs(flow.get('DstPort')),
+                    nas_id = abs(item.get('Nas_id')),
+                    tcp_flags = abs(flow.get('Tcpflags')),
+                    protocol = abs(flow.get('Protocol')),
+                    tos = abs(flow.get('Tos')),
+                    src_as = abs(flow.get('SrcAs')),
+                    dst_as = abs(flow.get('DstAs')),
+                    src_netmask_length = abs(flow.get('SrcMask')),
+                    dst_netmask_length = abs(flow.get('DstMask')),
+                    account_id = item.get('Account').get('Account_id'),
+                    node_direction = 'INPUT' if item.get('Direction')==0 else 'OUTPUT',
+                    acctf_id = item.get('Account').get('AccountTarif_id'),
+                    tariff_id = item.get('Account').get('Tarif_id'),
+                    class_id=item.get('Class_id'),
+                    groups = item.get('Groups'),
+                    class_store = item.get('Store'),
+                    datetime = item.get('Seconds')
+                    )
+
+                ips = map(self.lf, [f.src_addr, f.dst_addr, f.next_hop])
     #            ips = map(lambda ip: IPy.intToIp(ip, 4), flow.getAddrSlice())
-                queues.flowSynchroBox.appendData(list(ips) + list(flow[3:]))
+                queues.flowSynchroBox.appendData(list(ips) + list(f.getBaseSlice()))
             queues.flowSynchroBox.checkData()
         except Exception, ex:
             logger.error("NFWriter exception: %s \n %s", (repr(ex), traceback.format_exc()))

@@ -12,7 +12,7 @@ from IPy import parseAddress, IPint
 import numpy
 
 class NfCaches(CacheCollection):
-    __slots__ = ('nas_cache','class_cache', 'group_cache', 'tfgroup_cache', 'ips_cache')
+    __slots__ = ('nas_cache','class_cache', 'group_cache', 'tfgroup_cache')
     
     def __init__(self, date):
         super(NfCaches, self).__init__(date)
@@ -20,9 +20,9 @@ class NfCaches(CacheCollection):
         self.class_cache = ClassCache()
         self.group_cache = GroupsCache()
         self.tfgroup_cache = TarifCache(self.group_cache)
-        self.ips_cache = IpDataCache()
 
-        self.caches = [self.nas_cache, self.class_cache, self.group_cache, self.tfgroup_cache, self.ips_cache]
+
+        self.caches = [self.nas_cache, self.class_cache, self.group_cache, self.tfgroup_cache]
     
 class NasCache(CacheItem):
     '''Cache id -> nas.ip'''
@@ -48,21 +48,7 @@ class NasCache(CacheItem):
                 self.by_ip[item.ipaddress] = []
             self.by_ip[item.ipaddress].append(item)
          
-class IpDataCache(CacheItem):
-    __slots__ = ('by_ip',)
-    
-    datatype = IpData
-    sql = nf_sql['active_sessions']
-    
-    def __init__(self):
-        super(IpDataCache, self).__init__()
-        self.by_ip = {}
 
-    
-    def reindex(self):
-
-        for item in self.data:
-            self.by_ip[item.ip] = item
                 
 
 
