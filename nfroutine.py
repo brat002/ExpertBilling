@@ -68,12 +68,47 @@ class Worker(ConsumerMixin):
 
     def get_consumers(self, Consumer, channel):
         return [Consumer(queues=nf_out,
-                         callbacks=[self.on_message], accept=['pickle'])]
+                         callbacks=[self.on_message], accept=['msgpack'])]
 
-    def on_message(self, body, message):
-        data = body['data']
+    def on_message(self, items, message):
+
         try:
-            queues.nfIncomingQueue.append(data)
+             for item in items:
+                flow = item.get('Flow')
+                f = Flow5Data(
+                    empty=False,
+                    src_addr = abs(flow.get('Src_addr')),
+                    dst_addr = abs(flow.get('Dst_addr')),
+                    next_hop = abs(flow.get('Nexthop')),
+                    in_index = abs(flow.get('Snmp_in')),
+                    out_index = abs(flow.get('Snmp_out')),
+                    packets = abs(flow.get('Packets_count')),
+                    octets = abs(flow.get('Bytes')),
+                    start = abs(flow.get('Sysuptime')),
+                    finish = abs(flow.get('LastUptime')),
+                    src_port = abs(flow.get('SrcPort')),
+                    dst_port = abs(flow.get('DstPort')),
+                    nas_id = abs(item.get('Nas_id')),
+                    tcp_flags = abs(flow.get('Tcpflags')),
+                    protocol = abs(flow.get('Protocol')),
+                    tos = abs(flow.get('Tos')),
+                    src_as = abs(flow.get('SrcAs')),
+                    dst_as = abs(flow.get('DstAs')),
+                    src_netmask_length = abs(flow.get('SrcMask')),
+                    dst_netmask_length = abs(flow.get('DstMask')),
+                    account_id = item.get('Account').get('Account_id'),
+                    node_direction = 'INPUT' if item.get('Direction')==0 else 'OUTPUT',
+                    acctf_id = item.get('Account').get('AccountTarif_id'),
+                    tariff_id = item.get('Account').get('Tarif_id'),
+                    class_id=item.get('Class_id'),
+                    groups = item.get('Groups'),
+                    class_store = item.get('Store'),
+                    datetime = item.get('Seconds')
+                    )
+         
+    
+                #print f
+                queues.nfIncomingQueue.append(f)
         except Exception, ex:
             logger.error("NFR exception: %s \n %s", (repr(ex), traceback.format_exc()))
         finally:
@@ -712,93 +747,104 @@ class NetFlowRoutine(Thread):
                 #flows = fpacket
                 #iterate through them
                 
-                for pflow in flows:
-                    flow = Flow5Data(False, *pflow)
-                    logger.debug("Packet for processing: %s ; ",(repr(flow),))
-                    #print flow.octets, len(flow.octets), len(str(flow.octets).strip())
-                    #aa+=flow.octets
-                    #print "%s|" % aa
-                    #get account id and get a record from cache based on it
-                    acc = caches.account_cache.by_account.get(flow.account_id)
-                    if not acc: 
-                        logger.info("Account for packet not found: %s ",(repr(flow)))
-                        continue
-                    if 0: assert isinstance(acc, AccountData)
+                #for pflow in flows:
+                flow = fpacket
+                logger.debug("Packet for processing: %s ; ",(repr(flow),))
+                #print flow.octets, len(flow.octets), len(str(flow.octets).strip())
+                #aa+=flow.octets
+                #print "%s|" % aa
+                #get account id and get a record from cache based on it
+                acc = caches.account_cache.by_account.get(flow.account_id)
+                if not acc: 
+                    logger.info("Account for packet not found: %s ",(repr(flow)))
+                    continue
+                if 0: assert isinstance(acc, AccountData)
 
-                    try:
-                        stream_date = datetime.datetime.fromtimestamp(flow.datetime or 0)
-                    except:
-                        logger.info("Incorrect datetime format %s ",(str(flow),))
+                try:
+                    stream_date = datetime.datetime.fromtimestamp(flow.datetime or 0)
+                except:
+                    logger.info("Incorrect datetime format %s ",(str(flow),))
 
-                    #if no line in cache, or the collection date is younger then accounttarif creation date
-                    #get an acct record from teh database
-                    if  (acc.acctf_id  != flow.acctf_id) or ( acc.datetime > stream_date):
-                        acc = oldAcct.get(flow.acctf_id)
-                        if not acc:
-                            self.cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, ba.status   
-                                                FROM billservice_account as ba
-                                                LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif WHERE account_id=%s and datetime<%s  ORDER BY datetime DESC LIMIT 1)
-                                                LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;
-                                             """, (flow.account_id, stream_date,))
-                            acc = self.cur.fetchone()
-                            self.connection.commit()
-                            if not acc: 
-                                logger.info("Account for packet %s by date %s not found ",(str(flow),str(stream_date),))
-                                continue
-                            acc = AccountData(*acc)
-                            oldAcct[flow.acctf_id] = acc                           
-                    
-                    #if no tarif_id, tarif.active=False and don't store, account.active=false and don't store    
-                    if (acc.tarif_id == None) or (not (acc.tarif_active or vars.STORE_NA_TARIF)) \
-                       or (not (acc.account_status == 1 or vars.STORE_NA_ACCOUNT)): continue                    
-                    
-                    '''Статистика по группам: 
-                    аггрегируется в словаре по структурам типа {класс->{'INPUT':0, 'OUTPUT':0}}
-                    Ключ - (account_id, group_id, gtime)
-                    Ключ затем добавляется в очередь.'''
-                    if flow.has_groups and flow.groups:                        
-                        gtime = flow.datetime - (flow.datetime % vars.GROUP_AGGR_TIME)                        
-                        for group_id, group_classes, group_dir, group_type in flow.groups:
-                            #group_id, group_classes, group_dir, group_type  = group
-                            #calculate a key and check the dictionary
-                            gkey = (flow.acctf_id, group_id, gtime)
-                            dgkey = (int(gtime / 667) + flow.acctf_id) % vars.GROUP_DICTS
-                            aggrgDict = queues.groupAggrDicts[dgkey]
-                            aggrgLock = queues.groupAggrLocks[dgkey]
-                            with aggrgLock:
-                                grec = aggrgDict.get(gkey)
-                                if not grec:
-                                    #add new record to the queue and the dictionary
-                                    grec = [defaultdict(ddict_IO), (group_id, group_dir, group_type)]
-                                    aggrgDict[gkey] = grec
-                                    with queues.groupLock:
-                                        queues.groupDeque.append((gkey, time.time()))
-                                #aggregate bytes for every class/direction
-                                for class_ in group_classes:
-                                    grec[0][class_][flow.node_direction] += flow.octets                     
-                   
-                                
-                    #global statistics calculation
-                    stime = flow.datetime - (flow.datetime % vars.STAT_AGGR_TIME)
-                    skey  = (flow.acctf_id, stime)
-                    dskey = (int(stime / 667) + flow.acctf_id) % vars.STAT_DICTS
-                    aggrsDict = queues.statAggrDicts[dskey]
-                    aggrsLock = queues.statAggrLocks[dskey]
-                    with aggrsLock:
-                        srec = aggrsDict.get(skey)
-                        if not srec:                            
-                            srec = [defaultdict(ddict_IO), [flow.nas_id, {'INPUT':0, 'OUTPUT':0}]]
-                            aggrsDict[skey] = srec
-                            with queues.statLock:
-                                queues.statDeque.append((skey, time.time()))
-                        #add for every class
-                        for class_ in flow.class_id:
-                            srec[0][class_][flow.node_direction] += flow.octets
-                        #global data
-                        srec[1][1][flow.node_direction] += flow.octets                        
+                #if no line in cache, or the collection date is younger then accounttarif creation date
+                #get an acct record from teh database
+                
+                #print "stream date", stream_date
+                if  (acc.acctf_id  != flow.acctf_id) or ( acc.datetime > stream_date):
+                    acc = oldAcct.get(flow.acctf_id)
+                    if not acc:
+                        self.cur.execute("""SELECT ba.id, ba.ballance, ba.credit, act.datetime, bt.id, bt.access_parameters_id, bt.time_access_service_id, bt.traffic_transmit_service_id, bt.cost,bt.reset_tarif_cost, bt.settlement_period_id, bt.active, act.id, ba.status   
+                                            FROM billservice_account as ba
+                                            LEFT JOIN billservice_accounttarif AS act ON act.id=(SELECT id FROM billservice_accounttarif WHERE account_id=%s and datetime<%s  ORDER BY datetime DESC LIMIT 1)
+                                            LEFT JOIN billservice_tariff AS bt ON bt.id=act.tarif_id;
+                                         """, (flow.account_id, stream_date,))
+                        acc = self.cur.fetchone()
+                        self.connection.commit()
+                        if not acc: 
+                            logger.info("Account for packet %s by date %s not found ",(str(flow),str(stream_date),))
+                            continue
+                        acc = AccountData(*acc)
+                        oldAcct[flow.acctf_id] = acc                           
+                
 
-                    #WTF??? tarif_mode = caches.period_cache.in_period.get(acc.traffic_transmit_service_id, False) if acc.traffic_transmit_service_id else False
-                    
+                #if no tarif_id, tarif.active=False and don't store, account.active=false and don't store    
+                if (acc.tarif_id == None) or (not (acc.tarif_active or vars.STORE_NA_TARIF)) \
+                   or (not (acc.account_status == 1 or vars.STORE_NA_ACCOUNT)): continue                    
+                
+                '''Статистика по группам: 
+                аггрегируется в словаре по структурам типа {класс->{'INPUT':0, 'OUTPUT':0}}
+                Ключ - (account_id, group_id, gtime)
+                Ключ затем добавляется в очередь.'''
+
+                #print flow.groups,acc.tarif_id,acc.tarif_active, vars.STORE_NA_TARIF, acc.account_status, vars.STORE_NA_ACCOUNT
+                
+                
+                for gitem in flow.groups:                        
+                    gtime = flow.datetime - (flow.datetime % vars.GROUP_AGGR_TIME)     
+                    gobj = caches.group_cache.by_id.get(gitem, [])
+                    group_id=gobj.id
+                    group_classes=gobj.trafficclass
+                    group_dir = gobj.direction
+                    group_type=gobj.type
+                    #group_id, group_classes, group_dir, group_type  = group
+                    #calculate a key and check the dictionary
+                    gkey = (flow.acctf_id, group_id, gtime)
+                    dgkey = (int(gtime / 667) + flow.acctf_id) % vars.GROUP_DICTS
+                    aggrgDict = queues.groupAggrDicts[dgkey]
+                    aggrgLock = queues.groupAggrLocks[dgkey]
+                    with aggrgLock:
+                        grec = aggrgDict.get(gkey)
+                        if not grec:
+                            #add new record to the queue and the dictionary
+                            grec = [defaultdict(ddict_IO), (group_id, group_dir, group_type)]
+                            aggrgDict[gkey] = grec
+                            with queues.groupLock:
+                                queues.groupDeque.append((gkey, time.time()))
+                        #aggregate bytes for every class/direction
+                        for class_ in group_classes:
+                            grec[0][class_][flow.node_direction] += flow.octets                     
+           
+                            
+                #global statistics calculation
+                stime = flow.datetime - (flow.datetime % vars.STAT_AGGR_TIME)
+                skey  = (flow.acctf_id, stime)
+                dskey = (int(stime / 667) + flow.acctf_id) % vars.STAT_DICTS
+                aggrsDict = queues.statAggrDicts[dskey]
+                aggrsLock = queues.statAggrLocks[dskey]
+                with aggrsLock:
+                    srec = aggrsDict.get(skey)
+                    if not srec:                            
+                        srec = [defaultdict(ddict_IO), [flow.nas_id, {'INPUT':0, 'OUTPUT':0}]]
+                        aggrsDict[skey] = srec
+                        with queues.statLock:
+                            queues.statDeque.append((skey, time.time()))
+                    #add for every class
+                    #for class_ in [flow.class_id]:
+                    srec[0][flow.class_id][flow.node_direction] += flow.octets
+                    #global data
+                    srec[1][1][flow.node_direction] += flow.octets                        
+
+                #WTF??? tarif_mode = caches.period_cache.in_period.get(acc.traffic_transmit_service_id, False) if acc.traffic_transmit_service_id else False
+                
 
                 if flags.writeProf:
                     icount += 1

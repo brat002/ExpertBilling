@@ -2,6 +2,8 @@ import datetime
 from operator import itemgetter, setitem
 from cacheutils import CacheCollection, CacheItem, SimpleDefDictCache, SimpleDictCache
 from cache_sql import nfroutine_sql
+from cache_sql import nf_sql
+
 from collections import defaultdict
 from threading import Lock
 from nfroutine_class.AccountData import AccountData
@@ -12,11 +14,14 @@ from nfroutine_class.AccountGroupBytesData import AccountGroupBytesData
 from nfroutine_class.TarifGroupEdgeData import TarifGroupEdgeData
 from nfroutine_class.GroupBytesDictData import GroupBytesDictData
 from nfroutine_class.AccountTariffTraffServiceData import AccountTariffTraffServiceData
+from nf_class.GroupsData import GroupsData
+
 from decimal import Decimal
 
 class NfroutineCaches(CacheCollection):
     __slots__ = ('account_cache', 'period_cache', 'nodes_cache', 'settlement_cache', \
-                 'traffictransmit_cache', 'prepays_cache', 'storeclass_cache', 'tarifedge_cache', 'accountbytes_cache', 'accounttariff_traf_service_cache')
+                 'traffictransmit_cache', 'prepays_cache', 'storeclass_cache', 'tarifedge_cache', 
+                 'accountbytes_cache', 'accounttariff_traf_service_cache', 'group_cache')
     
     def __init__(self, date, fMem, first_time):
         super(NfroutineCaches, self).__init__(date)
@@ -29,15 +34,19 @@ class NfroutineCaches(CacheCollection):
         self.storeclass_cache = StoreClassCache()
         self.tarifedge_cache = TarifGroupEdgeCache()
         self.accounttariff_traf_service_cache=AccountTariffTraffServiceCache()
+        self.group_cache = GroupsCache()
+        
         if not first_time:                
             self.caches = [self.account_cache, self.period_cache, self.prepays_cache, \
                            self.nodes_cache, self.settlement_cache, self.traffictransmit_cache, \
-                           self.storeclass_cache, self.tarifedge_cache, self.accounttariff_traf_service_cache]
+                           self.storeclass_cache, self.tarifedge_cache, 
+                           self.accounttariff_traf_service_cache, self.group_cache]
         else:
             self.accountbytes_cache = AccountGroupBytesCache(date)
             self.caches = [self.account_cache, self.period_cache, self.prepays_cache, \
                            self.nodes_cache, self.settlement_cache, self.traffictransmit_cache, \
-                           self.storeclass_cache, self.tarifedge_cache, self.accountbytes_cache, self.accounttariff_traf_service_cache]
+                           self.storeclass_cache, self.tarifedge_cache, self.accountbytes_cache, 
+                           self.accounttariff_traf_service_cache, self.group_cache]
 
 class AccountCache(CacheItem):
     __slots__ = ('by_account',)
@@ -182,3 +191,19 @@ class TarifGroupEdgeCache(CacheItem):
             #print tf
         
         
+        
+class GroupsCache(CacheItem):
+    __slots__ = ('by_id',)
+    
+    datatype = GroupsData
+    sql = nf_sql['groups']
+    
+    def reindex(self):
+        self.by_id = {}
+        for item in self.data:
+            #assert isinstance(item, self.datatype)
+            if not item.id:
+                continue
+            else:
+                self.by_id[item.id] = item
+                
