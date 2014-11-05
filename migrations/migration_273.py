@@ -16,7 +16,7 @@ def post_migrate():
     
     for table in cur.fetchall():
         dt = table[0].replace('billservice_balancehistory', '')
-        
+        if not dt: continue
         p_dt = datetime.datetime.strptime(dt, "%Y%m%d")
         
         f_dt = p_dt.strftime("%Y-%m-%d")
