@@ -40,7 +40,7 @@ echo "Additional keys: " $5
 
 #crypto_build="core rad_auth rad_acct nf nfroutine nffilter nfwriter"
 simple_build="core rad_auth rad_acct nfroutine nfwriter"
-total_build="$crypto_build $simple_build"
+total_build="$crypto_build $simple_build nf"
 
 modules="db utilites dictionary packet auth bidict cacherouter IPy isdlogger log_adapter logger option_parser period_utilities saver ssh_paramiko ssh_utilities syslog_dummy tools dictfile queues"
 mkdir -p cmodules
