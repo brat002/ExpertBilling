@@ -28,7 +28,7 @@ start)
         echo "Starting ebs nf"
 		olddir=`pwd`
         cd $DPATH
-        nohup $DAEMON &
+        nohup $DAEMON && echo $! >/opt/ebs/data/pid/nf.pid &
         cd $olddir
 
 		;;
