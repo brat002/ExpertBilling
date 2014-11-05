@@ -8,7 +8,7 @@ from fabric.api import hosts
 from fabric.operations import sudo
 from fabric.contrib.files import exists
 
-@hosts(['brat002@m4.diggit.ru', 'brat002@m8.diggit.ru'])
+@hosts(['brat002@s3.diggit.ru'])
 def build(key=None, users=200, name=''):
     if not exists('nf'):
         """
@@ -24,36 +24,24 @@ def build(key=None, users=200, name=''):
         run('scp builds/%s.tar.gz brat002@m3.diggit.ru:/opt/ebs/media/builds/' % (key if key else 'demo1.5_`uname -i`'))
        
        
-@hosts(['brat002@m4.diggit.ru', ])
+@hosts(['brat002@s3.diggit.ru', ])
 def build_x64(key=None, users=200, name=''):
-    if not exists('nf'):
-        """
-        https://godeb.s3.amazonaws.com/godeb-amd64.tar.gz
-        """
-        run('git clone ssh://brat002@m3.diggit.ru/home/brat002/nf/')
-    with cd('nf'):
-        run('git pull && sh make.sh')
+
+    """
+    https://godeb.s3.amazonaws.com/godeb-amd64.tar.gz
+    """
+    #run('git clone ssh://brat002@m3.diggit.ru/home/brat002/nf/')
+
+    with cd('/dockers/ebs_x64/'):
+    
+        run('sudo bash build_all.sh %s %s %s' % (key if key else name or 'demo1.5_x86_64', users, key if key else ''))
+        #run('scp builds/%s.tar.gz brat002@m3.diggit.ru:/opt/ebs/media/builds/' % (key if key else 'demo1.5_`uname -i`'))
         
-        
-    with cd('mikrobill'):
-        run('git pull')
-        run('sh build_all.sh %s %s %s' % (key if key else name or 'demo1.5_`uname -i`', users, key if key else ''))
-        run('scp builds/%s.tar.gz brat002@m3.diggit.ru:/opt/ebs/media/builds/' % (key if key else 'demo1.5_`uname -i`'))
-        
-@hosts(['brat002@m8.diggit.ru', ])
+@hosts(['brat002@s3.diggit.ru', ])
 def build_x32(key=None, users=200, name=''):
-    if not exists('nf'):
-        """
-        https://godeb.s3.amazonaws.com/godeb-386.tar.gz
-        """
-        run('git clone ssh://brat002@m3.diggit.ru/home/brat002/nf/')
-    with cd('nf'):
-        run('git pull && sh make.sh')
-        
-    with cd('mikrobill'):
-        run('git pull')
-        run('sh build_all.sh %s %s %s' % (key if key else name or 'demo1.5_`uname -i`', users, key if key else ''))
-        run('scp builds/%s.tar.gz brat002@m3.diggit.ru:/opt/ebs/media/builds/' % (key if key else 'demo1.5_`uname -i`'))
+    with cd('/dockers/ebs_i386/'):
+    
+        run('sudo bash build_all.sh %s %s %s' % (key if key else name or 'demo1.5_i686', users, key if key else ''))
         
         
 @hosts(['brat002@m4.diggit.ru'])
