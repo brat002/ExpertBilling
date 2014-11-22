@@ -22,50 +22,96 @@ BEGIN
 
     
     IF (ps_condition_type_ = 1) AND (new_summ_ > 0) THEN
+        --SELECT new_summ_*(get_ballance_for_date(account_id_, check_date)+credit_ < ps_condition_summ_)::int INTO new_summ_;
 
-        select min(datetime)
+        SELECT COALESCE( 
+        (select min(datetime)
         from billservice_balancehistory 
         where 
           account_id=account_id_ and 
           datetime between ps_start and ps_end and 
-          balance+credit_< ps_condition_summ_ INTO ballance_date;
+          balance+credit_< ps_condition_summ_), 
+        (select max(datetime)
+        from billservice_balancehistory 
+        where 
+          account_id=account_id_ and 
+          datetime<ps_end and 
+          balance+credit_< ps_condition_summ_)
+
+          ) INTO ballance_date;
           
         SELECT new_summ_* (ballance_date is not null)::int  INTO new_summ_;
         
     ELSIF (ps_condition_type_ = 2) AND (new_summ_ > 0) THEN
-        select min(datetime)
+        SELECT COALESCE( 
+        (select min(datetime)
         from billservice_balancehistory 
         where 
           account_id=account_id_ and 
           datetime between ps_start and ps_end and 
-          balance+credit_<= ps_condition_summ_ INTO ballance_date;
+          balance+credit_<= ps_condition_summ_), 
+        (select max(datetime)
+        from billservice_balancehistory 
+        where 
+          account_id=account_id_ and 
+          datetime<ps_end and 
+          balance+credit_<= ps_condition_summ_)
+
+          ) INTO ballance_date;
           
         SELECT new_summ_* (ballance_date is not null)::int  INTO new_summ_;
     ELSIF (ps_condition_type_ = 3) AND (new_summ_ > 0) THEN
-        select min(datetime)
+        SELECT COALESCE( 
+        (select min(datetime)
         from billservice_balancehistory 
         where 
           account_id=account_id_ and 
           datetime between ps_start and ps_end and 
-          balance+credit_<> ps_condition_summ_ INTO ballance_date;
+          balance+credit_<> ps_condition_summ_), 
+        (select max(datetime)
+        from billservice_balancehistory 
+        where 
+          account_id=account_id_ and 
+          datetime<ps_end and 
+          balance+credit_<> ps_condition_summ_)
+
+          ) INTO ballance_date;
           
         SELECT new_summ_* (ballance_date is not null)::int  INTO new_summ_;
     ELSIF (ps_condition_type_ = 4) AND (new_summ_ > 0) THEN
-        select min(datetime)
+        SELECT COALESCE( 
+        (select min(datetime)
         from billservice_balancehistory 
         where 
           account_id=account_id_ and 
           datetime between ps_start and ps_end and 
-          balance+credit_>= ps_condition_summ_ INTO ballance_date;
+          balance+credit_>= ps_condition_summ_), 
+        (select max(datetime)
+        from billservice_balancehistory 
+        where 
+          account_id=account_id_ and 
+          datetime<ps_end and 
+          balance+credit_>= ps_condition_summ_)
+
+          ) INTO ballance_date;
           
         SELECT new_summ_* (ballance_date is not null)::int  INTO new_summ_;
     ELSIF (ps_condition_type_ = 5) AND (new_summ_ > 0) THEN
-        select min(datetime)
+        SELECT COALESCE( 
+        (select min(datetime)
         from billservice_balancehistory 
         where 
           account_id=account_id_ and 
           datetime between ps_start and ps_end and 
-          balance+credit_> ps_condition_summ_ INTO ballance_date;
+          balance+credit_> ps_condition_summ_), 
+        (select max(datetime)
+        from billservice_balancehistory 
+        where 
+          account_id=account_id_ and 
+          datetime<ps_end and 
+          balance+credit_> ps_condition_summ_)
+
+          ) INTO ballance_date;
           
         SELECT new_summ_* (ballance_date is not null)::int  INTO new_summ_;
     END IF; 
