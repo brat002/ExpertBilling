@@ -396,7 +396,31 @@ class periodical_service_bill(Thread):
                         # Если это подключаемая услуга и дата отключения услуги ещё не наступила
                         #cur.execute("UPDATE billservice_account SET ballance=ballance-")
 
-                        cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::numeric, %s::character varying, %s::numeric, %s::timestamp without time zone, %s, %s::numeric) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, acc.credit,  'PS_GRADUAL', cash_summ, chk_date, ps.condition, ps.condition_summ))
+                        cur.execute("""SELECT 
+                                        periodicaltr_fn(%s,%s,%s, %s::numeric, 
+                                                        %s::character varying, 
+                                                        %s::numeric, 
+                                                        %s::timestamp without time zone, 
+                                                        %s::timestamp without time zone,
+                                                        %s::timestamp without time zone,  
+                                                        %s, 
+                                                        %s::numeric,
+                                                        %s::boolean
+                                                        ) as new_summ;""", (ps.ps_id, 
+                                                                                           acctf_id, 
+                                                                                           acc.account_id, 
+                                                                                           acc.credit,  
+                                                                                           'PS_GRADUAL', 
+                                                                                           cash_summ, 
+                                                                                           chk_date, 
+                                                                                           chk_date, 
+                                                                                           chk_date+PER_DAY_DELTA,
+                                                                                           ps.condition, 
+                                                                                           ps.condition_summ,
+                                                                                           ps.delta_from_ballance
+                                                                                           )
+                                    )
+
                         cash_summ=cur.fetchone()[0]
                         cur.connection.commit()
                         #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
@@ -474,7 +498,33 @@ class periodical_service_bill(Thread):
                     cash_summ=Decimal(str(cash_summ))*Decimal(str(delta_coef))
 
                 if pss_type == PERIOD and (ps.deactivated is None or (ps.deactivated and ps.deactivated > chk_date)):
-                    cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::numeric, %s::character varying, %s::numeric, %s::timestamp without time zone, %s, %s::numeric) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, acc.credit,  'PS_AT_START', cash_summ, chk_date, ps.condition, ps.condition_summ))
+                    _, ps_end_for_delta, _ = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                    #cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::numeric, %s::character varying, %s::numeric, %s::timestamp without time zone, %s, %s::numeric) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, acc.credit,  'PS_AT_START', cash_summ, chk_date, ps.condition, ps.condition_summ))
+                    cur.execute("""SELECT 
+                                    periodicaltr_fn(%s,%s,%s, %s::numeric, 
+                                                    %s::character varying, 
+                                                    %s::numeric, 
+                                                    %s::timestamp without time zone, 
+                                                    %s::timestamp without time zone,
+                                                    %s::timestamp without time zone,  
+                                                    %s, 
+                                                    %s::numeric,
+                                                    %s::boolean
+                                                    ) as new_summ;""", (ps.ps_id, 
+                                                                                       acctf_id, 
+                                                                                       acc.account_id, 
+                                                                                       acc.credit,  
+                                                                                       'PS_AT_START', 
+                                                                                       cash_summ, 
+                                                                                       chk_date, 
+                                                                                       chk_date,
+                                                                                       ps_end_for_delta,
+                                                                                       ps.condition, 
+                                                                                       ps.condition_summ,
+                                                                                       ps.delta_from_ballance
+                                                                                       )
+                                )
+                        
                     cash_summ=cur.fetchone()[0]
                     #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
                     logger.debug('%s: Periodical Service: AT START iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
@@ -508,6 +558,12 @@ class periodical_service_bill(Thread):
                 
                 while True:
                     period_start_ast, period_end_ast, delta_ast = fMem.settlement_period_(time_start_ps, ps.length_in, ps.length, chk_date)
+                    
+                    prev_period_start_ast, _, _ = fMem.settlement_period_(time_start_ps, 
+                                                                          ps.length_in, 
+                                                                          ps.length, 
+                                                                          chk_date-datetime.timedelta(seconds=1)
+                                                                          )
                     if first_time==False:
                         
                         chk_date = period_end_ast
@@ -555,7 +611,33 @@ class periodical_service_bill(Thread):
                                 cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
                                 cur.connection.commit()
                                 return
-                            cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::numeric, %s::character varying, %s::numeric, %s::timestamp without time zone, %s, %s::numeric) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, acc.credit,  'PS_AT_END', cash_summ, tr_date, ps.condition, ps.condition_summ))
+                            #cur.execute("SELECT periodicaltr_fn(%s,%s,%s, %s::numeric, %s::character varying, %s::numeric, %s::timestamp without time zone, %s, %s::numeric) as new_summ;", (ps.ps_id, acctf_id, acc.account_id, acc.credit,  'PS_AT_END', cash_summ, tr_date, ps.condition, ps.condition_summ))
+                            
+                            cur.execute("""SELECT 
+                                            periodicaltr_fn(%s,%s,%s, %s::numeric, 
+                                                            %s::character varying, 
+                                                            %s::numeric, 
+                                                            %s::timestamp without time zone, 
+                                                            %s::timestamp without time zone,
+                                                            %s::timestamp without time zone,  
+                                                            %s, 
+                                                            %s::numeric,
+                                                            %s::boolean
+                                                            ) as new_summ;""", (ps.ps_id, 
+                                                                                               acctf_id, 
+                                                                                               acc.account_id, 
+                                                                                               acc.credit,  
+                                                                                               'PS_AT_END', 
+                                                                                               cash_summ, 
+                                                                                               tr_date, 
+                                                                                               prev_period_start_ast,
+                                                                                               tr_date,
+                                                                                               ps.condition, 
+                                                                                               ps.condition_summ,
+                                                                                               ps.delta_from_ballance
+                                                                                               )
+                                        )
+                    
                             cash_summ=cur.fetchone()[0]
                             #cur.execute("UPDATE billservice_account SET ballance=ballance-%s WHERE id=%s;", (new_summ, acc.account_id,))
                             logger.debug('%s: Periodical Service: AT END iter checkout for account: %s service:%s summ %s', (self.getName(), acc.account_id, ps.ps_id, cash_summ))
