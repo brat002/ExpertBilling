@@ -279,7 +279,9 @@ class PeriodicalService(models.Model):
     ps_condition = models.IntegerField(verbose_name=_(u"Условие списания"), default=0, choices=ps_condition)
     condition_summ = models.DecimalField(verbose_name=_(u'Сумма для условия'), default=0, blank=True, decimal_places=2,
                                          max_digits=30)
-
+    delta_from_ballance = models.BooleanField(verbose_name=_(u"Пропорциональное списание"), 
+                                              help_text=_(u"Рассчитать сумму списания, пропорционально моменту срабатывания условия по баллансу в расчётном периоде."), 
+                                              blank=True, default=True )
     deactivated = models.DateTimeField(verbose_name=_(u"Отключить"), blank=True, null=True)
     created = models.DateTimeField(verbose_name=_(u"Активировать"), help_text=_(
         u'Не указывайте, если списания должны начаться с начала расчётного периода'), blank=True, null=True)
