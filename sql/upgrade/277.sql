@@ -22,7 +22,6 @@ BEGIN
 
     
     IF (ps_condition_type_ = 1) AND (new_summ_ > 0) THEN
-        --SELECT new_summ_*(get_ballance_for_date(account_id_, check_date)+credit_ < ps_condition_summ_)::int INTO new_summ_;
 
         select min(datetime)
         from billservice_balancehistory 
