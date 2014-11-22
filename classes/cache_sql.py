@@ -92,7 +92,7 @@ core_sql = \
           'periodtf':"""SELECT id, settlement_period_id FROM billservice_tariff  as tarif
                         WHERE id in (SELECT tarif_id FROM billservice_periodicalservice WHERE deleted=False or deleted is Null) AND tarif.active=True and tarif.deleted is NULL""",
           'periodset':"""SELECT b.id, b.name, b.cost, b.cash_method, c.name, date_trunc('second', c.time_start),
-                        c.length, c.length_in, c.autostart, b.tarif_id, b.ps_condition, b.condition_summ, date_trunc('second', b.created), b.deactivated, b.deleted, b.tpd
+                        c.length, c.length_in, c.autostart, b.tarif_id, b.ps_condition, b.condition_summ, date_trunc('second', b.created), b.deactivated, b.deleted, b.tpd, b.delta_from_ballance
                         FROM billservice_periodicalservice as b 
                         JOIN billservice_settlementperiod as c ON c.id=b.settlement_period_id
                         WHERE deleted=False or deleted is Null;""",
