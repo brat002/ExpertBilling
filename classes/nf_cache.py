@@ -9,7 +9,7 @@ from nf_class.NasData import NasData
 from nf_class.IpData import IpData
 from collections import defaultdict
 from IPy import parseAddress, IPint
-import numpy
+
 
 class NfCaches(CacheCollection):
     __slots__ = ('nas_cache','class_cache', 'group_cache', 'tfgroup_cache')
@@ -88,7 +88,7 @@ class ClassCache(CacheItem):
             #print (nnode[2], 1 if nnode[0] else 0, s_ip.int(), s_ip.netmask(), d_ip.int(), d_ip.netmask(), n_hp, nnode[10],  nnode[7], nnode[8], nnode[5], nnode[6], nnode[4])
             d.append((nnode[2], 1 if nnode[0] else 0, s_ip.int(), s_ip.netmask(), d_ip.int(), d_ip.netmask(), n_hp, nnode[10],  nnode[9], nnode[7], nnode[8], nnode[5], nnode[6], nnode[4]))
         
-        self.nodes =  numpy.asarray(d, dtype=numpy.int64)
+        #self.nodes =  numpy.asarray(d, dtype=numpy.int64)
         #print self.nodes
 
 
