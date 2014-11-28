@@ -436,7 +436,7 @@ class periodical_service_bill(Thread):
                         return
                     cur.connection.commit()
                     chk_date += PER_DAY_DELTA
-                    if pss_type == PERIOD and ((next_date and chk_date>=next_date) or (ps.deactivated and ps.deactivated < chk_date)):
+                    if pss_type == PERIOD and ((next_date and chk_date>=next_date) or (ps.deactivated and ps.deactivated <= chk_date)):
                         logger.debug('%s: Periodical Service: GRADUAL last billed is True for account: %s service:%s type:%s', (self.getName(), acc.account_id, ps.ps_id, pss_type))  
                         cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
                         cur.connection.commit()
@@ -478,7 +478,7 @@ class periodical_service_bill(Thread):
                                     
 
                 #Если следующее списание произойдёт уже на новом тарифе - отмечаем, что тарификация произведена
-                if  pss_type == PERIOD and ((next_date and chk_date>=next_date) or (ps.deactivated and ps.deactivated < chk_date)):
+                if  pss_type == PERIOD and ((next_date and chk_date>=next_date) or (ps.deactivated and ps.deactivated <= chk_date)):
                     logger.debug('%s: Periodical Service: AT_START last billed is True for account: %s service:%s type:%s next date: %s', (self.getName(), acc.account_id, ps.ps_id, pss_type, next_date))  
                     cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
                     cur.connection.commit()
@@ -606,7 +606,7 @@ class periodical_service_bill(Thread):
                             
                         if pss_type == PERIOD and (ps.deactivated is None or (ps.deactivated and ps.deactivated > chk_date)):
                             tr_date = chk_date
-                            if (next_date and chk_date>=next_date) or (ps.deactivated and ps.deactivated < chk_date):
+                            if (next_date and chk_date>=next_date) or (ps.deactivated and ps.deactivated <= chk_date):
                                 logger.debug('%s: Periodical Service: AT_END last billed is True for account: %s service:%s type:%s', (self.getName(), acc.account_id, ps.ps_id, pss_type))  
                                 cur.execute("UPDATE billservice_periodicalservicelog SET last_billed=True WHERE service_id=%s and accounttarif_id=%s", (ps.ps_id, acctf_id))
                                 cur.connection.commit()

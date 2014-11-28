@@ -798,7 +798,7 @@ class NetFlowRoutine(Thread):
                 #print flow.groups,acc.tarif_id,acc.tarif_active, vars.STORE_NA_TARIF, acc.account_status, vars.STORE_NA_ACCOUNT
                 
                 
-                for gitem in flow.groups:                        
+                for gitem in flow.groups or []:                        
                     gtime = flow.datetime - (flow.datetime % vars.GROUP_AGGR_TIME)     
                     gobj = caches.group_cache.by_id.get(gitem, [])
                     group_id=gobj.id
