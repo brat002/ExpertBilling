@@ -105,8 +105,8 @@ BEGIN
           datetime between ps_start and ps_end and 
           balance+credit_> ps_condition_summ_), 
         (select max(datetime)
-        from billservice_balancehistory 
-        where 
+        from billservice_balancehistory
+        where
           account_id=account_id_ and 
           datetime<ps_end and 
           balance+credit_> ps_condition_summ_)
