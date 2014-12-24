@@ -119,6 +119,7 @@ chmod 0777 builds/$1/web/ebscab/log/webcab_log
 
 cp webadmin/django.wsgi builds/$1/web/
 cp webadmin/default builds/$1/web/
+cp webadmin/default2.4 builds/$1/web/
 cp webadmin/blankpage_config builds/$1/web/
 cp webadmin/blankpage builds/$1/web/
 cp soft/billing builds/$1/data/soft/

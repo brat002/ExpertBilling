@@ -913,7 +913,7 @@ class Account(DynamicModel):
     deleted = models.DateTimeField(blank=True, null=True, db_index=True)
     promise_summ = models.IntegerField(_(u'Максимальный обещанный платёж'), blank=True, default=0)
     promise_min_ballance = models.IntegerField(_(u'Минимальный баланс для обещанного платежа'), blank=True, default=0)
-    promise_days = models.IntegerField(_(u'Длительность обещанного платежа, дней'), blank=True, default=1)
+    promise_days = models.IntegerField(_(u'Длительность обещанного платежа, дней'), blank=True, default=0)
     #allow_block_after_summ = models.BooleanField(_(u'Разрешить блокировку списаний'), blank=True, default=False, help_text= _(u"Разрешить приостановку списаний по периодическим и подключаемым услугам при достижении указанного баланса"))
     #block_after_summ = models.IntegerField(_(u'Блокировка списаний после суммы'), blank=True, default=0)
     account_group = models.ForeignKey(AccountGroup, verbose_name=_(u'Группа'), blank=True, null=True,
