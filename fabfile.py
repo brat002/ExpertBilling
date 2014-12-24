@@ -151,6 +151,7 @@ def setup_webcab():
     with settings(warn_only=True):
         local('a2dissite default')
         local('a2dissite 000-default')
+        local('a2enmod wsgi')
     local('a2enmod rewrite')
     
 
