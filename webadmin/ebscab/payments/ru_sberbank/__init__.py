@@ -114,8 +114,11 @@ class PaymentProcessor(PaymentProcessorBase):
         except Account.DoesNotExist, ex:
             return PaymentProcessor.error(body, 20)
         
-        pay_amount = body.request.params.pay_amount.text
-        
+        pay_amount = body.request.params.pay_amount.text if body.request.params.pay_amount else 0
+        #print "body.request.params.pay_amount",body.request.params.pay_amount
+        if not pay_amount:
+           return PaymentProcessor.error(body, 29)
+
         dt = datetime.datetime.now()
         
 
@@ -140,7 +143,7 @@ class PaymentProcessor(PaymentProcessorBase):
     def pay(request, body):
         from getpaid.models import Payment
         acc = body.request.params.account.text
-        amount = float(body.request.params.pay_amount.text)
+        amount = float(body.request.params.pay_amount.text)/100
         paymentid = body.request.params.pay_id.text
         
         try:

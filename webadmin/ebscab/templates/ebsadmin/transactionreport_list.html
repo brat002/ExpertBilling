@@ -155,6 +155,22 @@
                   </div>
                 </div>
               </div>
+              <div class="control-group">
+                <div class="control-row">
+                  <label class="control-label" for="input-account-group">{{form.account_group.label}}</label>
+                  <div class="controls">
+                    {{ form.account_group }}
+                    {% if form.account_group.errors %}
+                    <span class="help-inline">{% for error in form.account_group.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if form.account_group.help_text%}
+                    <p class="help-block">
+                      {{ form.account_group.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="span5">
               <div id="tree"></div>
