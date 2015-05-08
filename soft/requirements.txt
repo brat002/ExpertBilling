@@ -1,6 +1,6 @@
 setuptools
 BeautifulSoup
-Django==1.5.4
+Django==1.5.5
 Django-Select2
 IPy
 Mako
@@ -45,4 +45,4 @@ wsgiref==0.1.2
 zope.interface==4.0.5
 python-memcached
 
-msgpack-python
+msgpack-python==0.4.6

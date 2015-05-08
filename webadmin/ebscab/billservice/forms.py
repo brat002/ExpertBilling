@@ -375,6 +375,7 @@ class TransactionReportForm(forms.Form):
     account = AutoCompleteSelectMultipleField( 'account_fts', required = False)
 
     systemuser = forms.ModelMultipleChoiceField(label=_(u"Администратор"),queryset=SystemUser.objects.all(), widget=forms.SelectMultiple(attrs={'size':'10'}), required=False)
+    account_group = forms.ModelMultipleChoiceField(label=_(u"Группа абонентов"),queryset=AccountGroup.objects.all(), widget=forms.SelectMultiple(attrs={'size':'10'}), required=False)
     #start_date = forms.DateTimeField(label=u"Начало",required=False)
     #end_date = forms.DateTimeField(label=u"Конец",required=False)
     

@@ -125,6 +125,7 @@ def transactionreport(request):
             date_start, date_end = daterange
 
         systemusers = form.cleaned_data.get('systemuser')
+        account_group = form.cleaned_data.get('account_group')
         tariffs = form.cleaned_data.get('tarif')
         extra={}
         if data.get('limit',100)=='all':
@@ -165,6 +166,10 @@ def transactionreport(request):
         
         if systemusers:
             items = items.filter(systemuser__in=systemusers)
+        if account_group:
+            items = items.filter(account__account_group__in=account_group)
+
+            
         if tariffs:
             items = items.filter(tariff__in=tariffs)
         

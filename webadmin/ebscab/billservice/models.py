@@ -1972,9 +1972,9 @@ class SubAccount(models.Model):
     vpn_ip_address = models.IPAddressField(blank=True, null=True, default='0.0.0.0')
     allow_mac_update = models.BooleanField(default=False)
     nas = models.ForeignKey(Nas, blank=True, null=True, on_delete=models.SET_NULL)
-    ipn_added = models.BooleanField(verbose_name=_(u'Добавлен на NAS'))
-    ipn_enabled = models.BooleanField(verbose_name=_(u'Включен на NAS'))
-    ipn_sleep = models.BooleanField(verbose_name=_(u'Не менять IPN статус'))
+    ipn_added = models.BooleanField(verbose_name=_(u'Добавлен на NAS'), blank=True, default=False)
+    ipn_enabled = models.BooleanField(verbose_name=_(u'Включен на NAS'), blank=True, default=False)
+    ipn_sleep = models.BooleanField(verbose_name=_(u'Не менять IPN статус'), blank=True, default=False)
     ipn_queued = models.DateTimeField(blank=True, null=True,
                                       verbose_name=_(u'Поставлен в очередь на изменение статуса'))
     need_resync = models.BooleanField()

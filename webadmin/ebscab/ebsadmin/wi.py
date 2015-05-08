@@ -150,7 +150,7 @@ def transactionreport2(request):
 
             systemusers = form.cleaned_data.get('systemuser')
             promise = form.cleaned_data.get('promise')
-            
+            account_group = form.cleaned_data.get('account_group')
 
             cur = connection.cursor()
             trtypes = data.getlist('tree')
@@ -270,6 +270,11 @@ def transactionreport2(request):
             
             if account:
                 res = res.filter(account__in=account)
+            if account_group:
+                res = res.filter(account__account_group__in=account_group)
+                
+
+
             if start_date:
                 res = res.filter(created__gte=start_date)
             if end_date:
