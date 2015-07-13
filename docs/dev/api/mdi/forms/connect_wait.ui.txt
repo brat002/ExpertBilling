@@ -1,4 +1,0 @@
-connect_wait.ui -- Untitled
-===========================
-
-   :synopsis: None

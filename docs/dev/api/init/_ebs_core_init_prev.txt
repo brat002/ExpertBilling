@@ -1,4 +1,0 @@
-_ebs_core_init_prev -- Untitled
-===============================
-
-   :synopsis: None

@@ -1,4 +1,0 @@
-timeperiod_main.ui -- Untitled
-==============================
-
-   :synopsis: None

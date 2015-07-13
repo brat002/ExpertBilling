@@ -1,6 +1,0 @@
-:mod:`Linux` -- Untitled
-========================
-
-.. toctree::
-   :maxdepth: 1
-

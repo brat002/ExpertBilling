@@ -1,4 +1,0 @@
-report_select_dialog.ui -- Untitled
-===================================
-
-   :synopsis: None

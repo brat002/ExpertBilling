@@ -1,8 +1,0 @@
-:mod:`nf_gen` -- Untitled
-=========================
-
-.. module:: nf_gen
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: nf_gen

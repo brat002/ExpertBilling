@@ -1,4 +1,0 @@
-diagram_properties_dialog.ui -- Untitled
-========================================
-
-   :synopsis: None

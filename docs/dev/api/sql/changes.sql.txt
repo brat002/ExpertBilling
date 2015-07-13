@@ -1,4 +1,0 @@
-changes.sql -- Untitled
-=======================
-
-   :synopsis: None

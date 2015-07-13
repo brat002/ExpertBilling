@@ -1,4 +1,0 @@
-account_info.ui -- Untitled
-===========================
-
-   :synopsis: None

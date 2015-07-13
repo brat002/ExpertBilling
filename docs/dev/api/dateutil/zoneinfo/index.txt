@@ -1,7 +1,0 @@
-:mod:`zoneinfo` -- Untitled
-===========================
-
-.. toctree::
-   :maxdepth: 1
-
-   __init__

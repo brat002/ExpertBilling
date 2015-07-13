@@ -1,4 +1,0 @@
-ebs_nf -- Untitled
-==================
-
-   :synopsis: None

@@ -1,8 +1,0 @@
-:mod:`Session` -- Untitled
-==========================
-
-.. module:: Session
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: Session

@@ -1,8 +1,0 @@
-:mod:`cassa_setup` -- Untitled
-==============================
-
-.. module:: cassa_setup
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: cassa_setup

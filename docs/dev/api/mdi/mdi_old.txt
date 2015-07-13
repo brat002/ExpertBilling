@@ -1,8 +1,0 @@
-:mod:`mdi_old` -- Untitled
-==========================
-
-.. module:: mdi_old
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: mdi_old

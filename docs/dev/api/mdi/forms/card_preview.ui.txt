@@ -1,4 +1,0 @@
-card_preview.ui -- Untitled
-===========================
-
-   :synopsis: None

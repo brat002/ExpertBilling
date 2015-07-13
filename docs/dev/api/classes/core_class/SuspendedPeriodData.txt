@@ -1,8 +1,0 @@
-:mod:`SuspendedPeriodData` -- Untitled
-======================================
-
-.. module:: SuspendedPeriodData
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: SuspendedPeriodData

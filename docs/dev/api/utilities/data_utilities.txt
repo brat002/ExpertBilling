@@ -1,8 +1,0 @@
-:mod:`data_utilities` -- Untitled
-=================================
-
-.. module:: data_utilities
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: data_utilities

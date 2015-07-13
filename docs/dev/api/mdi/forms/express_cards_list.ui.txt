@@ -1,4 +1,0 @@
-express_cards_list.ui -- Untitled
-=================================
-
-   :synopsis: None

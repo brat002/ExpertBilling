@@ -1,5 +1,0 @@
-KNOWN ERRORS
-
-1. Error -3 while decompressing data: invalid literal/lengths set
-
-LICENSE FILE ERROR

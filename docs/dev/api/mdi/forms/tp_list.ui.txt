@@ -1,4 +1,0 @@
-tp_list.ui -- Untitled
-======================
-
-   :synopsis: None

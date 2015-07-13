@@ -1,8 +1,0 @@
-:mod:`AccountFrame` -- Untitled
-===============================
-
-.. module:: AccountFrame
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: AccountFrame

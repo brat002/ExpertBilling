@@ -1,8 +1,0 @@
-:mod:`pyqt_helper` -- Untitled
-==============================
-
-.. module:: pyqt_helper
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: pyqt_helper

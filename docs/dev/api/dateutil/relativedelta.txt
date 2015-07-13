@@ -1,8 +1,0 @@
-:mod:`relativedelta` -- Untitled
-================================
-
-.. module:: relativedelta
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: relativedelta

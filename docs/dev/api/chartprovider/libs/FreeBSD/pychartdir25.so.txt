@@ -1,4 +1,0 @@
-pychartdir25.so -- Untitled
-===========================
-
-   :synopsis: None

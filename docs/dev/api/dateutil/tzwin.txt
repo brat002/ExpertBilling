@@ -1,8 +1,0 @@
-:mod:`tzwin` -- Untitled
-========================
-
-.. module:: tzwin
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: tzwin

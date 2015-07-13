@@ -1,8 +1,0 @@
-:mod:`executeClass` -- Untitled
-===============================
-
-.. module:: executeClass
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: executeClass

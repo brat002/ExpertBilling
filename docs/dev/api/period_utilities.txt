@@ -1,8 +1,0 @@
-:mod:`period_utilities` -- Untitled
-===================================
-
-.. module:: period_utilities
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: period_utilities

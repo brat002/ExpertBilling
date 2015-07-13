@@ -1,4 +1,0 @@
-netflowstat.ui -- Untitled
-==========================
-
-   :synopsis: None

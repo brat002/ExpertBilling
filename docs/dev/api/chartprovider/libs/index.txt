@@ -1,8 +1,0 @@
-:mod:`libs` -- Untitled
-=======================
-
-.. toctree::
-   :maxdepth: 1
-
-   FreeBSD/index
-   Linux/index

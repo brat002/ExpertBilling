@@ -1,8 +1,0 @@
-:mod:`ebsadmin` -- Untitled
-===========================
-
-.. module:: ebsadmin
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: ebsadmin

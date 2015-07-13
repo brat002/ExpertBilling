@@ -1,8 +1,0 @@
-:mod:`auth` -- Untitled
-=======================
-
-.. module:: auth
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: auth

@@ -1,8 +1,0 @@
-:mod:`bpcdQImage` -- Untitled
-=============================
-
-.. module:: bpcdQImage
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: bpcdQImage

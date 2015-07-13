@@ -1,9 +1,0 @@
-:mod:`FreeBSD` -- Untitled
-==========================
-
-.. toctree::
-   :maxdepth: 1
-
-   libchartdir.so
-   pychartdir25.so
-   pychartdir

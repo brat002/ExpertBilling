@@ -1,8 +1,0 @@
-:mod:`genkey` -- Untitled
-=========================
-
-.. module:: genkey
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: genkey

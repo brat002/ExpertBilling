@@ -1,4 +1,0 @@
-ebs_nfroutine -- Untitled
-=========================
-
-   :synopsis: None

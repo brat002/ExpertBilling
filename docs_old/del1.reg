@@ -1,7 +1,0 @@
-Windows Registry Editor Version 5.00
-
-[HKEY_CURRENT_USER\Software\Expert Billing\Expert Billing Client]
-"cards_frame_period"=-
-"nas_frame_header"=-
-"netflow_frame_header_tab_0"=-
-"netflow_frame_header_tab_1"=-

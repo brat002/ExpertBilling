@@ -1,4 +1,0 @@
-groups.ui -- Untitled
-=====================
-
-   :synopsis: None

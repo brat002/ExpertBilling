@@ -1,8 +1,0 @@
-:mod:`freeze_test` -- Untitled
-==============================
-
-.. module:: freeze_test
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: freeze_test
