@@ -21,7 +21,7 @@ class PaymentProcessor(PaymentProcessorBase):
     BACKEND = 'payments.liqpay'
     BACKEND_NAME = _(u'Liqpay Украина')
     PAY_WAY = ('card', 'liqpay', 'delayed')
-    BACKEND_ACCEPTED_CURRENCY = ('UAH', )
+    BACKEND_ACCEPTED_CURRENCY = ('UAH', 'RUB')
     DEFAULT_CURRENCY = 'UAH'
     LANGUAGE = 'ru'
     GATEWAY_URL = 'https://www.liqpay.com/api/pay'
