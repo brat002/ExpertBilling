@@ -1,8 +1,0 @@
-:mod:`DealerFrame` -- Untitled
-==============================
-
-.. module:: DealerFrame
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: DealerFrame

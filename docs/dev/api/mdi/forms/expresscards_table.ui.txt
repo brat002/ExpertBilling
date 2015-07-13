@@ -1,4 +1,0 @@
-expresscards_table.ui -- Untitled
-=================================
-
-   :synopsis: None

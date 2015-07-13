@@ -1,8 +1,0 @@
-:mod:`lic_generator` -- Untitled
-================================
-
-.. module:: lic_generator
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: lic_generator

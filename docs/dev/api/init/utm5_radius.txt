@@ -1,4 +1,0 @@
-utm5_radius -- Untitled
-=======================
-
-   :synopsis: None

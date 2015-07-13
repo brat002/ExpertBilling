@@ -1,8 +1,0 @@
-:mod:`ebs_core` -- Untitled
-===========================
-
-.. module:: ebs_core
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: ebs_core

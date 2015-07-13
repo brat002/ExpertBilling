@@ -1,8 +1,0 @@
-:mod:`tools` -- Untitled
-========================
-
-.. module:: tools
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: tools

@@ -1,8 +1,0 @@
-:mod:`ClassFrame` -- Untitled
-=============================
-
-.. module:: ClassFrame
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: ClassFrame

@@ -1,7 +1,0 @@
-:mod:`scripts` -- Untitled
-==========================
-
-.. toctree::
-   :maxdepth: 1
-
-   enable_disable

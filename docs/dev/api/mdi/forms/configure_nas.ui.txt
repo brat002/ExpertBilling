@@ -1,4 +1,0 @@
-configure_nas.ui -- Untitled
-============================
-
-   :synopsis: None

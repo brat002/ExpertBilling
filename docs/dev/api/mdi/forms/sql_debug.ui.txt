@@ -1,4 +1,0 @@
-sql_debug.ui -- Untitled
-========================
-
-   :synopsis: None

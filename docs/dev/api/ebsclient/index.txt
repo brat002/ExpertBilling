@@ -1,6 +1,0 @@
-:mod:`ebsclient` -- Untitled
-============================
-
-.. toctree::
-   :maxdepth: 1
-

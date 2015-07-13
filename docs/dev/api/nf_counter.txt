@@ -1,8 +1,0 @@
-:mod:`nf_counter` -- Untitled
-=============================
-
-.. module:: nf_counter
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: nf_counter

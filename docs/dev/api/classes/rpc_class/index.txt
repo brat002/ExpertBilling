@@ -1,6 +1,0 @@
-:mod:`rpc_class` -- Untitled
-============================
-
-.. toctree::
-   :maxdepth: 1
-

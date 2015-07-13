@@ -1,8 +1,0 @@
-:mod:`OneTimeServiceData` -- Untitled
-=====================================
-
-.. module:: OneTimeServiceData
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: OneTimeServiceData

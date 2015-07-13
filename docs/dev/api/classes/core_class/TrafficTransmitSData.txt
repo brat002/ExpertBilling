@@ -1,8 +1,0 @@
-:mod:`TrafficTransmitSData` -- Untitled
-=======================================
-
-.. module:: TrafficTransmitSData
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: TrafficTransmitSData

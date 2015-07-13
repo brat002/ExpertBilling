@@ -1,8 +1,0 @@
-:mod:`log_adapter` -- Untitled
-==============================
-
-.. module:: log_adapter
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: log_adapter

@@ -1,8 +1,0 @@
-:mod:`TimeAccessNodeData` -- Untitled
-=====================================
-
-.. module:: TimeAccessNodeData
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: TimeAccessNodeData

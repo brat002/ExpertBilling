@@ -1,8 +1,0 @@
-:mod:`bpbl` -- Untitled
-=======================
-
-.. module:: bpbl
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: bpbl

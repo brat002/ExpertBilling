@@ -1,4 +1,0 @@
-connect_dialog.ui -- Untitled
-=============================
-
-   :synopsis: None

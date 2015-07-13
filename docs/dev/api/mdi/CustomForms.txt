@@ -1,8 +1,0 @@
-:mod:`CustomForms` -- Untitled
-==============================
-
-.. module:: CustomForms
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: CustomForms

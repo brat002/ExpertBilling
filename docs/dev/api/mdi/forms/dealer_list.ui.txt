@@ -1,4 +1,0 @@
-dealer_list.ui -- Untitled
-==========================
-
-   :synopsis: None

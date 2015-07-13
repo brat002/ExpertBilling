@@ -1,4 +1,0 @@
-ebs_core -- Untitled
-====================
-
-   :synopsis: None

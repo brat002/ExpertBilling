@@ -1,8 +1,0 @@
-:mod:`SettlementData` -- Untitled
-=================================
-
-.. module:: SettlementData
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: SettlementData

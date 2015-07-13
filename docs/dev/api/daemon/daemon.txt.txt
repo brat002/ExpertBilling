@@ -1,4 +1,0 @@
-daemon.txt -- Untitled
-======================
-
-   :synopsis: None

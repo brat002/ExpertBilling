@@ -1,8 +1,0 @@
-:mod:`AccountData` -- Untitled
-==============================
-
-.. module:: AccountData
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: AccountData

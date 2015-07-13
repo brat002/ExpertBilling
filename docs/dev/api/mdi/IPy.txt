@@ -1,8 +1,0 @@
-:mod:`IPy` -- Untitled
-======================
-
-.. module:: IPy
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: IPy

@@ -1,4 +1,0 @@
-tf_rpc -- Untitled
-==================
-
-   :synopsis: None

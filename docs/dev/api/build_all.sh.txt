@@ -1,4 +1,0 @@
-build_all.sh -- Untitled
-========================
-
-   :synopsis: None

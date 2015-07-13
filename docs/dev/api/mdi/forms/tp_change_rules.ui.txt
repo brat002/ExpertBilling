@@ -1,4 +1,0 @@
-tp_change_rules.ui -- Untitled
-==============================
-
-   :synopsis: None

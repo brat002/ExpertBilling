@@ -1,4 +1,0 @@
-select_hosts.ui -- Untitled
-===========================
-
-   :synopsis: None

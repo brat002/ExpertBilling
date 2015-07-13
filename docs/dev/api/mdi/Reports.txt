@@ -1,8 +1,0 @@
-:mod:`Reports` -- Untitled
-==========================
-
-.. module:: Reports
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: Reports

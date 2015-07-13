@@ -1,8 +1,0 @@
-:mod:`nfroutine` -- Untitled
-============================
-
-.. module:: nfroutine
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: nfroutine

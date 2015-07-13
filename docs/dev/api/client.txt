@@ -1,8 +1,0 @@
-:mod:`client` -- Untitled
-=========================
-
-.. module:: client
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: client

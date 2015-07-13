@@ -1,8 +1,0 @@
-:mod:`AccountDataList` -- Untitled
-==================================
-
-.. module:: AccountDataList
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: AccountDataList

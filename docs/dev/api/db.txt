@@ -1,8 +1,0 @@
-:mod:`db` -- Untitled
-=====================
-
-.. module:: db
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: db

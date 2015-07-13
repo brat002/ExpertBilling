@@ -1,4 +1,0 @@
-ebs_config.ini -- Untitled
-==========================
-
-   :synopsis: None

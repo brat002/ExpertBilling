@@ -1,8 +1,0 @@
-:mod:`dictionary` -- Untitled
-=============================
-
-.. module:: dictionary
-   :platform: Unix, Windows
-   :synopsis: None
-
-.. currentmodule:: dictionary

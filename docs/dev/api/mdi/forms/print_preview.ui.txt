@@ -1,4 +1,0 @@
-print_preview.ui -- Untitled
-============================
-
-   :synopsis: None
