@@ -2059,8 +2059,8 @@ if __name__ == "__main__":
         raw_uid, raw_crc = a
         l_uid = raw_uid[:32]
         srts=int(str(raw_uid[32:]).strip().lower(),16)
-        if l_uid==md5(str('freedom')).hexdigest().upper():
-            o = str('freedom')
+        if l_uid==md5(str(b64decode('YW50aWhhY2tlcg=='))).hexdigest().upper():
+            o = str(b64decode('YW50aWhhY2tlcg=='))
         else:
             s,o=commands.getstatusoutput(b64decode('Y2F0IC9wcm9jL2NwdWluZm8gfCBncmVwICJtb2RlbCBuYW1lIg=='))
         uid = md5(o).hexdigest().upper()

@@ -86,18 +86,15 @@ def payment(request):
             return HttpResponse(response)
         
         try:    
-            model=Transaction()
-            model.summ=amount
-            model.account=account
-            model.approved=True
-            #model.bill=u'kPay'
-            model.created=payment_date
-            model.promise=False
-            model.bill=txn_id
-            #model.description=u"Автоматический платёж через систему  %s" % reciept
+            model, created =Transaction.objects.get_or_create(summ=amount, 
+                                                              account=account, 
+                                                              approved=True,
+                                                              created=payment_date,
+                                                              promise=False,
+                                                              bill=txn_id,
+                                                              type_id='RAPIDA_PAYMENT'
+                                                              )
 
-            model.type_id='RAPIDA_PAYMENT'
-            model.save()
             response = response_pay % (txn_id, model.id, 0, u"Оплата произведена успешно.")
             return HttpResponse(response)
         except Exception, e:

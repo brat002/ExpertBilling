@@ -1,0 +1,124 @@
+.disabled-row {
+  background-color: lightgrey;
+}
+
+.modal {
+  position: fixed;
+  top: 5%;
+  left: 50%;
+  z-index: 900;
+  width: 810px;
+  margin: 0 0 0 -400px;
+  overflow: auto;
+  background-color: #ffffff;
+  border: 1px solid #999;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  *border: 1px solid #999;
+  -webkit-border-radius: 6px;
+     -moz-border-radius: 6px;
+          border-radius: 6px;
+  -webkit-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+     -moz-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  -webkit-background-clip: padding-box;
+     -moz-background-clip: padding-box;
+          background-clip: padding-box;
+}
+
+.popover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1010;
+  display: none;
+  max-width: 600px;
+  padding: 1px;
+  text-align: left;
+  white-space: normal;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  -webkit-border-radius: 6px;
+     -moz-border-radius: 6px;
+          border-radius: 6px;
+  -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+     -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+  -webkit-background-clip: padding-box;
+     -moz-background-clip: padding;
+          background-clip: padding-box;
+}
+
+.table th {
+  background-color: #3A87AD;
+}
+
+.table thead th a {
+    color: #FFF;
+}
+
+.table thead th{
+    color: #FFF;
+}
+
+.table tfoot th{
+    color: #000;
+    background-color: #FFF;
+}
+
+.table td {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    /*padding-left: 2px; */ 
+    padding-right: 3px;
+    background-color: #FFFFFF;
+}
+
+html,body {
+  height:100%;
+}
+
+#wrap {
+min-height: 100%;
+}
+
+#main {
+  overflow:auto;
+  padding-bottom:150px; /* this needs to be bigger than footer height*/
+}
+
+.footer {
+  position: relative;
+  margin-top: -150px; /* negative value of footer height */
+  height: 150px;
+  clear:both;
+  padding-top:20px;
+}
+
+.bottom-up {
+    top: auto; 
+    bottom: 100%; 
+}
+
+.table tbody tr:hover td, .table tbody tr:hover th {
+  /*background-color: transparent; */
+}
+
+.dialog11 {
+  z-index: 1140;
+}
+
+.form-condensed .control-group {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.form-horizontal input + .help-block,
+.form-horizontal select + .help-block,
+.form-horizontal textarea + .help-block,
+.form-horizontal .uneditable-input + .help-block,
+.form-horizontal .input-prepend + .help-block,
+.form-horizontal .input-append + .help-block {
+  margin-top: -2px;
+  color: grey;
+}

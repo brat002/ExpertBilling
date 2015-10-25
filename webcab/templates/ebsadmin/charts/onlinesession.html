@@ -1,0 +1,134 @@
+{% extends "ebsadmin/charts/base.html" %}
+{% load i18n %}
+
+{% block chart_block %}
+  <script  type="text/javascript" >
+    var chart;
+    $(document).ready(function() {
+      var tasks = [
+      {% for key, value in res.items %}
+      {
+        name: '{{key}}',
+        intervals: [
+        {% for date_start, date_end in value %}            
+        {
+          {% if date_start %}
+          from: Date.UTC({{date_start.year}},  {{date_start.month}}-1, {{date_start.day}},{{date_start.hour}},{{date_start.minute}}),
+          {% else %}
+          from: null
+          {% endif %}
+          {% if date_end %}
+          to: Date.UTC({{date_end.year}},  {{date_end.month}}-1, {{date_end.day}},{{date_end.hour}},{{date_end.minute}})
+          {% else %}
+          to: null
+          {% endif %}
+        }, 
+        {% endfor %}
+        ]
+      },
+      {% endfor %}
+      ];
+
+      var series = [];
+      $.each(tasks.reverse(), function(i, task) {
+        var item = {
+          name: task.name,
+          data: []
+        };
+        $.each(task.intervals, function(j, interval) {
+          item.data.push({
+            x: interval.from,
+            y: i,
+            label: interval.label,
+            from: interval.from,
+            to: interval.to
+          }, {
+            x: interval.to,
+            y: i,
+            from: interval.from,
+            to: interval.to
+          });
+
+          if (task.intervals[j + 1]) {
+            item.data.push(
+              [(interval.to + task.intervals[j + 1].from) / 2, null]
+              );
+          }
+
+        });
+
+        series.push(item);
+      });
+
+      var chart = new Highcharts.Chart({
+
+        chart: {
+          renderTo: 'container'
+        },
+
+        title: {
+          text: '{{report_name}}'
+        },
+
+        xAxis: {
+          type: 'datetime'
+        },
+
+        yAxis: {
+          tickInterval: 1,
+          labels: {
+            formatter: function() {
+              try
+              {
+                return tasks[this.value].name;
+              }
+              catch(err)
+              {
+                return tasks[this.value];
+              }
+
+            }
+          },
+          startOnTick: false,
+          endOnTick: false,
+          title: {
+            text: '{{yname}}'
+          },
+          minPadding: 0.1,
+          maxPadding: 0.1
+        },
+
+        legend: {
+          enabled: true
+        },
+
+        tooltip: {
+          formatter: function() {
+            return '<b>'+ tasks[this.y].name + '</b><br/>' +
+            Highcharts.dateFormat('%Y-%m-%d %H:%M', this.point.options.from)  +
+            ' - ' + Highcharts.dateFormat('%Y-%m-%d  %H:%M', this.point.options.to);
+          }
+        },
+
+        plotOptions: {
+          line: {
+            lineWidth: 10,
+            marker: {
+              enabled: false
+            },
+            dataLabels: {
+              enabled: true,
+              align: 'left',
+              formatter: function() {
+                return this.point.options && this.point.options.label;
+              }
+            }
+          }
+        },
+
+        series: series
+
+      });
+    });
+  </script>
+{% endblock %}

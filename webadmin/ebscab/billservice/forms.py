@@ -33,6 +33,7 @@ from django.conf import settings
 from captcha.fields import CaptchaField
 import selectable.forms as selectable
 from ebscab.lookups import HardwareLookup
+from django_select2.fields import AutoModelSelect2Field
 
 class HardwareChoices(AutoModelSelect2Field):
     queryset = Hardware.objects#.filter(accounthardware__isnull=True)

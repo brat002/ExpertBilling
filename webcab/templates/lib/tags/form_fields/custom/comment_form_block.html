@@ -1,0 +1,6 @@
+{% extends 'lib/tags/form_fields/block.html' %}
+{% block wrapper_id %}form-field-{{ form_id }}-{{ field.name }}{% endblock %}
+{% block extra_class_name %}
+{{ block.super }}
+{% if hidden %} hidden {% endif %}
+{% endblock %}

@@ -1,0 +1,24 @@
+{% load i18n %}
+
+{% include "ebsadmin/common/error_messages.html" %}
+
+{% if form %}      
+  <script type="text/javascript"> 
+    $(document).ready(function() {
+      $('#id_btn_submit').click(function() {
+        values = $.param(jQuery("#id_main_table input[type=checkbox]").serializeArray());
+        window.location.href = '{% url 'salecard_edit' %}?dealer='+ $("#id_dealer_item").val() +'&'+values;   
+        return
+      }); 
+    });
+  </script>
+
+  <fieldset>
+    {{form}}
+  </fieldset>
+
+  <div class="form-actions">
+    <input id="id_btn_submit" type='submit' class="btn btn-primary" value="{% blocktrans %}Выбрать{% endblocktrans %}">
+    <a class="btn close-dialog" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
+  </div>
+{% endif %}

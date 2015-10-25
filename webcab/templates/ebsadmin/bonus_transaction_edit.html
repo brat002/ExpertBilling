@@ -1,0 +1,21 @@
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load crispy_forms_tags %}
+
+{% block base %}
+  {% if not status %}
+    {% include "ebsadmin/common/error_messages.html" %}
+  
+    {%  if form %}
+      <form action='{% url 'bonus_transaction_edit' %}?id={{item.id}}' method="POST" class="well form-horizontal ajax form-condensed ">
+        {{form|crispy}}
+        <div class="form-actions">
+          <input type='submit' class="btn btn-primary" value="{% blocktrans %}Добавить{% endblocktrans %}">
+          <a class="btn close-dialog" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
+        </div>
+      </form>
+    {% endif %}
+  {% else %}
+    {% include "ebsadmin/common/succ_operation.html" %}
+  {% endif %}
+{% endblock %}

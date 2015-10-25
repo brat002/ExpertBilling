@@ -1,0 +1,50 @@
+{% load ebsadmin_tags %}
+{% load i18n %}
+
+{% if not status %}
+  {% include "ebsadmin/common/error_messages.html" %}
+
+  {% if form %}
+    <form action='{% url 'account_management_suspendedperiod' %}' method="POST" class="well form-horizontal ajax form-condensed ">
+      <fieldset>
+        {{form.accounts}}
+        <div class="control-group">
+          <label class="control-label">{{form.start_date.label}}: </label>
+          <div class="controls">
+            {{ form.start_date }}
+            {% if form.start_date.errors %}
+            <span class="help-inline">{% for error in form.start_date.errors %}{{ error }}<br/> {% endfor %}</span>
+            {% endif %}
+            {% if form.start_date.help_text%}
+            <p class="help-block">
+              {{ form.start_date.help_text|safe }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+        <div class="control-group">
+
+          <label class="control-label">{{form.end_date.label}}:</label>
+          <div class="controls">
+            {{ form.end_date }}
+            {% if form.end_date.errors %}
+            <span class="help-inline">{% for error in form.end_date.errors %}{{ error }}<br/> {% endfor %}</span>
+            {% endif %}
+            {% if form.end_date.help_text%}
+            <p class="help-block">
+              {{ form.end_date.help_text|safe }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+
+      </fieldset>
+      <div class="form-actions">
+        <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">
+        <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
+      </div>
+    </form>
+  {% endif %}
+{% else %}
+  {% include "ebsadmin/common/succ_operation.html" %}
+{% endif %}

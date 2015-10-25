@@ -1,0 +1,19 @@
+{% load ebsadmin_tags %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% if not status %}
+  {% include "ebsadmin/common/error_messages.html" %}
+
+  {% if form %}
+    <form method="POST" action="{% url 'tariff_prepaidtraffic_edit' %}?id={{item.id}}" class="well form-horizontal ajax form-condensed ">
+      {{form|crispy}}
+      <div class="form-actions">
+        <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">
+        <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
+      </div>
+    </form>
+  {% endif %}
+{% else %}
+  {% include "ebsadmin/common/succ_operation.html" %}
+{% endif %}

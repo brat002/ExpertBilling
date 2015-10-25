@@ -1,0 +1,90 @@
+.help {
+	background: url(../img/icons/icon-unknown.gif) no-repeat 1 0;
+	padding-left: 15px;
+	color: #adadad;
+	font-size: 10px;
+}
+
+a.add_link:link, a.add_link:visited, a.add_link:hover, a.add_link:active {
+    background: url("../img/icons/icon_addlink.gif") no-repeat left;
+    padding-left: 21px;
+}
+
+a.hold_link:link, a.add_link:visited, a.add_link:hover, a.add_link:active {
+    background: url("../img/icons/icon_holdlink.png") no-repeat left;
+    padding-left: 21px;
+}
+a.change_link:link, a.change_link:visited, a.change_link:hover, a.change_link:active {
+    background: url("../img/icons/icon_changelink.gif") no-repeat left;
+    padding-left: 21px;
+}
+a.add_link:hover {
+    color: #000;
+        }
+a.change_link:hover {
+    color: #4a4a4a;
+        }
+a.delete_link:link, a.delete_link:visited, a.delete_link:hover, a.delete_link:active {
+        background: url("../img/icons/icon_deletelink.gif") no-repeat left;
+        padding-left:21px;
+        color:#adadad;
+    }
+a.delete_link:hover {
+    color: #4a4a4a;
+        }
+        
+ a.hold_link:hover {
+    color: #4a4a4a;
+        }
+a.export_link {
+    background: url("../img/icons/selector-add.gif") no-repeat left;
+    padding-left: 21px;
+}
+a {text-decoration: underline;}
+
+a.exit_link {
+    background: url("../img/icons/stock_exit.png") no-repeat left;
+    padding-left: 21px;
+
+}
+
+a.active_link {
+    background: url("../img/icons/link.png") no-repeat left;
+    padding-left: 21px;
+}
+
+a.comments_link {
+    background: url("../img/icons/comments.png") no-repeat left;
+    padding-left: 21px;
+
+}
+
+a.tag_link{
+    background: url("../img/icons/tag.png") no-repeat left;
+    padding-left: 21px;
+}
+
+a.file_link{
+    background: url("../img/icons/link.png") no-repeat left;
+    padding-left: 21px;
+}
+
+a.accept_link{
+    background: url("../img/icons/accept.png") no-repeat left;
+    padding-left: 21px;
+}
+
+a.cancel_link{
+    background: url("../img/icons/icon_error.gif") no-repeat left;
+    padding-left: 21px;
+}
+
+a.unhold_link{
+    background: url("../img/icons/unhold.png") no-repeat left;
+    padding-left: 21px;
+}
+a.back_link{
+    background: url("../img/icons/inline-restore.png") no-repeat; 
+    background-position:  0px 0px;
+    padding-left: 21px;
+}

@@ -1,0 +1,21 @@
+{% load ebsadmin_tags %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block base %}
+  {% if not status %}
+    {% include "ebsadmin/common/error_messages.html" %}
+    
+    {% if form %}
+    <form action="{% url 'radiusattr_edit' %}?nas={{nas.id}}&tarif={{tariff.id}}" method="POST" class="well form-horizontal ajax form-condensed ">
+      {{form|crispy}}
+      <div class="form-actions">
+        <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Changes{% endblocktrans %}">
+        <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
+      </div>
+    </form>
+    {% endif %}
+  {% else %}
+    {% include "ebsadmin/common/succ_operation.html" %}
+  {% endif %}
+{% endblock %}
