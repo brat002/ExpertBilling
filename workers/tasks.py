@@ -314,6 +314,18 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
             command_dict.update({
                           'acc_%s' % x: unicode(account[x]),
                            })
+            
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT name FROM billservice_tariff WHERE id=%s",  (account.tarif_id))
+        conn.commit()
+        r = cur.fetchone()
+        tariff_name = None
+        if r:
+            tariff_name = r[0]
+        cur.close()
+        conn.close()
+        command_dict.update({'acc_tariff_name_%s': tariff_name})
         if subacc:
             for x in subacc.keys():
                 

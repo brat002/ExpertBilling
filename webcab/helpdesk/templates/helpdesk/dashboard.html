@@ -1,0 +1,57 @@
+{% extends "helpdesk/base.html" %}{% load i18n %}
+ {% load render_table from django_tables2 %}
+{% block helpdesk_title %}{% trans "Helpdesk Dashboard" %}{% endblock %}
+{% block extra_head %}
+{{block.super}}
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+        	$(".title-tooltip").bind("hover", function() {
+        		var el=$(this);
+        		el.unbind("hover");
+        		$.ajax({
+        		  url: '{% url 'ticket_info' %}',
+        		  data: {id: el.attr('data')},
+        		  method: 'GET',
+        		  success: function(d){
+        		    el.popover({ content: d.body, placement:'right', html:true, trigger:'hover', container:'body' }).popover("show");
+        		  }
+        		});
+        		return false;
+        		});
+        });
+        </script>
+{% endblock %}
+{% load billservice_tags %}
+{% block helpdesk_body %}
+<legend>{% trans "Helpdesk Summary" %}</legend>
+<table width='40%'  class="table table-striped table-bordered table-condensed">
+<tr><th>{% trans "Queue" %}</th><th>{% trans "Open" %}</th><th>{% trans "Resolved" %}</th></tr>
+{% for queue in dash_tickets %}
+<tr>
+<td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href='{% url 'helpdesk_list' %}?queue={{ queue.queue }}&status=1&status=2'>{{ queue.name }}</a></th>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if queue.open %}<a href='{% url 'helpdesk_list' %}?queue={{ queue.queue }}&status=1&status=2'>{% endif %}{{ queue.open }}{% if queue.open %}</a>{% endif %}</td>
+<td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}">{% if queue.resolved %}<a href='{% url 'helpdesk_list' %}?queue={{ queue.queue }}&status=3'>{% endif %}{{ queue.resolved }}{% if queue.resolved %}</a>{% endif %}</td>
+</tr>
+{% endfor %}
+</table>
+
+{% if ticket_table %}
+<legend>{% trans "Your Tickets" %}</legend>
+{% render_table ticket_table %}
+{% endif %}
+
+{% if not ticket_table %}
+<h3>{% trans "You have no tickets assigned to you." %}</h3>
+{% endif %}
+
+{% if unassigned_ticket_table %}
+<legend>{% trans "Unassigned Tickets" %}</legend>
+{% render_table unassigned_ticket_table %}
+{% endif %}
+
+{% if not unassigned_ticket_table %}
+<h3>{% trans "There are no unassigned tickets." %}</h3>
+{% endif %}
+
+
+{% endblock %}

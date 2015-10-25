@@ -1,0 +1,144 @@
+{% extends "ebsadmin/base.html" %}
+
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load crispy_forms_tags %}
+
+{% block extra_head %}
+  <script type="text/javascript"> 
+    $(document).ready(function() {
+      $("#id_end_date_1").mask("99:99:99");
+      {% if table %}
+      $('#tab-control a[href="#result"]').tab('show');
+      {% else %}
+      $('#tab-control a[href="#filter"]').tab('show');
+      {% endif %}
+    });
+  </script>
+{% endblock %}
+
+{% block base %}
+  <ul class="nav nav-tabs" id="tab-control">
+    <li ><a href="#filter">{% blocktrans %}Фильтр{% endblocktrans %}</a></li>
+    <li><a href="#result">{% blocktrans %}Отчёт{% endblocktrans %}</a></li>  
+  </ul>
+
+  {% load render_table from django_tables2 %}
+  <div class="tab-content">
+    <div class="tab-pane" id="filter">
+
+      <div class="row-fluid">
+        <div class="span12">
+          <form action="{% url 'actionlog' %}" method="GET" class="well form-horizontal form-condensed ">
+            {{ form.non_field_errors }}
+            <fieldset>
+              <legend>{% blocktrans %}Поиск по логу действий{% endblocktrans %}</legend>
+              <div class="control-group">
+                <div class="control-row">
+                  <label class="control-label">{{form.start_date.label}}: </label>
+                  <div class="controls inline">
+                    {{ form.start_date }}
+                    {% if form.start_date.errors %}
+                    <span class="help-inline">{% for error in form.start_date.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if form.start_date.help_text%}
+                    <p class="help-block">
+                      {{ form.start_date.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>  
+              <div class="control-group">
+                <div class="control-row">
+                  <label class="control-label">{{form.end_date.label}}: </label>
+                  <div class="controls inline">
+                    {{ form.end_date }}
+                    {% if form.end_date.errors %}
+                    <span class="help-inline">{% for error in form.end_date.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if form.end_date.help_text%}
+                    <p class="help-block">
+                      {{ form.end_date.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>  
+              <div class="control-group">
+                <div class="control-row">
+                  <label class="control-label">{{form.user.label}}: </label>
+                  <div class="controls inline">
+                    {{ form.user }}
+                    {% if form.user.errors %}
+                    <span class="help-inline">{% for error in form.user.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if form.user.help_text%}
+                    <p class="help-block">
+                      {{ form.user.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>  
+              <div class="control-group">
+                <div class="control-row">
+                  <label class="control-label">{{form.action.label}}: </label>
+                  <div class="controls inline">
+                    {{ form.action }}
+                    {% if form.action.errors %}
+                    <span class="help-inline">{% for error in form.action.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if form.action.help_text%}
+                    <p class="help-block">
+                      {{ form.action.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>  
+              <div class="control-group">
+                <div class="control-row">
+                  <label class="control-label">{{form.ct.label}}: </label>
+                  <div class="controls inline">
+                    {{ form.ct }}
+                    {% if form.ct.errors %}
+                    <span class="help-inline">{% for error in form.ct.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if form.ct.help_text%}
+                    <p class="help-block">
+                      {{ form.ct.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>  
+              <div class="control-group">
+                <div class="control-row">
+                  <label class="control-label">{{form.id.label}}: </label>
+                  <div class="controls inline">
+                    {{ form.id }}
+                    {% if form.id.errors %}
+                    <span class="help-inline">{% for error in form.id.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if form.id.help_text%}
+                    <p class="help-block">
+                      {{ form.id.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>  
+            </fieldset>
+            <fieldset>
+              <div class="form-actions form-actions-center">
+                <button class="btn btn-primary" type="submit">{% blocktrans %}Подобрать результаты{% endblocktrans %}</button>
+              </div>
+            </fieldset>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane" id="result">{% if table %}{% render_table table %}{% endif %}</div>
+  </div>
+{% endblock %}

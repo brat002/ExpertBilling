@@ -1,0 +1,46 @@
+{% load ebsadmin_tags %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% if not status %}
+  {% include "ebsadmin/common/error_messages.html" %}
+
+  <script type="text/javascript"> 
+   $(document).ready(function() {
+     $("#id_body").bind('keyup', function(){
+
+       n = $(this).val().length;
+
+       $('#id_chars').text(n);
+     });
+     n = $(this).val().length;
+
+     $('#id_chars').text(n);
+   });
+  </script>
+  
+  {% if form %}
+    <form action='{% url 'sendsms' %}' method="POST" class="well form-horizontal ajax form-condensed ">
+      <fieldset>
+        {{form|crispy}}
+
+        <div class="clearfix control-group">
+          <label  class="control-label ">
+            {% blocktrans %}Символов{% endblocktrans %}
+          </label>
+          <div class="controls">
+            <span id="id_chars"></span>
+          </div>
+        </div>
+      </fieldset>
+      <div class="form-actions">
+        <input type='submit' class="btn btn-primary" value="{% blocktrans %}Save Change{% endblocktrans %}">
+        <a class="btn close-dialog" href="#">{% blocktrans %}Close{% endblocktrans %}</a>
+      </div>
+    </form>
+  {% else %}
+    <div class='alert'>{% blocktrans %}Сначала выберите получателей{% endblocktrans %}</div>
+  {% endif %}
+{% else %}
+  {% include "ebsadmin/common/succ_operation.html" %}
+{% endif %}

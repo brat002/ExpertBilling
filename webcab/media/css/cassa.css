@@ -1,0 +1,118 @@
+/*
+ 
+Stuff and Nonsense Ltd.
+The Cow Shed Studio,
+Gwaenysgor,
+Flintshire, North Wales
+LL18 6EP, UK
++44 1745 851848
+http://stuffandnonsense.co.uk
+http://forabeautifulweb.com
+http://transcendingcss.com
+http://twitter.com/malarkey
+ 
+RESET.CSS 
+ 
+*/
+ 
+html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, code, del, dfn, em, img, q, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td {margin:0;padding:0;border:0;font-weight:inherit;font-style:inherit;font-size:100%;font-family:inherit;vertical-align:baseline;}
+ 
+html {
+background-color : rgb(250,250,250);
+color : rgb(0,0,0); }
+
+body { 
+width : 600px;
+margin : 0 auto;
+padding : 3em 0;
+font : 75%/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif; }
+ 
+/* Text elements
+----------------------------------------------------------- */
+
+h1 { 
+font-size : 2.5em; 
+font-weight : bold; 
+margin-bottom : 0.75em; 
+text-shadow : 1px 1px 2px rgb(255,255,255); }
+
+p {
+margin : 0 0 .75em 0; }
+ 
+a, a:visited {
+outline : none;
+color : rgb(114,16,19);
+text-decoration : none; }
+ 
+a:hover { 
+color : rgb(152,22,25); 
+text-decoration : none; }
+ 
+a:active, a:focus { 
+position : relative; 
+top : 1px; 
+color : rgb(152,22,25); }
+ 
+/* Forms
+----------------------------------------------------------- */
+
+form {
+width: 300px; 
+
+}
+border-top : 2px solid rgb(230,230,230);
+border-bottom : 2px solid rgb(230,230,230); }
+
+fieldset {
+overflow : hidden;
+margin : 0 0 1.5em 0;
+padding : 0 0 1.5em 0;
+border-bottom : 2px solid rgb(230,230,230); }
+
+form p:after {  
+content : "."; 
+display : block; 
+height : 0; 
+clear : both; 
+visibility : hidden; }
+
+form br {
+display : none; }
+ 
+label {
+display : block;
+float : left;
+width : 220px;
+margin-right : 20px; }
+
+input[type="text"],
+select {
+float : left;
+background-color : rgb(255,255,255);
+font : inherit Helvetica, Arial, sans-serif; 
+color : rgb(0,0,0); }
+
+input[type="text"] { 
+width : 150px; 
+padding : .35em .5em; 
+border : 2px solid rgb(230,230,230); }
+
+input[type="password"],
+select {
+float : left;
+background-color : rgb(255,255,255);
+font : inherit Helvetica, Arial, sans-serif; 
+color : rgb(0,0,0); }
+
+input[type="password"] { 
+width : 150px; 
+padding : .35em .5em; 
+border : 2px solid rgb(230,230,230); }
+
+select { 
+width : 300px; }
+
+p.optional {
+display : block; 
+opacity : .5; }
+

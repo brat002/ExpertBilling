@@ -1,0 +1,166 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html>
+<head>
+<link href="/media/bootstrap/css/bootstrap.css" rel="stylesheet">
+<link href="/media/bootstrap/css/style.css" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="/media/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+<link href="/media/bootstrap/css/cus-icons.css" rel="stylesheet">
+<link href="/media/bootstrap/css/todc-bootstrap.css" rel="stylesheet"></head>
+<link href="/media/datepicker/css/datepicker.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" media="all" href="/media/daterangepicker/daterangepicker.css" />
+
+
+<script src="/media/jquery/js/jquery-1.8.2.js"></script>
+<script src="/media/jquery/js/jquery.history.js"></script>
+<script src="/media/jquery/js/jquery.cookie.js"></script>
+<script type="text/javascript" src="/media/jquery/js/jquery-ui-1.9.1.custom.min.js"></script>
+<script type="text/javascript" src="/media/daterangepicker/date.js"></script>
+<script type="text/javascript" src="/media/daterangepicker/daterangepicker.js"></script>
+
+<script type="text/javascript" src="/media/jdialogs/lib/jquery.dialog2.js"></script>
+
+<script type="text/javascript" src="/media/jdialogs/lib/jquery.dialog2.helpers.js"></script>
+<script type="text/javascript" src="/media/jquery/js/jquery.controls.js"></script>
+<script type="text/javascript" src="/media/jquery/js/jquery.form.js"></script>
+<script src="/media/datepicker/js/bootstrap-datepicker.js"></script>
+
+
+<link type="text/css" rel="stylesheet" href="/media/jdialogs/css/jquery-dialog2/jquery.dialog2.css">
+<link rel="stylesheet" href="/media/jquery/css/jquery-ui-1.9.1.custom.min.css" type="text/css" title="ui-theme" />
+<script  type="text/javascript" >
+$(document).ready(function() {
+
+
+    });
+
+</script>
+<script src="/media/bootstrap/js/bootstrap.min.js"></script>
+<script src="/media/bootstrap/js/bootstrap-multiselect.js"></script>
+<script src="/media/bootstrap/js/bootstrap-tab-history.js"></script>
+
+
+  <style type="text/css">
+
+html,body
+{
+height:100%;
+}
+  </style>
+<meta name="robots" content="NONE,NOARCHIVE">
+<script type="text/javascript"> 
+    $(function(){
+        $('.dropdown-toggle').dropdown()
+    });
+    $(document).ready(function() {
+        $('.datepicker').datepicker({'format': 'yyyy-mm-dd'});
+        
+        
+        $(".daterange").daterangepicker({format:'yyyy-MM-dd'});
+    });
+</script>
+<style type="text/css">
+.table tbody tr:hover td, .table tbody tr:hover th {
+    background-color: transparent;
+}
+
+.modal {
+  position: fixed;
+  top: 5%;
+  left: 50%;
+  z-index: 1050;
+  width: 800px;
+  margin: 0 0 0 -400px; /* -1 * (width / 2) */ 
+  overflow: auto;
+  background-color: #ffffff;
+  border: 1px solid #999;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  *border: 1px solid #999;
+  -webkit-border-radius: 6px;
+     -moz-border-radius: 6px;
+          border-radius: 6px;
+  -webkit-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+     -moz-box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+  -webkit-background-clip: padding-box;
+     -moz-background-clip: padding-box;
+          background-clip: padding-box;
+}
+.form-condensed .control-group {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+</style>
+{% block extra_head %}
+{% endblock %}
+</head>
+<body style="padding-top: 60px;" >
+
+
+
+
+<div class="navbar  navbar-googlenav navbar-fixed-top">
+  <div class="navbar-inner">
+  <div class="container">
+<a class="brand" href="{% url 'admin_dashboard' %}">
+  {% blocktrans %}ExpertBiling кассир{% endblocktrans %}
+</a>  
+    
+  
+<ul class="nav">
+
+     <li >
+       <a href="{% url 'cashier_index' %}">
+             
+             {% blocktrans %}Главная{% endblocktrans %}
+             
+       </a>
+
+     </li>
+     <li >
+       <a href="{% url 'admin_dashboard' %}">
+             
+             {% blocktrans %}Интерфейс администратора{% endblocktrans %}
+             
+       </a>
+
+     </li>
+     <li><a href="{% url 'activesessionreport' %}?only_active=on"><i class="cus-connect"></i>&nbsp;{% blocktrans %}Монитор сессий{% endblocktrans %}</a></li>
+
+</ul>
+     <ul class="nav pull-right">
+     <li>
+       <a href="/accounts/logout/" class='pull-right'>
+             
+             {% blocktrans %}Выйти{% endblocktrans %} ({{request.user.account}})
+             
+       </a>
+       </li>
+       </ul>
+    </div>
+  </div>
+</div>
+{% load crispy_forms_tags %}
+
+<div class="container">
+
+{% if messages %}
+
+    {% for message in messages %}
+
+<div class="alert fade in {{ message.tags }}">
+            <button type="button" class="close" data-dismiss="alert">×</button>
+            {{ message }}
+          </div>
+
+      {% endfor %}
+
+{% endif %}
+{% block body %} {% endblock %}
+
+</div>
+
+
+</body>
+</html>

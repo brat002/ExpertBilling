@@ -1,0 +1,43 @@
+{% extends 'base_private.html' %}
+{% load i18n form_tags %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+  <ul class="info events">
+      {% if not tickets %}
+      <li class="warning">
+          {% blocktrans %}Currently there are no tickets. You can create a new one by pressing "Add ticket" button.{% endblocktrans %}
+      </li>{% endif %}
+    {% for ticket in tickets %}
+			<li id="id_ticket_{{ ticket.id }}" class="tticket clear shaded">
+			<div class="tleft">
+			 <span class="date etype" style="top:6px; background-color: {{ ticket.get_priority_color }}">
+			   {{ ticket.created|date }}
+			 </span>
+			</div>
+			<div class="tcnt" style="margin-left: 70px;">
+				<h3>
+				<a href="{% url 'helpdesk_account_tickets_view' ticket_id=ticket.id %}">#{{ ticket.id }}. <strong>{{ ticket.title }}</strong></a>
+				</h3>
+				<div class="blankslate">
+				    <span style="color:{{ ticket.get_status_color }}">{{ ticket.get_status_display }}</span>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+				    {% trans "Last changed" %}: {{ ticket.modified|date:"d.m.Y H:i" }}&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+				    <a class="comments_link" href="{% url 'helpdesk_account_tickets_view ticket_id'=ticket.id %}#comments">{% trans 'Comments' %}:{{ ticket.public_comments_count }}</a>
+				</div>
+				<div class="proj-desc">
+				   {{ ticket.description }}
+				</div>
+				{% if ticket.resolution %}
+          {% trans "Resolution" %}{% ifequal ticket.get_status_display "Resolved" %}
+             <a href='{{ request.get_full_path }}&close'>
+                 <img src='{{ MEDIA_URL }}/helpdesk/buttons/accept.png' alt='{% trans "Accept" %}' title='{% trans "Accept and Close" %}' width='60' height='15' /></a>{% endifequal %}
+             {{ ticket.resolution }}
+             {% endif %}
+				<div class="proj-desc">
+				<a class="tag_link"><a href="?queue={{ ticket.queue.slug }}">{{ ticket.queue }}</a>
+				</div>
+			 </div>
+			</li>
+    {% endfor %}
+  </ul>
+{% endblock %}
+{% block side_bar %}<form action="{% url 'helpdesk_account_tickets_add' %}"><input type="submit" id="create-ticket-button" value="{% trans 'Add ticket' %}"></input></form>{% endblock %}

@@ -1,0 +1,28 @@
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load crispy_forms_tags %}
+
+{% block base %}
+  {% if not status %}
+    {% include "ebsadmin/common/error_messages.html" %}
+    
+    {% if form %}
+      <div class="alert">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        {% blocktrans %}Внимание. Вы редактируете данные, которые могут повлиять на целостность связанных объектов. Не меняйте эти значения, если для этого нет веских причин.{% endblocktrans %}
+      </div>
+      <form action='{% url 'payment_edit' %}?id={{item.id}}' method="POST" class="well form-horizontal ajax form-condensed ">
+        <fieldset>
+          {{form|crispy}}
+
+        </fieldset>
+        <div class="form-actions">
+          <input type='submit' class="btn btn-primary" value="Сохранить">
+          <a class="btn close-dialog" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
+        </div>
+      </form>
+    {% endif %}
+  {% else %}
+    {% include "ebsadmin/common/succ_operation.html" %}
+  {% endif %}
+{% endblock %}

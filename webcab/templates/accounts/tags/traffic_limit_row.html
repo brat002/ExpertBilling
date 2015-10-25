@@ -1,0 +1,9 @@
+﻿{% load custom_filters %}
+{% load billservice_tags %}
+<tr>
+	<td class="{{ iter_nom|coll_bg  }} {% if last %}no_border{% endif %}">{{ trafficlimit.name }}&nbsp;</td>
+   	<td class="left_border {{ iter_nom|coll_bg  }} {% if last %}no_border{% endif %}">{{ settlement_period_start|date:"d.m.Y  H:i"  }}&nbsp;</td>
+   	<td class="left_border {{ iter_nom|coll_bg  }} {% if last %}no_border{% endif %}">{{ settlement_period_end|date:"d.m.Y  H:i" }}&nbsp;</td>
+   	<td class="left_border {{ iter_nom|coll_bg  }} {% if last %}no_border{% endif %}" align="right">{{ summ }} мБ&nbsp;</td>
+   	<td class="left_border {{ iter_nom|coll_bg  }} {% if last %}no_border{% endif %}" align="right">{{ stay }} мБ&nbsp;</td>
+</tr>
