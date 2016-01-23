@@ -317,7 +317,7 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
             
         conn = get_connection()
         cur = conn.cursor()
-        cur.execute("SELECT name FROM billservice_tariff WHERE id=%s",  (account.tarif_id))
+        cur.execute("SELECT name FROM billservice_tariff WHERE id=%s",  (account.get('tarif_id')))
         conn.commit()
         r = cur.fetchone()
         tariff_name = None
