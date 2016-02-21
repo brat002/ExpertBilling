@@ -317,7 +317,7 @@ def PoD(account, subacc, nas, access_type, session_id='', vpn_ip_address='', cal
             
         conn = get_connection()
         cur = conn.cursor()
-        cur.execute("SELECT name FROM billservice_tariff WHERE id=%s",  (account.get('tarif_id')))
+        cur.execute("SELECT name FROM billservice_tariff WHERE id=%s",  (account.get('tarif_id'),))
         conn.commit()
         r = cur.fetchone()
         tariff_name = None
@@ -791,6 +791,24 @@ def sendsms_post(url, parameters, id=None):
 def sendsmsru_post(url, parameters, id=None):
     response = HttpBot().POST(url, parameters)
     logging.basicConfig(filename='log/workers_sendsms.log', level=logging.INFO)
+    logger = logging
+    #print response
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE sendsms_message SET sended=now(), response=%s WHERE id=%s",  (response, id))
+    conn.commit()
+    cur.close()
+    conn.close()
+    
+
+@app.task
+def sendsmscru_post(url, parameters, id=None):
+    parameters.update({'fmt': 3})
+    
+    response = HttpBot().POST(url, parameters)
+
+    logging.basicConfig(filename='log/workers_sendsmscru.log', level=logging.INFO)
     logger = logging
     #print response
 

@@ -32,6 +32,7 @@ SENDSMS_BACKENDS = (
                     ('sendsms.backends.websms.SmsBackend', 'websms.ru'),
                     ('sendsms.backends.smsru.SmsBackend', 'sms.ru'),
                     ('sendsms.backends.smspilotru.SmsBackend', 'smspilot.ru'),
+                    ('sendsms.backends.smscru.SmsBackend', 'smsc.ru'),
                     )
                     
 SENDSMS_BACKENDS_SETTINGS = {
@@ -46,6 +47,13 @@ SENDSMS_BACKENDS_SETTINGS = {
                                                          'TRANSLIT': '1',
                                                          'TEST': '0',
                                                          'PARTNER_ID': '',
+                                                         },
+                             'sendsms.backends.smscru': {
+                                                         'LOGIN': '', 
+                                                         'PASSWORD': '',
+                                                         'TRANSLIT': '1',
+                                                         'FLASH': '0',
+                                                         'SENDER': '',
                                                          },
                              'sendsms.backends.smspilotru': {
                                                          'FROM_NAME': '', 
