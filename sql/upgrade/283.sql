@@ -1,7 +1,3 @@
--- Function: billservice_account_trg_fn()
-
--- DROP FUNCTION billservice_account_trg_fn();
-
 CREATE OR REPLACE FUNCTION billservice_account_trg_fn()
   RETURNS trigger AS
 $BODY$
@@ -39,5 +35,3 @@ $BODY$
   COST 100;
 ALTER FUNCTION billservice_account_trg_fn()
   OWNER TO ebs;
-
-DROP TRIGGER last_balance_null_trg ON billservice_account;

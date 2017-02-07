@@ -49,7 +49,7 @@ def http_basic_auth(func):
         return func(request, *args, **kwargs)
     return _decorator
 
-@http_basic_auth
+#s@http_basic_auth
 def payment(request):
     if False and request.META.get("REMOTE_ADDR") not in ['1.1.1.1']:
         response=u"""<?xml version="1.0" encoding="utf-8"?>
@@ -123,8 +123,8 @@ def payment(request):
         """ % reciept
         return HttpResponse(response)
     
-    if action=='payment':
-        if not (date and reciept):
+    if action=='pay':
+        if not (txn_date and reciept):
             response=u"""<?xml version="1.0" encoding="utf-8"?>
             <response>
             <osmp_txn_id>%s</osmp_txn_id>
@@ -134,7 +134,7 @@ def payment(request):
             """ % reciept
             return HttpResponse(response)
         try:
-            payment_date = datetime.datetime(*time.strptime(date, "%Y%m%d%H%M%S")[0:5])
+            payment_date = datetime.datetime(*time.strptime(txn_date, "%Y%m%d%H%M%S")[0:5])
         except Exception, e:
             print e
             import traceback

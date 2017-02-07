@@ -11,7 +11,7 @@ from BeautifulSoup import BeautifulSoup
 logger = logging.getLogger('payments.qiwiru')
 
 class PayView(View):
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
 
         status=''
         try:
@@ -20,20 +20,17 @@ class PayView(View):
             if settings.DEBUG==False:
                 status = PaymentProcessor.check_allowed_ip(ip, request)
                 if status!='OK':
-                    HttpResponse(status)
-            request_type = request.GET.get('command')
-            if request_type=='check':
-                status = PaymentProcessor.check(request)
-            elif request_type=='pay':
-                status = PaymentProcessor.pay(request)
+                    return HttpResponse(status)
+
+            status = PaymentProcessor.postback(request)
 
                 
         except KeyError, e:
             print e
-            logger.warning('Got malformed GET request: %s' % str(request.POST))
+            logger.warning('Got malformed GET request: %s' % str(e))
             return HttpResponse('MALFORMED')
 
-        return HttpResponse(status)
+        return HttpResponse(status,  content_type="text/xml")
 
 
 

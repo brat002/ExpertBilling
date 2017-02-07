@@ -42,7 +42,7 @@ def urlencode_utf8(params):
     if hasattr(params, 'items'):
         params = params.items()
     return '&'.join(
-        (quote_plus(k.encode('utf8'), safe='/') + '=' + quote_plus(v.encode('utf8'), safe='/')
+        (quote_plus(k.encode('utf8'), safe='/') + '=' + quote_plus(unicode(v).encode('utf8'), safe='/')
             for k, v in params))
     
 def get_connection():
