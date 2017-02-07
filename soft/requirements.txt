@@ -26,7 +26,7 @@ django-tagging==0.3.1
 ecdsa
 ipaddr
 librabbitmq
-kombu
+kombu==3.0.37
 openpyxl==1.6.2
 paramiko==1.12.0
 psycopg2==2.5.1
