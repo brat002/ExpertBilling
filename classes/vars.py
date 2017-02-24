@@ -451,7 +451,7 @@ class NfrQueues(object):
 class RadVars(Vars):
     __slots__ = ('SESSION_TIMEOUT', 'GIGAWORD', 'DICT_LIST', 'DICT', 'COMMON_VPN', 'IGNORE_NAS_FOR_VPN', 'IGNORE_NAS_FOR_DHCP',\
                  'MAX_DATAGRAM_LEN', 'AUTH_PORT', 'ACCT_PORT', 'AUTH_SOCK_TIMEOUT', 'ACCT_SOCK_TIMEOUT',\
-                 'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM', 'LISTEN_THREAD_NUM', 'EAP_ID_TYPE', 'POLL_TIMEOUT','EAP_ACCESS_TYPES', 'ONLY_ONE', 'ENABLE_SQLLOG','SQLLOG_FLUSH_TIMEOUT', 'SQLLOG_SUCCESS','cursor_lock','MPPE_SUPPORT', 'GET_MAC_FROM_PPPOE', 'DHCP_FRAMED_GUEST_POOL', 'DHCP_GUEST_SESSION_TIMEOUT', 'RADIUSSTAT_FLUSH_TIMEOUT', 'ENABLE_RADIUSSTAT')
+                 'AUTH_LOG_NAME', 'ACCT_LOG_NAME', 'AUTH_THREAD_NUM', 'ACCT_THREAD_NUM', 'LISTEN_THREAD_NUM', 'EAP_ID_TYPE', 'POLL_TIMEOUT','EAP_ACCESS_TYPES', 'ONLY_ONE', 'ENABLE_SQLLOG','SQLLOG_FLUSH_TIMEOUT', 'SQLLOG_SUCCESS','cursor_lock','MPPE_SUPPORT', 'GET_MAC_FROM_PPPOE', 'DHCP_FRAMED_GUEST_POOL', 'DHCP_GUEST_SESSION_TIMEOUT', 'RADIUSSTAT_FLUSH_TIMEOUT', 'ENABLE_RADIUSSTAT')
     
     def __init__(self):
         super(RadVars, self).__init__()
@@ -485,6 +485,8 @@ class RadVars(Vars):
         self.DHCP_GUEST_SESSION_TIMEOUT = 0
         self.RADIUSSTAT_FLUSH_TIMEOUT = 60
         self.ENABLE_RADIUSSTAT = True
+        self.AUTH_LOG_NAME = 'log/rad_auth_log'
+        self.ACCT_LOG_NAME = 'log/rad_acct_log'
         
     def get_dynamic(self, **kwargs):
         super(RadVars, self).get_dynamic(**kwargs)
@@ -527,8 +529,13 @@ class RadVars(Vars):
             self.RADIUSSTAT_FLUSH_TIMEOUT = config.getint(name, 'radiusstat_flush_timeout')
         if config.has_option(name, 'enable_radiusstat'):
             self.ENABLE_RADIUSSTAT = config.getboolean(name, 'enable_radiusstat')
+    
+        if config.has_option(name, 'auth_log_name'):
+            self.AUTH_LOG_NAME = config.get(name, 'auth_log_name')
         
-        
+        if config.has_option(name, 'acct_log_name'):
+            self.ACCT_LOG_NAME = config.get(name, 'acct_log_name')
+            
         
     def __repr__(self):
         return '; '.join((field + ': ' + repr(getattr(self,field)) for field in super(RadVars, self).__slots__ + self.__slots__))

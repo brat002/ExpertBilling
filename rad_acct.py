@@ -698,7 +698,7 @@ def ungraceful_save():
     packetSenderThr.join()
     sys.exit()
 
-def main():
+def main(port=1813):
     global threads, curCachesDate, suicideCondition, server_acct, sqlloggerthread, packetSenderThr#, radiusstatthr
     threads = []
 
@@ -747,7 +747,7 @@ def main():
 
     print "ebs: rad_acct: started"
     savepid(vars.piddir, vars.name)
-    reactor.listenUDP(1813, Reception_UDP())
+    reactor.listenUDP(port, Reception_UDP())
     
     #reactor.listenTCP(8002, server.Site(HelloResource()))
     reactor.run(installSignalHandlers=False)
@@ -797,7 +797,7 @@ if __name__ == "__main__":
         
         
 
-        logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename='log/rad_acct_log')
+        logger = isdlogger.isdlogger(vars.log_type, loglevel=vars.log_level, ident=vars.log_ident, filename=vars.ACCT_LOG_NAME)
         utilites.log_adapt = logger.log_adapt
         saver.log_adapt    = logger.log_adapt
         logger.lprint('Radius start')
@@ -812,7 +812,7 @@ if __name__ == "__main__":
         #-------------------
         
         print "ebs: rad_acct: configs read, about to start"
-        main()
+        main(port=port)
     except Exception, ex:
         print 'Exception in rad, exiting: ', repr(ex)
         logger.error('Exception in rad acct, exiting: %s \n %s', (repr(ex), traceback.format_exc()))        
