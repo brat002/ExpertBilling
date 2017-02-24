@@ -1308,7 +1308,7 @@ class pfMemoize(object):
             self.periodCache[(time_start, length, repeat_after, date_)] = res
         return res
     
-def main():
+def main(port=1812):
     global threads, curCachesDate, suicideCondition, server_acct, sqlloggerthread, SQLLoggerThread
     threads = []
 
@@ -1352,7 +1352,7 @@ def main():
 
     print "ebs: rad_auth: started"
     savepid(vars.piddir, vars.name)
-    reactor.listenUDP(1812, Reception_UDP())
+    reactor.listenUDP(port, Reception_UDP())
     reactor.run(installSignalHandlers=True)
 
 if __name__ == "__main__":
@@ -1414,7 +1414,7 @@ if __name__ == "__main__":
 
         #-------------------
         print "ebs: rad_auth: configs read, about to start"
-        main()
+        main(port=port)
     except Exception, ex:
         print 'Exception in rad, exiting: ', repr(ex)
         logger.error('Exception in rad_auth, exiting: %s \n %s', (repr(ex), traceback.format_exc()))        
