@@ -10,7 +10,7 @@ SQLAlchemy==0.8.2
 Twisted==13.1.0
 anyjson
 argparse
-billiard
+billiard==3.3.0.23
 celery==3.1.23
 celery-with-redis
 django-annoying==0.7.7
