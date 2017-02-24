@@ -539,7 +539,7 @@ class RadVars(Vars):
             self.ACCT_LOG_NAME = config.get(name, 'acct_log_name')
         
         if config.has_option(name, 'auth_wait_timeout'):
-            self.AUTH_WAIT_TIMEOUT = config.getint(name, 'auth_wait_timeout')
+            self.AUTH_WAIT_TIMEOUT = config.getfloat(name, 'auth_wait_timeout')
                 
         if config.has_option(name, 'auth_queue_size'):
             self.AUTH_QUEUE_SIZE = config.getint(name, 'auth_queue_size')
