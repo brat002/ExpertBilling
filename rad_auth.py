@@ -129,6 +129,7 @@ class Reception_UDP(DatagramProtocol):
 
         
     def datagramReceived(self, data, addrport):
+        global vars
         #=======================================================================
         # try:
         #     self.transport.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -137,7 +138,12 @@ class Reception_UDP(DatagramProtocol):
         #=======================================================================
             
         if len(data) <= vars.MAX_DATAGRAM_LEN:
-            auth_queue.put((data, addrport, self.transport))
+            qsize = auth_queue.qsize()
+            
+            if qsize<vars.AUTH_QUEUE_SIZE:
+                auth_queue.put((data, addrport, self.transport, time.time()))
+            else:
+                logger.error("RAD AUTH skip packet due large incomming queue size:%s. Configured limit:%s ", (qsize, vars.AUTH_QUEUE_SIZE))
         else:
             logger.error("RAD AUTH server exception: packet %s <= %s", (len(data), vars.MAX_DATAGRAM_LEN))
                                
@@ -164,7 +170,16 @@ class AuthHandler(Thread):
                 if not d:
                     time.sleep(0.01)
                     continue
-                data,addrport, transport = d
+                data,addrport, transport, request_time = d
+                
+                timeout = time.time()-request_time
+                if timeout>=vars.AUTH_WAIT_TIMEOUT:
+                    logger.debug("%s: request processing timeout. "
+                                 "Configured timeout:%s. Current timeout:%s", (self.getName(), 
+                                                                               vars.AUTH_WAIT_TIMEOUT, 
+                                                                               timeout))
+                                                                     
+                                                                     
                 if data:
                     packetobject = packet.Packet(dict = vars.DICT, packet = data)
                 else:
