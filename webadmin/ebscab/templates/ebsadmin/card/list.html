@@ -153,7 +153,7 @@
           $form.append('<input type="hidden" name="cards" value="' + v.value + '">');
         });
         $form.append('</form>');
-        $form.submit();
+        $form.appendTo('body').submit();
       }
 
       {% if table %}
