@@ -800,6 +800,26 @@ def sendsmsru_post(url, parameters, id=None):
     conn.commit()
     cur.close()
     conn.close()
+ 
+@app.task
+def smsbroker_post(url, content, id=None):
+    
+    headers = {
+        'Content-type': 'text/xml;charset=UTF-8'
+    }
+    
+    req = urllib2.Request(url, content.encode('utf-8'), headers)
+    response = urllib2.urlopen(req).read()
+    logging.basicConfig(filename='log/workers_smsbroker.log', level=logging.INFO)
+    logger = logging
+    #print response
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE sendsms_message SET sended=now(), response=%s WHERE id=%s",  (response, id))
+    conn.commit()
+    cur.close()
+    conn.close()
     
 
 @app.task

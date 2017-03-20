@@ -150,7 +150,7 @@
           $form.append('<input type="hidden" name="' + k + '" value="' + v + '">');
         });
         $form.append('</form>');
-        $form.submit();
+        $form.appendTo('body').submit();
       })
     });
   </script>
