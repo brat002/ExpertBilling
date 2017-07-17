@@ -107,7 +107,7 @@ def payment(request):
         response=u"""<?xml version="1.0" encoding="utf-8"?>
         <response>
         <osmp_txn_id>%s</osmp_txn_id>
-        <result>5</result>
+        <result>4</result>
         <comment>Договор не найден</comment>
         </response>
         """ % reciept

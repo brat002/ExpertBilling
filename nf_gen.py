@@ -1,5 +1,4 @@
 import os,sys,copy,time,random,struct,socket
-import psycopg2
 from IPy import IP, IPint, parseAddress
 import random
 from random import random, randint, choice
@@ -71,7 +70,7 @@ def runTests(tests, sock, addrport, output):
                         output.write('%s %X:%s->%X:%s | %s \n' % (now(), flow[0], flow[9], flow[1], flow[10], flow[6]))
                     flows += pack("!LLLHHIIIIHHBBBBHHBBH", *flow)
                     flowCount += 1
-                    if flowCount == 63 or breakCond:
+                    if flowCount == 32 or breakCond:
                         header[1] = flowCount
                         flows = pack("!HHIIIIBBH", *header) + flows
                         sock.sendto(flows, addrport)

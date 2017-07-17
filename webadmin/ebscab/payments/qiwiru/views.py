@@ -35,3 +35,27 @@ class PayView(View):
 
 
 
+    def get(self, request, *args, **kwargs):
+
+        status = PaymentProcessor.error(0, 300)
+        try:
+            ip=request.META['REMOTE_ADDR']
+            if settings.DEBUG==False:
+                status = PaymentProcessor.check_allowed_ip(ip, request)
+                if status!='OK':
+                    return HttpResponse(status)
+            request_type = request.GET.get('command')
+            if request_type=='check':
+                status = PaymentProcessor.check(request)
+            elif request_type=='pay':
+                status = PaymentProcessor.pay(request)
+            else:
+                status = PaymentProcessor.error(0, 300)
+
+
+        except KeyError, e:
+            print e
+            logger.warning('Got malformed GET request: %s' % str(request.POST))
+            return HttpResponse(status)
+
+        return HttpResponse(status)
