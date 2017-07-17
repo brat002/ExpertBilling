@@ -7,7 +7,7 @@ def parse(nas_type, remote_id, circuit_id):
         port = struct.unpack("!B",circuit_id[-1])[0]
         
         length=struct.unpack("!B",remote_id[1])[0]
-        identify=remote_id[2:].encode('hex')
+        identify=remote_id[0:].encode('hex')
         
     return identify, vlan, module, port
         

@@ -94,7 +94,7 @@ def get_accesstype(packetobject, cache):
             if nas_type in ('accel-ipoe', 'lISG', 'accel-ipoe-l3'):
                 return nas_type
 
-        calling_station = packetobject.get('Calling-Station-Id', [''])[0]
+        calling_station = packetobject.get('Calling-Station-Id', ['1:'])[0]
         logger.info('Nas port type: %s Service Type %s Calling-Station-Id %s', (nas_port_type, packetobject.get('Service-Type', [''])[0], calling_station ))
         if nas_port_type == 'Virtual' and packetobject.get('Service-Type', [''])[0]=='Framed-User':
             return 'PPTP'
@@ -254,8 +254,8 @@ class SQLLoggerThread(Thread):
 
         # 'loggerthread initialized'
     
-    def add_message(self, account=None, subaccount=None, nas=None, type='', service='', cause='', datetime=None):
-        self.sqllog_deque.append((account, subaccount, nas, type, service, cause, datetime))
+    def add_message(self, account=None, subaccount=None, nas=None, type='', service='', cause='', datetime=None, userip='', usermac='', userport='', relaymac='', relayid='', username=''):
+        self.sqllog_deque.append((account, subaccount, nas, type, service, cause, datetime, userip, usermac, userport, relaymac, relayid, username))
         #print 'message added'
 
     def run(self):
@@ -275,8 +275,8 @@ class SQLLoggerThread(Thread):
                 d = []
                 while len(self.sqllog_deque) > 0:
                     d.append(self.sqllog_deque.pop())
-                self.cursor.executemany("""INSERT INTO radius_authlog(account_id, subaccount_id, nas_id, type, service, cause, datetime)
-                                    VALUES(%s,%s,%s,%s,%s,%s,%s)""", d)
+                self.cursor.executemany("""INSERT INTO radius_authlog(account_id, subaccount_id, nas_id, type, service, cause, datetime, userip, usermac, userport, relaymac, relayid, username)
+                                    VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""", d)
                     #print account, subaccount, nas, type, service, cause, datetime
             #self.dbconn.commit()
             a=time.time()
@@ -1231,7 +1231,7 @@ class HandleSDHCP(HandleSAuth):
                 self.add_values(acc.tarif_id, nas.id, acstatus)
                 self.create_speed(nas, subacc.id, acc.tarif_id, acc.id, speed=subacc.ipn_speed)
             if vars.SQLLOG_SUCCESS:
-                sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="%s_AUTH_OK" % self.access_type, service=self.access_type, cause=u'Авторизация прошла успешно.', datetime=self.datetime)
+                sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="%s_AUTH_OK" % self.access_type, service=self.access_type, cause=u'Авторизация прошла успешно. Адрес выдан', datetime=self.datetime, userip=subacc.ipn_ip_address, usermac=mac, userport=subacc.switch_port, relaymac=switch.remote_id, relayid=subacc.switch_id, username=subacc.username)
             self.reply()
         else:
             sqlloggerthread.add_message(nas=nas_id, account=acc.id, subaccount=subacc.id, type="%s_AUTH_BAD_TIME" % self.access_type, service=self.access_type, cause=u'Тариф пользователя неактивен(%s) или время доступа выходит за рамки разрешённого %s' % (acc.tariff_active==False, allow_dial==False), datetime=self.datetime)

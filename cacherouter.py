@@ -663,7 +663,7 @@ class Cache(object):
         if obj: return obj
         
         try:
-            self.cursor.execute("""SELECT id, identify, option82, option82_auth_type, option82_template, remote_id FROM billservice_switch WHERE identify =%s;""", (identify, ))
+            self.cursor.execute("""SELECT id, identify, option82, option82_auth_type, option82_template, remote_id FROM billservice_switch WHERE remote_id =%s;""", (identify, ))
             res = self.cursor.fetchone()
             obj = self.memcached_connection.set(cache_key, res, COMMON_CACHE_TIMEOUT)
         except Exception as ex:

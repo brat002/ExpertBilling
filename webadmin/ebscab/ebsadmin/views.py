@@ -275,6 +275,10 @@ def get_mac_for_ip(request):
 #    return {"records": res, 'status':True, 'totalCount':len(res)}
 #===============================================================================
 
+
+
+
+
 @ajax_request
 @systemuser_required
 def document(request):
@@ -5170,9 +5174,11 @@ def documentrender(request):
         print template.type.id
         data=''
         if template.type.id==1:
-    
+            from pprint import pprint
             account = Account.objects.get(id=form.cleaned_data.get('account'))
-            c = Context({'account': account})
+            AccountLastHardware = AccountHardware.objects.filter(account=account).order_by('id').reverse() # Вычисляем последний айдишник в списке привязанных роутеров
+            CurrentHardware = Hardware.objects.get(id = AccountLastHardware[0].hardware_id) # Получаем поля для последнего роутера
+            c = Context({'account': account, 'hardware': CurrentHardware})
         if template.type.id==5:
             tr = Transaction.objects.get(id=form.cleaned_data.get('transaction'))
             c = Context({'transaction': tr})
