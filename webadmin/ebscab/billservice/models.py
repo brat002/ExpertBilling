@@ -1761,11 +1761,15 @@ class RadiusAttrs(models.Model):
     nas = models.ForeignKey(Nas, blank=True, null=True)
     vendor = models.IntegerField(blank=True, default=0)
     attrid = models.IntegerField()
-    value = models.CharField(max_length=255)
+    
 
     account_status = models.IntegerField(choices=((0, _(u'Всегда')), (1, _(u'Активен')), (2, _(u'Не активен')),),
                                          default=0, verbose_name=_(u'Статус аккаунта'),
                                          help_text=_(u'Добавлять атрибут в Access Accept, если срабатывает условие'))
+    radius_attribute = models.CharField(max_length=255, verbose_name=_(u'Radius attribute name'),
+                                        required = True, help_text=_(u"Radius attribute name like Service-Type"))
+    value = models.CharField(max_length=255, verbose_name = _(u'Value'), help_text = _(u"Here you can use variables like $account_id, $tariff_id, ..."))
+
 
     def get_remove_url(self):
         return "%s?id=%s" % (reverse('radiusattr_delete'), self.id)
