@@ -6,15 +6,15 @@
 	padding: 0.25em 0;
 }
 form .aligned .results_on_deck {
-    padding-left: 38px;
-    margin-left: 7em;
+	padding-left: 38px;
+	margin-left: 7em;
 }
 .results_on_deck > div {
 	margin-bottom: 0.5em;
 }
 .ui-autocomplete-loading {
 	background:  url('https://github.com/crucialfelix/django-ajax-selects/raw/master/ajax_select/static/images/loading-indicator.gif') no-repeat;
-    background-origin: content-box;
+	background-origin: content-box;
 	background-position: right;
 }
 ul.ui-autocomplete {
@@ -34,7 +34,7 @@ tldr: it just works. set max-width if you want it wider
 	position: absolute;
 }
 ul.ui-autocomplete li {
-    list-style-type: none;
+	list-style-type: none;
 	padding: 0;
 }
 ul.ui-autocomplete li a {
