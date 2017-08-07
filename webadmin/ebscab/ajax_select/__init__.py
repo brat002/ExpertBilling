@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """JQuery-Ajax Autocomplete fields for Django Forms"""
 
 

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.contrib.admin import site
 from django.db import models
 from django.http import HttpResponse
