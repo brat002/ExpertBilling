@@ -15,7 +15,9 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.http import HttpResponse
+
 from django_tables2.tables import Table
+
 
 DEFAULT_PARAM_PREFIX = 'report'
 REQUEST_VARIABLE = 'table_to_report'

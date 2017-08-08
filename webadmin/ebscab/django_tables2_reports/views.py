@@ -34,10 +34,13 @@ class ReportTableView(SingleTableView):
         paginate = self.get_table_pagination()
         if paginate is not None:
             options['paginate'] = paginate
-        self.table_to_report = RequestConfigReport(self.request, **options).configure(table)
+        self.table_to_report = RequestConfigReport(
+            self.request, **options).configure(table)
         return table
 
     def render_to_response(self, context, **response_kwargs):
         if self.table_to_report:
-            return create_report_http_response(self.table_to_report, self.request)
-        return super(ReportTableView, self).render_to_response(context, **response_kwargs)
+            return create_report_http_response(
+                self.table_to_report, self.request)
+        return super(ReportTableView, self).render_to_response(
+            context, **response_kwargs)
