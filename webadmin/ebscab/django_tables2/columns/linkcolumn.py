@@ -1,11 +1,15 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import, unicode_literals
+
+import warnings
+
 from django.core.urlresolvers import reverse
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
-import warnings
-from .base import Column, library
 from django_tables2.utils import A, AttributeDict
+
+from .base import Column, library
 
 
 class BaseLinkColumn(Column):
@@ -15,6 +19,7 @@ class BaseLinkColumn(Column):
     Adds support for an ``a`` key in *attrs** which is added to the rendered
     ``<a href="...">`` tag.
     """
+
     def __init__(self, attrs=None, *args, **kwargs):
         valid = set(("a", "th", "td", "cell"))
         if attrs and not set(attrs) & set(valid):
@@ -36,7 +41,9 @@ class BaseLinkColumn(Column):
         """
         attrs = AttributeDict(attrs if attrs is not None else
                               self.attrs.get('a', {}))
-        attrs['href'] = "%s%s" % (uri, '' if not get_params_dict else '?'+"&".join( "%s=%s"%item for item in get_params_dict.items() ))
+        attrs['href'] = "%s%s" % (
+            uri, '' if not get_params_dict else '?' +
+            "&".join("%s=%s" % item for item in get_params_dict.items()))
         html = '<a {attrs}>{text}</a>'.format(
             attrs=attrs.as_html(),
             text=escape(text)
@@ -94,6 +101,7 @@ class LinkColumn(BaseLinkColumn):
 
     - *a* -- ``<a>`` elements in ``<td>``.
     """
+
     def __init__(self, viewname, urlconf=None, args=None, kwargs=None,
                  current_app=None, attrs=None, get_params={}, **extra):
         super(LinkColumn, self).__init__(attrs, **extra)
@@ -110,15 +118,15 @@ class LinkColumn(BaseLinkColumn):
         params = {}
         if self.viewname:
             params[b'viewname'] = (self.viewname.resolve(record)
-                                 if isinstance(self.viewname, A)
-                                 else self.viewname)
+                                   if isinstance(self.viewname, A)
+                                   else self.viewname)
         if self.urlconf:
             params[b'urlconf'] = (self.urlconf.resolve(record)
-                                 if isinstance(self.urlconf, A)
-                                 else self.urlconf)
+                                  if isinstance(self.urlconf, A)
+                                  else self.urlconf)
         if self.args:
             params[b'args'] = [a.resolve(record) if isinstance(a, A) else a
-                              for a in self.args]
+                               for a in self.args]
         if self.kwargs:
             params[b'kwargs'] = {}
             for key, val in self.kwargs.items():
@@ -132,10 +140,11 @@ class LinkColumn(BaseLinkColumn):
                 # If we're dealing with an Accessor (A), resolve it, otherwise
                 # use the value verbatim.
                 get_params_dict[key] = (val.resolve(record)
-                                          if isinstance(val, A) else val)
-                
+                                        if isinstance(val, A) else val)
+
         if self.current_app:
             params[b'current_app'] = (self.current_app.resolve(record)
-                                     if isinstance(self.current_app, A)
-                                     else self.current_app)
-        return self.render_link(reverse(**params), text=value, get_params_dict=get_params_dict)
+                                      if isinstance(self.current_app, A)
+                                      else self.current_app)
+        return self.render_link(reverse(**params), text=value,
+                                get_params_dict=get_params_dict)

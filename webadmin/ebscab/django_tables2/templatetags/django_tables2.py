@@ -1,19 +1,22 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import, unicode_literals
+
+import re
+import tokenize
+
+import django_tables2 as tables
+import six
 from django import template
 from django.core.exceptions import ImproperlyConfigured
 from django.template import TemplateSyntaxError, Variable, Node
-from django.template.loader import get_template, select_template
 from django.template.defaultfilters import stringfilter, title as old_title
+from django.template.loader import get_template, select_template
 from django.utils.datastructures import SortedDict
-from django.utils.http import urlencode
 from django.utils.html import escape
+from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
-import django_tables2 as tables
 from django_tables2.config import RequestConfig
-import re
-import six
-import tokenize
 
 
 register = template.Library()
@@ -47,6 +50,7 @@ def token_kwargs(bits, parser):
 
 
 class SetUrlParamNode(Node):
+
     def __init__(self, changes):
         super(SetUrlParamNode, self).__init__()
         self.changes = changes
@@ -89,7 +93,8 @@ def set_url_param(parser, token):
             keys = list(tokenize.generate_tokens(key_line_iter))
             if keys[0][0] == tokenize.NAME:
                 # workaround bug #5270
-                value = Variable(value) if value == '""' else parser.compile_filter(value)
+                value = Variable(
+                    value) if value == '""' else parser.compile_filter(value)
                 qschanges[str(key)] = value
             else:
                 raise ValueError
@@ -100,6 +105,7 @@ def set_url_param(parser, token):
 
 
 class QuerystringNode(Node):
+
     def __init__(self, updates, removals):
         super(QuerystringNode, self).__init__()
         self.updates = updates
@@ -154,6 +160,7 @@ class RenderTableNode(Node):
     :param template: Name[s] of template to render
     :type  template: unicode or list
     """
+
     def __init__(self, table, template=None):
         super(RenderTableNode, self).__init__()
         self.table = table
@@ -170,6 +177,7 @@ class RenderTableNode(Node):
             # We've been given a queryset, create a table using its model and
             # render that.
             class OnTheFlyTable(tables.Table):
+
                 class Meta:
                     model = queryset.model
                     attrs = {"class": "paleblue"}
@@ -207,6 +215,7 @@ class RenderTableNode(Node):
         finally:
             del table.context
             context.pop()
+
 
 @register.tag
 def render_table(parser, token):
@@ -248,6 +257,7 @@ def render_table(parser, token):
 
 
 class NoSpacelessNode(Node):
+
     def __init__(self, nodelist):
         self.nodelist = nodelist
         super(NoSpacelessNode, self).__init__()
@@ -255,6 +265,7 @@ class NoSpacelessNode(Node):
     def render(self, context):
         return mark_safe(re.sub(r'>\s+<', '>&#32;<',
                                 self.nodelist.render(context)))
+
 
 @register.tag
 def nospaceless(parser, token):

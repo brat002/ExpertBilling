@@ -1,6 +1,9 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import, unicode_literals
+
 from django.db import models
+
 from .base import library
 from .templatecolumn import TemplateColumn
 
@@ -16,11 +19,13 @@ class DateTimeColumn(TemplateColumn):
                    ``SHORT_DATETIME_FORMAT``, else ``DATETIME_FORMAT``
     :type   short: `bool`
     """
+
     def __init__(self, format=None, short=True, *args, **kwargs):  # pylint: disable=W0622
         if format is None:
             format = 'SHORT_DATETIME_FORMAT' if short else 'DATETIME_FORMAT'
         template = '{{ value|date:"%s"|default:default }}' % format
-        super(DateTimeColumn, self).__init__(template_code=template, *args, **kwargs)
+        super(DateTimeColumn, self).__init__(
+            template_code=template, *args, **kwargs)
 
     @classmethod
     def from_field(cls, field):

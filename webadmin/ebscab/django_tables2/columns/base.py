@@ -1,19 +1,23 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import, unicode_literals
+
+import warnings
+from itertools import islice
+
+import six
 from django.db.models.fields import FieldDoesNotExist
 from django.utils.datastructures import SortedDict
 from django.utils.safestring import SafeData
 from django_tables2.templatetags.django_tables2 import title
 from django_tables2.utils import A, AttributeDict, OrderBy, OrderByTuple
-from itertools import islice
-import six
-import warnings
 
 
 class Library(object):
     """
     A collection of columns.
     """
+
     def __init__(self):
         self.columns = []
 
@@ -154,7 +158,8 @@ class Column(object):  # pylint: disable=R0902
             raise TypeError('accessor must be a string or callable, not %s' %
                             type(accessor).__name__)
         if callable(accessor) and default is not None:
-            raise TypeError('accessor must be string when default is used, not callable')
+            raise TypeError(
+                'accessor must be string when default is used, not callable')
         self.accessor = A(accessor) if accessor else None
         self._default = default
         self.verbose_name = verbose_name
@@ -168,8 +173,10 @@ class Column(object):  # pylint: disable=R0902
         self.orderable = orderable
         self.attrs = attrs or {}
         # massage order_by into an OrderByTuple or None
-        order_by = (order_by, ) if isinstance(order_by, six.string_types) else order_by
-        self.order_by = OrderByTuple(order_by) if order_by is not None else None
+        order_by = (order_by, ) if isinstance(
+            order_by, six.string_types) else order_by
+        self.order_by = OrderByTuple(
+            order_by) if order_by is not None else None
         if empty_values is not None:
             self.empty_values = empty_values
 
@@ -280,6 +287,7 @@ class BoundColumn(object):
                                age = tables.Column()
 
     """
+
     def __init__(self, table, column, name):
         self.table = table
         self.column = column
@@ -310,17 +318,22 @@ class BoundColumn(object):
 
         # Find the relevant th attributes (fall back to cell if th isn't
         # explicitly specified).
-        attrs["td"] = td = AttributeDict(attrs.get('td', attrs.get('cell', {})))
-        attrs["th"] = th = AttributeDict(attrs.get("th", attrs.get("cell", {})))
+        attrs["td"] = td = AttributeDict(
+            attrs.get('td', attrs.get('cell', {})))
+        attrs["th"] = th = AttributeDict(
+            attrs.get("th", attrs.get("cell", {})))
         # make set of existing classes.
-        th_class = set((c for c in th.get("class", "").split(" ") if c))  # pylint: disable=C0103
-        td_class = set((c for c in td.get("class", "").split(" ") if c))  # pylint: disable=C0103
+        th_class = set((c for c in th.get("class", "").split(
+            " ") if c))  # pylint: disable=C0103
+        td_class = set((c for c in td.get("class", "").split(
+            " ") if c))  # pylint: disable=C0103
         # add classes for ordering
         if self.orderable:
             th_class.add("orderable")
             th_class.add("sortable")  # backwards compatible
         if self.is_ordered:
-            th_class.add("desc" if self.order_by_alias.is_descending else "asc")
+            th_class.add(
+                "desc" if self.order_by_alias.is_descending else "asc")
         # Always add the column name as a class
         th_class.add(self.name)
         td_class.add(self.name)
@@ -424,7 +437,8 @@ class BoundColumn(object):
             {% endif %}
 
         """
-        order_by = OrderBy((self.table.order_by or {}).get(self.name, self.name))
+        order_by = OrderBy(
+            (self.table.order_by or {}).get(self.name, self.name))
         order_by.next = order_by.opposite if self.is_ordered else order_by
         return order_by
 
@@ -526,6 +540,7 @@ class BoundColumns(object):
     :type  table: `.Table` object
     :param table: the table containing the columns
     """
+
     def __init__(self, table):
         self.table = table
         self.columns = SortedDict()

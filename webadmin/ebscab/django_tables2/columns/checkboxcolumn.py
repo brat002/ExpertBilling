@@ -1,8 +1,12 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import, unicode_literals
+
+import warnings
+
 from django.utils.safestring import mark_safe
 from django_tables2.utils import AttributeDict
-import warnings
+
 from .base import Column, library
 
 
@@ -39,6 +43,7 @@ class CheckBoxColumn(Column):
     - *th__input* -- Replaces *input* attrs in header cells.
     - *td__input* -- Replaces *input* attrs in body cells.
     """
+
     def __init__(self, attrs=None, **extra):
         # For backwards compatibility, passing in a normal dict effectively
         # should assign attributes to the `<input>` tag.

@@ -1,18 +1,30 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
 from __future__ import unicode_literals
+
+import copy
+import warnings
+
+import six
+from django.core.paginator import Paginator
+from django.db.models.fields import FieldDoesNotExist
+from django.template import RequestContext
+from django.template.loader import get_template
+from django.utils.datastructures import SortedDict
+
 from . import columns
 from .config import RequestConfig
 from .rows import BoundRows
-from .utils import (Accessor, AttributeDict, build_request, cached_property,
-                    OrderBy, OrderByTuple, segment, Sequence)
-import copy
-from django.core.paginator       import Paginator
-from django.db.models.fields     import FieldDoesNotExist
-from django.utils.datastructures import SortedDict
-from django.template             import RequestContext
-from django.template.loader      import get_template
-import six
-import warnings
+from .utils import (
+    Accessor,
+    AttributeDict,
+    build_request,
+    cached_property,
+    OrderBy,
+    OrderByTuple,
+    segment,
+    Sequence
+)
 
 
 QUERYSET_ACCESSOR_SEPARATOR = '__'
@@ -26,11 +38,12 @@ class TableData(object):
     :type   data: `~django.db.query.QuerySet` or `list` of `dict`
     :param table: `.Table` object
     """
+
     def __init__(self, data, table):
         self.table = table
         # data may be a QuerySet-like objects with count() and order_by()
         if (hasattr(data, 'count') and callable(data.count) and
-            hasattr(data, 'order_by') and callable(data.order_by)):
+                hasattr(data, 'order_by') and callable(data.order_by)):
             self.queryset = data
         # otherwise it must be convertable to a list
         else:
@@ -47,7 +60,7 @@ class TableData(object):
             # loading all results into memory. This allows, for example,
             # smart paginators that use len() to perform better.
             self._length = (self.queryset.count() if hasattr(self, 'queryset')
-                                                  else len(self.list))
+                            else len(self.list))
         return self._length
 
     @property
@@ -96,8 +109,10 @@ class TableData(object):
             else:
                 accessors += bound_column.order_by
         if hasattr(self, "queryset"):
-            translate = lambda accessor: accessor.replace(Accessor.SEPARATOR, QUERYSET_ACCESSOR_SEPARATOR)
-            self.queryset = self.queryset.order_by(*(translate(a) for a in accessors))
+            translate = lambda accessor: accessor.replace(
+                Accessor.SEPARATOR, QUERYSET_ACCESSOR_SEPARATOR)
+            self.queryset = self.queryset.order_by(
+                *(translate(a) for a in accessors))
         else:
             self.list.sort(key=OrderByTuple(accessors).key)
 
@@ -166,7 +181,8 @@ class DeclarativeColumnsMetaclass(type):
         parent_columns = []
         for base in bases[::-1]:
             if hasattr(base, "base_columns"):
-                parent_columns = list(base.base_columns.items()) + parent_columns
+                parent_columns = list(
+                    base.base_columns.items()) + parent_columns
         # Start with the parent columns
         attrs["base_columns"] = SortedDict(parent_columns)
         # Possibly add some generated columns based on a model
@@ -200,7 +216,8 @@ class DeclarativeColumnsMetaclass(type):
             opts.sequence.expand(attrs["base_columns"].keys())
             # Table's sequence defaults to sequence declared in Meta
             #attrs['_sequence'] = opts.sequence
-            attrs["base_columns"] = SortedDict(((x, attrs["base_columns"][x]) for x in opts.sequence))
+            attrs["base_columns"] = SortedDict(
+                ((x, attrs["base_columns"][x]) for x in opts.sequence))
 
         # set localize on columns
         for col_name in attrs["base_columns"].keys():
@@ -214,7 +231,8 @@ class DeclarativeColumnsMetaclass(type):
             if localize_column is not None:
                 attrs["base_columns"][col_name].localize = localize_column
 
-        return super(DeclarativeColumnsMetaclass, mcs).__new__(mcs, name, bases, attrs)
+        return super(DeclarativeColumnsMetaclass, mcs).__new__(
+            mcs, name, bases, attrs)
 
 
 class TableOptions(object):
@@ -227,6 +245,7 @@ class TableOptions(object):
     :type  options: `.Table.Meta` on a `.Table`
     """
     # pylint: disable=R0902
+
     def __init__(self, options=None):
         super(TableOptions, self).__init__()
         self.attrs = AttributeDict(getattr(options, "attrs", {}))
@@ -237,7 +256,8 @@ class TableOptions(object):
         order_by = getattr(options, "order_by", None)
         if isinstance(order_by, six.string_types):
             order_by = (order_by, )
-        self.order_by = OrderByTuple(order_by) if order_by is not None else None
+        self.order_by = OrderByTuple(
+            order_by) if order_by is not None else None
         self.order_by_field = getattr(options, "order_by_field", "sort")
         self.page_field = getattr(options, "page_field", "page")
         self.per_page = getattr(options, "per_page", 25)
@@ -247,9 +267,11 @@ class TableOptions(object):
         if hasattr(options, "sortable"):
             warnings.warn("`Table.Meta.sortable` is deprecated, use `orderable` instead",
                           DeprecationWarning)
-        self.orderable = self.sortable = getattr(options, "orderable", getattr(options, "sortable", True))
+        self.orderable = self.sortable = getattr(
+            options, "orderable", getattr(options, "sortable", True))
         self.model = getattr(options, "model", None)
-        self.template = getattr(options, "template", "django_tables2/table.html")
+        self.template = getattr(options, "template",
+                                "django_tables2/table.html")
         self.localize = getattr(options, "localize", ())
         self.unlocalize = getattr(options, "unlocalize", ())
 
@@ -463,7 +485,7 @@ class TableBase(object):
     @property
     def empty_text(self):
         return (self._empty_text if self._empty_text is not None
-                                 else self._meta.empty_text)
+                else self._meta.empty_text)
 
     @empty_text.setter
     def empty_text(self, value):
@@ -483,7 +505,8 @@ class TableBase(object):
         # collapse empty values to ()
         order_by = () if not value else value
         # accept string
-        order_by = order_by.split(',') if isinstance(order_by, six.string_types) else order_by
+        order_by = order_by.split(',') if isinstance(
+            order_by, six.string_types) else order_by
         valid = []
         # everything's been converted to a iterable, accept iterable!
         for alias in order_by:
@@ -577,7 +600,7 @@ class TableBase(object):
     @property
     def orderable(self):
         return (self._orderable if self._orderable is not None
-                                else self._meta.orderable)
+                else self._meta.orderable)
 
     @orderable.setter
     def orderable(self, value):
@@ -598,7 +621,7 @@ class TableBase(object):
     @property
     def template(self):
         return (self._template if self._template is not None
-                               else self._meta.template)
+                else self._meta.template)
 
     @template.setter
     def template(self, value):

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from .base import library, BoundColumn, BoundColumns, Column
 from .booleancolumn import BooleanColumn
 from .checkboxcolumn import CheckBoxColumn
@@ -7,5 +9,5 @@ from .emailcolumn import EmailColumn
 from .filecolumn import FileColumn
 from .linkcolumn import LinkColumn
 from .templatecolumn import TemplateColumn
-from .urlcolumn import URLColumn
 from .timecolumn import TimeColumn
+from .urlcolumn import URLColumn
