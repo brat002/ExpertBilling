@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 # website: https://github.com/bradjasper/django-jsonfield
 # git access: https://github.com/bradjasper/django-jsonfield.git
 # commit: c605674b02e4a1c79b20d685bc4688d846531671
@@ -25,23 +25,23 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import datetime
+from decimal import Decimal
 
-from django.db import models
+import ipaddr
 from django.core.serializers.json import DjangoJSONEncoder
-#from django.utils import simplejson as json
+from django.db import models
 try:
     import json
 except ImportError:
-   from django.utils import simplejson as json
-   
-from django.utils.translation import ugettext_lazy as _
-
+    from django.utils import simplejson as json
 from django.forms.fields import Field
 from django.forms.util import ValidationError as FormValidationError
-from decimal import Decimal
-import datetime, ipaddr
+from django.utils.translation import ugettext_lazy as _
+
 
 class JSONEncoder(DjangoJSONEncoder):
+
     def default(self, obj):
         if isinstance(obj, Decimal):
             return float(obj)
@@ -50,11 +50,13 @@ class JSONEncoder(DjangoJSONEncoder):
         if isinstance(obj, datetime.date):
             return obj.strftime('%Y-%m-%d')
         else:
-            if type(obj)==ipaddr.IPv4Network or  type(obj)==ipaddr.IPAddress:
+            if type(obj) == ipaddr.IPv4Network or type(obj) == ipaddr.IPAddress:
                 return str(obj)
             return DjangoJSONEncoder().default(obj)
-    
+
+
 class JSONFormField(Field):
+
     def clean(self, value):
 
         if not value and not self.required:
@@ -89,7 +91,7 @@ class JSONFieldBase(object):
             except ValueError:
                 #raise ValueError("%s field got non-valid JSON" % self.name)
                 pass
-        
+
         return value
 
     def get_db_prep_value(self, value, connection, prepared=False):
@@ -131,6 +133,7 @@ class JSONCharField(JSONFieldBase, models.CharField):
 
 try:
     from south.modelsinspector import add_introspection_rules
-    add_introspection_rules([], ["^dynamicmodel\.fields\.(JSONField|JSONCharField)"])
+    add_introspection_rules(
+        [], ["^dynamicmodel\.fields\.(JSONField|JSONCharField)"])
 except ImportError:
     pass

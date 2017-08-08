@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
 from django.contrib import admin
-from dynamicmodel.models import DynamicSchemaField, DynamicSchema, DynamicModel
 from django.contrib.contenttypes.models import ContentType
+
+from dynamicmodel.models import DynamicSchemaField, DynamicSchema, DynamicModel
 
 
 class DynamicSchemaFieldInline(admin.TabularInline):
@@ -16,9 +19,10 @@ class DynamicSchemaAdmin(admin.ModelAdmin):
 
     def render_change_form(self, request, context, *args, **kwargs):
 
-        dynamic_schema_content_type_ids = [el.id for el in \
-            ContentType.objects.all()
-            if issubclass(el.model_class(), DynamicModel)]
+        dynamic_schema_content_type_ids = [
+            el.id for el in ContentType.objects.all()
+            if issubclass(el.model_class(), DynamicModel)
+        ]
 
         context['adminform'].form.fields['model'].queryset = \
             ContentType.objects.filter(id__in=dynamic_schema_content_type_ids)
