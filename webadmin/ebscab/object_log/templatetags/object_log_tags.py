@@ -1,9 +1,21 @@
+# -*- coding: utf-8 -*-
+
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.template import Library, Node, NodeList, Variable, TemplateSyntaxError
+from django.template import (
+    Library,
+    Node,
+    NodeList,
+    TemplateSyntaxError,
+    Variable
+)
 from django.utils.safestring import SafeUnicode
 
+
+LINK_FORMAT = '<a href="%s/object/%%s/%%s/">' % settings.SITE_ROOT
+
 register = Library()
+
 
 @register.filter()
 def render_context(log_item, context):
@@ -44,15 +56,15 @@ def contenttypelink(parser, token):
     """
     bits = token.contents.split()
     if len(bits) != 3:
-        raise TemplateSyntaxError, "'content_type_link' tag takes two arguments: a content type id and pk"
-    
+        raise TemplateSyntaxError, ("'content_type_link' tag takes two "
+                                    "arguments: a content type id and pk")
+
     inner_nodelist = parser.parse(('endcontenttypelink',))
     parser.delete_first_token()
 
     return ContentTypeLinkNode(bits[1], bits[2], inner_nodelist)
 
 
-LINK_FORMAT = '<a href="%s/object/%%s/%%s/">' % settings.SITE_ROOT
 class ContentTypeLinkNode(Node):
 
     def __init__(self, content_type_id, pk, inner_nodelist):
