@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Jutda Helpdesk - A Django powered ticket tracker for small enterprise.
 
@@ -6,18 +8,27 @@ Jutda Helpdesk - A Django powered ticket tracker for small enterprise.
 lib.py - Common functions (eg multipart e-mail)
 """
 
-chart_colours = ('80C65A', '990066', 'FF9900', '3399CC', 'BBCCED', '3399CC', 'FFCC33')
+import os
 
-try:
-    from base64 import urlsafe_b64encode as b64encode
-except ImportError:
-    from base64 import encodestring as b64encode
-try:
-    from base64 import urlsafe_b64decode as b64decode
-except ImportError:
-    from base64 import decodestring as b64decode
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
+from django.template import loader, Context
+from django.contrib.sites.models import Site
 
-def send_templated_mail(template_name, email_context, recipients, sender=None, bcc=None, fail_silently=False, files=None):
+from helpdesk.models import EmailTemplate
+try:
+    from helpdesk.akismet import Akismet
+    AKISMET_EXIST = True
+except:
+    AKISMET_EXIST = False
+
+
+chart_colours = ('80C65A', '990066', 'FF9900', '3399CC', 'BBCCED', '3399CC',
+                 'FFCC33')
+
+
+def send_templated_mail(template_name, email_context, recipients, sender=None,
+                        bcc=None, fail_silently=False, files=None):
     """
     send_templated_mail() is a warpper around Django's e-mail routines that
     allows us to easily send multipart (text/plain & text/html) e-mails using
@@ -44,12 +55,6 @@ def send_templated_mail(template_name, email_context, recipients, sender=None, b
         eg ('/tmp/file1.txt', '/tmp/image.png')
 
     """
-    from django.conf import settings
-    from django.core.mail import EmailMultiAlternatives
-    from django.template import loader, Context
-
-    from helpdesk.models import EmailTemplate
-    import os
 
     context = Context(email_context)
     locale = getattr(context['queue'], 'locale', '')
@@ -64,7 +69,8 @@ def send_templated_mail(template_name, email_context, recipients, sender=None, b
     t = None
     if template_localized:
         try:
-            t = EmailTemplate.objects.get(template_name__iexact=template_localized)
+            t = EmailTemplate.objects.get(
+                template_name__iexact=template_localized)
         except EmailTemplate.DoesNotExist:
             pass
 
@@ -72,7 +78,7 @@ def send_templated_mail(template_name, email_context, recipients, sender=None, b
         try:
             t = EmailTemplate.objects.get(template_name__iexact=template_name)
         except EmailTemplate.DoesNotExist:
-            return # just ignore if template doesn't exist
+            return  # just ignore if template doesn't exist
 
     if not sender:
         sender = settings.DEFAULT_FROM_EMAIL
@@ -81,31 +87,35 @@ def send_templated_mail(template_name, email_context, recipients, sender=None, b
 
     text_part = loader.get_template_from_string(
         "%s{%% include '%s' %%}" % (t.plain_text, footer_file)
-        ).render(context)
+    ).render(context)
 
-    email_html_base_file = os.path.join('helpdesk', locale, 'email_html_base.html')
+    email_html_base_file = os.path.join(
+        'helpdesk', locale, 'email_html_base.html')
 
     html_part = loader.get_template_from_string(
-        "{%% extends '%s' %%}{%% block title %%}%s{%% endblock %%}{%% block content %%}%s{%% endblock %%}" % (email_html_base_file, t.heading, t.html)
-        ).render(context)
+        ("{%% extends '%s' %%}{%% block title %%}%s{%% endblock %%}"
+         "{%% block content %%}%s{%% endblock %%}") % (email_html_base_file,
+                                                       t.heading,
+                                                       t.html)
+    ).render(context)
 
     subject_part = loader.get_template_from_string(
         "{{ ticket.ticket }} {{ ticket.title|safe }} %s" % t.subject
-        ).render(context)
+    ).render(context)
 
     if type(recipients) != list:
-        recipients = [recipients,]
+        recipients = [recipients, ]
 
-    msg = EmailMultiAlternatives(   subject_part,
-                                    text_part,
-                                    sender,
-                                    recipients,
-                                    bcc=bcc)
+    msg = EmailMultiAlternatives(subject_part,
+                                 text_part,
+                                 sender,
+                                 recipients,
+                                 bcc=bcc)
     msg.attach_alternative(html_part, "text/html")
 
     if files:
         if type(files) != list:
-            files = [files,]
+            files = [files, ]
 
         for file in files:
             msg.attach_file(file)
@@ -124,7 +134,7 @@ def normalise_data(data, to=100):
     if max_value > to:
         new_data = []
         for d in data:
-            new_data.append(int(d/float(max_value)*to))
+            new_data.append(int(d / float(max_value) * to))
         data = new_data
     return data
 
@@ -143,13 +153,15 @@ def line_chart(data):
             if field > max:
                 max = field
 
-
     # Set width to '65px * number of months + 100 for headings.'.
-    chart_url = 'http://chart.apis.google.com/chart?cht=lc&chs=%sx150&chd=t:' % (min(len(column_headings)*65+100, 1000))
+    chart_url = ('http://chart.apis.google.com/chart'
+                 '?cht=lc&chs=%sx150&chd=t:') % (min(len(column_headings) *
+                                                     65 + 100, 1000))
     first_row = True
     row_headings = []
     for row in data[1:]:
-        # Add data to URL, normalised to the maximum for all lines on this chart
+        # Add data to URL, normalised to the maximum for all lines on this
+        # chart
         norm = normalise_data(row[1:], max)
         if not first_row:
             chart_url += '|'
@@ -158,18 +170,20 @@ def line_chart(data):
         first_row = False
 
     chart_url += '&chds='
-    rows = len(data)-1
+    rows = len(data) - 1
     first = True
     for row in range(rows):
-        # Set maximum data ranges to '0:x' where 'x' is the maximum number in use.
+        # Set maximum data ranges to '0:x' where 'x' is the maximum number in
+        # use.
         if not first:
             chart_url += ','
         chart_url += '0,%s' % max
         first = False
-    chart_url += '&chdl=%s' % '|'.join(row_headings) # Display legend/labels
-    chart_url += '&chco=%s' % ','.join(chart_colours) # Default colour set
-    chart_url += '&chxt=x,y' # Turn on axis labels
-    chart_url += '&chxl=0:|%s|1:|0|%s' % ('|'.join(column_headings), max) # Axis Label Text
+    chart_url += '&chdl=%s' % '|'.join(row_headings)  # Display legend/labels
+    chart_url += '&chco=%s' % ','.join(chart_colours)  # Default colour set
+    chart_url += '&chxt=x,y'  # Turn on axis labels
+    # Axis Label Text
+    chart_url += '&chxl=0:|%s|1:|0|%s' % ('|'.join(column_headings), max)
 
     return chart_url
 
@@ -190,11 +204,13 @@ def bar_chart(data):
 
     BAR_WIDTH = 920
     # Set width to '220px * number of months'.
-    chart_url = 'http://chart.apis.google.com/chart?cht=bvg&chs=%sx150&chd=t:' % BAR_WIDTH
+    chart_url = ('http://chart.apis.google.com/chart'
+                 '?cht=bvg&chs=%sx150&chd=t:') % BAR_WIDTH
     first_row = True
     row_headings = []
     for row in data[1:]:
-        # Add data to URL, normalised to the maximum for all lines on this chart
+        # Add data to URL, normalised to the maximum for all lines on this
+        # chart
         norm = normalise_data(row[1:], max)
         if not first_row:
             chart_url += '|'
@@ -203,25 +219,31 @@ def bar_chart(data):
         first_row = False
 
     chart_url += '&chds=0,%s' % max
-    chart_url += '&chdl=%s' % '|'.join(row_headings) # Display legend/labels
-    chart_url += '&chco=%s' % ','.join(chart_colours) # Default colour set
-    chart_url += '&chxt=x,y' # Turn on axis labels
-    chart_url += '&chxl=0:|%s|1:|0|%s' % ('|'.join(column_headings), max) # Axis Label Text
+    chart_url += '&chdl=%s' % '|'.join(row_headings)  # Display legend/labels
+    chart_url += '&chco=%s' % ','.join(chart_colours)  # Default colour set
+    chart_url += '&chxt=x,y'  # Turn on axis labels
+    # Axis Label Text
+    chart_url += '&chxl=0:|%s|1:|0|%s' % ('|'.join(column_headings), max)
 
     # calculate bar width and space between
-    col_space = 2 # 2px
-    group_space = 10 # 4px
-    legend_width = 200 # 100px
+    col_space = 2  # 2px
+    group_space = 10  # 4px
+    legend_width = 200  # 100px
 
     if len(data) > 1:
-        col_width = (((BAR_WIDTH - legend_width) / len(data[1:])) - group_space) / len(data[1][1:]) - col_space
+        col_width = (((BAR_WIDTH - legend_width) /
+                      len(data[1:])) - group_space) / \
+            len(data[1][1:]) - col_space
     else:
-        col_width = 10 # why 10? I don't know... Why not 10?..
-    chart_url += '&chbh=%(bar_width_or_scale)s,%(space_between_bars)s,%(space_between_groups)s' %\
-                  {'bar_width_or_scale':col_width,
-                   'space_between_bars':col_space,
-                   'space_between_groups':group_space
-                   }
+        col_width = 10  # why 10? I don't know... Why not 10?..
+    chart_url_params = {
+        'bar_width_or_scale': col_width,
+        'space_between_bars': col_space,
+        'space_between_groups': group_space
+    }
+    chart_url += ('&chbh=%(bar_width_or_scale)s,%(space_between_bars)s,'
+                  '%(space_between_groups)s') % chart_url_params
+
     return chart_url
 
 
@@ -294,22 +316,21 @@ def safe_template_context(ticket):
     context = {
         'queue': {},
         'ticket': {},
-        }
+    }
     queue = ticket.queue
 
-    for field in (  'title', 'slug', 'email_address', 'from_address'):
+    for field in ('title', 'slug', 'email_address', 'from_address'):
         attr = getattr(queue, field, None)
         if callable(attr):
             context['queue'][field] = attr()
         else:
             context['queue'][field] = attr
 
-    for field in (  'title', 'created', 'modified', 'submitter_email',
-                    'status', 'get_status_display', 'on_hold', 'description',
-                    'resolution', 'priority', 'get_priority_display',
-                    'last_escalation', 'ticket', 'ticket_for_url',
-                    'get_status', 'ticket_url', 'staff_url', '_get_assigned_to'
-                 ):
+    for field in ('title', 'created', 'modified', 'submitter_email',
+                  'status', 'get_status_display', 'on_hold', 'description',
+                  'resolution', 'priority', 'get_priority_display',
+                  'last_escalation', 'ticket', 'ticket_for_url',
+                  'get_status', 'ticket_url', 'staff_url', '_get_assigned_to'):
         attr = getattr(ticket, field, None)
         if callable(attr):
             context['ticket'][field] = '%s' % attr()
@@ -328,11 +349,8 @@ def text_is_spam(text, request):
     # This will return 'True' is the given text is deemed to be spam, or
     # False if it is not spam. If it cannot be checked for some reason, we
     # assume it isn't spam.
-    from django.contrib.sites.models import Site
-    from django.conf import settings
-    try:
-        from helpdesk.akismet import Akismet
-    except:
+
+    if not AKISMET_EXIST:
         return False
 
     ak = Akismet(
@@ -341,10 +359,10 @@ def text_is_spam(text, request):
     )
 
     if hasattr(settings, 'TYPEPAD_ANTISPAM_API_KEY'):
-        ak.setAPIKey(key = settings.TYPEPAD_ANTISPAM_API_KEY)
+        ak.setAPIKey(key=settings.TYPEPAD_ANTISPAM_API_KEY)
         ak.baseurl = 'api.antispam.typepad.com/1.1/'
     elif hasattr(settings, 'AKISMET_API_KEY'):
-        ak.setAPIKey(key = settings.AKISMET_API_KEY)
+        ak.setAPIKey(key=settings.AKISMET_API_KEY)
     else:
         return False
 
