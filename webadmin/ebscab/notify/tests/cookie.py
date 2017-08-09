@@ -1,5 +1,7 @@
-from notify.tests.base import BaseTest
+# -*- coding: utf-8 -*-
+
 from notify.storage.cookie import CookieStorage
+from notify.tests.base import BaseTest
 
 
 class CookieTest(BaseTest):

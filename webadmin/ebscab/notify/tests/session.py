@@ -1,5 +1,7 @@
-from notify.tests.base import BaseTest
+# -*- coding: utf-8 -*-
+
 from notify.storage.session import SessionStorage
+from notify.tests.base import BaseTest
 
 
 class SessionTest(BaseTest):

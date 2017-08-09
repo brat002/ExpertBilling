@@ -1,10 +1,14 @@
+# -*- coding: utf-8 -*-
+
 '''
 Cookie based temporary notification storage.
 '''
 
 import pickle
 from hashlib import sha1
+
 from django.conf import settings
+
 from notify.storage.base import BaseStorage
 
 

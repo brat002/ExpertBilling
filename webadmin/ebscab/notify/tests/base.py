@@ -1,5 +1,9 @@
+# -*- coding: utf-8 -*-
+
 import unittest
+
 from django import http
+
 from notify.storage import get_storage, Storage
 from notify.storage.base import Notification
 
@@ -9,7 +13,7 @@ class BaseTest(unittest.TestCase):
 
     def get_request(self):
         return http.HttpRequest()
-    
+
     def get_response(self):
         return http.HttpResponse()
 
@@ -47,7 +51,7 @@ class BaseTest(unittest.TestCase):
     def test_existing_add_read_update(self):
         storage = self.get_existing_storage()
         response = self.get_response()
-        
+
         storage.add('Test message 3')
         data = list(storage)   # Simulates a read
         storage.update(response)
@@ -58,11 +62,11 @@ class BaseTest(unittest.TestCase):
     def test_existing_read_add_update(self):
         storage = self.get_existing_storage()
         response = self.get_response()
-        
+
         data = list(storage)   # Simulates a read
-        storage.add('Test message 3')        
+        storage.add('Test message 3')
         storage.update(response)
-        
+
         storing = self.check_store(storage, response)
         self.assertEqual(storing, 1)
 
@@ -83,7 +87,7 @@ class BaseTest(unittest.TestCase):
 
     def test_existing_read(self):
         """
-        Test that reading the existing 
+        Test that reading the existing
         """
         storage = self.get_existing_storage()
         self.assertFalse(storage.used)

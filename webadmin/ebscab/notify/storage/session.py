@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 '''
 Session based temporary notification storage.
 '''
@@ -9,8 +11,9 @@ class SessionStorage(BaseStorage):
     session_key = '_notifications'
 
     def __init__(self, request, *args, **kwargs):
-        assert hasattr(request, 'session'), "The session-based temporary "\
-            "notification storage requires session middleware to be installed."
+        assert (hasattr(request, 'session'),
+                "The session-based temporary notification storage requires "
+                "session middleware to be installed.")
         super(SessionStorage, self).__init__(request, *args, **kwargs)
 
     def _get(self):
