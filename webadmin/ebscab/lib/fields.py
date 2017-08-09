@@ -1,18 +1,28 @@
-from ipaddr import _IPAddrBase, IPAddress, IPNetwork
+# -*- coding: utf-8 -*-
 
-from django.forms import ValidationError as FormValidationError
-from django.core.exceptions import ValidationError
-from django.forms import fields, widgets
-from django.db import models
+import base64
+import decimal
+import struct
 from hashlib import md5
+
+from django import forms
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.forms import fields, widgets
 from django.forms.widgets import PasswordInput
+from ipaddr import _IPAddrBase, IPAddress, IPNetwork
+from south.modelsinspector import introspector
+
 
 class IPNetworkWidget(widgets.TextInput):
+
     def render(self, name, value, attrs=None):
         if isinstance(value, _IPAddrBase):
             value = u'%s' % value
             value = value.replace('/32', '')
         return super(IPNetworkWidget, self).render(name, value, attrs)
+
 
 class IPNetworkManager(models.Manager):
     use_for_related_fields = True
@@ -30,7 +40,8 @@ class IPNetworkManager(models.Manager):
         except AttributeError:
             return getattr(self.get_query_set(), attr, *args)
 
-class IPNetworkQuerySet(models.query.QuerySet):   
+
+class IPNetworkQuerySet(models.query.QuerySet):
 
     net = None
 
@@ -43,23 +54,24 @@ class IPNetworkQuerySet(models.query.QuerySet):
     def iterator(self):
         for obj in super(IPNetworkQuerySet, self).iterator():
             try:
-                net = IPNetwork(getattr(obj, self.net[0]))   
+                net = IPNetwork(getattr(obj, self.net[0]))
             except (ValueError, TypeError):
                 pass
             else:
                 if not self.net[1] in net:
-                   continue
+                    continue
             yield obj
-            
+
     @classmethod
     def as_manager(cls, ManagerClass=IPNetworkManager):
         return ManagerClass(cls)
+
 
 class IPNetworkField(models.Field):
     __metaclass__ = models.SubfieldBase
     description = "IP Network Field with CIDR support"
     empty_strings_allowed = False
-    
+
     def db_type(self, connection):
         return 'varchar(45)'
 
@@ -79,29 +91,29 @@ class IPNetworkField(models.Field):
         if lookup_type == 'exact':
             return self.get_prep_value(value)
         elif lookup_type == 'in':
-            return [self.get_prep_value(v) for v in value]           
+            return [self.get_prep_value(v) for v in value]
         else:
-            raise TypeError('Lookup type %r not supported.' \
-                % lookup_type)
+            raise TypeError('Lookup type %r not supported.' % lookup_type)
 
     def get_prep_value(self, value):
         if isinstance(value, _IPAddrBase):
             value = '%s' % value
-            
+
         return unicode(value)
-      
+
     def formfield(self, **kwargs):
         defaults = {
-            'form_class' : fields.CharField,
+            'form_class': fields.CharField,
             'widget': IPNetworkWidget,
         }
         defaults.update(kwargs)
         return super(IPNetworkField, self).formfield(**defaults)
- 
+
+
 class IPAddressField(models.Field):
     __metaclass__ = models.SubfieldBase
     description = "IP Address Field with IPv6 support"
-    
+
     def db_type(self, connection):
         return 'varchar(42)'
 
@@ -121,29 +133,28 @@ class IPAddressField(models.Field):
         if lookup_type == 'exact':
             return self.get_prep_value(value)
         elif lookup_type == 'in':
-            return [self.get_prep_value(v) for v in value]           
+            return [self.get_prep_value(v) for v in value]
         else:
-            raise TypeError('Lookup type %r not supported.' \
-                % lookup_type)
+            raise TypeError('Lookup type %r not supported.' % lookup_type)
 
     def get_prep_value(self, value):
         if isinstance(value, _IPAddrBase):
             value = '%s' % value
         return unicode(value)
-      
+
     def formfield(self, **kwargs):
         defaults = {
-            'form_class' : fields.CharField,
-            'widget': IPNetworkWidget,
+            'form_class': fields.CharField,
+            'widget': IPNetworkWidget
         }
         defaults.update(kwargs)
         return super(IPAddressField, self).formfield(**defaults)
- 
- 
+
+
 class PasswordHashField(models.Field):
     __metaclass__ = models.SubfieldBase
     description = "Store password as hash"
-    
+
     def db_type(self, connection):
         return 'varchar(128)'
 
@@ -151,22 +162,20 @@ class PasswordHashField(models.Field):
         if not value:
             return None
 
-
     def get_prep_value(self, value):
         if value:
             value = md5(md5(value).hexdigest()).hexdigest()
         return value
-      
+
     def formfield(self, **kwargs):
         defaults = {
-            'form_class' : fields.CharField,
+            'form_class': fields.CharField,
             'widget': PasswordInput,
         }
         defaults.update(kwargs)
         return super(PasswordHashField, self).formfield(**defaults)
- 
- 
- # django-pgcrypto
+
+# django-pgcrypto
 # Dan Watson
 #
 # A pure python implementation of ASCII Armor, along with various
@@ -175,7 +184,7 @@ class PasswordHashField(models.Field):
 # Additionally, this module defines Django fields that automatically
 # encrypt and armor (and decrypt and dearmor) values for storage
 # in text fields. Values stored using these fields may be read by
-# pgcrypto using decrypt(dearmor(col),...), and values stored by 
+# pgcrypto using decrypt(dearmor(col),...), and values stored by
 # pgcrypto using armor(encrypt(col,...)) may be read by these fields.
 #
 # See http://www.ietf.org/rfc/rfc2440.txt for ASCII Armor specs.
@@ -183,25 +192,17 @@ class PasswordHashField(models.Field):
 __version_info__ = (1, 1, 0)
 __version__ = '.'.join(str(i) for i in __version_info__)
 
-try:
-    from django.db import models
-    from django import forms
-    from django.conf import settings
-    has_django = True
-except:
-    has_django = False
-
-import decimal
-import base64
-import struct
+has_django = True
 
 CRC24_INIT = 0xB704CE
 CRC24_POLY = 0x1864CFB
+
 
 def ord_safe(ch):
     if isinstance(ch, int):
         return ch
     return ord(ch)
+
 
 def crc24(data):
     crc = CRC24_INIT
@@ -213,15 +214,18 @@ def crc24(data):
                 crc ^= CRC24_POLY
     return crc & 0xFFFFFF
 
+
 def armor(data):
     """
     Returns a string in ASCII Armor format, for the given binary data. The
     output of this is compatiple with pgcrypto's armor/dearmor functions.
     """
-    template = '-----BEGIN PGP MESSAGE-----\n%(headers)s\n\n%(body)s\n=%(crc)s\n-----END PGP MESSAGE-----'
+    template = ('-----BEGIN PGP MESSAGE-----\n%(headers)s\n\n%(body)s\n='
+                '%(crc)s\n-----END PGP MESSAGE-----')
     headers = ['Version: django-pgcrypto %s' % __version__]
     body = base64.b64encode(data)
-    # The 24-bit CRC should be in big-endian, strip off the first byte (it's already masked in crc24).
+    # The 24-bit CRC should be in big-endian, strip off the first byte (it's
+    # already masked in crc24).
     crc = base64.b64encode(struct.pack('>L', crc24(data))[1:])
     return template % {
         'headers': '\n'.join(headers),
@@ -229,13 +233,15 @@ def armor(data):
         'crc': crc.decode('ascii'),
     }
 
+
 class BadChecksumError (Exception):
     pass
+
 
 def dearmor(text, verify=True):
     """
     Given a string in ASCII Armor format, returns the decoded binary data.
-    If verify=True (the default), the CRC is decoded and checked against that 
+    If verify=True (the default), the CRC is decoded and checked against that
     of the decoded data, otherwise it is ignored. If the checksum does not
     match, a BadChecksumError exception is raised.
     """
@@ -266,14 +272,17 @@ def dearmor(text, verify=True):
                     # The data starts after an empty line.
                     in_body = True
     b64_str = ''.join(data_lines)
-    # Python 3's b64decode expects bytes, not a string. We know base64 is ASCII, though.
+    # Python 3's b64decode expects bytes, not a string. We know base64 is
+    # ASCII, though.
     data = base64.b64decode(b64_str.encode('ascii'))
     if verify and check_data:
-        # The 24-bit CRC is in big-endian, so we add a null byte to the beginning.
+        # The 24-bit CRC is in big-endian, so we add a null byte to the
+        # beginning.
         crc = struct.unpack('>L', b'\0' + base64.b64decode(check_data))[0]
         if crc != crc24(data):
             raise BadChecksumError()
     return data
+
 
 def unpad(text, block_size):
     """
@@ -287,11 +296,13 @@ def unpad(text, block_size):
         return text
     padch = ord_safe(text[end - 1])
     if padch > block_size:
-        # If the last byte value is larger than the block size, it's not padded.
+        # If the last byte value is larger than the block size, it's not
+        # padded.
         return text
     while end > 0 and ord_safe(text[end - 1]) in (0, padch):
         end -= 1
     return text[:end]
+
 
 def pad(text, block_size, zero=False):
     """
@@ -302,6 +313,7 @@ def pad(text, block_size, zero=False):
     num = block_size - (len(text) % block_size)
     ch = '\0' if zero else chr(num)
     return text + (ch * num)
+
 
 def aes_pad_key(key):
     """
@@ -321,15 +333,26 @@ if has_django:
     class BaseEncryptedField (models.Field):
 
         def __init__(self, *args, **kwargs):
-            # Just in case pgcrypto and/or pycrypto support more than AES/Blowfish.
-            valid_ciphers = getattr(settings, 'PGCRYPTO_VALID_CIPHERS', ('AES', 'Blowfish'))
-            cipher_name = kwargs.pop('cipher', getattr(settings, 'PGCRYPTO_DEFAULT_CIPHER', 'AES'))
+            # Just in case pgcrypto and/or pycrypto support more than
+            # AES/Blowfish.
+            valid_ciphers = getattr(
+                settings, 'PGCRYPTO_VALID_CIPHERS', ('AES', 'Blowfish'))
+            cipher_name = kwargs.pop('cipher',
+                                     getattr(settings,
+                                             'PGCRYPTO_DEFAULT_CIPHER',
+                                             'AES'))
             assert cipher_name in valid_ciphers
-            self.cipher_key = kwargs.pop('key', getattr(settings, 'PGCRYPTO_DEFAULT_KEY', ''))
+            self.cipher_key = kwargs.pop('key',
+                                         getattr(settings,
+                                                 'PGCRYPTO_DEFAULT_KEY',
+                                                 ''))
             self.charset = 'utf-8'
             if cipher_name == 'AES':
                 self.cipher_key = aes_pad_key(self.cipher_key)
-            mod = __import__('Crypto.Cipher', globals(), locals(), [cipher_name], -1)
+            mod = __import__('Crypto.Cipher',
+                             globals(),
+                             locals(),
+                             [cipher_name], -1)
             self.cipher_class = getattr(mod, cipher_name)
             self.check_armor = kwargs.pop('check_armor', True)
             models.Field.__init__(self, *args, **kwargs)
@@ -341,7 +364,6 @@ if has_django:
             """
             Describe the field to south for use in migrations.
             """
-            from south.modelsinspector import introspector
             args, kwargs = introspector(self)
             return ("django.db.models.fields.TextField", args, kwargs)
 
@@ -351,10 +373,13 @@ if has_django:
             pgcrypto expects a zeroed block for IV (initial value), but the IV on the cipher
             object is cumulatively updated each time encrypt/decrypt is called.
             """
-            return self.cipher_class.new(self.cipher_key, self.cipher_class.MODE_CBC, b'\0' * self.cipher_class.block_size)
+            return self.cipher_class.new(self.cipher_key,
+                                         self.cipher_class.MODE_CBC,
+                                         b'\0' * self.cipher_class.block_size)
 
         def is_encrypted(self, value):
-            return isinstance(value, basestring) and value.startswith('-----BEGIN')
+            return (isinstance(value, basestring) and
+                    value.startswith('-----BEGIN'))
 
         def to_python(self, value):
             if self.is_encrypted(value):
@@ -362,8 +387,11 @@ if has_django:
                 #    1. De-armor the value to get an encrypted bytestring.
                 #    2. Decrypt the bytestring using the specified cipher.
                 #    3. Unpad the bytestring using the cipher's block size.
-                #    4. Decode the bytestring to a unicode string using the specified charset.
-                return unpad(self.get_cipher().decrypt(dearmor(value, verify=self.check_armor)), self.cipher_class.block_size).decode(self.charset)
+                # 4. Decode the bytestring to a unicode string using the
+                # specified charset.
+                return unpad(self.get_cipher()
+                             .decrypt(dearmor(value, verify=self.check_armor)),
+                             self.cipher_class.block_size).decode(self.charset)
             return value or ''
 
         def get_prep_value(self, value):
@@ -373,8 +401,11 @@ if has_django:
                 #    2. Encode the unicode string according to the specified charset.
                 #    3. Pad the bytestring for encryption, using the cipher's block size.
                 #    4. Encrypt the padded bytestring using the specified cipher.
-                #    5. Armor the encrypted bytestring for storage in the text field.
-                return armor(self.get_cipher().encrypt(pad(unicode(value).encode(self.charset), self.cipher_class.block_size)))
+                # 5. Armor the encrypted bytestring for storage in the text
+                # field.
+                return armor(self.get_cipher().encrypt(
+                    pad(unicode(value).encode(self.charset),
+                        self.cipher_class.block_size)))
             return value or ''
 
     class EncryptedTextField (BaseEncryptedField):
@@ -395,5 +426,6 @@ if has_django:
 
         def to_python(self, value):
             if value:
-                return decimal.Decimal(super(EncryptedDecimalField, self).to_python(value))
+                return decimal.Decimal(
+                    super(EncryptedDecimalField, self).to_python(value))
             return value

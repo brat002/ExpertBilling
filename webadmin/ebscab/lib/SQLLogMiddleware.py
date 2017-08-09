@@ -21,42 +21,40 @@ MIDDLEWARE_CLASSES = (
 
 """
 
-# Python
 import os
 import time
-import datetime
 
-# Django
 from django.conf import settings
 from django.db import connection
-from django.template import Template, Context
+from django.template import Context, Template
+
 
 class SQLLogMiddleware:
 
-    start=None
+    start = None
 
     def process_request(self, request):
-        self.start=time.time()
+        self.start = time.time()
 
-    def process_response (self, request, response):
+    def process_response(self, request, response):
         # self.start is empty if an append slash redirect happened.
-        debug_sql=getattr(settings, "DEBUG_SQL", False)
+        debug_sql = getattr(settings, "DEBUG_SQL", False)
         if (not self.start) or not (settings.DEBUG and debug_sql):
             return response
 
-        timesql=0.0
+        timesql = 0.0
 
         for q in connection.queries:
-            timesql+=float(q['time'])
-        seen={}
-        duplicate=0
+            timesql += float(q['time'])
+        seen = {}
+        duplicate = 0
         for q in connection.queries:
-            sql=unicode(q["sql"])
-            c=seen.get(sql, 0)
+            sql = unicode(q["sql"])
+            c = seen.get(sql, 0)
             if c:
                 duplicate += 1
-            q["seen"]=c
-            seen[sql]=c + 1
+            q["seen"] = c
+            seen[sql] = c + 1
 
         t = Template(u'''
             <p>
@@ -81,7 +79,7 @@ class SQLLogMiddleware:
                 {% endfor %}
             </table>
         ''')
-        timerequest = round(time.time()-self.start, 3)
+        timerequest = round(time.time() - self.start, 3)
         queries = connection.queries
         html = t.render(Context(locals()))
         if debug_sql == True:
@@ -90,8 +88,10 @@ class SQLLogMiddleware:
             return response
 
         assert os.path.isdir(debug_sql), debug_sql
-        outfile=os.path.join(debug_sql, "%s.html" % time.time())
-        fd=open(outfile, "wt")
-        fd.write('''<html><head><title>SQL Log %s</title></head><body>%s</body></html>''' % (request.path, html.encode('utf-8')))
+        outfile = os.path.join(debug_sql, "%s.html" % time.time())
+        fd = open(outfile, "wt")
+        fd.write('''\
+<html><head><title>SQL Log %s</title></head>\
+<body>%s</body></html>''' % (request.path, html.encode('utf-8')))
         fd.close()
         return response

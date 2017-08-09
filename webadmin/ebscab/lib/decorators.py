@@ -1,18 +1,19 @@
-# -*- coding=utf-8 -*-
+# -*- coding: utf-8 -*-
 
-from django.shortcuts import render_to_response
-from django.template import RequestContext
-from django.http import HttpResponseRedirect
+from functools import wraps, WRAPPER_ASSIGNMENTS
+
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
-from functools import update_wrapper, wraps, WRAPPER_ASSIGNMENTS
-from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
+from django.shortcuts import render_to_response
+from django.template import RequestContext
+
+from lib.http import JsonResponse
+
 
 def available_attrs(fn):
     return tuple(a for a in WRAPPER_ASSIGNMENTS if hasattr(fn, a))
 
-
-from lib.http import JsonResponse, render_response
 
 def render_to(tmpl):
     def renderer(func):
@@ -20,10 +21,13 @@ def render_to(tmpl):
             output = func(request, *args, **kw)
             if not isinstance(output, dict):
                 return output
-            return render_to_response(tmpl, output,
-                   context_instance=RequestContext(request))
+            return render_to_response(
+                tmpl,
+                output,
+                context_instance=RequestContext(request))
         return wrapper
     return renderer
+
 
 def ajax_request(func):
     """
@@ -33,10 +37,14 @@ def ajax_request(func):
     """
     def wrapper(request, *args, **kwargs):
         if request.method == 'POST' or request.method == 'GET':
-        #if request.method == 'POST':
             response = func(request, *args, **kwargs)
         else:
-            response = {'error': {'type': 403, 'message': 'Accepts only POST request'}}
+            response = {
+                'error': {
+                    'type': 403,
+                    'message': 'Accepts only POST request'
+                }
+            }
         if isinstance(response, dict):
             return JsonResponse(response)
         else:
@@ -51,9 +59,8 @@ def user_passes_test(test_func, login_url=None, redirect_field_name=REDIRECT_FIE
     that takes the user object and returns True if the user passes.
     """
     if not login_url:
-        from django.conf import settings
         login_url = settings.LOGIN_URL
-    
+
     def decorator(view_func):
         def _wrapped_view(request, *args, **kwargs):
             if test_func(request.user):
@@ -63,6 +70,7 @@ def user_passes_test(test_func, login_url=None, redirect_field_name=REDIRECT_FIE
             return HttpResponseRedirect('%s?%s=%s' % tup)
         return wraps(view_func, assigned=available_attrs(view_func))(_wrapped_view)
     return decorator
+
 
 def login_required(function=None, redirect_field_name=REDIRECT_FIELD_NAME):
     """
@@ -76,11 +84,13 @@ def login_required(function=None, redirect_field_name=REDIRECT_FIELD_NAME):
         return actual_decorator(function)
     return actual_decorator
 
+
 def render_xml(func):
     """Decorated function must return a valid xml document in unicode"""
     def wrapper(request, *args, **kwargs):
         xml = func(request, *args, **kwargs)
-        return HttpResponse(response,mimetype="text/xml",contenttype="text/xml;charset=utf-8")
+        return HttpResponse(
+            response,
+            mimetype="text/xml",
+            contenttype="text/xml;charset=utf-8")
     return wrapper
-
-
