@@ -1,17 +1,15 @@
+# -*- coding: utf-8 -*-
 
-from datetime import datetime, timedelta
-from time import sleep
+from django.db import models
 
-from django.core.exceptions import ObjectDoesNotExist
-from django.db import IntegrityError, models, transaction
 from billservice.models import Account
-
 
 
 PAYMENT_MODE_CHOICES = (
     (0, 'REAL'),
-    (1, 'TEST'),
+    (1, 'TEST')
 )
+
 
 class Payment(models.Model):
     account = models.ForeignKey(Account, related_name='webmoney_account_set')
@@ -37,6 +35,6 @@ class Payment(models.Model):
     telepat_orderid = models.CharField(max_length=30, blank=True)
 
     payment_creditdays = models.PositiveIntegerField(blank=True, null=True)
-    
+
     def __unicode__(self):
         return "%s - %s WM%s" % (self.payment_no, self.amount, self.purse)
