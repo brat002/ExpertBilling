@@ -1,4 +1,8 @@
+# -*- coding: utf-8 -*-
+
+
 class SetRemoteAddrFromForwardedForMiddleware(object):
+
     def process_request(self, request):
         try:
             real_ip = request.META['HTTP_X_FORWARDED_FOR']
