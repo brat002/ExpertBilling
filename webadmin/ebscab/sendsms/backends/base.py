@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 
 class BaseSmsBackend(object):
@@ -7,6 +7,7 @@ class BaseSmsBackend(object):
 
     Subclasses must at least overwrite send_messages()
     """
+
     def __init__(self, fail_silently=False, **kwargs):
         self.fail_silently = fail_silently
 
@@ -14,7 +15,8 @@ class BaseSmsBackend(object):
         """
         Open a network connection.
 
-        This method can be overwritten by backend implementations to open a network connection.
+        This method can be overwritten by backend implementations to open a
+        network connection.
         It's up to the backend implementation to track the status of
         a network connection if it's needed by the backend.
         This method can be called by applications to force a single
