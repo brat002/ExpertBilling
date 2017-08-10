@@ -4,7 +4,7 @@ anyjson==0.3.3
 argparse==1.2.1
 BeautifulSoup==3.2.1
 billiard==2.7.3.33
-cdecimal==2.3
+m3-cdecimal==2.3
 celery-with-redis==3.0
 celery==3.0.23
 distribute==0.6.34
