@@ -2,7 +2,6 @@
 
 from django.conf import settings
 
-from sendsms.api import get_connection
 from sendsms.signals import sms_post_send
 
 
@@ -29,6 +28,8 @@ class SmsMessage(object):
         self.connection = connection
 
     def get_connection(self, fail_silently=False):
+        from sendsms.api import get_connection  # avoid cyclic imports
+
         if not self.connection:
             self.connection = get_connection(fail_silently=fail_silently)
         return self.connection

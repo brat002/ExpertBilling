@@ -13,7 +13,6 @@ from django.utils.translation import ugettext_lazy as _, ugettext
 
 from billservice.models import SystemUser, Account
 
-from helpdesk.lib import b64decode, b64encode
 from helpdesk.settings import HAS_TAG_SUPPORT
 
 if HAS_TAG_SUPPORT:
@@ -975,10 +974,14 @@ class UserSettings(models.Model):
     )
 
     def _set_settings(self, data):
+        # TODO: b64encode not exist into helpdesk.lib
+        from helpdesk.lib import b64encode  # avoid cyclic imports
         # data should always be a Python dictionary.
         self.settings_pickled = b64encode(cPickle.dumps(data))
 
     def _get_settings(self):
+        # TODO: b64decode not exist into helpdesk.lib
+        from helpdesk.lib import b64decode  # avoid cyclic imports
         # return a python dictionary representing the pickled data.
         try:
             return cPickle.loads(b64decode(str(self.settings_pickled)))

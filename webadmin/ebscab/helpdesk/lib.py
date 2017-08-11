@@ -15,7 +15,6 @@ from django.core.mail import EmailMultiAlternatives
 from django.template import loader, Context
 from django.contrib.sites.models import Site
 
-from helpdesk.models import EmailTemplate
 try:
     from helpdesk.akismet import Akismet
     AKISMET_EXIST = True
@@ -55,6 +54,8 @@ def send_templated_mail(template_name, email_context, recipients, sender=None,
         eg ('/tmp/file1.txt', '/tmp/image.png')
 
     """
+
+    from helpdesk.models import EmailTemplate  # avoid cyclic imports
 
     context = Context(email_context)
     locale = getattr(context['queue'], 'locale', '')
