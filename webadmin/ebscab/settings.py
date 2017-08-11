@@ -25,14 +25,14 @@ DATABASES = {
         'USER': 'ebs',
         'PASSWORD': 'ebspassword',
         'HOST': '127.0.0.1',
-        'PORT': 5432,
+        'PORT': 5432
     }
 }
 
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': '127.0.0.1:11211',
+        'LOCATION': '127.0.0.1:11211'
     }
 }
 
@@ -63,14 +63,14 @@ SECRET_KEY = '%!a5^gik_4lgzt+k)vyo6)y68_3!u^*j(ujks7(=6f2j89d=x&'
 
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder'
     #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
+    'django.template.loaders.app_directories.Loader'
     #     'django.template.loaders.eggs.Loader',
 )
 
@@ -81,15 +81,13 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'django.contrib.messages.context_processors.messages',
     'lib.context_processors.default_current_view_name',
-    'lib.context_processors.project_settings',
-
+    'lib.context_processors.project_settings'
 )
 
 TEMPLATE_DIRS = (
     '/opt/ebs/web/ebscab/templates',
     #'/opt/ebs/web/ebscab/helpdesk/templates',
-    '%s/templates/' % os.path.abspath('.'),
-
+    '%s/templates/' % os.path.abspath('.')
 )
 
 
@@ -104,7 +102,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     #'billservice.middleware.UrlFilter',
     'ebsadmin.middleware.Version'
-
 )
 
 ROOT_URLCONF = 'ebscab.urls'
@@ -141,7 +138,7 @@ INSTALLED_APPS = (
     'autocomplete_light',
     'selectable',
     'mathfilters',
-    'captcha',
+    'captcha'
 )
 
 
@@ -157,7 +154,7 @@ AJAX_LOOKUP_CHANNELS = {
     'house_name': ('billservice.lookups', 'HouseLookup'),
     'hardware_fts': ('billservice.lookups', 'HardwareLookup'),
     'organization_name': ('billservice.lookups', 'OrganizationLookup'),
-    'subaccount_fts': ('billservice.lookups', 'SubAccountFTSLookup'),
+    'subaccount_fts': ('billservice.lookups', 'SubAccountFTSLookup')
 }
 
 AJAX_SELECT_BOOTSTRAP = False
@@ -223,58 +220,56 @@ GETPAID_BACKENDS_SETTINGS = {
         'MERCHANT_ID': '',
         'MERCHANT_SIGNATURE': '',
         'PAY_WAY': ('card', 'liqpay', 'delayed'),
-        'EXPIRE_TIME': 36,
-
+        'EXPIRE_TIME': 36
     },
-
     'payments.easypay': {
         'TYPE': 'backend',
         'DEFAULT_CURRENCY': 'UAH',
         'SERVICE_ID': '1',
-        'allowed_ip': ('93.183.196.28', '93.183.196.26'),
+        'allowed_ip': ('93.183.196.28', '93.183.196.26')
     },
     'payments.ru_sberbank': {
         'TYPE': 'backend',
         'DEFAULT_CURRENCY': 'RUB',
         'PASSWORD': '12345',
-        'allowed_ip': ('93.183.196.28', '93.183.196.26'),
+        'allowed_ip': ('93.183.196.28', '93.183.196.26')
     },
     'payments.masterplat': {
         'TYPE': 'backend',
         'DEFAULT_CURRENCY': 'RUB',
         'DUSER': '12345',
-        'DPASS': '12345',
+        'DPASS': '12345'
     },
     'payments.platezhkaua': {
         'TYPE': 'backend',
         'DEFAULT_CURRENCY': 'UAH',
         'LOGIN': '12345',
-        'PASSWORD': '12345',
+        'PASSWORD': '12345'
     }
 }
 
 SENDSMS_BACKENDS = (
     ('sendsms.backends.websms.SmsBackend', 'websms.ru'),
     ('sendsms.backends.smsru.SmsBackend', 'sms.ru'),
-    ('sendsms.backends.smspilotru.SmsBackend', 'smspilot.ru'),
+    ('sendsms.backends.smspilotru.SmsBackend', 'smspilot.ru')
 )
 
 SENDSMS_BACKENDS_SETTINGS = {
     'sendsms.backends.websms': {
         'FROM_NAME': '',  # http://websms.ru/FromName.asp
         'USERNAME': '',
-        'PASSWORD': '',
+        'PASSWORD': ''
     },
     'sendsms.backends.smsru': {
         'FROM_NAME': '',
         'API_ID': '',
         'TRANSLIT': '1',
         'TEST': '0',
-        'PARTNER_ID': '',
+        'PARTNER_ID': ''
     },
     'sendsms.backends.smspilotru': {
         'FROM_NAME': '',
-        'API_ID': '',
+        'API_ID': ''
     }
 }
 
@@ -300,7 +295,7 @@ PERSONAL_AREA_STAFF_MENU = [
     ('helpdesk_report_index', u'Статистика', ''),
     ('helpdesk_user_settings', u'Ваши настройки', ''),
     ('/admin/', u'Конфигурация', ''),
-    ('account_logout', u'Выход', ''),
+    ('account_logout', u'Выход', '')
 ]
 
 
