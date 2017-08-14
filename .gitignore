@@ -38,5 +38,6 @@ site_verify_codes.html
 webadmin/ebscab/static/
 services/nf/pkg/
 
+env/
 TODO
 .sublimelinterrc
