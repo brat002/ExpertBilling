@@ -1,77 +1,99 @@
-#Выполните в консоли с правами суперпользователя:
-sudo -s
-Возможно 3 варианта установки ExpertBilling 1.5. Установка с нуля, Обновление,  и апгрейд с версии 1.4.1. Апгрейд с более ранних версий не предусмотрен.
+INSTALLATION OPTIONS OF ExpertBilling 1.5:
+- Clean setup
+- Update
+- Upgrade from v.1.4.1
 
-=====Установка======
-Скачанный архив нужно положить в /opt/
-#cd /opt/
-#tar -xvzf путь к архиву с биллингом fabfile.py install.txt
+NOTE: Upgrade from early versions not possible!
 
-Установка postgresql 9.1
-#apt-get update
-apt-get install fabric postgresql-9.1 postgresql-contrib-9.1 postgresql-server-dev-9.1
+INSTALLATION STEPS:
 
-#mkdir /opt/ebs
+--------------
+CLEAN INSTALL:
+--------------
 
-Создание пользователя базы данных и базы данных. Рекомендуемый пароль - ebspassword:
-#su postgres
-$createuser -P -s ebs
-$createdb -O ebs ebs
-$exit
-$exit
+1) In the console execute:
+  $ sudo -s
 
+2) Place downloaded archive in /opt/ directory and execute following commands:
+  # cd /opt/
+  # tar -xvzf <name of the downloaded archive> fabfile.py install.txt
 
-Запустите установку биллинга с нуля с правами root-а из директории /opt/. 
-#fab deploy:путь к архиву с биллингом
+3) Install PostgreSQL (9.1):
+  # apt-get update
+  # apt-get install fabric postgresql-9.1 postgresql-contrib-9.1 postgresql-server-dev-9.1
 
-После того, как установка завершится - откройте в браузере айпи вашего сервера и войдите в веб-кабинет
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4) Create EBS root directory:
+  # mkdir /opt/ebs
 
-=====При апгрейде c версии 1.5 на версию 1.5 нужно выполнить====
-Скачанный архив нужно положить в /opt/
-#cd /opt/
-#tar -xvzf путь к архиву с биллингом fabfile.py install.txt
-#fab upgrade:путь к архиву с биллингом
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5) Create database and database user. NOTE: required password: ebspassword
+  # su postgres
+  $ createuser -P -s ebs
+  $ createdb -O ebs ebs
+  $ exit
+  $ exit
 
-=====При апгрейде с версии 1.4.1:=====
-Скачанный архив нужно положить в /opt/
-#cd /opt/
-#tar -xvzf путь к архиву с биллингом fabfile.py install.txt
-1. Установить postgresql-9.1 postgresql-contrib-9.1. 
-2. Выполнить дамп базы данных с биллингом с помощью pg_dump
+6) Run clean setup EBS 1.5 with root privileges from the /opt/ directory:
+  # fab deploy:<path of the ebs archive>
 
-#su postgres
-#pg_dump ebs >/tmp/ebs.dump
-#exit
-#cp /tmp/ebs.dump /opt/ebs.dump
+POST-INSTALLATION STEPS:
 
-3. Удалить postgresql-8.4.
-#apt-get remove postgresql-8.4
+6.1) Open file /opt/ebs/web/ebscab/settings_local.py and override values from /opt/ebs/web/ebscab/settings.py
+NOTE: This file will not be eraced updated processess
 
-4. Настроить postgresql-9.1 на запуск на порту 5432 (/etc/postgres/9.1/main/postgresql.conf). 
-5. Перезапустить postgresql, 
-6. Создать БД ebs с пользователем ebs
-#createuser -s -P ebs
-#createdb -O ebs ebs
+6.2) After configure web-cabinet:
+  # /etc/init.d/apache2 reload
 
-7. Импортировать в созданную базу дамп:
-#su postgres
-#psql ebs -f /opt/ebs.dump
+6.3) Insert ip-address of your server in web-browser and log-in in EBS 1.5 web-cabinet with default username/password.
+NOTE: admin/admin
 
-8. Запустить апгрейд:
-#fab upgrade_14:путь к архиву с биллингом
+----------------------
+UPDATE (INSIDE v.1.5):
+----------------------
 
+1) Place downloaded archive in /opt/ directory and execute following commands:
+  # cd /opt/
+  # tar -xvzf <path of the EBS archive> fabfile.py install.txt
+  # fab upgrade:<path of the EBS archive>
 
+-----------------------
+UPGRADE (FROM v.1.4.1):
+-----------------------
 
-После установки откройте файл /opt/ebs/web/ebscab/settings_local.py и переопределите в нём значения из файла /opt/ebs/web/ebscab/settings.py. Этот файл не будет перезатираться при обновлениях.
+1) Place downloaded archive in /opt/ directory and execute following commands:
+  # cd /opt/
+  # tar -xvzf <path of the EBS archive> fabfile.py install.txt
 
-После настройки веб-кабинета:
+2) Install PostgreSQL (9.1): 
+  # apt-get update
+  # apt-get install postgresql-9.1 postgresql-contrib-9.1
 
-#/etc/init.d/apache2 reload
+3) Backup database:
+  # su postgres
+  # pg_dump ebs >/tmp/ebs.dump
+  # exit
+  # cp /tmp/ebs.dump /opt/ebs.dump
 
-Внимание!!! Это версия не финальная версия 1.5. О всех найденных прблемах просьба писать на форуме http://forum.expertbilling.ru/ 
+4) Remove PostgreSQL 8.4:
+  # apt-get remove postgresql-8.4
 
+5) Configure PostgreSQL (9.1) for starting on 5432 port:
+  # nano /etc/postgres/9.1/main/postgresql.conf
 
+6) Restart PostgreSQL (9.1):
+  # /etc/init.d/postgresql restart
 
-Имя и пароль по-умолчанию для входа в веб-кабинет admin/admin.
+7) Create database "ebs" with user "ebs":
+  # su postgres
+  $ createuser -s -P ebs
+  $ createdb -O ebs ebs
+  $ exit
+
+8) Restore backuped database:
+  # su postgres
+  $ psql ebs -f /opt/ebs.dump
+
+9) Upgrade:
+  # fab upgrade_14:<path of the EBS archive>
+
+CAUTION: This is not final version. About finded bugs, errors - please report on our forum: http://forum.expertbilling.ru/ 
+
