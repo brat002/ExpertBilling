@@ -6,7 +6,6 @@ BeautifulSoup==3.2.1
 billiard==2.7.3.33
 celery-with-redis==3.0
 celery==3.0.23
-distribute==0.6.34
 django-annoying==0.7.7
 django-autocomplete-light==1.4.3
 django-crispy-forms==1.2.0
@@ -40,6 +39,7 @@ python-memcached
 pytils==0.2.3
 pytz==2013.7
 redis==2.8.0
+setuptools==36.2.7
 simplejson==3.3.1
 six==1.4.1
 SQLAlchemy==0.8.2
