@@ -9,11 +9,20 @@ lib.py - Common functions (eg multipart e-mail)
 """
 
 import os
+try:
+    from base64 import urlsafe_b64encode as b64encode
+except ImportError:
+    from base64 import encodestring as b64encode
+try:
+    from base64 import urlsafe_b64decode as b64decode
+except ImportError:
+    from base64 import decodestring as b64decode
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader, Context
 from django.contrib.sites.models import Site
+
 
 try:
     from helpdesk.akismet import Akismet
