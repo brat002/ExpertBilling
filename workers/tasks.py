@@ -840,6 +840,21 @@ def sendsmscru_post(url, parameters, id=None):
     conn.close()
     
 @app.task
+def iqsmsru_get(url, parameters, id=None):
+    response = HttpBot().POST(url, parameters)
+
+    logging.basicConfig(filename='log/workers_iqsmsru.log', level=logging.INFO)
+    logger = logging
+    #print response
+
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE sendsms_message SET sended=now(), response=%s WHERE id=%s",  (response, id))
+    conn.commit()
+    cur.close()
+    conn.close()
+    
+@app.task
 def sendsmspilotru_post(url, parameters, id=None):
     headers = {
         'Content-type': 'application/json',

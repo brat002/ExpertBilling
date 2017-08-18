@@ -38,8 +38,8 @@
 
     {% include_ui_theme %}
 
-    <script type="text/javascript" src="/static/selectable/js/jquery.dj.selectable.js"></script>
-    <link href="/static/selectable/css/dj.selectable.css" type="text/css" media="all" rel="stylesheet">
+    <script type="text/javascript" src="{{STATIC_URL}}/selectable/js/jquery.dj.selectable.js"></script>
+    <link href="{{STATIC_URL}}/selectable/css/dj.selectable.css" type="text/css" media="all" rel="stylesheet">
 
     <script src="/media/js/smartspinner/smartspinner.js" type="text/javascript"></script>
     <link rel="stylesheet" href="/media/js/smartspinner/smartspinner.css" type="text/css" />
@@ -55,9 +55,9 @@
     
     <meta name="robots" content="NONE,NOARCHIVE">
 
-    <link href="/static/css/main.css" rel="stylesheet">
+    <link href="{{STATIC_URL}}/css/main.css" rel="stylesheet">
     {% include 'ebsadmin/include_js/base.html' %}
-    <script src="/static/js/general.js"></script>
+    <script src="{{STATIC_URL}}js/general.js"></script>
     {% block extra_head %}{% endblock %}
     <script type="text/javascript" src="/ebsadmin/jsi18n/ebsadmin/"></script>
   </head>

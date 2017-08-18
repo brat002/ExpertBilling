@@ -789,7 +789,7 @@ class RadiusAttrTable(EbsadminTableReport):
 
     class Meta(EbsadminTableReport.Meta):
         model = RadiusAttrs
-        exclude = ("tarif", 'nas')
+        exclude = ("tarif", 'nas', 'vendor', 'attrid')
 
 
 class ManufacturerTable(EbsadminTableReport):

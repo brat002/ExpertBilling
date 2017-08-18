@@ -18,7 +18,6 @@ admin.autodiscover()
 
 
 
-
 urlpatterns = patterns('',
     # Example:
     # (r'^ebscab/', include('ebscab.foo.urls')),

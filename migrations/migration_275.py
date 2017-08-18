@@ -21,9 +21,9 @@ def post_migrate():
         try:
             cur.execute(""".
                        CREATE INDEX CONCURRENTLY billservice_balancehistory%s_id_account_id_datetime
-      ON billservice_balancehistory%s
-      USING btree
-      (id,account_id, datetime);""" % (dt, dt))
+                      ON billservice_balancehistory%s
+                      USING btree
+                      (id, account_id, datetime);""" % (dt, dt))
             #cur.connection.commit()
         except Exception, e:
             print e

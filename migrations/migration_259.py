@@ -16,10 +16,13 @@ def post_migrate():
     for table in cur.fetchall():
         dt = table[0].replace('billservice_balancehistory', '')
         if not dt: continue
-        cur.execute("""DROP INDEX billservice_balancehistory%s_account_id; 
-                       CREATE INDEX billservice_balancehistory%s_account_id_datetime
+        try:
+            cur.execute("""DROP INDEX billservice_balancehistory%s_account_id; """, (dt,))
+        except:
+            cur.connection.rollback()
+        cur.execute("""CREATE INDEX billservice_balancehistory%s_account_id_datetime
       ON billservice_balancehistory%s
       USING btree
-      (account_id, datetime);""" % (dt, dt, dt))
+      (account_id, datetime);""" % (dt, dt))
         
     cur.connection.commit()
