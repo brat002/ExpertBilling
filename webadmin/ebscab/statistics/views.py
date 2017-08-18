@@ -113,7 +113,7 @@ in#4169E1 AREA:in#4169E1AA:Incomming   GPRINT:in:MAX:"Max in\\:%%5.1lf%%s" \
 GPRINT:in:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:in:LAST:" Current\\: %%5.1lf \
 %%S\\n" LINE2:out#FA0502  AREA:out#FA0502AA:Outgoing GPRINT:out:MAX:"Max out\
 \\:%%5.1lf%%s" GPRINT:out:AVERAGE:"Avg\\: %%5.1lf %%S" GPRINT:out:LAST:" \
-Current\\: %%5.1lf %%S\\n" """ % (RRDTOOL_PATH
+Current\\: %%5.1lf %%S\\n" """ % (RRDTOOL_PATH,
                                   image_path,
                                   subaccount.username,
                                   interval[0],
