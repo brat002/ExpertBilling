@@ -12,7 +12,6 @@ from django.db import models
 from django.forms import fields, widgets
 from django.forms.widgets import PasswordInput
 from ipaddr import _IPAddrBase, IPAddress, IPNetwork
-from south.modelsinspector import introspector
 
 
 class IPNetworkWidget(widgets.TextInput):
@@ -364,6 +363,8 @@ if has_django:
             """
             Describe the field to south for use in migrations.
             """
+            from south.modelsinspector import introspector
+
             args, kwargs = introspector(self)
             return ("django.db.models.fields.TextField", args, kwargs)
 
