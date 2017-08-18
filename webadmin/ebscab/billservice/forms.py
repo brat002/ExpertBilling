@@ -790,6 +790,14 @@ class RadiusAttrsForm(ModelForm):
     id = forms.IntegerField(required=False, widget = forms.HiddenInput)
     nas = forms.ModelChoiceField(queryset=Nas.objects.all(), required=False, widget = forms.HiddenInput)
     tarif = forms.ModelChoiceField(queryset=Tariff.objects.all(), required=False, widget = forms.HiddenInput)
+    
+    def __init__(self, *args, **kwargs):
+        super(RadiusAttrsForm, self).__init__(*args, **kwargs)
+
+        self.fields['vendor'].widget = forms.HiddenInput()
+        self.fields['attrid'].widget = forms.HiddenInput()
+
+        
     class Meta:
         model = RadiusAttrs  
 
