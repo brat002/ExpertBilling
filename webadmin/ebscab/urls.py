@@ -15,9 +15,7 @@ autocomplete_light.autodiscover()
 
 admin.autodiscover()
 
-
-urlpatterns = patterns(
-    '',
+urlpatterns = patterns('',
     # Example:
     # (r'^ebscab/', include('ebscab.foo.urls')),
     #(r'^$','ebscab.billing.views.index'),

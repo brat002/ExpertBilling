@@ -40,3 +40,5 @@ services/nf/pkg/
 
 TODO
 .sublimelinterrc
+venv/
+env/
