@@ -3,12 +3,8 @@ Syslog/Logging wrapper
 """
 
 import logging
+import syslog
 from logging import handlers
-
-try:
-    import syslog
-except ImportError, ipe:
-    import syslog_dummy as syslog
 
 
 LG_DEBUG = 0
