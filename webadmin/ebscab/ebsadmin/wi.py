@@ -52,7 +52,7 @@ from billservice.models import (
     Transaction,
     TransactionType
 )
-from django_tables2 import RequestConfig as DTRequestConfig
+from django_tables2.config import RequestConfig as DTRequestConfig
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
 from ebscab.lib.decorators import render_to, ajax_request
