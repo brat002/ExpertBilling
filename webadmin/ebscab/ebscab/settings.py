@@ -123,7 +123,6 @@ INSTALLED_APPS = (
     'radius',
     'nas',
     'billservice',
-    'lib',
     'statistics',
     'paymentgateways.webmoney',
     'helpdesk',
