@@ -815,7 +815,7 @@ class AccountPrepaysTrafic(models.Model):
         to=PrepaidTraffic, null=True, on_delete=models.CASCADE)
     size = models.FloatField(blank=True, default=0, verbose_name=_(u'Остаток'))
     datetime = models.DateTimeField(
-        auto_now_add=True, default='', verbose_name=_(u'Начислен'))
+        auto_now_add=True, verbose_name=_(u'Начислен'))
     current = models.BooleanField(default=False, verbose_name=_(u'Текущий'))
     reseted = models.BooleanField(default=False, verbose_name=_(u'Сброшен'))
 
@@ -850,7 +850,7 @@ class AccountPrepaysRadiusTrafic(models.Model):
         to='RadiusTraffic', null=True, on_delete=models.SET_NULL)
     size = models.FloatField(blank=True, default=0)
     direction = models.IntegerField()
-    datetime = models.DateTimeField(auto_now_add=True, default='')
+    datetime = models.DateTimeField(auto_now_add=True)
     current = models.BooleanField(default=False)
     reseted = models.BooleanField(default=False)
 
@@ -879,7 +879,7 @@ class AccountPrepaysTime(models.Model):
     prepaid_time_service = models.ForeignKey(
         to=TimeAccessService, null=True, on_delete=models.SET_NULL)
     size = models.IntegerField(default=0, blank=True)
-    datetime = models.DateTimeField(auto_now_add=True, default='')
+    datetime = models.DateTimeField(auto_now_add=True)
     current = models.BooleanField(default=False)
     reseted = models.BooleanField(default=False)
 
