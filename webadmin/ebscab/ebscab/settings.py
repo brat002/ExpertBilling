@@ -98,7 +98,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.doc.XViewMiddleware',
+    'django.contrib.admindocs.middleware.XViewMiddleware',
     #'lib.threadlocals.ThreadLocalsMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     #'billservice.middleware.UrlFilter',
