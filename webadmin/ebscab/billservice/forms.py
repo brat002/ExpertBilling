@@ -99,7 +99,7 @@ from sendsms.utils import get_backend_choices
 
 import IPy
 from widgets import CheckboxSelectMultipleWithSelectAll
-from ebscab.lookups import HardwareLookup
+from lookups import HardwareLookup
 
 
 class HardwareChoices(AutoModelSelect2Field):
