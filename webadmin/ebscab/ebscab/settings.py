@@ -318,7 +318,7 @@ if DEBUG:
     LEVEL = logging.DEBUG
 else:
     LEVEL = logging.INFO
-PROJECT_DIR = os.path.dirname(__file__)
+PROJECT_DIR = os.path.join(os.path.dirname(__file__), '..')
 logging.basicConfig(level=LEVEL,
                     format='%(asctime)s %(name)s %(levelname)s %(message)s',
                     filename=os.path.join(PROJECT_DIR, 'log/django.log'),

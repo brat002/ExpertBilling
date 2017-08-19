@@ -27,9 +27,9 @@ def get_tempdir():
     return tempfile.mkdtemp()
 
 def prepare_deploy():
-    
+
     #local('echo "deb http://www.rabbitmq.com/debian/ testing main" >/etc/apt/sources.list.d/rabbitmq.list')
-    
+
     local('apt-get  update && apt-get -y install python-software-properties wget psmisc')
     #local('wget http://www.rabbitmq.com/rabbitmq-signing-key-public.asc && apt-key add rabbitmq-signing-key-public.asc')
     #local('apt-get update')
@@ -47,31 +47,31 @@ def configure_rabbit():
         local("rabbitmqctl change_password ebs ebspassword")
         local("rabbitmqctl set_permissions -p /ebs ebs '.*' '.*' '.*'")
 
-    
+
 def requirements():
-    
+
     with settings(warn_only=True):
         local("sudo ln -s /usr/lib/`uname -i`-linux-gnu/libfreetype.so /usr/lib/")
         local("sudo ln -s /usr/lib/`uname -i`-linux-gnu/libjpeg.so /usr/lib/")
         local("sudo ln -s /usr/lib/`uname -i`-linux-gnu/libz.so /usr/lib/")
-        
-        
+
+
     with settings(warn_only=True):
         with prefix('. /opt/ebs/venv/bin/activate'):
             local('pip install -U setuptools')
-            
-            
+
+
     with settings(warn_only=True):
         with prefix('. /opt/ebs/venv/bin/activate'):
             local("for line in `cat /opt/ebs/data/soft/del_requirements.txt`; do pip uninstall -y -q $line; done")
-            
+
     with prefix('. /opt/ebs/venv/bin/activate'):
         local('pip install -U -r /opt/ebs/data/soft/requirements.txt')
-    
+
 def virtualenv():
     with lcd('/opt/ebs/'):
         local('virtualenv venv')
-        
+
 def congratulations():
     print("*"*80)
     print(green("CONGRATULATIONS!!! Your ExpertBilling 1.5 was succesfully installed!"))
@@ -107,7 +107,7 @@ def congratulations():
 def layout():
     print(green('Preparing layout'))
     if not os.path.exists('/opt/ebs'): local('mkdir -p /opt/ebs/')
-    
+
     if not os.path.exists('/opt/ebs/backups'): local('mkdir -p /opt/ebs/backups')
     local("chmod a+w /opt/ebs/backups")
     if not os.path.exists('/opt/ebs/data'): local('mkdir -p /opt/ebs/data')
@@ -120,40 +120,40 @@ def unpack(tarfile):
     if not os.path.exists(tarfile):
         print('File %s not found. Enter correct expert billing archive path to argument. ' % tarfile)
         sys.exit()
-        
+
     local('rm -rf /opt/ebs/deploy/')
     local('mkdir -p /opt/ebs/deploy/')
     local('tar -xvzf %s -C /opt/ebs/deploy/' % tarfile)
     with lcd('/opt/ebs/deploy'):
         local('tar -xvzf ebs.tar.gz -C %s' % BILLING_ROOT_PATH)
         local('tar -xvzf web.tar.gz -C %s' % BILLING_ROOT_PATH)
-    
+
 def postconf():
     print(green('Renaming ebs_config.ini.tmpl to ebs_config.ini'))
     local('mv /opt/ebs/data/ebs_config.ini.tmpl /opt/ebs/data/ebs_config.ini')
-    
-    
+
+
 def setup_webcab():
     print(green('Setuping webcab'))
-    if not os.path.exists(os.path.join(WEBCAB_PATH, 'settings_local.py')):
-        with lcd(WEBCAB_PATH):
+    if not os.path.exists(os.path.join(WEBCAB_PATH, 'ebscab', 'settings_local.py')):
+        with lcd(os.path.join(WEBCAB_PATH, 'ebscab')):
             local('cp settings_local.py.tmpl settings_local.py')
 
 
     apache_ver = local('apache2 -v | head -n 1', True)
-    
+
     if 'Apache/2.4' in apache_ver:
         local('ln -sf %s /etc/apache2/sites-enabled/ebs.conf ' % os.path.join(WEBCAB_ROOT_PATH, 'default2.4'))
     else:
         local('ln -sf %s /etc/apache2/sites-enabled/ebs.conf ' % os.path.join(WEBCAB_ROOT_PATH, 'default'))
-    
+
     local('ln -sf  %s /etc/apache2/sites-enabled/ebs_blankpage.conf'  % os.path.join(WEBCAB_ROOT_PATH, 'blankpage_config'))
     with settings(warn_only=True):
         local('a2dissite default')
         local('a2dissite 000-default')
         local('a2enmod wsgi')
     local('a2enmod rewrite')
-    
+
 
     local('/etc/init.d/apache2 restart')
     with settings(warn_only=True):
@@ -164,7 +164,7 @@ def setup_webcab():
         with lcd(WEBCAB_PATH):
             local("touch /opt/ebs/web/ebscab/templates/site_verify_codes.html")
             local('mkdir -p /opt/ebs/web/ebscab/log/')
-            
+
             local('touch /opt/ebs/web/ebscab/log/django.log')
             local('chmod -R 0777 /opt/ebs/web/ebscab/log/')
             local('python manage.py syncdb --noinput')
@@ -172,35 +172,35 @@ def setup_webcab():
 
 
 
-        
+
 def deploy(tarfile):
     print('Installing expert billing system')
     if os.path.exists(os.path.join(BILLING_PATH, 'ebs_config.ini')):
         print "You cant`t install billing on existing installation"
         print "Remove /opt/ebs and try again (rm -rf /opt/ebs)"
-        sys.exit() 
-    
-    
+        sys.exit()
+
+
     layout()
     with settings(warn_only=True):
         local('adduser --disabled-password ebs')
     prepare_deploy()
     configure_rabbit()
     virtualenv()
-    
+
     unpack(tarfile)
     requirements()
     #backup settings before deploy, restore settings after deploy
     postconf()
     db_install()
     db_upgrade()
-    
+
     setup_webcab()
     init_scripts()
-    
+
     restart()
     congratulations()
-    
+
 
 def upgrade_14(tarfile):
     print('Upgrading expert billing system from 1.4.1 version')
@@ -211,7 +211,7 @@ def upgrade_14(tarfile):
     prepare_deploy()
     configure_rabbit()
     virtualenv()
-    
+
     db_backup()
     stop()
     data_backup()
@@ -221,22 +221,22 @@ def upgrade_14(tarfile):
     unpack(tarfile)
     requirements()
     #backup settings before deploy, restore settings after deploy
-    
+
     #db_install()
     postconf()
     db_upgrade()
-    
+
     setup_webcab()
     init_scripts()
-    
+
     restart()
     congratulations()
-    
+
 def upgrade(tarfile):
     print('Upgrading expert billing system')
-    
 
-    
+
+
     db_backup()
     stop()
     data_backup()
@@ -247,24 +247,24 @@ def upgrade(tarfile):
         local('adduser --disabled-password ebs')
     prepare_deploy()
     configure_rabbit()
-    
+
     virtualenv()
-    
+
 
 
     unpack(tarfile)
     requirements()
     #backup settings before deploy, restore settings after deploy
-    
+
     #db_install()
     db_upgrade()
     setup_webcab()
-    
+
     init_scripts()
     #postconf()
     restart()
     congratulations()
-    
+
 
 def cleanup_14():
     print(green('Cneaning directory /opt/ebs/data /opt/ebs/web'))
@@ -274,7 +274,7 @@ def cleanup_14():
     local('tar -cvzf %s/web.tar.gz %s' % (os.path.join(BACKUP_DIR, 'pre15'), os.path.join(BILLING_ROOT_PATH, 'web/'),) )
     local('rm -rf %s' % BILLING_PATH)
     local('rm -rf %s' % os.path.join(BILLING_ROOT_PATH, 'web/'))
-    
+
 def restart():
     with settings(warn_only=True):
         print(green('Restarting processes'))
@@ -311,13 +311,13 @@ def data_backup():
     print(green('/opt/ebs/data folder backup'))
     with lcd(BILLING_PATH):
         local('tar -cvzf %s .' % os.path.join(BACKUP_DIR, 'data_%s.tar.gz' % curdate))
-        
+
 
 def webcab_backup():
     print(green('Webcab backup'))
     with lcd(BILLING_ROOT_PATH):
         local('tar -cvzf %s web' % os.path.join(BACKUP_DIR, 'web_%s.tar.gz' % curdate))
-        
+
 def db_install():
     print(green('Installing initial databaes scheme'))
     with lcd('/opt/ebs/data/'):
@@ -328,25 +328,25 @@ def db_upgrade():
     print("*"*80)
     print(green("Upgrading DB from sql/upgrade/*.sql files"))
     SQL_UPGRADE_PATH = os.path.join(BILLING_PATH, 'sql/upgrade')
-    
+
     sys.path.append(os.path.join(BILLING_PATH, 'migrations'))
     install_config = ConfigParser.ConfigParser()
     first_time=False
     if not os.path.exists(LAST_SQL):
         first_time=True
         last_sql_id=0
-    
+
     if first_time==True:
         install_config.read(LAST_SQL)
         if not install_config.has_section('sql'):
-            install_config.add_section('sql') 
+            install_config.add_section('sql')
     else:
-        install_config.read(LAST_SQL) 
+        install_config.read(LAST_SQL)
         last_sql_id=install_config.getint('sql', 'last_id')
-                
-        
+
+
     available_files=[int(x.replace(".sql", '')) for x in os.listdir(SQL_UPGRADE_PATH)]
-    
+
     for id in xrange(last_sql_id+1, max(available_files)+1):
         upgrade_sql="%s/%s.sql" % (SQL_UPGRADE_PATH, id)
         if not os.path.exists(upgrade_sql):
@@ -359,11 +359,11 @@ def db_upgrade():
         if os.path.exists(os.path.join(BILLING_PATH, 'migrations', 'migration_%s.py' % id)):
             worker.post_migrate()
 
-            
+
 
         install_config.set('sql','last_id',id)
-            
-        
+
+
     if first_time==True:
         with open(LAST_SQL, 'wb') as configfile:
             install_config.write(configfile)

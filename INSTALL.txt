@@ -37,7 +37,7 @@ CLEAN INSTALL:
 
 POST-INSTALLATION STEPS:
 
-6.1) Open file /opt/ebs/web/ebscab/settings_local.py and override values from /opt/ebs/web/ebscab/settings.py
+6.1) Open file /opt/ebs/web/ebscab/ebscab/settings_local.py and override values from /opt/ebs/web/ebscab/ebscab/settings.py
 NOTE: This file will not be eraced updated processess
 
 6.2) After configure web-cabinet:
@@ -63,7 +63,7 @@ UPGRADE (FROM v.1.4.1):
   # cd /opt/
   # tar -xvzf <path of the EBS archive> fabfile.py install.txt
 
-2) Install PostgreSQL (9.1): 
+2) Install PostgreSQL (9.1):
   # apt-get update
   # apt-get install postgresql-9.1 postgresql-contrib-9.1
 
@@ -95,5 +95,5 @@ UPGRADE (FROM v.1.4.1):
 9) Upgrade:
   # fab upgrade_14:<path of the EBS archive>
 
-CAUTION: This is not final version. About finded bugs, errors - please report on our forum: http://forum.expertbilling.ru/ 
+CAUTION: This is not final version. About finded bugs, errors - please report on our forum: http://forum.expertbilling.ru/
 
