@@ -15,19 +15,15 @@ md5 = hashlib.md5()
 
 
 def ssh_client(host, username, password, command):
-    # print command
     global SSH_BACKEND
     global logger
 
-    # logger = isdlogger.isdlogger('logging', loglevel=0, ident='ebs_core', filename='log/core_log')
     print command
 
     if SSH_BACKEND == None:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(host, username=username, password=password)
-
-        # logger.debug('NAS Manipulation command string %s', (command,))
 
         stdin, stdout, stderr = ssh.exec_command(command)
         out = stdout.readlines()
@@ -46,11 +42,7 @@ def ssh_client(host, username, password, command):
             command_dict=command_dict
         )
 
-        # logger.debug('NAS Manipulation command string %s', (command_string,))
-
         status, output = commands.getstatusoutput(command_string)
-
-        # logger.debug('NAS Manipulation try status=%s output=%s', (status, output))
 
         return output, status == 0
 
@@ -84,10 +76,6 @@ def cred(account, subacc, access_type, nas, format_string):
     )
     if not command_string:
         return True
-
-    # print command_string
-    # print command_dict
-    # log_debug_('CRED ssh dictionary: %s' % command_dict)
 
     try:
         if nas.get('type') != 'localhost':
@@ -127,7 +115,6 @@ def command_string_parser(command_string='', command_dict={}):
             cs_str = re.compile('\$%s' % p)
             command_string = cs_str.sub(str(command_dict[p]), command_string)
 
-    # print command_string
     return command_string
 
 
@@ -288,7 +275,6 @@ def rosExecute(apiros, command):
             break
         result.append(x)
 
-    # s.close()
     return make_dict(result)
 
 
