@@ -257,7 +257,7 @@ class ModelLinkWidget(forms.widgets.HiddenInput):
 ''' % ( escape(unicode(value))))
 
 
-class MyRadioInput(forms.widgets.RadioInput):
+class MyRadioInput(forms.widgets.RadioChoiceInput):
 
     def __unicode__(self):
         if 'id' in self.attrs:

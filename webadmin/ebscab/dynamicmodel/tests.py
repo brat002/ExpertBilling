@@ -36,6 +36,7 @@ class TestForm(DynamicForm):
 
     class Meta:
         model = TestModel
+        fields = '__all__'
 
 
 class M2MModel(models.Model):
@@ -62,6 +63,7 @@ class FalseForm(DynamicForm):
 
     class Meta:
         model = FalseModel
+        fields = '__all__'
 
 
 class TypelessModel(DynamicModel):
@@ -73,6 +75,7 @@ class TypelessForm(DynamicForm):
 
     class Meta:
         model = TypelessModel
+        fields = '__all__'
 
 
 # testing DynamicModel
