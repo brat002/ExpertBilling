@@ -13,7 +13,7 @@ from django.forms.models import ModelChoiceField
 from django.forms.widgets import (
     HiddenInput,
     RadioFieldRenderer,
-    RadioInput,
+    RadioChoiceInput,
     RadioSelect
 )
 from django.utils.encoding import force_unicode
