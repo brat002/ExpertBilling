@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import json
 from decimal import Decimal
 from sys import modules
 
@@ -12,7 +13,6 @@ from django.db import models, transaction
 from django.db.utils import DatabaseError
 from django.template import Context
 from django.template.loader import get_template
-from django.utils import simplejson
 
 from ebsadmin.lib import instance_dict
 
@@ -28,7 +28,7 @@ def default(obj):
     else:
         if type(obj) == ipaddr.IPv4Network or type(obj) == ipaddr.IPAddress:
             return str(obj)
-        return simplejson.JSONEncoder().default(obj)
+        return json.JSONEncoder().default(obj)
 
 
 def compare(old, new):
@@ -202,7 +202,7 @@ class LogItem(models.Model):
     @property
     def data(self):
         if self._data is None and not self.serialized_data is None:
-            self._data = simplejson.loads(self.serialized_data)
+            self._data = json.loads(self.serialized_data)
         return self._data
 
     @data.setter
@@ -230,15 +230,15 @@ class LogItem(models.Model):
                    .select_related('user')
                    .distinct())[0]
             if log:
-                sd = simplejson.loads(log.serialized_data)
+                sd = json.loads(log.serialized_data)
 
         except:
             pass
 
         if self._data is not None and self.serialized_data is None:
-            self.serialized_data = simplejson.dumps(
+            self.serialized_data = json.dumps(
                 self._data, ensure_ascii=False, default=default)
-            self.changed_data = simplejson.dumps(
+            self.changed_data = json.dumps(
                 compare(sd.get('object1_str', {}),
                         self._data.get('object1_str', {})),
                 ensure_ascii=False,

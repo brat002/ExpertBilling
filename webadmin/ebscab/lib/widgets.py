@@ -2,6 +2,7 @@
 # $Id$
 
 import datetime
+import json
 
 from django import forms
 from django.conf import settings
@@ -11,7 +12,6 @@ from django.utils.dates import MONTHS
 from django.utils.encoding import smart_unicode
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
-from django.utils.simplejson import JSONEncoder
 
 
 class JQueryAutoCompleteFilter(forms.TextInput):
@@ -29,13 +29,13 @@ class JQueryAutoCompleteFilter(forms.TextInput):
         self.attrs = {'autocomplete': 'on'}
         self.source = source
         if len(options) > 0:
-            self.options = JSONEncoder().encode(options)
+            self.options = json.JSONEncoder().encode(options)
 
         self.attrs.update(attrs)
 
     def render_js(self, field_id):
         if isinstance(self.source, list):
-            source = JSONEncoder().encode(self.source)
+            source = json.JSONEncoder().encode(self.source)
         elif isinstance(self.source, str):
             source = "'%s'" % escape(self.source)
         else:

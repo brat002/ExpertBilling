@@ -26,15 +26,12 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import datetime
+import json
 from decimal import Decimal
 
 import ipaddr
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-try:
-    import json
-except ImportError:
-    from django.utils import simplejson as json
 from django.forms.fields import Field
 from django.forms.util import ValidationError as FormValidationError
 from django.utils.translation import ugettext_lazy as _

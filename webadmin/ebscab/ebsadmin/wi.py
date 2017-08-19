@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import json
 
-import simplejson as json
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse

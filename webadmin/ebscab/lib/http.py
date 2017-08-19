@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # $Id: http.py 1395 2008-08-22 09:24:49Z dmitry $
 
+import json
 from datetime import datetime
 from decimal import Decimal
 
@@ -8,10 +9,9 @@ import ipaddr
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.utils import simplejson
 
 
-class MyJSONEncoder(simplejson.JSONEncoder):
+class MyJSONEncoder(json.JSONEncoder):
     """JSON encoder which understands decimals."""
 
     def default(self, obj):
@@ -33,7 +33,7 @@ class MyJSONEncoder(simplejson.JSONEncoder):
             if type(obj) == ipaddr.IPv4Network or \
                     type(obj) == ipaddr.IPAddress:
                 return str(obj)
-            return simplejson.JSONEncoder.default(self, obj)
+            return json.JSONEncoder.default(self, obj)
 
 
 def render_response(request, tmpl, output):
@@ -48,7 +48,7 @@ class JsonResponse(HttpResponse):
 
     def __init__(self, data):
         super(JsonResponse, self).__init__(
-            content=simplejson.dumps(data,
+            content=json.dumps(data,
                                      ensure_ascii=False,
                                      cls=MyJSONEncoder),
             mimetype='application/json')

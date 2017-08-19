@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-try:
-    import json
-except:
-    import simplejson as json
+import json
 
 import psycopg2.extras
 import psycopg2
