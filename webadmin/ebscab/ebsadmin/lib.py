@@ -3,7 +3,7 @@
 from itertools import chain, dropwhile
 from operator import mul, attrgetter, __not__
 
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.db.models.fields import DateField, DecimalField
 from django.db.models.fields.related import ForeignKey
@@ -64,7 +64,7 @@ def instance_dict(instance, key_format=None, normal_fields=False, fields=[]):
 
         elif isinstance(field, DateField):
             value = value.strftime('%Y-%m-%d %H:%M:%S') if value else None
-        elif isinstance(field, generic.GenericForeignKey):
+        elif isinstance(field, GenericForeignKey):
             value = unicode(value)
         elif isinstance(field, DecimalField):
             value = float(value) if value else 0
