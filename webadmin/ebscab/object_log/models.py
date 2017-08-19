@@ -52,7 +52,6 @@ class LogActionManager(models.Manager):
         else:
             self._DELAYED.append((key, template, build_cache))
 
-    @transaction.commit_manually
     def _register(self, key, template, build_cache=None):
         """
         Registers and caches an LogAction type
@@ -60,6 +59,7 @@ class LogActionManager(models.Manager):
         @param key : Key identifying log action
         @param template : template associated with key
         """
+        transaction.set_autocommit(False)
         try:
             try:
                 action = self.get_from_cache(key)
@@ -76,6 +76,7 @@ class LogActionManager(models.Manager):
             transaction.rollback()
         finally:
             transaction.commit()
+            transaction.set_autocommit(True)
 
     def _register_delayed(sender, **kwargs):
         """
