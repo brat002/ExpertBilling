@@ -19,7 +19,7 @@ from django.template.context import RequestContext
 from django.template.loader import get_template
 from django.utils.translation import ugettext as _
 
-import django_tables2 as tables
+from django_tables2.tables import Table
 from django_tables2_reports.csv_to_excel import (
     HAS_PYEXCELERATOR,
     convert_to_excel
@@ -30,7 +30,7 @@ from django_tables2_reports.utils import (
 )
 
 
-class TableReport(tables.Table):
+class TableReport(Table):
 
     template_csv = 'django_tables2_reports/table_report.html'
 
