@@ -82,7 +82,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'lib.context_processors.default_current_view_name',
     'lib.context_processors.project_settings',
-    
+
 )
 
 
@@ -121,7 +121,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.admin',
-#    'django.contrib.staticfiles',
+    'django.contrib.staticfiles',
     'radius',
     'nas',
     'billservice',
@@ -158,8 +158,8 @@ AJAX_LOOKUP_CHANNELS = {
     'hardware_fts': ('billservice.lookups', 'HardwareLookup'),
     'organization_name': ("billservice.lookups", "OrganizationLookup"),
     'subaccount_fts': ('billservice.lookups', 'SubAccountFTSLookup')
-    
-    
+
+
 }
 
 AJAX_SELECT_BOOTSTRAP = False
@@ -220,7 +220,7 @@ PROVIDER_LOGO = 'img/ebs.jpg' # in media dir
 GETPAID_BACKENDS_SETTINGS = {
     # Please provide your settings for backends
     'payments.liqpay' : {
-         'TYPE': 'frontend', 
+         'TYPE': 'frontend',
         'DEFAULT_CURRENCY' : 'UAH',
         'MERCHANT_ID': '',
         'MERCHANT_SIGNATURE': '',
@@ -230,28 +230,28 @@ GETPAID_BACKENDS_SETTINGS = {
     },
 
     'payments.easypay' : {
-                          'TYPE': 'backend', 
+                          'TYPE': 'backend',
         'DEFAULT_CURRENCY' : 'UAH',
         'SERVICE_ID' : '1',
         'allowed_ip': ('93.183.196.28', '93.183.196.26'),
 
     },
     'payments.ru_sberbank' : {
-                          'TYPE': 'backend', 
+                          'TYPE': 'backend',
         'DEFAULT_CURRENCY' : 'RUB',
         'PASSWORD' : '12345',
         'allowed_ip': ('93.183.196.28', '93.183.196.26'),
 
     },
     'payments.masterplat' : {
-                          'TYPE': 'backend', 
+                          'TYPE': 'backend',
         'DEFAULT_CURRENCY' : 'RUB',
         'DUSER' : '12345',
         'DPASS': '12345',
 
     },
     'payments.platezhkaua' : {
-                          'TYPE': 'backend', 
+                          'TYPE': 'backend',
         'DEFAULT_CURRENCY' : 'UAH',
         'LOGIN' : '12345',
         'PASSWORD': '12345',
@@ -272,14 +272,14 @@ SENDSMS_BACKENDS_SETTINGS = {
                                                          'PASSWORD': '',
                                                          },
                              'sendsms.backends.smsru': {
-                                                         'FROM_NAME': '', 
+                                                         'FROM_NAME': '',
                                                          'API_ID': '',
                                                          'TRANSLIT': '1',
                                                          'TEST': '0',
                                                          'PARTNER_ID': '',
                                                          },
                              'sendsms.backends.smspilotru': {
-                                                         'FROM_NAME': '', 
+                                                         'FROM_NAME': '',
                                                          'API_ID': '',
                                                          }
                              }
@@ -334,4 +334,4 @@ logging.basicConfig(level=LEVEL,
 root = logging.basicConfig()
 
 
-    
+
