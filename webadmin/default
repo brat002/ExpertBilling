@@ -65,7 +65,7 @@
         </Directory>
 
 		WSGIApplicationGroup %{GLOBAL}
-        WSGIScriptAlias / /opt/ebs/web/ebscab/ebscab/django.wsgi
+        WSGIScriptAlias / /opt/ebs/web/ebscab/ebscab/wsgi.py
 
         ErrorLog /opt/ebs/web/error.log
 
