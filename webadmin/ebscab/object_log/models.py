@@ -88,7 +88,7 @@ class LogActionManager(models.Manager):
         try:
             for args in LogActionManager._DELAYED:
                 LogAction.objects._register(*args)
-            models.signals.post_syncdb.disconnect(
+            models.signals.post_migrate.disconnect(
                 LogActionManager._register_delayed)
             LogActionManager._SYNCED = True
         except DatabaseError:
@@ -97,7 +97,7 @@ class LogActionManager(models.Manager):
 
     # connect signal for delayed registration.  Filter by this module so that
     # it is only called once
-    models.signals.post_syncdb.connect(
+    models.signals.post_migrate.connect(
         _register_delayed, sender=modules['object_log.models'])
 
     def get_from_cache(self, key):

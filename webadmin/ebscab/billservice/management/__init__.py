@@ -26,4 +26,4 @@ def alter_django_auth_permissions(sender, **kwargs):
     else:
         raise Exception('table auth_permission has not column "name"')
 
-django.db.models.signals.post_syncdb.connect(alter_django_auth_permissions)
+django.db.models.signals.post_migrate.connect(alter_django_auth_permissions)

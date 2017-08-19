@@ -1024,7 +1024,7 @@ def create_usersettings(sender, created_models=[], instance=None,
                 s = UserSettings(user=u)
                 s.save()
 
-models.signals.post_syncdb.connect(create_usersettings)
+models.signals.post_migrate.connect(create_usersettings)
 models.signals.post_save.connect(create_usersettings, sender=User)
 
 
