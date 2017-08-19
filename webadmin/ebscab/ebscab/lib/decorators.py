@@ -91,6 +91,6 @@ def render_xml(func):
         xml = func(request, *args, **kwargs)
         return HttpResponse(
             response,
-            mimetype="text/xml",
+            content_type="text/xml",
             contenttype="text/xml;charset=utf-8")
     return wrapper

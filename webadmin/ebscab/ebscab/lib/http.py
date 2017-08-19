@@ -51,4 +51,4 @@ class JsonResponse(HttpResponse):
             content=json.dumps(data,
                                      ensure_ascii=False,
                                      cls=MyJSONEncoder),
-            mimetype='application/json')
+            content_type='application/json')
