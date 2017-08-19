@@ -1836,11 +1836,10 @@ class SystemUser(models.Model):
 
     def has_perm(self, perm):
         app, internal_name = perm.split('.')
-        app_exist = (self.permissiongroup.permissions
-                     .filter(app=app, internal_name=internal_name)
-                     .exists())
-        r = self.status and (self.is_superuser or
-                             (app_exist if self.permissiongroup else False))
+        r = self.status and (self.is_superuser or (
+            (self.permissiongroup.permissions
+             .filter(app=app, internal_name=internal_name)
+             .exists()) if self.permissiongroup else False))
         return r
 
     def delete(self):
