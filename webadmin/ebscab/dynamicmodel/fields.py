@@ -33,7 +33,7 @@ import ipaddr
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.forms.fields import Field
-from django.forms.util import ValidationError as FormValidationError
+from django.forms.utils import ValidationError as FormValidationError
 from django.utils.translation import ugettext_lazy as _
 
 
