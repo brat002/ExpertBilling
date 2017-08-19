@@ -39,7 +39,7 @@ webadmin/ebscab/static/
 services/nf/pkg/
 venv/
 
-env/
+PYFILES
 TODO
 .sublimelinterrc
 env/
