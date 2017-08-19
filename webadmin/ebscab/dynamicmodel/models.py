@@ -179,7 +179,7 @@ class DynamicSchemaQuerySet(models.query.QuerySet):
 
 class DynamicSchemaManager(models.Manager):
 
-    def get_query_set(self):
+    def get_queryset(self):
         return DynamicSchemaQuerySet(self.model, using=self._db)
 
     def get_for_model(self, model_class, type_value=''):
@@ -270,7 +270,7 @@ class DynamicSchemaFieldQuerySet(models.query.QuerySet):
 
 class DynamicSchemaFieldManager(models.Manager):
 
-    def get_query_set(self):
+    def get_queryset(self):
         return DynamicSchemaFieldQuerySet(self.model, using=self._db)
 
 
