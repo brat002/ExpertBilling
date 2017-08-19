@@ -9,7 +9,6 @@ import six
 from django.db.models.fields import FieldDoesNotExist
 from django.utils.datastructures import SortedDict
 from django.utils.safestring import SafeData
-from django_tables2.templatetags.django_tables2 import title
 from django_tables2.utils import A, AttributeDict, OrderBy, OrderByTuple
 
 
@@ -215,6 +214,7 @@ class Column(object):  # pylint: disable=R0902
                 # If the author has used mark_safe, we're going to assume the
                 # author wants the value used verbatim.
                 return self.verbose_name
+            from django_tables2.templatetags.django_tables2 import title  # avoid cyclic imports
             return title(self.verbose_name)
 
     def render(self, value):
@@ -369,6 +369,7 @@ class BoundColumn(object):
             # that the author used mark_safe to include HTML in the value. If
             # this is the case, we leave it verbatim.
             return verbose_name
+        from django_tables2.templatetags.django_tables2 import title  # avoid cyclic imports
         return title(verbose_name)
 
     @property

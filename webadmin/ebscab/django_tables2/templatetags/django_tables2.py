@@ -5,7 +5,6 @@ from __future__ import absolute_import, unicode_literals
 import re
 import tokenize
 
-import django_tables2 as tables
 import six
 from django import template
 from django.core.exceptions import ImproperlyConfigured
@@ -16,6 +15,8 @@ from django.utils.datastructures import SortedDict
 from django.utils.html import escape
 from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
+
+from django_tables2 import tables
 from django_tables2.config import RequestConfig
 
 

@@ -2,29 +2,29 @@
 
 from django.utils.safestring import mark_safe
 
-import django_tables2 as django_tables
+from django_tables2 import columns
 from django_tables2_reports.tables import TableReport
 
 from helpdesk.models import prio, Ticket
 
 
-class FormatUrlColumn(django_tables.Column):
+class FormatUrlColumn(columns.Column):
 
     def render(self, value):
         return value.get_absolute_url()
 
 
 class TicketTable(TableReport):
-    ticket = django_tables.TemplateColumn(
+    ticket = columns.TemplateColumn(
         "<a href='{{record.get_absolute_url}}'>{{record.ticket}}</a>",
         verbose_name='Заявка'
     )
-    title = django_tables.TemplateColumn(
+    title = columns.TemplateColumn(
         "<a href='{{record.get_absolute_url}}' data='{{record.id}}' "
         "class='title-tooltip'>{{record.title}}</a>",
         verbose_name='Тема'
     )
-    d = django_tables.TemplateColumn(
+    d = columns.TemplateColumn(
         "<a href='{{record.get_remove_url}}' class='show-confirm'>"
         "<i class='icon-remove'></i></a>",
         verbose_name=' ',
@@ -50,16 +50,16 @@ class TicketTable(TableReport):
 
 
 class UnpagedTicketTable(TableReport):
-    ticket = django_tables.TemplateColumn(
+    ticket = columns.TemplateColumn(
         "<a href='{{record.get_absolute_url}}'>{{record.ticket}}</a>",
         verbose_name='Заявка'
     )
-    title = django_tables.TemplateColumn(
+    title = columns.TemplateColumn(
         "<a href='{{record.get_absolute_url}}' data='{{record.id}}' "
         "class='title-tooltip'>{{record.title}}</a>",
         verbose_name='Тема'
     )
-    d = django_tables.TemplateColumn(
+    d = columns.TemplateColumn(
         "<a href='{{record.get_remove_url}}' class='show-confirm'>"
         "<i class='icon-remove'></i></a>",
         verbose_name=' ',
@@ -85,16 +85,16 @@ class UnpagedTicketTable(TableReport):
 
 
 class UnassignedTicketTable(TableReport):
-    ticket = django_tables.TemplateColumn(
+    ticket = columns.TemplateColumn(
         "<a href='{{record.get_absolute_url}}'>{{record.ticket}}</a>",
         verbose_name='Заявка'
     )
-    title = django_tables.TemplateColumn(
+    title = columns.TemplateColumn(
         "<a href='{{record.get_absolute_url}}' data='{{record.id}}' "
         "class='title-tooltip'>{{record.title}}</a>",
         verbose_name='Тема'
     )
-    action = django_tables.TemplateColumn(
+    action = columns.TemplateColumn(
         '''\
 <a href='{{record.get_absolute_url}}?take' class='btn btn-primary btn-mini'>\
 Принять</a>&nbsp;<a class='btn btn-danger btn-mini' \

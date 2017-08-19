@@ -59,8 +59,8 @@ from billservice.models import (
     TransactionType
 )
 
-import django_tables2 as django_tables
-from django_tables2.utils import A
+from django_tables2 import columns, rows, tables
+from django_tables2.utils import A, AttributeDict
 from django_tables2_reports.tables import TableReport
 from dynamicmodel.models import DynamicSchemaField
 from getpaid.models import Payment
@@ -76,7 +76,7 @@ from ebsadmin.transactionreport import servicemodel_by_table
 
 def showconfirmcolumn(href='{{record.get_remove_url}}', message=_(u'Удалить?'),
                       verbose_name=' ', icon_type='icon-remove'):
-    return django_tables.TemplateColumn(
+    return columns.TemplateColumn(
         '<a href="%s" class="show-confirm" title="%s" data-clickmessage="%s">'
         '<i class="%s"></i></a>' % (href, message, message, icon_type),
         verbose_name=verbose_name,
@@ -85,7 +85,7 @@ def showconfirmcolumn(href='{{record.get_remove_url}}', message=_(u'Удалит
 
 
 def modallinkcolumn(url_name='', modal_title='', modal_id=''):
-    return django_tables.LinkColumn(
+    return columns.LinkColumn(
         url_name,
         get_params={
             'id': A('pk')
@@ -101,7 +101,7 @@ def modallinkcolumn(url_name='', modal_title='', modal_id=''):
     )
 
 
-class EbsadminTable(django_tables.Table):
+class EbsadminTable(tables.Table):
 
     def __init__(self, *args, **argv):
         super(EbsadminTable, self).__init__(*args, **argv)
@@ -125,25 +125,25 @@ class EbsadminTableReport(TableReport):
         }
 
 
-class FormatBlankColumn(django_tables.Column):
+class FormatBlankColumn(columns.Column):
 
     def render(self, value):
         return "" if value is None else value
 
 
-class FormatBooleanHTMLColumn(django_tables.TemplateColumn):
+class FormatBooleanHTMLColumn(columns.TemplateColumn):
 
     def render(self, value):
         return "" if value else value
 
 
-class FormatFloatColumn(django_tables.Column):
+class FormatFloatColumn(columns.Column):
 
     def render(self, value):
         return "%.2f" % float(value) if value else ''
 
 
-class FormatDateTimeColumn(django_tables.Column):
+class FormatDateTimeColumn(columns.Column):
 
     def render(self, value):
         try:
@@ -152,13 +152,13 @@ class FormatDateTimeColumn(django_tables.Column):
             return value
 
 
-class FormatBlankSpeedColumn(django_tables.LinkColumn):
+class FormatBlankSpeedColumn(columns.LinkColumn):
 
     def render(self, value):
         return value if value else ''
 
 
-class YesNoColumn(django_tables.Column):
+class YesNoColumn(columns.Column):
 
     def render(self, value):
         return mark_safe(
@@ -166,7 +166,7 @@ class YesNoColumn(django_tables.Column):
             ('accept' and True or 'cross'))
 
 
-class RadioColumn(django_tables.Column):
+class RadioColumn(columns.Column):
 
     def render(self, value, bound_column):
         default = {
@@ -176,14 +176,14 @@ class RadioColumn(django_tables.Column):
         }
         general = self.attrs.get('input')
         specific = self.attrs.get('td__input')
-        attrs = django_tables.utils.AttributeDict(
+        attrs = AttributeDict(
             default, **(specific or general or {}))
         return mark_safe(u'<input %s/>' % attrs.as_html())
 
 
 class SubAccountsTable(EbsadminTable):
-    id = django_tables.LinkColumn('subaccount', get_params={'id': A('pk')})
-    username = django_tables.LinkColumn(
+    id = columns.LinkColumn('subaccount', get_params={'id': A('pk')})
+    username = columns.LinkColumn(
         'subaccount', get_params={'id': A('pk')})
     nas = FormatBlankColumn()
 
@@ -209,7 +209,7 @@ class SubAccountsTable(EbsadminTable):
 
 
 class AccountHardwareTable(EbsadminTable):
-    id = django_tables.LinkColumn(
+    id = columns.LinkColumn(
         'accounthardware',
         get_params={'id': A('pk')},
         attrs={
@@ -227,7 +227,7 @@ class AccountHardwareTable(EbsadminTable):
 
 
 class AccountAddonServiceTable(EbsadminTable):
-    id = django_tables.LinkColumn(
+    id = columns.LinkColumn(
         'accountaddonservice',
         get_params={
             'id': A('pk')
@@ -239,8 +239,8 @@ class AccountAddonServiceTable(EbsadminTable):
             }
         }
     )
-    service = django_tables.Column()
-    subaccount = django_tables.LinkColumn(
+    service = columns.Column()
+    subaccount = columns.LinkColumn(
         'subaccount',
         get_params={
             'id': A('subaccount.id')
@@ -252,7 +252,7 @@ class AccountAddonServiceTable(EbsadminTable):
             }
         }
     )
-    cost = django_tables.TemplateColumn(
+    cost = columns.TemplateColumn(
         '{{record.cost|default:record.service.cost|floatformat}}')
     activated = FormatDateTimeColumn()
     deactivated = FormatDateTimeColumn()
@@ -297,7 +297,7 @@ class AccountTarifTable(EbsadminTable):
 class TotalTransactionReportTable(EbsadminTableReport):
     tariff__name = FormatBlankColumn(verbose_name=_(u'Тариф'))
     id = FormatBlankColumn()
-    account = django_tables.LinkColumn(
+    account = columns.LinkColumn(
         'account_edit',
         verbose_name=_(u'Аккаунт'),
         get_params={'id': A('account')},
@@ -314,7 +314,7 @@ class TotalTransactionReportTable(EbsadminTableReport):
     )
     bill = FormatBlankColumn(verbose_name=_(u'Платёжный документ'))
     description = FormatBlankColumn(verbose_name=_(u'Комментарий'))
-    service_id = django_tables.Column(verbose_name=_(u'ID Услуги'))
+    service_id = columns.Column(verbose_name=_(u'ID Услуги'))
     type = FormatBlankColumn(verbose_name=_(u'Тип'), accessor=A('type__name'))
     is_bonus = FormatBlankColumn(verbose_name=_(u'Бонус'))
     summ = FormatFloatColumn(verbose_name=_(u'Сумма'))
@@ -322,7 +322,7 @@ class TotalTransactionReportTable(EbsadminTableReport):
     created = FormatDateTimeColumn(verbose_name=_(u'Создана'))
     end_promise = FormatDateTimeColumn(verbose_name=_(u'Окончание о.п.'))
     promise_expired = FormatDateTimeColumn()
-    d = django_tables.CheckBoxColumn(
+    d = columns.CheckBoxColumn(
         verbose_name=' ', orderable=False, accessor=A('id'))
 
     def render_d(self, value, record):
@@ -367,7 +367,7 @@ class TotalTransactionReportTable(EbsadminTableReport):
 
 class TransactionReportTable(EbsadminTableReport):
     id = FormatBlankColumn()
-    account = django_tables.LinkColumn(
+    account = columns.LinkColumn(
         'account_edit',
         verbose_name=_(u'Аккаунт'),
         get_params={'id': A('account')},
@@ -388,7 +388,7 @@ class TransactionReportTable(EbsadminTableReport):
         verbose_name=_(u'Выполнил'),
         accessor=A('systemuser__username')
     )
-    d = django_tables.CheckBoxColumn(
+    d = columns.CheckBoxColumn(
         verbose_name=' ', orderable=False, accessor=A('id'))
 
     def render_d(self, value, record):
@@ -412,7 +412,7 @@ class TransactionReportTable(EbsadminTableReport):
 
 class AddonServiceTransactionReportTable(EbsadminTableReport):
     id = FormatBlankColumn()
-    account = django_tables.LinkColumn(
+    account = columns.LinkColumn(
         'account_edit',
         verbose_name=_(u'Аккаунт'),
         get_params={'id': A('account')},
@@ -430,7 +430,7 @@ class AddonServiceTransactionReportTable(EbsadminTableReport):
     type = FormatBlankColumn(verbose_name=_(u'Тип'), accessor=A('type__name'))
     prev_balance = FormatFloatColumn(
         verbose_name=_(u'Предыдущий баланс'))
-    d = django_tables.CheckBoxColumn(
+    d = columns.CheckBoxColumn(
         verbose_name=' ', orderable=False, accessor=A('id'))
 
     def render_d(self, value, record):
@@ -455,7 +455,7 @@ class AddonServiceTransactionReportTable(EbsadminTableReport):
 
 class PeriodicalServiceTransactionReportTable(EbsadminTableReport):
     id = FormatBlankColumn()
-    account__username = django_tables.LinkColumn(
+    account__username = columns.LinkColumn(
         'account_edit',
         verbose_name=_(u'Аккаунт'),
         get_params={'id': A('account')}
@@ -469,11 +469,11 @@ class PeriodicalServiceTransactionReportTable(EbsadminTableReport):
         orderable=False,
         accessor=A('account__house')
     )
-    service = django_tables.Column(accessor=A('service__name'))
+    service = columns.Column(accessor=A('service__name'))
     prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
-    type = django_tables.Column(accessor=A('type__name'))
+    type = columns.Column(accessor=A('type__name'))
     real_created = FormatDateTimeColumn()
-    d = django_tables.CheckBoxColumn(
+    d = columns.CheckBoxColumn(
         verbose_name=' ', orderable=False, accessor=A('id'))
 
     def render_d(self, value, record):
@@ -499,7 +499,7 @@ class PeriodicalServiceTransactionReportTable(EbsadminTableReport):
 
 class TrafficTransactionReportTable(EbsadminTableReport):
     id = FormatBlankColumn()
-    account__username = django_tables.LinkColumn(
+    account__username = columns.LinkColumn(
         'account_edit',
         verbose_name=_(u'Аккаунт'),
         get_params={'id': A('account')}
@@ -511,7 +511,7 @@ class TrafficTransactionReportTable(EbsadminTableReport):
         orderable=False, accessor=A('account__house')
     )
     prev_balance = FormatFloatColumn(verbose_name=_(u'Предыдущий баланс'))
-    d = django_tables.CheckBoxColumn(
+    d = columns.CheckBoxColumn(
         verbose_name=' ', orderable=False, accessor=A('id'))
 
     def render_d(self, value, record):
@@ -542,9 +542,9 @@ class TrafficTransactionReportTable(EbsadminTableReport):
 
 class CashierReportTable(EbsadminTableReport):
     summ = FormatFloatColumn(verbose_name=_(u'Сумма'))
-    fullname = django_tables.Column(
+    fullname = columns.Column(
         verbose_name=u'ФИО', accessor=A('account.fullname'))
-    address = django_tables.TemplateColumn(
+    address = columns.TemplateColumn(
         (u"{{record.account.street|default:''}} "
          u"{{record.account.house|default:''}}-"
          u"{{record.account.room|default:''}}"),
@@ -560,23 +560,23 @@ class CashierReportTable(EbsadminTableReport):
 
 
 class AccountsReportTable(EbsadminTableReport):
-    row_number = django_tables.Column(
+    row_number = columns.Column(
         verbose_name='#', empty_values=(), orderable=False)
-    username = django_tables.LinkColumn(
+    username = columns.LinkColumn(
         'account_edit', verbose_name=_(u'Логин'), get_params={'id': A('pk')})
     contract = FormatBlankColumn(verbose_name=_(u'Договор'))
     fullname = FormatBlankColumn()
-    address = django_tables.TemplateColumn(
+    address = columns.TemplateColumn(
         (u"{{record.street|default:''}} "
          u"{{record.house|default:''}}-{{record.room|default:''}}"),
         orderable=False
     )
-    entrance = django_tables.Column(verbose_name=_(u'Подъезд'))
-    row = django_tables.Column(verbose_name=_(u'Этаж'))
+    entrance = columns.Column(verbose_name=_(u'Подъезд'))
+    row = columns.Column(verbose_name=_(u'Этаж'))
     ballance = FormatFloatColumn()
     tariff = FormatBlankColumn(verbose_name=_(u"Тариф"), orderable=False)
     ips = FormatBlankColumn(verbose_name=_(u"IP"), orderable=False)
-    d = django_tables.CheckBoxColumn(
+    d = columns.CheckBoxColumn(
         verbose_name=' ', orderable=False, accessor=A('pk'))
 
     def __init__(self, form, *args, **kwargs):
@@ -584,7 +584,7 @@ class AccountsReportTable(EbsadminTableReport):
         self.counter = itertools.count()
         self.footer_data = self.TableDataClass(
             data=[self.data.queryset.aggregate(ballance=Sum('ballance'))], table=self)
-        self.footer = django_tables.rows.BoundRows(self.footer_data, self)
+        self.footer = rows.BoundRows(self.footer_data, self)
 
     def paginate(self, *args, **kwargs):
         super(AccountsReportTable, self).paginate(*args, **kwargs)
@@ -601,20 +601,20 @@ class AccountsReportTable(EbsadminTableReport):
 
 class AccountsCashierReportTable(EbsadminTableReport):
     d = RadioColumn(verbose_name=' ', orderable=False, accessor=A('pk'))
-    row_number = django_tables.Column(
+    row_number = columns.Column(
         verbose_name=u'#', empty_values=(), orderable=False)
-    username = django_tables.LinkColumn(
+    username = columns.LinkColumn(
         'account_edit', verbose_name=_(u'Логин'), get_params={'id': A('pk')})
     contract = FormatBlankColumn(verbose_name=_(u'Договор'))
     fullname = FormatBlankColumn()
     tariff = FormatBlankColumn()
-    address = django_tables.TemplateColumn(
+    address = columns.TemplateColumn(
         (u"{{record.city|default:''}} {{record.street|default:''}} "
          u"{{record.house|default:''}}-{{record.room|default:''}}"),
         orderable=False
     )
-    entrance = django_tables.Column(verbose_name=_(u'Подъезд'))
-    row = django_tables.Column(verbose_name=_(u'Этаж'))
+    entrance = columns.Column(verbose_name=_(u'Подъезд'))
+    row = columns.Column(verbose_name=_(u'Этаж'))
     ballance = FormatFloatColumn()
     bonus_ballance = FormatFloatColumn()
 
@@ -630,46 +630,46 @@ class AccountsCashierReportTable(EbsadminTableReport):
 
 
 class ActiveSessionTable(EbsadminTableReport):
-    row_number = django_tables.Column(
+    row_number = columns.Column(
         verbose_name=u'#', empty_values=(), orderable=False)
-    session_status = django_tables.TemplateColumn(
+    session_status = columns.TemplateColumn(
         "<span class='label {% if record.session_status == 'ACK' %}info"
         "{% endif %}'>{{ record.session_status }}</span>")
     date_start = FormatDateTimeColumn()
     interrim_update = FormatDateTimeColumn(
         verbose_name=_(u'Последнее обновление'))
-    caller_id = django_tables.Column(
+    caller_id = columns.Column(
         verbose_name=_(u'Caller ID'), empty_values=())
-    address = django_tables.TemplateColumn(
+    address = columns.TemplateColumn(
         (u"{{record.account__street|default:''}} "
          u"{{record.account__house|default:''}}-"
          u"{{record.account__room|default:''}}"),
         orderable=False,
         verbose_name=u'Адрес'
     )
-    framed_ip_address = django_tables.Column(
+    framed_ip_address = columns.Column(
         verbose_name=_(u'IP'), empty_values=())
-    framed_protocol = django_tables.Column(
+    framed_protocol = columns.Column(
         verbose_name=_(u'Протокол'), empty_values=())
-    session_time = django_tables.Column(
+    session_time = columns.Column(
         verbose_name=_(u'Онлайн'), empty_values=())
     date_end = FormatDateTimeColumn()
-    nas_int = django_tables.Column(
+    nas_int = columns.Column(
         verbose_name=_(u'NAS'), accessor=A('nas_int__name'))
-    bytes = django_tables.TemplateColumn(
+    bytes = columns.TemplateColumn(
         "{{record.bytes_in|filesizeformat}}/"
         "{{record.bytes_out|filesizeformat}}",
         verbose_name=_(u'Байт'),
         orderable=False
     )
-    subaccount__username = django_tables.LinkColumn(
+    subaccount__username = columns.LinkColumn(
         'subaccount',
         get_params={
             'id': A('subaccount')
         },
         verbose_name=_(u'Субаккаунт')
     )
-    action = django_tables.TemplateColumn(
+    action = columns.TemplateColumn(
         '''\
 <button data='{{record.id}}' class='btn btn-success btn-mini sreset' \
 title='Soft reset'>R</button>&nbsp;
@@ -711,9 +711,9 @@ data='{{record.framed_ip_address}}'>P</button>''',
 
 
 class AuthLogTable(EbsadminTableReport):
-    account = django_tables.LinkColumn(
+    account = columns.LinkColumn(
         'account_edit', get_params={'id': A('account.id')})
-    subaccount = django_tables.LinkColumn(
+    subaccount = columns.LinkColumn(
         'subaccount', get_params={'id': A('subaccount.id')})
     nas = FormatBlankColumn()
     datetime = FormatDateTimeColumn()
@@ -724,7 +724,7 @@ class AuthLogTable(EbsadminTableReport):
 
 
 class BallanceHistoryTable(EbsadminTableReport):
-    account__username = django_tables.LinkColumn(
+    account__username = columns.LinkColumn(
         'account_edit', get_params={'id': A('account')})
     balance = FormatBlankColumn(verbose_name=_(u'Новый баланс'))
     summ = FormatBlankColumn(verbose_name=_(u'Сумма'))
@@ -751,15 +751,15 @@ class LogTable(EbsadminTableReport):
 
 
 class NasTable(EbsadminTableReport):
-    name = django_tables.LinkColumn(
+    name = columns.LinkColumn(
         'nas_edit', verbose_name=_(u"Имя"), get_params={'id': A('pk')})
-    radiusattrs = django_tables.TemplateColumn(
+    radiusattrs = columns.TemplateColumn(
         (u"<a href='{% url 'radiusattr' %}?nas={{record.id}}' "
          u"class='btn btn-mini btn-primary'>Изменить</a>"),
         verbose_name=_(u'RADIUS атрибуты'),
         orderable=False
     )
-    id = django_tables.LinkColumn(
+    id = columns.LinkColumn(
         'nas_edit',
         get_params={
             'id': A('pk')
@@ -790,7 +790,7 @@ class NasTable(EbsadminTableReport):
 
 
 class TemplateTable(EbsadminTableReport):
-    id = django_tables.LinkColumn(
+    id = columns.LinkColumn(
         'template_edit',
         get_params={
             'id': A('pk')
@@ -802,7 +802,7 @@ class TemplateTable(EbsadminTableReport):
             }
         }
     )
-    name = django_tables.LinkColumn(
+    name = columns.LinkColumn(
         'template_edit',
         get_params={
             'id': A('pk')
@@ -823,9 +823,9 @@ class TemplateTable(EbsadminTableReport):
 
 
 class SettlementPeriodTable(EbsadminTableReport):
-    id = django_tables.LinkColumn(
+    id = columns.LinkColumn(
         'settlementperiod_edit', get_params={'id': A('pk')})
-    name = django_tables.LinkColumn(
+    name = columns.LinkColumn(
         'settlementperiod_edit', get_params={'id': A('pk')})
     time_start = FormatDateTimeColumn()
     length = FormatBlankColumn()
@@ -837,9 +837,9 @@ class SettlementPeriodTable(EbsadminTableReport):
 
 
 class SystemUserTable(EbsadminTableReport):
-    id = django_tables.LinkColumn(
+    id = columns.LinkColumn(
         'systemuser_edit', get_params={'id': A('pk')})
-    username = django_tables.LinkColumn(
+    username = columns.LinkColumn(
         'systemuser_edit', get_params={'id': A('pk')})
     d = showconfirmcolumn()
 
@@ -851,9 +851,9 @@ class SystemUserTable(EbsadminTableReport):
 
 
 class AddonServiceTable(EbsadminTableReport):
-    id = django_tables.LinkColumn(
+    id = columns.LinkColumn(
         'addonservice_edit', get_params={'id': A('pk')})
-    name = django_tables.LinkColumn(
+    name = columns.LinkColumn(
         'addonservice_edit', get_params={'id': A('pk')})
     d = showconfirmcolumn()
 
@@ -863,15 +863,15 @@ class AddonServiceTable(EbsadminTableReport):
 
 
 class IPPoolTable(EbsadminTableReport):
-    id = django_tables.LinkColumn('ippool_edit', get_params={'id': A('pk')})
-    name = django_tables.LinkColumn('ippool_edit', get_params={'id': A('pk')})
+    id = columns.LinkColumn('ippool_edit', get_params={'id': A('pk')})
+    name = columns.LinkColumn('ippool_edit', get_params={'id': A('pk')})
     next_ippool = FormatBlankColumn()
-    pool_size = django_tables.Column(
+    pool_size = columns.Column(
         verbose_name=_(u'IP в пуле'),
         accessor=A('get_pool_size'),
         orderable=False
     )
-    used_ip = django_tables.Column(
+    used_ip = columns.Column(
         verbose_name=_(u'Используется'),
         accessor=A('get_used_ip_count'),
         orderable=False)
@@ -883,7 +883,7 @@ class IPPoolTable(EbsadminTableReport):
 
 
 class CommentTable(EbsadminTableReport):
-    id = django_tables.LinkColumn(
+    id = columns.LinkColumn(
         'comment_edit',
         get_params={
             'id': A('pk')
@@ -895,7 +895,7 @@ class CommentTable(EbsadminTableReport):
             }
         }
     )
-    done = django_tables.TemplateColumn(
+    done = columns.TemplateColumn(
         '''\
 <a href='{% url 'comment_edit' %}?id={{record.id}}&done=True' \
 class='btn btn-mini btn-success comment-done'>
@@ -906,7 +906,7 @@ class='btn btn-mini btn-danger show-confirm'>
         verbose_name='Действия',
         orderable=False
     )
-    object = django_tables.Column(verbose_name=u'Объект')
+    object = columns.Column(verbose_name=u'Объект')
 
     class Meta(EbsadminTableReport.Meta):
         model = Comment
@@ -916,9 +916,9 @@ class='btn btn-mini btn-danger show-confirm'>
 
 
 class TransactionTypeTable(EbsadminTableReport):
-    id = django_tables.LinkColumn(
+    id = columns.LinkColumn(
         'transactiontype_edit', get_params={'id': A('pk')})
-    name = django_tables.LinkColumn(
+    name = columns.LinkColumn(
         'transactiontype_edit', get_params={'id': A('pk')})
     d = showconfirmcolumn(message=_(u'Удалить проводку #{{ record.id }}?'))
 
@@ -938,14 +938,14 @@ class TrafficClassTable(EbsadminTableReport):
         modal_title=_(u'Изменить класс'),
         modal_id='trafficclass-modal'
     )
-    directions = django_tables.TemplateColumn(
+    directions = columns.TemplateColumn(
         u'''\
 <a href='{% url 'trafficnode_list' %}?id={{record.id}}' \
 class='btn btn-primary btn-mini'>Список направлений</a>''',
         verbose_name=_(u'Направления'),
         orderable=False
     )
-    d = django_tables.TemplateColumn(
+    d = columns.TemplateColumn(
         '''\
 <a href='{{record.get_remove_url}}' class='show-confirm' \
 data-clickmessage='Удалить?'>
@@ -962,12 +962,12 @@ value='{{record.id}}'>''',
 
 
 class TrafficNodeTable(EbsadminTableReport):
-    row_number = django_tables.Column(
+    row_number = columns.Column(
         verbose_name="#", empty_values=(), orderable=False)
     id = modallinkcolumn(
         url_name='trafficnode',
     )
-    d = django_tables.CheckBoxColumn(
+    d = columns.CheckBoxColumn(
         verbose_name=' ', orderable=False, accessor=A('pk'))
 
     def __init__(self, *args, **kwargs):
@@ -1000,11 +1000,11 @@ class TrafficNodeTable(EbsadminTableReport):
 
 
 class UploadTrafficNodeTable(EbsadminTableReport):
-    row_number = django_tables.Column(
+    row_number = columns.Column(
         verbose_name="#", empty_values=(), orderable=False)
-    src_net = django_tables.Column(verbose_name="Src Net")
-    dst_net = django_tables.Column(verbose_name="Dst Net")
-    direction = django_tables.Column(verbose_name="Direction")
+    src_net = columns.Column(verbose_name="Src Net")
+    dst_net = columns.Column(verbose_name="Dst Net")
+    direction = columns.Column(verbose_name="Direction")
 
     def __init__(self, *args, **kwargs):
         super(UploadTrafficNodeTable, self).__init__(*args, **kwargs)
@@ -1086,10 +1086,10 @@ class HardwareTypeTable(EbsadminTableReport):
 
 
 class HardwareTable(EbsadminTableReport):
-    id = django_tables.LinkColumn('hardware_edit', get_params={'id': A('pk')})
-    model = django_tables.LinkColumn(
+    id = columns.LinkColumn('hardware_edit', get_params={'id': A('pk')})
+    model = columns.LinkColumn(
         'hardware_edit', get_params={'id': A('pk')})
-    name = django_tables.LinkColumn(
+    name = columns.LinkColumn(
         'hardware_edit', get_params={'id': A('pk')})
     d = showconfirmcolumn(message=_(u'Удалить? Удаление устройства вызовет '
                                     u'удаление всех связаных с ним объектов '
@@ -1101,8 +1101,8 @@ class HardwareTable(EbsadminTableReport):
 
 
 class SwitchTable(EbsadminTableReport):
-    id = django_tables.LinkColumn('switch_edit', get_params={'id': A('pk')})
-    name = django_tables.LinkColumn('switch_edit', get_params={'id': A('pk')})
+    id = columns.LinkColumn('switch_edit', get_params={'id': A('pk')})
+    name = columns.LinkColumn('switch_edit', get_params={'id': A('pk')})
     d = showconfirmcolumn(message=_(u'Удалить? Перед удалением коммутатора '
                                     u'убедитесь, что он не используется в '
                                     u'биллинг-системе'))
@@ -1123,7 +1123,7 @@ class SwitchTable(EbsadminTableReport):
 
 
 class CardTable(EbsadminTableReport):
-    row_number = django_tables.Column(
+    row_number = columns.Column(
         verbose_name="#", empty_values=(), orderable=False)
     start_date = FormatDateTimeColumn()
     end_date = FormatDateTimeColumn()
@@ -1136,7 +1136,7 @@ class CardTable(EbsadminTableReport):
     nas = FormatBlankColumn()
     ippool = FormatBlankColumn()
     ext_id = FormatBlankColumn()
-    d = django_tables.CheckBoxColumn(
+    d = columns.CheckBoxColumn(
         verbose_name=' ', orderable=False, accessor=A('pk'))
 
     def __init__(self, *args, **kwargs):
@@ -1173,7 +1173,7 @@ class CardTable(EbsadminTableReport):
 
 
 class SaleCardsTable(EbsadminTableReport):
-    row_number = django_tables.Column(
+    row_number = columns.Column(
         verbose_name="#", empty_values=(), orderable=False)
     start_date = FormatDateTimeColumn()
     end_date = FormatDateTimeColumn()
@@ -1215,7 +1215,7 @@ class SaleCardsTable(EbsadminTableReport):
 
 
 class SaleCardTable(EbsadminTableReport):
-    id = django_tables.LinkColumn('salecard_edit', get_params={'id': A('pk')})
+    id = columns.LinkColumn('salecard_edit', get_params={'id': A('pk')})
     d = showconfirmcolumn()
 
     class Meta(EbsadminTableReport.Meta):
@@ -1225,8 +1225,8 @@ class SaleCardTable(EbsadminTableReport):
 
 
 class DealerTable(EbsadminTableReport):
-    id = django_tables.LinkColumn('dealer_edit', get_params={'id': A('pk')})
-    organization = django_tables.LinkColumn(
+    id = columns.LinkColumn('dealer_edit', get_params={'id': A('pk')})
+    organization = columns.LinkColumn(
         'dealer_edit', get_params={'id': A('pk')})
 
     class Meta(EbsadminTableReport.Meta):
@@ -1242,8 +1242,8 @@ class DealerTable(EbsadminTableReport):
 
 
 class TariffTable(EbsadminTableReport):
-    name = django_tables.LinkColumn('tariff_edit', get_params={'id': A('pk')})
-    radiusattrs = django_tables.TemplateColumn(
+    name = columns.LinkColumn('tariff_edit', get_params={'id': A('pk')})
+    radiusattrs = columns.TemplateColumn(
         u'''\
 <a href='{% url 'radiusattr' %}?tarif={{record.id}}' \
 class='btn btn-mini btn-primary'>Изменить</a>''',
@@ -1254,7 +1254,7 @@ class='btn btn-mini btn-primary'>Изменить</a>''',
         verbose_name=_(u'Тип доступа'),
         accessor=A('access_parameters.access_type')
     )
-    accounts_count = django_tables.TemplateColumn(
+    accounts_count = columns.TemplateColumn(
         u'''\
 <a href='{% url 'account_list' %}?tariff={{record.id}}' \
 class='btn btn-mini'>{{record.accounts_count}} \
@@ -1318,7 +1318,7 @@ class PeriodicalServiceTable(EbsadminTableReport):
 
 
 class GroupTable(EbsadminTableReport):
-    id = django_tables.LinkColumn('group_edit', get_params={'id': A('pk')})
+    id = columns.LinkColumn('group_edit', get_params={'id': A('pk')})
     d = showconfirmcolumn(message=_(u'Удалить? Удаление группы трафика '
                                     u'вызовет её удаление во всех тарифных '
                                     u'планах.'))
@@ -1335,7 +1335,7 @@ class RegistrationRequestTable(EbsadminTableReport):
 
 
 class ContractTemplateTable(EbsadminTableReport):
-    id = django_tables.LinkColumn(
+    id = columns.LinkColumn(
         'contracttemplate_edit', get_params={'id': A('pk')})
     d = showconfirmcolumn(message=_(u'Удалить шаблон номера договора?'))
 
@@ -1349,7 +1349,7 @@ class TrafficTransmitNodesTable(EbsadminTableReport):
         modal_title=_(u'Правило начисления предоплаченного трафика'),
         modal_id='periodicalservice-modal'
     )
-    group = django_tables.LinkColumn(
+    group = columns.LinkColumn(
         'group_edit', get_params={'id': A('group.id')})
     d = showconfirmcolumn(
         message=_(u'Удалить? Вы уверены, что хотите удалить запись?'))
@@ -1363,7 +1363,7 @@ class PrepaidTrafficTable(EbsadminTableReport):
     id = modallinkcolumn(
         url_name='tariff_prepaidtraffic_edit'
     )
-    group = django_tables.LinkColumn(
+    group = columns.LinkColumn(
         'group_edit', get_params={'id': A('group.id')})
     d = showconfirmcolumn()
 
@@ -1441,7 +1441,7 @@ class TrafficLimitTable(EbsadminTableReport):
         modal_id='periodicalservice-modal'
     )
     d = showconfirmcolumn(message='Удалить лимит трафика?')
-    speedlimit = django_tables.TemplateColumn(
+    speedlimit = columns.TemplateColumn(
         '''\
 <a href='{% url 'tariff_speedlimit_edit' %}?trafficlimit_id={{record.id}}' \
 class='open-speedlimit-dialog' data-dlgtitle='Правило изменения скорости' \
@@ -1519,7 +1519,7 @@ class PeriodicalServiceLogTable(EbsadminTableReport):
 
 
 class SheduleLogTable(EbsadminTableReport):
-    d = django_tables.TemplateColumn("  ", verbose_name=' ', orderable=False)
+    d = columns.TemplateColumn("  ", verbose_name=' ', orderable=False)
     accounttarif = FormatBlankColumn(verbose_name=_(u'Тариф аккаунта'))
     ballance_checkout = FormatDateTimeColumn(
         verbose_name=_(u'Доснятие до стоимости'))
@@ -1540,7 +1540,7 @@ class SheduleLogTable(EbsadminTableReport):
 
 
 class NewsTable(EbsadminTableReport):
-    id = django_tables.LinkColumn('news_edit', get_params={'id': A('pk')})
+    id = columns.LinkColumn('news_edit', get_params={'id': A('pk')})
     d = showconfirmcolumn(message='Удалить новость?')
     created = FormatDateTimeColumn(verbose_name=_(u'Активна с'))
     age = FormatDateTimeColumn(verbose_name=_(u'Активна по'))
@@ -1561,14 +1561,14 @@ class NewsTable(EbsadminTableReport):
 
 
 class TPChangeRuleTable(EbsadminTableReport):
-    id = django_tables.LinkColumn(
+    id = columns.LinkColumn(
         'tpchangerule_edit', get_params={'id': A('pk')})
     d = showconfirmcolumn(message='Удалить правило?')
     settlement_period = FormatBlankColumn(verbose_name=_(u'Расчётный период'))
-    on_next_sp = django_tables.TemplateColumn(
+    on_next_sp = columns.TemplateColumn(
         "<img src='/media/img/icons/{% if record.on_next_sp %}accept.png"
         "{% else %}icon_error.gif{% endif %}'>")
-    row_class = django_tables.Column(visible=False)
+    row_class = columns.Column(visible=False)
 
     def render_row_class(self, value, record):
         return 'error' if record.disabled else ''
@@ -1601,7 +1601,7 @@ class AccountGroupTable(EbsadminTableReport):
         modal_title=_(u'Изменить тип'),
         modal_id='hardwaretype-modal'
     )
-    cnt = django_tables.TemplateColumn(
+    cnt = columns.TemplateColumn(
         '{{record.account_set.count}}', verbose_name=_(u'Количество'))
     d = showconfirmcolumn(message=_(u'Удалить?'))
 
@@ -1610,7 +1610,7 @@ class AccountGroupTable(EbsadminTableReport):
 
 
 class ActionLogTable(EbsadminTableReport):
-    object1 = django_tables.Column(
+    object1 = columns.Column(
         verbose_name=_(u'Объект'), accessor=A('object1'))
 
     class Meta(EbsadminTableReport.Meta):
@@ -1628,10 +1628,10 @@ class ActionLogTable(EbsadminTableReport):
 
 
 class GroupStatTable(EbsadminTableReport):
-    account = django_tables.Column(
+    account = columns.Column(
         _(u'Аккаунт'), accessor=A('account__username'))
-    group = django_tables.Column(_(u'Группа'), accessor=A('group__name'))
-    bytes = django_tables.TemplateColumn(
+    group = columns.Column(_(u'Группа'), accessor=A('group__name'))
+    bytes = columns.TemplateColumn(
         "{{record.summ_bytes|filesizeformat}}({{record.summ_bytes}})",
         verbose_name=_(u'Сумма'),
         accessor=A('summ_bytes')
@@ -1643,15 +1643,15 @@ class GroupStatTable(EbsadminTableReport):
 
 
 class GlobalStatTable(EbsadminTableReport):
-    account = django_tables.Column(
+    account = columns.Column(
         _(u'Аккаунт'), accessor=A('account__username'))
-    bytes_in = django_tables.TemplateColumn(
+    bytes_in = columns.TemplateColumn(
         "{{record.bytes_in|filesizeformat}}({{record.bytes_in}})",
         verbose_name=_(u'ВХ'))
-    bytes_out = django_tables.TemplateColumn(
+    bytes_out = columns.TemplateColumn(
         "{{record.bytes_out|filesizeformat}}({{record.bytes_out}})",
         verbose_name=_(u'ИСХ'))
-    max = django_tables.Column(_(u'Последние данные'))
+    max = columns.Column(_(u'Последние данные'))
 
     class Meta(EbsadminTableReport.Meta):
         available_fields = ('account', 'group', 'bytes')
@@ -1663,17 +1663,17 @@ class AccountPrepaysTraficTable(EbsadminTableReport):
         url_name='accountprepaystraffic_edit',
         modal_title=_(u'Изменить значения')
     )
-    account_tarif = django_tables.Column(_(u'Аккаунт/Тариф'))
-    prepaid_traffic = django_tables.TemplateColumn(
+    account_tarif = columns.Column(_(u'Аккаунт/Тариф'))
+    prepaid_traffic = columns.TemplateColumn(
         "{{record.prepaid_traffic.size|filesizeformat}}"
         "({{record.prepaid_traffic.size}})",
         verbose_name=_(u'Начислено')
     )
-    size = django_tables.TemplateColumn(
+    size = columns.TemplateColumn(
         "{{record.size|filesizeformat}}({{record.size}})",
         verbose_name=_(u'Остаток')
     )
-    progress = django_tables.TemplateColumn(
+    progress = columns.TemplateColumn(
         """\
 <div class="progress progress-success">
     <div class="bar" style="width: {{record.in_percents}}%"></div>
@@ -1695,13 +1695,13 @@ class AccountPrepaysRadiusTraficTable(EbsadminTableReport):
         url_name='accountprepaystraffic_edit',
         modal_title=_(u'Изменить значения')
     )
-    account_tarif = django_tables.Column(_(u'Аккаунт/Тариф'))
-    size = django_tables.TemplateColumn(
+    account_tarif = columns.Column(_(u'Аккаунт/Тариф'))
+    size = columns.TemplateColumn(
         "{{record.size|filesizeformat}}({{record.size}})",
         verbose_name=_(u'Остаток')
     )
     datetime = FormatDateTimeColumn(verbose_name=_(u'Начислен'))
-    progress = django_tables.TemplateColumn(
+    progress = columns.TemplateColumn(
         """\
 <div class="progress progress-success">
     <div class="bar" style="width: {{record.in_percents}}%"></div>
@@ -1722,9 +1722,9 @@ class AccountPrepaysTimeTable(EbsadminTableReport):
         url_name='accountprepaystraffic_edit',
         modal_title=_(u'Изменить тип')
     )
-    account_tarif = django_tables.Column(_(u'Аккаунт/Тариф'))
+    account_tarif = columns.Column(_(u'Аккаунт/Тариф'))
     datetime = FormatDateTimeColumn(verbose_name=_(u'Начислен'))
-    progress = django_tables.TemplateColumn(
+    progress = columns.TemplateColumn(
         """\
 <div class="progress progress-success">
     <div class="bar" style="width: {{record.in_percents}}%"></div>
@@ -1741,31 +1741,31 @@ class AccountPrepaysTimeTable(EbsadminTableReport):
 
 
 class SwitchPortsTable(EbsadminTableReport):
-    port = django_tables.TemplateColumn(
+    port = columns.TemplateColumn(
         "<input type='hidden' name='port' value='{{record.port}}'>{{record.port}}",
         verbose_name=_(u'Порт')
     )
-    broken_port = django_tables.TemplateColumn(
+    broken_port = columns.TemplateColumn(
         "<input type='checkbox' name='broken_port' "
         "{% if record.broken_port %} checked{% endif %}>",
         verbose_name=_(u'Битый')
     )
-    uplink_port = django_tables.TemplateColumn(
+    uplink_port = columns.TemplateColumn(
         "<input type='checkbox'  name='uplink_port' "
         "{% if record.uplink_port %} checked{% endif %}>",
         verbose_name=_(u'Аплинк')
     )
-    protected_port = django_tables.TemplateColumn(
+    protected_port = columns.TemplateColumn(
         "<input type='checkbox'  name='protected_port' "
         "{% if record.protected_port %} checked{% endif %}>",
         verbose_name=_(u'Защита')
     )
-    monitored_port = django_tables.TemplateColumn(
+    monitored_port = columns.TemplateColumn(
         "<input type='checkbox'  name='monitored_port' "
         "{% if record.monitored_port %} checked{% endif %}>",
         verbose_name=_(u'Мониторинг')
     )
-    disabled_port = django_tables.TemplateColumn(
+    disabled_port = columns.TemplateColumn(
         "<input type='checkbox'  name='disabled_port' "
         "{% if record.disabled_port %} checked{% endif %}>",
         verbose_name=_(u'Отключён')
@@ -1776,10 +1776,10 @@ class SwitchPortsTable(EbsadminTableReport):
 
 
 class TicketTable(EbsadminTableReport):
-    id = django_tables.LinkColumn('helpdesk_view', args=[A('id')])
-    title = django_tables.LinkColumn('helpdesk_view', args=[A('id')])
+    id = columns.LinkColumn('helpdesk_view', args=[A('id')])
+    title = columns.LinkColumn('helpdesk_view', args=[A('id')])
     created = FormatDateTimeColumn(verbose_name=_(u'Создан'))
-    status = django_tables.Column(
+    status = columns.Column(
         verbose_name=_(u'Статус'),
         accessor=A('_get_status')
     )
@@ -1798,9 +1798,9 @@ class TicketTable(EbsadminTableReport):
 
 
 class PermissionGroupTable(EbsadminTableReport):
-    id = django_tables.LinkColumn(
+    id = columns.LinkColumn(
         'permissiongroup_edit', get_params={'id': A('pk')})
-    name = django_tables.LinkColumn(
+    name = columns.LinkColumn(
         'permissiongroup_edit', get_params={'id': A('pk')})
     d = showconfirmcolumn()
 
@@ -1811,11 +1811,11 @@ class PermissionGroupTable(EbsadminTableReport):
 
 class NotificationsSettingsTable(TableReport):
 
-    id = django_tables.LinkColumn(
+    id = columns.LinkColumn(
         'notificationssettings_edit', get_params={'id': A('pk')})
-    name = django_tables.LinkColumn(
+    name = columns.LinkColumn(
         'notificationssettings_edit', get_params={'id': A('pk')})
-    d = django_tables.TemplateColumn(
+    d = columns.TemplateColumn(
         "<a href='{{record.get_remove_url}}' "
         "class='show-confirm'><i class='icon-remove'></i></a>",
         verbose_name=' ',
@@ -1841,7 +1841,7 @@ class PaymentTable(EbsadminTableReport):
         modal_id='payment-modal'
 
     )
-    account = django_tables.LinkColumn(
+    account = columns.LinkColumn(
         'account_edit',
         verbose_name=_(u'Аккаунт'),
         get_params={'id': A('account.id')}
@@ -1869,7 +1869,7 @@ class DynamicSchemaFieldTable(EbsadminTableReport):
 
 
 class MessageTable(EbsadminTableReport):
-    account = django_tables.LinkColumn(
+    account = columns.LinkColumn(
         'account_edit',
         verbose_name=u'Аккаунт',
         get_params={
@@ -1883,7 +1883,7 @@ class MessageTable(EbsadminTableReport):
 
 
 class SuppAgreementTable(EbsadminTableReport):
-    id = django_tables.LinkColumn(
+    id = columns.LinkColumn(
         'suppagreement_edit',
         get_params={
             'id': A('pk')
@@ -1895,7 +1895,7 @@ class SuppAgreementTable(EbsadminTableReport):
             }
         }
     )
-    accounts_count = django_tables.TemplateColumn(
+    accounts_count = columns.TemplateColumn(
         '''\
 <a href='{% url 'account_list' %}?suppagreement={{record.id}}' \
 class='btn btn-mini'>{{record.accounts_count}} <i class='icon-arrow-right'>\
@@ -1911,7 +1911,7 @@ class='btn btn-mini'>{{record.accounts_count}} <i class='icon-arrow-right'>\
 
 
 class AccountSuppAgreementTable(EbsadminTableReport):
-    id = django_tables.LinkColumn(
+    id = columns.LinkColumn(
         'accountsuppagreement_edit',
         get_params={
             'id': A('pk')
