@@ -7,7 +7,7 @@
 #                Order allow,deny
 #                Allow from all
 ###UNKOMMENT FOR APACHE 2.4
-              <IfVersion < 2.3 > 
+              <IfVersion < 2.3 >
                 Order allow,deny
                 Allow from all
               </IfVersion>
@@ -23,7 +23,7 @@
 #                Order allow,deny
 #                Allow from all
 ###UNKOMMENT FOR APACHE 2.4
-              <IfVersion < 2.3 > 
+              <IfVersion < 2.3 >
                 Order allow,deny
                 Allow from all
               </IfVersion>
@@ -31,7 +31,7 @@
                 Require all granted
               </IfVersion>
         </Directory>
-        
+
         Alias /static/ /opt/ebs/web/ebscab/static/
 
         <Directory /opt/ebs/web/ebscab/static>
@@ -39,7 +39,7 @@
 #                Order allow,deny
 #                Allow from all
 ###UNKOMMENT FOR APACHE 2.4
-              <IfVersion < 2.3 > 
+              <IfVersion < 2.3 >
                 Order allow,deny
                 Allow from all
               </IfVersion>
@@ -47,7 +47,7 @@
                 Require all granted
               </IfVersion>
         </Directory>
-        
+
         Alias /admin_media/ /opt/ebs/venv/lib/python2.7/site-packages/django/contrib/admin/media/
 
         <Directory /opt/ebs/venv/lib/python2.7/site-packages/django/contrib/admin/media/>
@@ -55,7 +55,7 @@
 #                Order allow,deny
 #                Allow from all
 ###UNKOMMENT FOR APACHE 2.4
-              <IfVersion < 2.3 > 
+              <IfVersion < 2.3 >
                 Order allow,deny
                 Allow from all
               </IfVersion>
@@ -63,9 +63,9 @@
                 Require all granted
               </IfVersion>
         </Directory>
-        
+
 		WSGIApplicationGroup %{GLOBAL}
-        WSGIScriptAlias / /opt/ebs/web/django.wsgi
+        WSGIScriptAlias / /opt/ebs/web/ebscab/ebscab/django.wsgi
 
         ErrorLog /opt/ebs/web/error.log
 
