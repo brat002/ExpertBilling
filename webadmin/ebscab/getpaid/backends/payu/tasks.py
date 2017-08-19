@@ -3,7 +3,7 @@
 import logging
 
 from celery.task.base import task
-from django.db.models.loading import get_model
+from django.apps import apps
 
 
 logger = logging.getLogger('getpaid.backends.payu')
@@ -11,7 +11,7 @@ logger = logging.getLogger('getpaid.backends.payu')
 
 @task
 def get_payment_status_task(payment_id, session_id):
-    Payment = get_model('getpaid', 'Payment')
+    Payment = apps.get_model('getpaid', 'Payment')
     try:
         payment = Payment.objects.get(pk=int(payment_id))
     except Payment.DoesNotExist:

@@ -3,9 +3,9 @@
 import sys
 from datetime import datetime
 
+from django.apps import apps
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models.loading import cache as app_cache
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 
@@ -180,7 +180,7 @@ def register_to_payment(order_class, **kwargs):
     # Now build models for backends
     backend_models_modules = import_backend_modules('models')
     for backend_name, models in backend_models_modules.items():
-        app_cache.register_models(backend_name, *models.build_models(Payment))
+        apps.register_models(backend_name, *models.build_models(Payment))
     return Payment
 
 
