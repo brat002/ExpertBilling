@@ -1617,7 +1617,7 @@ class AccountTarif(models.Model):
     )
     datetime = models.DateTimeField(
         verbose_name=_(u'C даты'), default='', blank=True)
-    periodical_billed = models.BooleanField(blank=True)
+    periodical_billed = models.BooleanField(blank=True, default=False)
 
     class Admin:
         ordering = ['-datetime']
@@ -1798,7 +1798,10 @@ class SystemUser(models.Model):
         null=True,
         verbose_name=_(u"Группа доступа")
     )
-    is_superuser = models.BooleanField(verbose_name=_(u"Суперадминистратор"))
+    is_superuser = models.BooleanField(
+        default=False,
+        verbose_name=_(u"Суперадминистратор")
+    )
 
     permcache = {}
 
@@ -2709,8 +2712,8 @@ class AccountAddonService(models.Model):
     activated = models.DateTimeField(verbose_name=_(u'Активирована'))
     deactivated = models.DateTimeField(
         verbose_name=_(u'Отключена'), blank=True, null=True)
-    action_status = models.BooleanField()
-    speed_status = models.BooleanField()
+    action_status = models.BooleanField(default=False)
+    speed_status = models.BooleanField(default=False)
     temporary_blocked = models.DateTimeField(
         verbose_name=_(u'Пауза до'), blank=True, null=True)
     last_checkout = models.DateTimeField(
@@ -2831,7 +2834,7 @@ class SubAccount(models.Model):
         null=True,
         verbose_name=_(u'Поставлен в очередь на изменение статуса')
     )
-    need_resync = models.BooleanField()
+    need_resync = models.BooleanField(default=False)
     speed = models.TextField(blank=True)
     switch = models.ForeignKey(
         "Switch", blank=True, null=True, on_delete=models.SET_NULL)
@@ -3434,7 +3437,7 @@ class TotalTransactionReport(models.Model):
     bill = models.TextField()
     description = models.TextField()
     end_promise = models.DateTimeField()
-    promise_expired = models.BooleanField()
+    promise_expired = models.BooleanField(default=False)
 
     def get_remove_url(self):
         return "%s?type=%s&id=%s" % (reverse('totaltransaction_delete'), (self.table, self.id))
@@ -3681,7 +3684,9 @@ class PermissionGroup(models.Model):
 class NotificationsSettings(models.Model):
     tariffs = models.ManyToManyField(Tariff)
     payment_notifications = models.BooleanField(
-        verbose_name=_(u'Уведомления при пополнении баланса'))
+        default=False,
+        verbose_name=_(u'Уведомления при пополнении баланса')
+    )
     payment_notifications_template = models.TextField(
         verbose_name=_(u'Шаблон уведомления о платеже'),
         # TODO: fix typo
@@ -3690,7 +3695,9 @@ class NotificationsSettings(models.Model):
         default=''
     )
     balance_notifications = models.BooleanField(
-        verbose_name=_(u'Уведомления о недостатке баланса'))
+        default=False,
+        verbose_name=_(u'Уведомления о недостатке баланса')
+        )
     balance_edge = models.FloatField(
         verbose_name=_(u'Граница баланса'),
         help_text=_(u'Граница, с которой слать уведомления  о недостатке '

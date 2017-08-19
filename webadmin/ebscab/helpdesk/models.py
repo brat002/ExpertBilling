@@ -1137,12 +1137,14 @@ class TicketCC(models.Model):
     can_view = models.BooleanField(
         _('Can View Ticket?'),
         blank=True,
+        default=False,
         help_text=_('Can this CC login to view the ticket details?')
     )
 
     can_update = models.BooleanField(
         _('Can Update Ticket?'),
         blank=True,
+        default=False,
         help_text=_('Can this CC login and update the ticket?')
     )
 
