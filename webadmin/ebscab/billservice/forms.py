@@ -338,6 +338,7 @@ class RegisterForm(forms.ModelForm):
 
     class Meta:
         model = RegistrationRequest
+        fields = '__all__'
 
 
 class PromiseForm(forms.Form):
@@ -850,6 +851,7 @@ class DocumentModelForm(ModelForm):
 
     class Meta:
         model = Document
+        fields = '__all__'
 
 
 class SuspendedPeriodModelForm(ModelForm):
@@ -966,6 +968,7 @@ class AccountTariffForm(ModelForm):
 
     class Meta:
         model = AccountTarif
+        fields = '__all__'
 
 
 class BatchAccountTariffForm(forms.Form):
@@ -994,6 +997,7 @@ class SettlementPeriodForm(ModelForm):
 
     class Meta:
         model = SettlementPeriod
+        fields = '__all__'
 
 
 class OrganizationForm(ModelForm):
@@ -1010,6 +1014,7 @@ class OrganizationForm(ModelForm):
 
     class Meta:
         model = Organization
+        fields = '__all__'
 
 
 class BankDataForm(ModelForm):
@@ -1017,6 +1022,7 @@ class BankDataForm(ModelForm):
 
     class Meta:
         model = BankData
+        fields = '__all__'
 
 
 class AccountForm(DynamicForm):
@@ -1137,6 +1143,7 @@ class AccountExtraForm(DynamicExtraForm):
 
     class Meta:
         model = Account
+        fields = '__all__'
 
 
 class AccessParametersForm(ModelForm):
@@ -1144,6 +1151,7 @@ class AccessParametersForm(ModelForm):
 
     class Meta:
         model = AccessParameters
+        fields = '__all__'
 
 
 class AccessParametersTariffForm(ModelForm):
@@ -1162,9 +1170,11 @@ class GroupForm(ModelForm):
 
     class Meta:
         model = Group
+        fields = '__all__'
 
 
 class TariffForm(ModelForm):
+    id = forms.IntegerField(required=False, widget=forms.HiddenInput)
 
     def __init__(self, *args, **kwargs):
         super(TariffForm, self).__init__(*args, **kwargs)
@@ -1178,22 +1188,23 @@ class TariffForm(ModelForm):
         self.fields['description'].widget.attrs['rows'] = 5
         self.fields['description'].widget.attrs['class'] = 'span10'
 
-    id = forms.IntegerField(required=False, widget=forms.HiddenInput)
 
     class Meta:
         model = Tariff
+        fields = '__all__'
 
 
 class TimeSpeedForm(ModelForm):
+    id = forms.IntegerField(required=False, widget=forms.HiddenInput)
 
     def __init__(self, *args, **kwargs):
         super(TimeSpeedForm, self).__init__(*args, **kwargs)
         self.fields['access_parameters'].widget = forms.widgets.HiddenInput()
 
-    id = forms.IntegerField(required=False, widget=forms.HiddenInput)
 
     class Meta:
         model = TimeSpeed
+        fields = '__all__'
 
 
 class PeriodicalServiceForm(ModelForm):
@@ -1212,8 +1223,8 @@ class PeriodicalServiceForm(ModelForm):
             attrs={'class': 'datepicker'})
 
     class Meta:
-        exclude = ('deleted',)
         model = PeriodicalService
+        exclude = ('deleted',)
 
 
 class OneTimeServiceForm(ModelForm):
@@ -1225,6 +1236,7 @@ class OneTimeServiceForm(ModelForm):
 
     class Meta:
         model = OneTimeService
+        fields = '__all__'
 
 
 class TrafficTransmitServiceForm(ModelForm):
@@ -1232,6 +1244,7 @@ class TrafficTransmitServiceForm(ModelForm):
 
     class Meta:
         model = TrafficTransmitService
+        fields = '__all__'
 
 
 class TrafficTransmitNodeForm(ModelForm):
@@ -1244,6 +1257,7 @@ class TrafficTransmitNodeForm(ModelForm):
 
     class Meta:
         model = TrafficTransmitNodes
+        fields = '__all__'
 
 
 class PrepaidTrafficForm(ModelForm):
@@ -1255,6 +1269,7 @@ class PrepaidTrafficForm(ModelForm):
 
     class Meta:
         model = PrepaidTraffic
+        fields = '__all__'
 
 
 class RadiusTrafficForm(ModelForm):
@@ -1262,6 +1277,7 @@ class RadiusTrafficForm(ModelForm):
 
     class Meta:
         model = RadiusTraffic
+        fields = '__all__'
 
 
 class TimeAccessServiceForm(ModelForm):
@@ -1269,6 +1285,7 @@ class TimeAccessServiceForm(ModelForm):
 
     class Meta:
         model = TimeAccessService
+        fields = '__all__'
 
 
 class TimeAccessNodeForm(ModelForm):
@@ -1280,6 +1297,7 @@ class TimeAccessNodeForm(ModelForm):
 
     class Meta:
         model = TimeAccessNode
+        fields = '__all__'
 
 
 class RadiusTrafficNodeForm(ModelForm):
@@ -1303,12 +1321,14 @@ class TrafficLimitForm(ModelForm):
 
     class Meta:
         model = TrafficLimit
+        fields = '__all__'
 
 
 class SpeedLimitForm(ModelForm):
 
     class Meta:
         model = SpeedLimit
+        fields = '__all__'
 
 
 class AddonServiceForm(ModelForm):
@@ -1329,6 +1349,7 @@ class AddonServiceForm(ModelForm):
 
     class Meta:
         model = AddonService
+        fields = '__all__'
 
 
 class AddonServiceTarifForm(ModelForm):
@@ -1340,6 +1361,7 @@ class AddonServiceTarifForm(ModelForm):
 
     class Meta:
         model = AddonServiceTarif
+        fields = '__all__'
 
 
 class ContractTemplateForm(ModelForm):
@@ -1371,6 +1393,7 @@ class RadiusAttrsForm(ModelForm):
 
     class Meta:
         model = RadiusAttrs
+        fields = '__all__'
 
 
 class TemplateForm(ModelForm):
@@ -1382,6 +1405,7 @@ class TemplateForm(ModelForm):
 
     class Meta:
         model = Template
+        fields = '__all__'
 
 
 class AccountPrepaysRadiusTraficForm(ModelForm):
@@ -1397,6 +1421,7 @@ class AccountPrepaysRadiusTraficForm(ModelForm):
 
     class Meta:
         model = AccountPrepaysRadiusTrafic
+        fields = '__all__'
 
 
 class AccountPrepaysTimeForm(ModelForm):
@@ -1412,6 +1437,7 @@ class AccountPrepaysTimeForm(ModelForm):
 
     class Meta:
         model = AccountPrepaysTime
+        fields = '__all__'
 
 
 class AccountPrepaysTraficForm(ModelForm):
@@ -1427,6 +1453,7 @@ class AccountPrepaysTraficForm(ModelForm):
 
     class Meta:
         model = AccountPrepaysTrafic
+        fields = '__all__'
 
 
 class TransactionTypeForm(ModelForm):
@@ -1442,6 +1469,7 @@ class SuppAgreementForm(ModelForm):
 
     class Meta:
         model = SuppAgreement
+        fields = '__all__'
         widgets = {
             'description': forms.Textarea(attrs={
                 'rows': 4,
@@ -1461,7 +1489,7 @@ class AccountSuppAgreementForm(ModelForm):
 
     class Meta:
         model = AccountSuppAgreement
-
+        fields = '__all__'
         widgets = {
             'account': forms.widgets.HiddenInput,
             'created': forms.widgets.DateTimeInput(attrs={
@@ -1477,18 +1505,21 @@ class CityForm(ModelForm):
 
     class Meta:
         model = City
+        fields = '__all__'
 
 
 class StreetForm(ModelForm):
 
     class Meta:
         model = Street
+        fields = '__all__'
 
 
 class HouseForm(ModelForm):
 
     class Meta:
         model = House
+        fields = '__all__'
 
 
 class SystemUserForm(ModelForm):
@@ -1540,6 +1571,7 @@ class TimePeriodForm(ModelForm):
 
     class Meta:
         model = TimePeriod
+        fields = '__all__'
 
 
 class TimePeriodNodeForm(ModelForm):
@@ -1589,12 +1621,14 @@ class TimePeriodNodeForm(ModelForm):
 
     class Meta:
         model = TimePeriodNode
+        fields = '__all__'
 
 
 class IPPoolForm(ModelForm):
 
     class Meta:
         model = IPPool
+        fields = '__all__'
 
 
 class ManufacturerForm(ModelForm):
@@ -1603,6 +1637,7 @@ class ManufacturerForm(ModelForm):
 
     class Meta:
         model = Manufacturer
+        fields = '__all__'
 
 
 class AccountHardwareForm(ModelForm):
@@ -1631,6 +1666,7 @@ class AccountHardwareForm(ModelForm):
 
     class Meta:
         model = AccountHardware
+        fields = '__all__'
 
 
 class ModelHardwareForm(ModelForm):
@@ -1639,6 +1675,7 @@ class ModelHardwareForm(ModelForm):
 
     class Meta:
         model = Model
+        fields = '__all__'
 
 
 class HardwareTypeForm(ModelForm):
@@ -1647,6 +1684,7 @@ class HardwareTypeForm(ModelForm):
 
     class Meta:
         model = HardwareType
+        fields = '__all__'
 
 
 class HardwareForm(ModelForm):
@@ -1654,6 +1692,7 @@ class HardwareForm(ModelForm):
 
     class Meta:
         model = Hardware
+        fields = '__all__'
 
 
 class AccountGroupForm(ModelForm):
@@ -1662,6 +1701,7 @@ class AccountGroupForm(ModelForm):
 
     class Meta:
         model = AccountGroup
+        fields = '__all__'
 
 
 class PermissionGroupForm(ModelForm):
@@ -1689,6 +1729,7 @@ class NotificationsSettingsForm(ModelForm):
 
     class Meta:
         model = NotificationsSettings
+        fields = '__all__'
 
 
 class TPChangeRuleForm(ModelForm):
@@ -1699,6 +1740,7 @@ class TPChangeRuleForm(ModelForm):
 
     class Meta:
         model = TPChangeRule
+        fields = '__all__'
 
 
 class TPChangeMultipleRuleForm(forms.Form):
@@ -1744,12 +1786,14 @@ class NewsForm(ModelForm):
 
     class Meta:
         model = News
+        fields = '__all__'
 
 
 class CardForm(ModelForm):
 
     class Meta:
         model = Card
+        fields = '__all__'
 
 
 class CardGenerationForm(forms.Form):
@@ -1951,6 +1995,7 @@ class DealerForm(ModelForm):
 
     class Meta:
         model = Dealer
+        fields = '__all__'
 
 
 class SaleCardForm(ModelForm):
@@ -1975,12 +2020,14 @@ class SaleCardForm(ModelForm):
 
     class Meta:
         model = SaleCard
+        fields = '__all__'
 
 
 class DealerPayForm(ModelForm):
 
     class Meta:
         model = DealerPay
+        fields = '__all__'
 
 
 class OperatorForm(ModelForm):
@@ -1993,6 +2040,7 @@ class OperatorForm(ModelForm):
 
     class Meta:
         model = Operator
+        fields = '__all__'
 
 
 class BallanceHistoryForm(forms.Form):
@@ -2573,6 +2621,7 @@ class PaymentForm(ModelForm):
 
     class Meta:
         model = Payment
+        fields = '__all__'
 
 
 class SearchSmsForm(forms.Form):
@@ -2671,3 +2720,4 @@ class DynamicSchemaFieldForm(forms.ModelForm):
 
     class Meta:
         model = DynamicSchemaField
+        fields = '__all__'
