@@ -3360,7 +3360,11 @@ class Hardware(models.Model):
         default='',
         verbose_name=_(u"Серийный номер")
     )
-    ipaddress = models.GenericIPAddressField(blank=True, verbose_name=_(u"IP адрес"))
+    ipaddress = models.GenericIPAddressField(
+        blank=True,
+        null=True,
+        verbose_name=_(u"IP адрес")
+    )
     macaddress = models.CharField(
         blank=True, default='', max_length=32, verbose_name=_(u"MAC адрес"))
     comment = models.TextField(
@@ -3536,7 +3540,11 @@ class Switch(models.Model):
         default=''
     )
     ipaddress = models.GenericIPAddressField(
-        blank=True, verbose_name=_(u"IP адрес"), default=None)
+        blank=True,
+        null=True,
+        verbose_name=_(u"IP адрес"),
+        default=None
+    )
     macaddress = models.CharField(
         max_length=32, verbose_name=_(u"MAC адрес"), blank=True, default='')
     management_method = models.IntegerField(

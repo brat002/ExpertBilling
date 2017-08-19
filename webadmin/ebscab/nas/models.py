@@ -472,7 +472,11 @@ class TrafficNode(models.Model):
         verbose_name=u'Dst port', blank=True, default=0)
 
     next_hop = models.GenericIPAddressField(
-        verbose_name=u'next Hop', blank=True, default='0.0.0.0')
+        verbose_name=u'next Hop',
+        blank=True,
+        null=True,
+        default='0.0.0.0'
+    )
     in_index = models.IntegerField(
         verbose_name=u'SNMP IN', blank=True, default=0)
     out_index = models.IntegerField(
