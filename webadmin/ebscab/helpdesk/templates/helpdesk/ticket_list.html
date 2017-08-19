@@ -13,7 +13,7 @@
     <li><a href='#tabsave'>{% trans "Save this query" %}</a></li>
     {% endif %}
     </ul>
-    
+
     <div id='tabfilter'>
     <h3>{% trans "Change query" %}</h3>
     <form>
@@ -87,7 +87,7 @@
     <p class='help'>{% trans 'Ctrl-Click to select multiple options' %}</p>
     <input type='button' class='filterBuilderRemove' value='-' />
     </div>
-    
+
     <div class='filterBox{% if query_params.filtering.queue__id__in %} filterBoxShow{% endif %}' id='filterBoxQueue'>
     <label for='id_queues'>{% trans "Queue(s)" %}</label><select id='id_queues' name='queue' multiple='selected' size='5'>{% for q in queue_choices %}<option value='{{ q.id }}'{% if q.id|in_list:query_params.filtering.queue__id__in %} selected='selected'{% endif %}>{{ q.title }}</option>{% endfor %}</select>
     <p class='help'>{% trans 'Ctrl-Click to select multiple options' %}</p>
@@ -117,7 +117,7 @@
     <input type='submit' value='{% trans "Apply Filter" %}' />
     </form>
     </div>
-    
+
     {% if not from_saved_query %}
     <div class='tab' id='tabsave'>
     <h3>{% trans "Save Query" %}</h3>
@@ -163,7 +163,7 @@
 <tr><th>&nbsp;</th><th>#</th><th>{% trans "Pr" %}</th><th>{% trans "Title" %}</th><th>{% trans "Queue" %}</th><th>{% trans "Status" %}</th><th>{% trans "Modified" %}</th><th>{% trans "Created" %}</th><th>{% trans "Owner" %}</th><th>{% trans "Assigned to" %}</th>{% if tags_enabled %}<th>{% trans "Tags" %}</th>{% endif %}</tr>
 {% if tickets %}
 {% for ticket in tickets.object_list %}
-<tr class='row_{% cycle odd,even %} row_hover'>
+<tr class='row_{% cycle "odd" "even" %} row_hover'>
 <td class="{{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><input type='checkbox' name='ticket_id' value='{{ ticket.id }}' class='ticket_multi_select' /></td>
 <td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><a href='{{ ticket.get_absolute_url }}'>{{ ticket.ticket }}</a></td>
 <td class="left_border {{ forloop.counter|coll_bg  }} {% if forloop.last %}no_border{% endif %}"><span class="priority{{ ticket.priority }}">{{ ticket.priority }}</span></td>

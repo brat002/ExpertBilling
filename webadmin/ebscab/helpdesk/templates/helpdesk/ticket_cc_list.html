@@ -16,7 +16,7 @@
 </thead>
 <tbody>
 {% for person in copies_to %}
-<tr class='row_{% cycle odd,even %}'>
+<tr class='row_{% cycle "odd" "even" %}'>
     <td>{{ person.display }}</td>
     <td>{% if person.can_view %}+{% else %}-{% endif %}</td>
     <td>{% if person.can_update %}+{% else %}-{% endif %}</td>
