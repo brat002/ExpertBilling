@@ -800,7 +800,7 @@ class IpInUseLogForm(forms.Form):
         'subaccount_fts', required=False)
     ippool = forms.ModelMultipleChoiceField(
         label=_(u"Пул"), queryset=IPPool.objects.all(), required=False)
-    ip = forms.IPAddressField(required=False)
+    ip = forms.GenericIPAddressField(required=False)
     types = forms.ChoiceField(
         required=False,
         choices=(

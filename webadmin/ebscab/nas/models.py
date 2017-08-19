@@ -320,7 +320,7 @@ class Nas(models.Model):
     identify = models.CharField(verbose_name=_(u'RADIUS имя'), max_length=255)
     name = models.CharField(
         verbose_name=_(u'Имя'), max_length=255, unique=True)
-    ipaddress = models.IPAddressField(
+    ipaddress = models.GenericIPAddressField(
         verbose_name=_(u'IP адрес'), max_length=255)
     secret = EncryptedTextField(
         verbose_name=_(u'Секретная фраза'),
@@ -471,7 +471,7 @@ class TrafficNode(models.Model):
     dst_port = models.IntegerField(
         verbose_name=u'Dst port', blank=True, default=0)
 
-    next_hop = models.IPAddressField(
+    next_hop = models.GenericIPAddressField(
         verbose_name=u'next Hop', blank=True, default='0.0.0.0')
     in_index = models.IntegerField(
         verbose_name=u'SNMP IN', blank=True, default=0)

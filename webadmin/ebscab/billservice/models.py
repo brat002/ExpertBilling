@@ -2815,7 +2815,7 @@ class SubAccount(models.Model):
         verbose_name=_(u'Пароль'), blank=True, default='')
     ipn_ip_address = IPNetworkField(blank=True, null=True, default='0.0.0.0')
     ipn_mac_address = models.CharField(blank=True, max_length=17, default='')
-    vpn_ip_address = models.IPAddressField(
+    vpn_ip_address = models.GenericIPAddressField(
         blank=True, null=True, default='0.0.0.0')
     allow_mac_update = models.BooleanField(default=False)
     nas = models.ForeignKey(
@@ -3360,7 +3360,7 @@ class Hardware(models.Model):
         default='',
         verbose_name=_(u"Серийный номер")
     )
-    ipaddress = models.IPAddressField(blank=True, verbose_name=_(u"IP адрес"))
+    ipaddress = models.GenericIPAddressField(blank=True, verbose_name=_(u"IP адрес"))
     macaddress = models.CharField(
         blank=True, default='', max_length=32, verbose_name=_(u"MAC адрес"))
     comment = models.TextField(
@@ -3535,7 +3535,7 @@ class Switch(models.Model):
         blank=True,
         default=''
     )
-    ipaddress = models.IPAddressField(
+    ipaddress = models.GenericIPAddressField(
         blank=True, verbose_name=_(u"IP адрес"), default=None)
     macaddress = models.CharField(
         max_length=32, verbose_name=_(u"MAC адрес"), blank=True, default='')
