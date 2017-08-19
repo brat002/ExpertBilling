@@ -1353,12 +1353,21 @@ class ContractTemplateForm(ModelForm):
 class RadiusAttrsForm(ModelForm):
     id = forms.IntegerField(required=False, widget=forms.HiddenInput)
     nas = forms.ModelChoiceField(
-        queryset=Nas.objects.all(), required=False, widget=forms.HiddenInput)
+        queryset=Nas.objects.all(),
+        required=False,
+        widget=forms.HiddenInput
+    )
     tarif = forms.ModelChoiceField(
         queryset=Tariff.objects.all(),
         required=False,
         widget=forms.HiddenInput
     )
+
+    def __init__(self, *args, **kwargs):
+        super(RadiusAttrsForm, self).__init__(*args, **kwargs)
+
+        self.fields['vendor'].widget = forms.HiddenInput()
+        self.fields['attrid'].widget = forms.HiddenInput()
 
     class Meta:
         model = RadiusAttrs
@@ -2373,7 +2382,10 @@ class GroupStatSearchForm(forms.Form):
     accounts = AutoCompleteSelectMultipleField(
         'account_username', label=_(u'Аккаунты'), required=False)
     groups = forms.ModelMultipleChoiceField(
-        queryset=Group.objects.all(), label=_(u'Группы трафика'), required=False)
+        queryset=Group.objects.all(),
+        label=_(u'Группы трафика'),
+        required=False
+    )
     date_start = forms.DateTimeField(
         label=_(u'С'),
         required=False,

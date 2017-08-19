@@ -37,7 +37,9 @@ settings_local.py
 site_verify_codes.html
 webadmin/ebscab/static/
 services/nf/pkg/
+venv/
 
 env/
 TODO
 .sublimelinterrc
+env/

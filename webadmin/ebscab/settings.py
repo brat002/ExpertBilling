@@ -79,6 +79,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'notification.context_processors.auth',
     'django.core.context_processors.request',
     'django.core.context_processors.media',
+    'django.core.context_processors.static',
     'django.contrib.messages.context_processors.messages',
     'lib.context_processors.default_current_view_name',
     'lib.context_processors.project_settings'
@@ -118,7 +119,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.admin',
-    'django.contrib.staticfiles',
+#    'django.contrib.staticfiles',
     'radius',
     'nas',
     'billservice',

@@ -1836,11 +1836,10 @@ class SystemUser(models.Model):
 
     def has_perm(self, perm):
         app, internal_name = perm.split('.')
-        app_exist = (self.permissiongroup.permissions
-                     .filter(app=app, internal_name=internal_name)
-                     .exists())
-        r = self.status and (self.is_superuser or
-                             (app_exist if self.permissiongroup else False))
+        r = self.status and (self.is_superuser or (
+            (self.permissiongroup.permissions
+             .filter(app=app, internal_name=internal_name)
+             .exists()) if self.permissiongroup else False))
         return r
 
     def delete(self):
@@ -2440,10 +2439,8 @@ class TPChangeRule(models.Model):
 class RadiusAttrs(models.Model):
     tarif = models.ForeignKey(Tariff, blank=True, null=True)
     nas = models.ForeignKey(Nas, blank=True, null=True)
-    vendor = models.IntegerField(blank=True, default=0)
-    attrid = models.IntegerField()
-    value = models.CharField(max_length=255)
-
+    vendor = models.IntegerField(blank=True, null=True, default=0)
+    attrid = models.IntegerField(blank=True, null=True, default=0)
     account_status = models.IntegerField(
         choices=(
             (0, _(u'Всегда')),
@@ -2452,8 +2449,19 @@ class RadiusAttrs(models.Model):
         ),
         default=0,
         verbose_name=_(u'Статус аккаунта'),
-        help_text=_(u'Добавлять атрибут в Access Accept, если срабатывает '
-                    u'условие')
+        help_text=_(u'Добавлять атрибут в Access Accept, если '
+                    u'срабатывает условие')
+    )
+    attribute = models.CharField(
+        max_length=255,
+        verbose_name=_(u'Radius attribute name'),
+        help_text=_(u"Radius attribute name like Service-Type")
+    )
+    value = models.CharField(
+        max_length=255,
+        verbose_name=_(u'Value'),
+        help_text=_(u"Here you can use variables like $account_id, "
+                    u'$tariff_id, ...')
     )
 
     def get_remove_url(self):
@@ -3758,8 +3766,11 @@ class SuppAgreement(models.Model):
         u'Текст шаблона'), blank=True, default='')
     length = models.IntegerField(verbose_name=_(
         u"Длительность в днях"), blank=True, null=True)
-    disable_tarff_change = models.BooleanField(verbose_name=_(u"Запретить смену тарифного плана"), blank=True,
-                                               default=False)
+    disable_tarff_change = models.BooleanField(
+        verbose_name=_(u"Запретить смену тарифного плана"),
+        blank=True,
+        default=False
+    )
 
     def __unicode__(self):
         return u"%s" % self.name

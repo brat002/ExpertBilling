@@ -74,6 +74,33 @@ from ebsadmin.models import Comment
 from ebsadmin.transactionreport import servicemodel_by_table
 
 
+def showconfirmcolumn(href='{{record.get_remove_url}}', message=_(u'Удалить?'),
+                      verbose_name=' ', icon_type='icon-remove'):
+    return django_tables.TemplateColumn(
+        '<a href="%s" class="show-confirm" title="%s" data-clickmessage="%s">'
+        '<i class="%s"></i></a>' % (href, message, message, icon_type),
+        verbose_name=verbose_name,
+        orderable=False
+    )
+
+
+def modallinkcolumn(url_name='', modal_title='', modal_id=''):
+    return django_tables.LinkColumn(
+        url_name,
+        get_params={
+            'id': A('pk')
+        },
+        attrs={
+            'a': {
+                'rel': 'alert3',
+                'class': 'general-modal-dialog',
+                'data-dlgtitle': modal_title,
+                'data-dlgid': modal_id
+            }
+        }
+    )
+
+
 class EbsadminTable(django_tables.Table):
 
     def __init__(self, *args, **argv):
@@ -1000,7 +1027,7 @@ class RadiusAttrTable(EbsadminTableReport):
 
     class Meta(EbsadminTableReport.Meta):
         model = RadiusAttrs
-        exclude = ("tarif", 'nas')
+        exclude = ("tarif", 'nas', 'vendor', 'attrid')
 
 
 class ManufacturerTable(EbsadminTableReport):
@@ -1901,30 +1928,3 @@ class AccountSuppAgreementTable(EbsadminTableReport):
     class Meta(EbsadminTableReport.Meta):
         model = AccountSuppAgreement
         configurable = True
-
-
-def showconfirmcolumn(href='{{record.get_remove_url}}', message=_(u'Удалить?'),
-                      verbose_name=' ', icon_type='icon-remove'):
-    return django_tables.TemplateColumn(
-        '<a href="%s" class="show-confirm" title="%s" data-clickmessage="%s">'
-        '<i class="%s"></i></a>' % (href, message, message, icon_type),
-        verbose_name=verbose_name,
-        orderable=False
-    )
-
-
-def modallinkcolumn(url_name='', modal_title='', modal_id=''):
-    return django_tables.LinkColumn(
-        url_name,
-        get_params={
-            'id': A('pk')
-        },
-        attrs={
-            'a': {
-                'rel': 'alert3',
-                'class': 'general-modal-dialog',
-                'data-dlgtitle': modal_title,
-                'data-dlgid': modal_id
-            }
-        }
-    )
