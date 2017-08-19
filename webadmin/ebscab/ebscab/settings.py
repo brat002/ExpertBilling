@@ -20,8 +20,9 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'NAME': 'ebs',
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ATOMIC_REQUESTS': True,
+        'NAME': 'ebs',
         'USER': 'ebs',
         'PASSWORD': 'ebspassword',
         'HOST': '127.0.0.1',
@@ -98,7 +99,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.doc.XViewMiddleware',
-    'django.middleware.transaction.TransactionMiddleware',
     #'lib.threadlocals.ThreadLocalsMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     #'billservice.middleware.UrlFilter',
