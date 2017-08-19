@@ -2,15 +2,27 @@
 
 import json
 
-import psycopg2.extras
 import psycopg2
+import psycopg2.extras
 from django.conf import settings
 
-from billservice.forms import TransactionReportForm
-from ebscab.lib.decorators import ajax_request
-from billservice.helpers import systemuser_required
-from billservice.models import Transaction, TransactionType, PeriodicalServiceHistory, PeriodicalService, TotalTransactionReport as TransactionReport, OneTimeServiceHistory, TrafficTransaction, AddonServiceTransaction, TimeTransaction, OneTimeService, AddonService
 import billservice.models as bsmodels
+from billservice.forms import TransactionReportForm
+from billservice.helpers import systemuser_required
+from billservice.models import (
+    AddonService,
+    AddonServiceTransaction,
+    OneTimeService,
+    OneTimeServiceHistory,
+    PeriodicalService,
+    PeriodicalServiceHistory,
+    TimeTransaction,
+    TotalTransactionReport as TransactionReport,
+    TrafficTransaction,
+    Transaction,
+    TransactionType
+)
+from ebscab.lib.decorators import ajax_request
 
 
 TRANSACTION_MODELS = {
