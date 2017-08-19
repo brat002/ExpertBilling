@@ -218,7 +218,7 @@ class DynamicSchema(models.Model):
     @classmethod
     def get_cache_key_static(cls, model_class, type_value):
         return "%s-%s-%s-%s" % ('DYNAMICMODEL_SCHEMA_CACHE_KEY',
-                                model_class._meta.app_label, model_class._meta.module_name,
+                                model_class._meta.app_label, model_class._meta.model_name,
                                 type_value)
 
     def get_cache_key(self):
