@@ -4,6 +4,7 @@ from __future__ import absolute_import, unicode_literals
 
 import re
 import tokenize
+from collections import OrderedDict
 
 import six
 from django import template
@@ -11,7 +12,6 @@ from django.core.exceptions import ImproperlyConfigured
 from django.template import TemplateSyntaxError, Variable, Node
 from django.template.defaultfilters import stringfilter, title as old_title
 from django.template.loader import get_template, select_template
-from django.utils.datastructures import SortedDict
 from django.utils.html import escape
 from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
@@ -39,7 +39,7 @@ def token_kwargs(bits, parser):
     """
     if not bits:
         return {}
-    kwargs = SortedDict()
+    kwargs = OrderedDict()
     while bits:
         match = kwarg_re.match(bits[0])
         if not match or not match.group(1):
