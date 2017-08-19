@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import autocomplete_light
 from django.conf import settings
 from django.conf.urls import include, patterns, url

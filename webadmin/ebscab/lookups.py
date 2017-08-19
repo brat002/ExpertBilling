@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from billservice.models import Hardware
 from selectable.base import ModelLookup
 from selectable.decorators import login_required
