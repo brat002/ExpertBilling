@@ -11,7 +11,7 @@ from django import template
 from django.utils.safestring import mark_safe
 from django.conf import settings
 
-from ebscab.chartit.charts import Chart, PivotChart
+from chartit.charts import Chart, PivotChart
 
 
 def default(obj):

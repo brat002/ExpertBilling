@@ -5,8 +5,7 @@ from django.db import models
 from django.db.models import Max
 from django.utils.translation import ugettext_lazy as _
 
-from lib.fields import EncryptedTextField
-from lib.fields import IPNetworkField
+from ebscab.lib.fields import EncryptedTextField, IPNetworkField
 
 
 NAS_LIST = (

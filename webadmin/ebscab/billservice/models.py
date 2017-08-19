@@ -13,8 +13,8 @@ from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from dynamicmodel.models import DynamicModel
-from ebscab.nas.models import Nas, TrafficClass
-from lib.fields import IPNetworkField, EncryptedTextField
+from ebscab.lib.fields import IPNetworkField, EncryptedTextField
+from nas.models import Nas, TrafficClass
 
 import IPy
 

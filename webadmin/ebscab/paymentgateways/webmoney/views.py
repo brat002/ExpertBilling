@@ -19,7 +19,7 @@ try:
 except ImportError:
     from django.contrib.csrf.middleware import csrf_exempt
 
-from lib.decorators import render_to
+from ebscab.lib.decorators import render_to
 
 import settings
 from forms import *

@@ -24,7 +24,7 @@ from helpdesk.models import (
     TicketChange
 )
 from helpdesk.settings import HAS_TAG_SUPPORT
-from lib.decorators import render_to, login_required
+from ebscab.lib.decorators import render_to, login_required
 
 
 @login_required

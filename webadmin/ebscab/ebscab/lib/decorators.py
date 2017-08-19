@@ -8,7 +8,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from lib.http import JsonResponse
+from ebscab.lib.http import JsonResponse
 
 
 def available_attrs(fn):

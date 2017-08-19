@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ebscab.nas.models import Nas
+from nas.models import Nas
 from billservice.models import Account
 
 

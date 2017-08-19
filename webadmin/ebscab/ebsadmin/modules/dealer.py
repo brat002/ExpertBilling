@@ -6,10 +6,10 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
 from billservice.helpers import systemuser_required
+from billservice.models import Dealer
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
-from ebscab.billservice.forms import DealerForm, BankDataForm, DealerSelectForm
-from ebscab.billservice.models import Dealer
+from billservice.forms import DealerForm, BankDataForm, DealerSelectForm
 from ebscab.lib.decorators import render_to, ajax_request
 from object_log.models import LogItem
 
