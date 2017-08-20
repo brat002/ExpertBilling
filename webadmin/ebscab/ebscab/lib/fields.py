@@ -365,18 +365,3 @@ class EncryptedTextField(BaseEncryptedField):
         defaults = {'widget': forms.TextInput}
         defaults.update(kwargs)
         return super(EncryptedTextField, self).formfield(**defaults)
-
-
-class EncryptedDecimalField(BaseEncryptedField):
-    __metaclass__ = models.SubfieldBase
-
-    def formfield(self, **kwargs):
-        defaults = {'form_class': forms.DecimalField}
-        defaults.update(kwargs)
-        return super(EncryptedDecimalField, self).formfield(**defaults)
-
-    def to_python(self, value):
-        if value:
-            return decimal.Decimal(
-                super(EncryptedDecimalField, self).to_python(value))
-        return value
