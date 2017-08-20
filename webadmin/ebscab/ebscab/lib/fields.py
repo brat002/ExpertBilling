@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import base64
-import decimal
 import struct
 from hashlib import md5
 
@@ -11,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.forms import fields, widgets
 from django.forms.widgets import PasswordInput
-from ipaddr import _IPAddrBase, IPAddress, IPNetwork
+from ipaddr import _IPAddrBase, IPNetwork
 
 
 class IPNetworkWidget(widgets.TextInput):
