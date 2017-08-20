@@ -190,7 +190,7 @@ def armor(data):
     }
 
 
-class BadChecksumError (Exception):
+class BadChecksumError(Exception):
     pass
 
 
@@ -286,7 +286,7 @@ def aes_pad_key(key):
         return pad(key[:32], 32, zero=True)
 
 
-class BaseEncryptedField (models.Field):
+class BaseEncryptedField(models.Field):
 
     def __init__(self, *args, **kwargs):
         # Just in case pgcrypto and/or pycrypto support more than
@@ -358,7 +358,7 @@ class BaseEncryptedField (models.Field):
         return value or ''
 
 
-class EncryptedTextField (BaseEncryptedField):
+class EncryptedTextField(BaseEncryptedField):
     __metaclass__ = models.SubfieldBase
 
     def formfield(self, **kwargs):
@@ -367,7 +367,7 @@ class EncryptedTextField (BaseEncryptedField):
         return super(EncryptedTextField, self).formfield(**defaults)
 
 
-class EncryptedDecimalField (BaseEncryptedField):
+class EncryptedDecimalField(BaseEncryptedField):
     __metaclass__ = models.SubfieldBase
 
     def formfield(self, **kwargs):
