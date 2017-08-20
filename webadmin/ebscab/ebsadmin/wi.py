@@ -48,6 +48,7 @@ from billservice.models import (
     SubAccount,
     SuspendedPeriod,
     Template,
+    TotalTransactionReport,
     TrafficTransaction,
     Transaction,
     TransactionType
