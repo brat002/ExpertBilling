@@ -9,11 +9,11 @@ from django.db import models
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 
-from billservice.models import Account, Transaction
+from billservice.models import Account
 
-import signals
-from abstract_mixin import AbstractMixin
-from utils import import_backend_modules, get_backend_settings
+from getpaid import signals
+from getpaid.abstract_mixin import AbstractMixin
+from getpaid.utils import import_backend_modules, get_backend_settings
 
 
 PAYMENT_STATUS_CHOICES = [
@@ -182,10 +182,3 @@ def register_to_payment(order_class, **kwargs):
     for backend_name, models in backend_models_modules.items():
         apps.register_models(backend_name, *models.build_models(Payment))
     return Payment
-
-
-register_to_payment(Transaction,
-                    unique=False,
-                    blank=True,
-                    null=True,
-                    related_name='payments')
