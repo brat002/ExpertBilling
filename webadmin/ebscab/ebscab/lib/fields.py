@@ -318,15 +318,6 @@ if has_django:
         def get_internal_type(self):
             return 'TextField'
 
-        def south_field_triple(self):
-            """
-            Describe the field to south for use in migrations.
-            """
-            from south.modelsinspector import introspector
-
-            args, kwargs = introspector(self)
-            return ("django.db.models.fields.TextField", args, kwargs)
-
         def get_cipher(self):
             """
             Return a new Cipher object for each time we want to encrypt/decrypt. This is because

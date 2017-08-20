@@ -123,11 +123,3 @@ class JSONCharField(JSONFieldBase, models.CharField):
     """JSONCharField is a generic textfield that serializes/unserializes JSON objects,
     stored in the database like a CharField, which enables it to be used
     e.g. in unique keys"""
-
-
-try:
-    from south.modelsinspector import add_introspection_rules
-    add_introspection_rules(
-        [], ["^dynamicmodel\.fields\.(JSONField|JSONCharField)"])
-except ImportError:
-    pass
