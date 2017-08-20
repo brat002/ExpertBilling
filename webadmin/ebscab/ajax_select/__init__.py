@@ -18,6 +18,9 @@ from django.utils.text import capfirst
 from django.utils.translation import ugettext_lazy as _, ugettext
 
 
+default_app_config = 'ajax_select.apps.AjaxSelectConfig'
+
+
 class LookupChannel(object):
 
     """Subclass this, setting model and overiding the methods below to taste"""

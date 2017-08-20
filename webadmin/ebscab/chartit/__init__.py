@@ -6,3 +6,6 @@ directly from models.
 
 from .chartdata import PivotDataPool, DataPool
 from .charts import PivotChart, Chart
+
+
+default_app_config = 'chartit.apps.ChartitConfig'

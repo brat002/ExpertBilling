@@ -10,6 +10,9 @@ BACKEND_SESSION_KEY = '_auth_user_backend'
 REDIRECT_FIELD_NAME = 'next'
 
 
+default_app_config = 'billservice.apps.BillServiceConfig'
+
+
 def load_backend(path):
     i = path.rfind('.')
     module, attr = path[:i], path[i + 1:]
