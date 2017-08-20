@@ -4,6 +4,8 @@ from django.db import models
 
 from billservice.models import Account
 
+from .apps import PaymentGatewaysQiwiConfig
+
 
 class Invoice(models.Model):
     txn_id = models.CharField(
@@ -21,3 +23,6 @@ class Invoice(models.Model):
     accepted = models.BooleanField(default=False)
     date_accepted = models.DateTimeField(blank=True, null=True)
     deleted = models.BooleanField(default=False)
+
+    class Meta:
+        app_label = PaymentGatewaysQiwiConfig.name

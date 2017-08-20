@@ -201,6 +201,7 @@ class DynamicSchemaManager(models.Manager):
 class DynamicSchema(models.Model):
 
     class Meta:
+        app_label = 'dynamicmodel'
         unique_together = ('model', 'type_value')
 
     objects = DynamicSchemaManager()
