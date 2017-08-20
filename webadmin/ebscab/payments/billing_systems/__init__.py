@@ -25,7 +25,6 @@ CHECK_BODY_SUCCESS = """<err_code>%(ERR_CODE)s</err_code><err_text>%(ERR_TEXT)s<
 
 CHECK_BODY_ERROR = """<err_code>%(ERR_CODE)s</err_code><err_text>%(ERR_TEXT)s</err_text>"""
 
-# PAYMENT_BODY=u"""<err_code>%(ERR_CODE)s</err_code><err_text>%(ERR_TEXT)s</err_text><account>%(ACCOUNT)s</account><reg_id>%(REG_ID)s</reg_id><reg_date>%(REG_DATE)s</reg_date>"""
 PAYMENT_BODY = u"""<err_code>%(ERR_CODE)s</err_code><err_text>%(ERR_TEXT)s</err_text><account>%(ACCOUNT)s</account>"""
 PAYMENT_FREAK_BODY = u"""<err_code>%(ERR_CODE)s</err_code><err_text>%(ERR_TEXT)s</err_text><account>%(ACCOUNT)s</account>"""
 
@@ -107,7 +106,6 @@ class PaymentProcessor(PaymentProcessorBase):
 
         pay_amount = (body.request.params.pay_amount.text
                       if body.request.params.pay_amount else 0)
-        # print "body.request.params.pay_amount",body.request.params.pay_amount
         if not pay_amount:
             return PaymentProcessor.error(body, 29)
 
@@ -164,9 +162,7 @@ class PaymentProcessor(PaymentProcessorBase):
         reply_body = PAYMENT_BODY.encode('utf-8') % {
             'ERR_CODE': 0,
             'ERR_TEXT': ERRCODES.get('0'),
-            #'REG_ID': payment.id,
             'ACCOUNT': account.contract,
-            #'REG_DATE': payment.created_on.strftime('%Y-%m-%dT%H:%M:%S'),
             'BALLANCE': '%.2f' % float(account.ballance or 0),
         }
         reply_body = reply_body.encode('utf-8')

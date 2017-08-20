@@ -15,8 +15,6 @@ from django.utils.translation import ugettext as _
 from ajax_select import get_lookup
 
 
-##########################################################################
-
 class AutoCompleteSelectWidget(forms.widgets.TextInput):
 
     """  widget to select a model and return it as text """
@@ -122,9 +120,6 @@ class AutoCompleteSelectField(forms.fields.CharField):
 
     def check_can_add(self, user, model):
         _check_can_add(self, user, model)
-
-
-##########################################################################
 
 
 class AutoCompleteSelectMultipleWidget(forms.widgets.SelectMultiple):
