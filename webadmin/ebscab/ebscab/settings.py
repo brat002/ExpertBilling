@@ -65,14 +65,12 @@ SECRET_KEY = '%!a5^gik_4lgzt+k)vyo6)y68_3!u^*j(ujks7(=6f2j89d=x&'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder'
-    #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader'
-    #     'django.template.loaders.eggs.Loader',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -88,7 +86,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 TEMPLATE_DIRS = (
     '/opt/ebs/web/ebscab/templates',
-    #'/opt/ebs/web/ebscab/helpdesk/templates',
     '%s/templates/' % os.path.abspath('.')
 )
 
@@ -99,9 +96,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
-    #'lib.threadlocals.ThreadLocalsMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    #'billservice.middleware.UrlFilter',
     'ebsadmin.middleware.Version'
 )
 
@@ -162,7 +157,6 @@ AJAX_SELECT_BOOTSTRAP = False
 AJAX_SELECT_INLINES = 'inline'
 
 AUTHENTICATION_BACKENDS = (
-    #'helpdesk.backend.LoginSystemUserBackend',
     'billservice.backend.LoginUserBackend',
 )
 
@@ -207,9 +201,7 @@ ENABLE_SELECT2_MULTI_PROCESS_SUPPORT = False
 CURRENCY = u' руб'
 
 HOTSPOT_ONLY_PIN = False
-GETPAID_BACKENDS = (  # 'getpaid.backends.easypay',
-    #'getpaid.backends.platezhkaua',
-)
+GETPAID_BACKENDS = tuple()
 PROVIDER_LOGO = 'img/ebs.jpg'  # in media dir
 GETPAID_BACKENDS_SETTINGS = {
     # Please provide your settings for backends
@@ -281,10 +273,8 @@ SENDSMS_DEFAULT_FROM_PHONE = '+11111111111'
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 CAPTCHA_FONT_SIZE = 18
-#CAPTCHA_FONT_PATH = 'media/LiberationSans-Regular.ttf'
 CAPTCHA_LETTER_ROTATION = (-1, 1)
 CAPTCHA_NOISE_FUNCTIONS = ('captcha.helpers.noise_dots',)
-#TEST_RUNNER = 'testrunner.NoDbTestRunner'
 
 PERSONAL_AREA_STAFF_MENU = [
     ('helpdesk_dashboard', u'Сводка', ''),
