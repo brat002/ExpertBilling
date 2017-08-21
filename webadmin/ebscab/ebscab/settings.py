@@ -94,6 +94,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # TODO: need info for using billservice.log_in/log_out
+    # 'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
