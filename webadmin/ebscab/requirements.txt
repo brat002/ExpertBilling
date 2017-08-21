@@ -32,7 +32,7 @@ python-cjson==1.0.5
 python-dateutil==2.1
 python-memcached
 pytils==0.2.3
-pytz==2013.7
+pytz==2017.2
 redis==2.8.0
 setuptools==36.2.7
 simplejson==3.3.1
