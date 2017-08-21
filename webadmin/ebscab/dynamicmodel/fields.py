@@ -55,12 +55,10 @@ class JSONEncoder(DjangoJSONEncoder):
 class JSONFormField(Field):
 
     def clean(self, value):
-
         if not value and not self.required:
             return None
 
         value = super(JSONFormField, self).clean(value)
-
         if isinstance(value, basestring):
             try:
                 json.loads(value)
@@ -86,7 +84,6 @@ class JSONFieldBase(object):
             try:
                 return json.loads(value, **self.load_kwargs)
             except ValueError:
-                #raise ValueError("%s field got non-valid JSON" % self.name)
                 pass
 
         return value
@@ -111,7 +108,6 @@ class JSONFieldBase(object):
             kwargs["form_class"] = JSONFormField
 
         field = super(JSONFieldBase, self).formfield(**kwargs)
-
         if not field.help_text:
             field.help_text = "Enter valid JSON"
 
@@ -126,11 +122,3 @@ class JSONCharField(JSONFieldBase, models.CharField):
     """JSONCharField is a generic textfield that serializes/unserializes JSON objects,
     stored in the database like a CharField, which enables it to be used
     e.g. in unique keys"""
-
-
-try:
-    from south.modelsinspector import add_introspection_rules
-    add_introspection_rules(
-        [], ["^dynamicmodel\.fields\.(JSONField|JSONCharField)"])
-except ImportError:
-    pass

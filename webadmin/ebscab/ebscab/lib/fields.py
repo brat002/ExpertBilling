@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import base64
-import decimal
 import struct
 from hashlib import md5
 
@@ -11,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.forms import fields, widgets
 from django.forms.widgets import PasswordInput
-from ipaddr import _IPAddrBase, IPAddress, IPNetwork
+from ipaddr import _IPAddrBase, IPNetwork
 
 
 class IPNetworkWidget(widgets.TextInput):
@@ -150,8 +149,6 @@ class PasswordHashField(models.Field):
 __version_info__ = (1, 1, 0)
 __version__ = '.'.join(str(i) for i in __version_info__)
 
-has_django = True
-
 CRC24_INIT = 0xB704CE
 CRC24_POLY = 0x1864CFB
 
@@ -192,7 +189,7 @@ def armor(data):
     }
 
 
-class BadChecksumError (Exception):
+class BadChecksumError(Exception):
     pass
 
 
@@ -287,105 +284,83 @@ def aes_pad_key(key):
     else:
         return pad(key[:32], 32, zero=True)
 
-if has_django:
-    class BaseEncryptedField (models.Field):
 
-        def __init__(self, *args, **kwargs):
-            # Just in case pgcrypto and/or pycrypto support more than
-            # AES/Blowfish.
-            valid_ciphers = getattr(
-                settings, 'PGCRYPTO_VALID_CIPHERS', ('AES', 'Blowfish'))
-            cipher_name = kwargs.pop('cipher',
+class BaseEncryptedField(models.Field):
+
+    def __init__(self, *args, **kwargs):
+        # Just in case pgcrypto and/or pycrypto support more than
+        # AES/Blowfish.
+        valid_ciphers = getattr(
+            settings, 'PGCRYPTO_VALID_CIPHERS', ('AES', 'Blowfish'))
+        cipher_name = kwargs.pop('cipher',
+                                 getattr(settings,
+                                         'PGCRYPTO_DEFAULT_CIPHER',
+                                         'AES'))
+        assert cipher_name in valid_ciphers
+        self.cipher_key = kwargs.pop('key',
                                      getattr(settings,
-                                             'PGCRYPTO_DEFAULT_CIPHER',
-                                             'AES'))
-            assert cipher_name in valid_ciphers
-            self.cipher_key = kwargs.pop('key',
-                                         getattr(settings,
-                                                 'PGCRYPTO_DEFAULT_KEY',
-                                                 ''))
-            self.charset = 'utf-8'
-            if cipher_name == 'AES':
-                self.cipher_key = aes_pad_key(self.cipher_key)
-            mod = __import__('Crypto.Cipher',
-                             globals(),
-                             locals(),
-                             [cipher_name], -1)
-            self.cipher_class = getattr(mod, cipher_name)
-            self.check_armor = kwargs.pop('check_armor', True)
-            models.Field.__init__(self, *args, **kwargs)
+                                             'PGCRYPTO_DEFAULT_KEY',
+                                             ''))
+        self.charset = 'utf-8'
+        if cipher_name == 'AES':
+            self.cipher_key = aes_pad_key(self.cipher_key)
+        mod = __import__('Crypto.Cipher',
+                         globals(),
+                         locals(),
+                         [cipher_name], -1)
+        self.cipher_class = getattr(mod, cipher_name)
+        self.check_armor = kwargs.pop('check_armor', True)
+        models.Field.__init__(self, *args, **kwargs)
 
-        def get_internal_type(self):
-            return 'TextField'
+    def get_internal_type(self):
+        return 'TextField'
 
-        def south_field_triple(self):
-            """
-            Describe the field to south for use in migrations.
-            """
-            from south.modelsinspector import introspector
+    def get_cipher(self):
+        """
+        Return a new Cipher object for each time we want to encrypt/decrypt. This is because
+        pgcrypto expects a zeroed block for IV (initial value), but the IV on the cipher
+        object is cumulatively updated each time encrypt/decrypt is called.
+        """
+        return self.cipher_class.new(self.cipher_key,
+                                     self.cipher_class.MODE_CBC,
+                                     b'\0' * self.cipher_class.block_size)
 
-            args, kwargs = introspector(self)
-            return ("django.db.models.fields.TextField", args, kwargs)
+    def is_encrypted(self, value):
+        return (isinstance(value, basestring) and
+                value.startswith('-----BEGIN'))
 
-        def get_cipher(self):
-            """
-            Return a new Cipher object for each time we want to encrypt/decrypt. This is because
-            pgcrypto expects a zeroed block for IV (initial value), but the IV on the cipher
-            object is cumulatively updated each time encrypt/decrypt is called.
-            """
-            return self.cipher_class.new(self.cipher_key,
-                                         self.cipher_class.MODE_CBC,
-                                         b'\0' * self.cipher_class.block_size)
+    def to_python(self, value):
+        if self.is_encrypted(value):
+            # If we have an encrypted (armored, really) value, do the following when accessing it as a python value:
+            #    1. De-armor the value to get an encrypted bytestring.
+            #    2. Decrypt the bytestring using the specified cipher.
+            #    3. Unpad the bytestring using the cipher's block size.
+            # 4. Decode the bytestring to a unicode string using the
+            # specified charset.
+            return unpad(self.get_cipher()
+                         .decrypt(dearmor(value, verify=self.check_armor)),
+                         self.cipher_class.block_size).decode(self.charset)
+        return value or ''
 
-        def is_encrypted(self, value):
-            return (isinstance(value, basestring) and
-                    value.startswith('-----BEGIN'))
+    def get_prep_value(self, value):
+        if value and not self.is_encrypted(value):
+            # If we have a value and it's not encrypted, do the following before storing in the database:
+            #    1. Convert it to a unicode string (by calling unicode).
+            #    2. Encode the unicode string according to the specified charset.
+            #    3. Pad the bytestring for encryption, using the cipher's block size.
+            #    4. Encrypt the padded bytestring using the specified cipher.
+            # 5. Armor the encrypted bytestring for storage in the text
+            # field.
+            return armor(self.get_cipher().encrypt(
+                pad(unicode(value).encode(self.charset),
+                    self.cipher_class.block_size)))
+        return value or ''
 
-        def to_python(self, value):
-            if self.is_encrypted(value):
-                # If we have an encrypted (armored, really) value, do the following when accessing it as a python value:
-                #    1. De-armor the value to get an encrypted bytestring.
-                #    2. Decrypt the bytestring using the specified cipher.
-                #    3. Unpad the bytestring using the cipher's block size.
-                # 4. Decode the bytestring to a unicode string using the
-                # specified charset.
-                return unpad(self.get_cipher()
-                             .decrypt(dearmor(value, verify=self.check_armor)),
-                             self.cipher_class.block_size).decode(self.charset)
-            return value or ''
 
-        def get_prep_value(self, value):
-            if value and not self.is_encrypted(value):
-                # If we have a value and it's not encrypted, do the following before storing in the database:
-                #    1. Convert it to a unicode string (by calling unicode).
-                #    2. Encode the unicode string according to the specified charset.
-                #    3. Pad the bytestring for encryption, using the cipher's block size.
-                #    4. Encrypt the padded bytestring using the specified cipher.
-                # 5. Armor the encrypted bytestring for storage in the text
-                # field.
-                return armor(self.get_cipher().encrypt(
-                    pad(unicode(value).encode(self.charset),
-                        self.cipher_class.block_size)))
-            return value or ''
+class EncryptedTextField(BaseEncryptedField):
+    __metaclass__ = models.SubfieldBase
 
-    class EncryptedTextField (BaseEncryptedField):
-        __metaclass__ = models.SubfieldBase
-
-        def formfield(self, **kwargs):
-            defaults = {'widget': forms.TextInput}
-            defaults.update(kwargs)
-            return super(EncryptedTextField, self).formfield(**defaults)
-
-    class EncryptedDecimalField (BaseEncryptedField):
-        __metaclass__ = models.SubfieldBase
-
-        def formfield(self, **kwargs):
-            defaults = {'form_class': forms.DecimalField}
-            defaults.update(kwargs)
-            return super(EncryptedDecimalField, self).formfield(**defaults)
-
-        def to_python(self, value):
-            if value:
-                return decimal.Decimal(
-                    super(EncryptedDecimalField, self).to_python(value))
-            return value
+    def formfield(self, **kwargs):
+        defaults = {'widget': forms.TextInput}
+        defaults.update(kwargs)
+        return super(EncryptedTextField, self).formfield(**defaults)

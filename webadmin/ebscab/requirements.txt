@@ -5,15 +5,12 @@ BeautifulSoup==3.2.1
 billiard==2.7.3.33
 celery-with-redis==3.0
 celery==3.1.25
-django-annoying==0.7.7
 django-autocomplete-light==2.3.3
 django-crispy-forms==1.5.2
 django-mathfilters==0.1.3
-django-pgcrypto==1.0.0
-django-redis==3.3
 Django-Select2==4.2.1
 django-selectable==1.0.0
-django-simple-captcha==0.4.0
+django-simple-captcha==0.4.9
 django-tagging==0.3.1
 Django==1.8.18
 ecdsa==0.9
@@ -26,7 +23,6 @@ Mako==0.9.0
 MarkupSafe==0.18
 openpyxl==1.6.2
 paramiko==1.12.0
-Pillow==2.2.1
 psycopg2==2.5.1
 pycrypto==2.6
 pyExcelerator==0.6.4.1
@@ -36,7 +32,7 @@ python-cjson==1.0.5
 python-dateutil==2.1
 python-memcached
 pytils==0.2.3
-pytz==2013.7
+pytz==2017.2
 redis==2.8.0
 setuptools==36.2.7
 simplejson==3.3.1

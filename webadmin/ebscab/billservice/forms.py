@@ -1188,7 +1188,6 @@ class TariffForm(ModelForm):
         self.fields['description'].widget.attrs['rows'] = 5
         self.fields['description'].widget.attrs['class'] = 'span10'
 
-
     class Meta:
         model = Tariff
         fields = '__all__'
@@ -1200,7 +1199,6 @@ class TimeSpeedForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(TimeSpeedForm, self).__init__(*args, **kwargs)
         self.fields['access_parameters'].widget = forms.widgets.HiddenInput()
-
 
     class Meta:
         model = TimeSpeed
@@ -2132,7 +2130,6 @@ class SubAccountForm(ModelForm):
                        .exclude(account=cleaned_data.get('account'))
                        .count())
 
-            # print 'subaccs', subaccs
             if subaccs > 0:
                 raise forms.ValidationError(
                     _(u'Указанный логин субаккаунта используется в '

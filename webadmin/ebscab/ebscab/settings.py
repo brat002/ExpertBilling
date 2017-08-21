@@ -180,8 +180,6 @@ PGCRYPTO_DEFAULT_KEY = 'ebscryptkeytest'
 
 LOG_LEVEL = 0
 
-CACHE_BACKEND = 'locmem:///'
-
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 LOGIN_URL = '/login/'

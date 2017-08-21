@@ -547,7 +547,6 @@ class PivotChart(object):
             for lv in dss[term]['_lv_set']:
                 data = [dss[term]['_cv_lv_dfv'][cv].get(lv, None) for cv
                         in cv_raw]
-                #name = '-'.join(dstd['legend_by']) + ":" + "-".join(lv)
                 term_pretty_name = term.replace('_', ' ')
                 name = term_pretty_name.title() if not lv else "-".join(lv)
                 hco = copy.deepcopy(options)
