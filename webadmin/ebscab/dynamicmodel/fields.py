@@ -84,7 +84,6 @@ class JSONFieldBase(object):
             try:
                 return json.loads(value, **self.load_kwargs)
             except ValueError:
-                #raise ValueError("%s field got non-valid JSON" % self.name)
                 pass
 
         return value
