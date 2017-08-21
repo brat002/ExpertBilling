@@ -6,7 +6,7 @@ import urllib
 from base64 import b64encode, b64decode
 
 from BeautifulSoup import BeautifulSoup
-from django.contrib.sites.models import RequestSite
+from django.contrib.sites.requests import RequestSite
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
