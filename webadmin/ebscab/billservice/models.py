@@ -1676,7 +1676,7 @@ class AccountIPNSpeed(models.Model):
 
 
 class SheduleLog(models.Model):
-    account = models.ForeignKey(to=Account, unique=True)
+    account = models.OneToOneField(Account)
     accounttarif = models.ForeignKey(to=AccountTarif, blank=True, null=True)
     ballance_checkout = models.DateTimeField(blank=True, null=True)
     prepaid_traffic_reset = models.DateTimeField(blank=True, null=True)
@@ -3697,7 +3697,7 @@ class NotificationsSettings(models.Model):
     balance_notifications = models.BooleanField(
         default=False,
         verbose_name=_(u'Уведомления о недостатке баланса')
-        )
+    )
     balance_edge = models.FloatField(
         verbose_name=_(u'Граница баланса'),
         help_text=_(u'Граница, с которой слать уведомления  о недостатке '
