@@ -16,8 +16,8 @@ DEBUG_SQL=True
 
 MIDDLEWARE_CLASSES = (
     'YOURPATH.SQLLogMiddleware.SQLLogMiddleware',
-    'django.middleware.transaction.TransactionMiddleware',
-    ...)
+    ...
+)
 
 """
 
