@@ -1488,8 +1488,7 @@ class TransactionType(models.Model):
     allowed_systemusers = models.ManyToManyField(
         "SystemUser",
         verbose_name=u'Разрешено выполнять',
-        blank=True,
-        null=True
+        blank=True
     )
     is_bonus = models.BooleanField(
         verbose_name=u'Является бонусной', blank=True, default=False)
