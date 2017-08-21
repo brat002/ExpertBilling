@@ -221,9 +221,8 @@ def make_channel(app_model, arg_search_field):
             app_model :   app_name.model_name
             search_field :  the field to search against and to display in search results
     """
-    from django.db import models
-    app_label, model_name = app_model.split(".")
-    themodel = models.get_model(app_label, model_name)
+    from django.apps import apps
+    themodel = apps.get_model(app_model)
 
     class MadeLookupChannel(LookupChannel):
 
