@@ -10,7 +10,6 @@ sys.path.append('/opt/ebs/data/workers/')
 
 DEBUG = True
 DEBUG_SQL = False
-TEMPLATE_DEBUG = DEBUG
 USE_TZ = False
 
 ADMINS = (
@@ -67,28 +66,28 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder'
 )
 
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader'
-)
-
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.contrib.auth.context_processors.auth',
-    'notification.context_processors.auth',
-    'django.core.context_processors.request',
-    'django.core.context_processors.media',
-    'django.core.context_processors.static',
-    'django.contrib.messages.context_processors.messages',
-    'ebscab.lib.context_processors.default_current_view_name',
-    'ebscab.lib.context_processors.project_settings'
-)
-
-TEMPLATE_DIRS = (
-    '/opt/ebs/web/ebscab/templates',
-    '%s/templates/' % os.path.abspath('.')
-)
-
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            '/opt/ebs/web/ebscab/templates',
+            '%s/templates/' % os.path.abspath('.')
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'notification.context_processors.auth',
+                'django.core.context_processors.request',
+                'django.core.context_processors.media',
+                'django.core.context_processors.static',
+                'django.contrib.messages.context_processors.messages',
+                'ebscab.lib.context_processors.default_current_view_name',
+                'ebscab.lib.context_processors.project_settings'
+            ]
+        }
+    }
+]
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',

@@ -24,7 +24,7 @@ register = template.Library()
 kwarg_re = re.compile(r"(?:(.+)=)?(.+)")
 context_processor_error_msg = (
     "{%% %s %%} requires django.core.context_processors.request "
-    "to be in your settings.TEMPLATE_CONTEXT_PROCESSORS in order for "
+    "to be in your settings.TEMPLATES in order for "
     "the included template tags to function correctly."
 )
 
