@@ -20,7 +20,7 @@ except ImportError:
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
-from django.template import loader, Context
+from django.template import engines, Context
 from django.contrib.sites.models import Site
 
 
@@ -95,23 +95,20 @@ def send_templated_mail(template_name, email_context, recipients, sender=None,
 
     footer_file = os.path.join('helpdesk', locale, 'email_text_footer.txt')
 
-    text_part = loader.get_template_from_string(
-        "%s{%% include '%s' %%}" % (t.plain_text, footer_file)
-    ).render(context)
+    text_part = engines['django'].from_string(
+        "%s{%% include '%s' %%}" % (t.plain_text, footer_file)).render(context)
 
     email_html_base_file = os.path.join(
         'helpdesk', locale, 'email_html_base.html')
 
-    html_part = loader.get_template_from_string(
+    html_part = engines['django'].from_string(
         ("{%% extends '%s' %%}{%% block title %%}%s{%% endblock %%}"
-         "{%% block content %%}%s{%% endblock %%}") % (email_html_base_file,
-                                                       t.heading,
-                                                       t.html)
-    ).render(context)
+         "{%% block content %%}%s{%% endblock %%}") % (
+         email_html_base_file, t.heading, t.html)).render(context)
 
-    subject_part = loader.get_template_from_string(
-        "{{ ticket.ticket }} {{ ticket.title|safe }} %s" % t.subject
-    ).render(context)
+    subject_part = engines['django'].from_string(
+        "{{ ticket.ticket }} {{ ticket.title|safe }} %s" %
+        t.subject).render(context)
 
     if type(recipients) != list:
         recipients = [recipients, ]

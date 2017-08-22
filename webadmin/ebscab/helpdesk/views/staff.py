@@ -19,7 +19,7 @@ from django.http import (
     HttpResponseRedirect
 )
 from django.shortcuts import render_to_response, get_object_or_404
-from django.template import loader, Context, RequestContext
+from django.template import engines, RequestContext
 from django.utils.translation import ugettext as _
 
 from billservice.helpers import systemuser_required
@@ -429,7 +429,7 @@ def update_ticket(request, ticket_id, public=False):
     # We need to allow the 'ticket' and 'queue' contexts to be applied to the
     # comment.
     context = safe_template_context(ticket)
-    comment = loader.get_template_from_string(comment).render(Context(context))
+    comment = engines['django'].from_string(comment).render(context)
 
     if owner is None and ticket.assigned_to:
         owner = ticket.assigned_to.id
