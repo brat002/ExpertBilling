@@ -87,7 +87,7 @@ def dashboard(request):
     """
 
     tickets = (Ticket.objects
-               .filter(assigned_to=request.user)
+               .filter(assigned_to=request.user.account)
                .exclude(status=Ticket.CLOSED_STATUS))
 
     ticket_table = UnpagedTicketTable(tickets)
@@ -726,7 +726,7 @@ def mass_update(request):
                 messages_sent_to.append(t.assigned_to.email)
 
             if t.queue.updated_ticket_cc and \
-                t.queue.updated_ticket_cc not in messages_sent_to:
+                    t.queue.updated_ticket_cc not in messages_sent_to:
                 send_templated_mail(
                     'closed_cc',
                     context,
