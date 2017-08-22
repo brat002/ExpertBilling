@@ -19,7 +19,6 @@ import re
 from datetime import datetime, timedelta
 from email.header import decode_header
 from email.Utils import parseaddr
-from optparse import make_option
 
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
@@ -31,20 +30,18 @@ from helpdesk.models import Queue, Ticket, FollowUp, Attachment, IgnoreEmail
 
 
 class Command(BaseCommand):
+    help = ('Process Jutda Helpdesk queues and process e-mails via POP3/IMAP '
+            'as required, feeding them into the helpdesk.')
 
     def __init__(self):
         BaseCommand.__init__(self)
 
-        self.option_list += (
-            make_option(
-                '--quiet', '-q',
-                default=False,
-                action='store_true',
-                help='Hide details about each queue/message as they are processed'),
-        )
-
-    help = ('Process Jutda Helpdesk queues and process e-mails via POP3/IMAP '
-            'as required, feeding them into the helpdesk.')
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--quiet', '-q',
+            default=False,
+            action='store_true',
+            help='Hide details about each queue/message as they are processed')
 
     def handle(self, *args, **options):
         quiet = options.get('quiet', False)
