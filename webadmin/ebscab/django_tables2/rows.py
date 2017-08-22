@@ -116,7 +116,8 @@ class BoundRow(object):
                 field = penultimate._meta.get_field(remainder)
                 display = getattr(penultimate, 'get_%s_display' %
                                   remainder, None)
-                if field.choices and display:
+                choices = getattr(field, 'choices', None)
+                if choices and display:
                     value = display()
                     remainder = None
             except FieldDoesNotExist:

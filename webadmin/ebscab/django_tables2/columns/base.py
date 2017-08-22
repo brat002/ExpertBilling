@@ -260,7 +260,10 @@ class Column(object):  # pylint: disable=R0902
         # Since this method is inherited by every subclass, only provide a
         # column if this class was asked directly.
         if cls is Column:
-            return cls(verbose_name=field.verbose_name)
+            name = getattr(field, 'verbose_name', None)
+            if name is None:
+                name = field.name
+            return cls(verbose_name=name)
 
 
 class BoundColumn(object):
@@ -503,7 +506,9 @@ class BoundColumn(object):
                     continue
                 break
             if field:
-                name = field.verbose_name
+                name = getattr(field, 'verbose_name', None)
+                if name is None:
+                    name = field.name
         return name
 
     @property
