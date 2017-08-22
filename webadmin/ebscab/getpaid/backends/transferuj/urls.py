@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.views.decorators.csrf import csrf_exempt
 
 from getpaid.backends.transferuj.views import (
@@ -10,8 +10,7 @@ from getpaid.backends.transferuj.views import (
 )
 
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^online/$',
         csrf_exempt(OnlineView.as_view()),
         name='getpaid-transferuj-online'),
@@ -21,4 +20,4 @@ urlpatterns = patterns(
     url(r'^failure/(?P<pk>\d+)/$',
         csrf_exempt(FailureView.as_view()),
         name='getpaid-transferuj-failure')
-)
+]

@@ -1,30 +1,25 @@
 # -*- coding: utf-8 -*-
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 from django.contrib import admin
 
-from views import *
+from . import views
 
 
 admin.autodiscover()
 
 
-urlpatterns = patterns(
-    '',
-    url(
-        r'^success/$',
-        success,
+urlpatterns = [
+    url(r'^success/$',
+        views.success,
         name='wm_sample-success'),
-    url(
-        r'^fail/$',
-        fail,
+    url(r'^fail/$',
+        views.fail,
         name='wm_sample-fail'),
-    url(
-        r'^$',
-        simple_payment,
+    url(r'^$',
+        views.simple_payment,
         name='wm_sample-payment'),
-    url(
-        r'^result/$',
-        result,
+    url(r'^result/$',
+        views.result,
         name='webmoney-result')
-)
+]
