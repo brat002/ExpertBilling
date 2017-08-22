@@ -1180,7 +1180,6 @@ def run_report(request, report):
     priority_sql = []
     priority_columns = []
     for p in Ticket.PRIORITY_CHOICES:
-        print dir(p[1])
         priority_sql.append(
             "COUNT(CASE t.priority WHEN '%s' THEN t.id END) AS \"%s\"" %
             (p[0], p[1]._proxy____cast()))
