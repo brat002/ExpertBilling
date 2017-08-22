@@ -3,7 +3,7 @@
 import commands
 import datetime
 
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login as log_in
 from django.db import connection
 from django.db.models.fields import DecimalField
 from django.db.models.fields.related import ForeignKey
@@ -85,7 +85,7 @@ def simple_login(request):
                             "message": _("Login error. May be systemuser "
                                          "host syntax error")
                         }
-                login(request, user)
+                log_in(request, user)
                 user.account.last_login = datetime.datetime.now()
                 user.account.last_ip = request.META.get("REMOTE_ADDR")
                 user.account.save()
