@@ -6,7 +6,6 @@ from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.template.loader import get_template
 
 from ebscab.lib.http import JsonResponse
 
