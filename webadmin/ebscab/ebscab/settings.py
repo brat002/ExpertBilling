@@ -78,9 +78,9 @@ TEMPLATES = [
             'context_processors': [
                 'django.contrib.auth.context_processors.auth',
                 'notification.context_processors.auth',
-                'django.core.context_processors.request',
-                'django.core.context_processors.media',
-                'django.core.context_processors.static',
+                'django.template.context_processors.request',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
                 'django.contrib.messages.context_processors.messages',
                 'ebscab.lib.context_processors.default_current_view_name',
                 'ebscab.lib.context_processors.project_settings'
