@@ -3,7 +3,7 @@
 import datetime
 
 from django.core.management.base import BaseCommand
-from django.template import Context, Template
+from django.template import Template
 
 from sendsms.models import Message
 
@@ -79,7 +79,7 @@ class Command(BaseCommand):
                             item.to = account.email
                         t = Template(
                             notification.balance_notifications_template)
-                        c = Context({"account": account})
+                        c = {"account": account}
                         item.body = t.render(c)
                         item.publish_date = now
                         item.save()
@@ -106,10 +106,10 @@ class Command(BaseCommand):
                             item.to = account.email
                         t = Template(
                             notification.payment_notifications_template)
-                        c = Context({
+                        c = {
                             "account": account,
                             'transaction': item
-                        })
+                        }
                         item.body = t.render(c)
                         item.publish_date = now
                         item.save()

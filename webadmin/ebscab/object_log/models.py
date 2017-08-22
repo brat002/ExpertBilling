@@ -11,7 +11,6 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
 from django.db.utils import DatabaseError
-from django.template import Context
 from django.template.loader import get_template
 
 from ebsadmin.lib import instance_dict
@@ -255,7 +254,7 @@ class LogItem(models.Model):
         context['log_item'] = self
         action = LogAction.objects.get_from_cache(self.action_id)
         template = get_template(action.template)
-        return template.render(Context(context))
+        return template.render(context)
 
     def __repr__(self):
         return ('time: %s user: %s object_type1: %s' %

@@ -20,7 +20,7 @@ except ImportError:
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
-from django.template import engines, Context
+from django.template import engines
 from django.contrib.sites.models import Site
 
 
@@ -66,7 +66,7 @@ def send_templated_mail(template_name, email_context, recipients, sender=None,
 
     from helpdesk.models import EmailTemplate  # avoid cyclic imports
 
-    context = Context(email_context)
+    context = email_context
     locale = getattr(context['queue'], 'locale', '')
     if not locale:
         locale = 'en'

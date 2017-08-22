@@ -15,7 +15,6 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from django.template.context import RequestContext
 from django.template.loader import get_template
 from django.utils.translation import ugettext as _
 
@@ -54,12 +53,14 @@ class TableReport(Table):
 
     def as_csv(self, request):
         template = get_template(self.template_csv)
-        context = RequestContext(request, {"table": self})
+        context = {"table": self}
         context.update(request.extra_context)
         self.context = context
         param_report = generate_prefixto_report(self)
-        return template.render(RequestContext(
-            request, {'table': self, 'param_report': param_report}))
+        return template.render({
+            'table': self,
+            'param_report': param_report},
+            request)
 
     def as_xls(self, request):
         return self.as_csv(request)

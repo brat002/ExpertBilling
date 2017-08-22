@@ -5,8 +5,7 @@ from functools import wraps, WRAPPER_ASSIGNMENTS
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.template.loader import get_template
 
 from ebscab.lib.http import JsonResponse
 
@@ -21,10 +20,7 @@ def render_to(tmpl):
             output = func(request, *args, **kw)
             if not isinstance(output, dict):
                 return output
-            return render_to_response(
-                tmpl,
-                output,
-                context_instance=RequestContext(request))
+            return get_template(tmpl).render(output, request)
         return wrapper
     return renderer
 
