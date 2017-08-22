@@ -3,11 +3,7 @@
 import datetime
 import math
 import os
-import sys
 from decimal import Decimal
-
-# TODO: wtf?
-sys.path.append(os.path.abspath('../../'))
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
