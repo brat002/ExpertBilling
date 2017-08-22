@@ -3,17 +3,17 @@
 import commands
 import datetime
 
-from mako.template import Template as mako_template
-from django.template import Template as DjangoTemplate
+from django.contrib.auth import authenticate, login
 from django.db import connection
-from django.http import HttpResponse
-from django.utils.translation import ugettext as _
-from django.utils.safestring import mark_safe
 from django.db.models.fields import DecimalField
 from django.db.models.fields.related import ForeignKey
+from django.http import HttpResponse
+from django.template import Template as DjangoTemplate
+from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext as _
+from mako.template import Template as mako_template
 
 import IPy
-from billservice import authenticate, log_in
 from billservice.forms import (
     DocumentModelForm,
     DocumentRenderForm,
@@ -85,7 +85,7 @@ def simple_login(request):
                             "message": _("Login error. May be systemuser "
                                          "host syntax error")
                         }
-                log_in(request, user)
+                login(request, user)
                 user.account.last_login = datetime.datetime.now()
                 user.account.last_ip = request.META.get("REMOTE_ADDR")
                 user.account.save()

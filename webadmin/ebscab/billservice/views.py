@@ -17,6 +17,7 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
+from django.contrib.auth import authenticate, login, logout
 
 from ebsadmin.cardlib import (
     add_addonservice,
@@ -38,7 +39,6 @@ from paymentgateways.qiwi.qiwiapi import (
 from radius.models import ActiveSession
 
 import IPy
-from billservice import authenticate, log_in, log_out
 from billservice.models import (
     Account,
     AccountAddonService,
@@ -136,7 +136,7 @@ def login(request):
                 }
 
             elif user:
-                log_in(request, user)
+                login(request, user)
 
                 if isinstance(user.account, SystemUser):
                     try:
@@ -244,7 +244,7 @@ def simple_login(request):
             user = authenticate(username=form.cleaned_data['username'],
                                 password=form.cleaned_data['password'])
 
-            log_in(request, user)
+            login(request, user)
 
             return {
                 "status": 1,
@@ -308,7 +308,7 @@ def get_ballance(request):
 
 
 def login_out(request):
-    log_out(request)
+    logout(request)
     return HttpResponseRedirect('/')
 
 
