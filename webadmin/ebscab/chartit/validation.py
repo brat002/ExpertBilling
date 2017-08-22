@@ -35,10 +35,10 @@ def _validate_field_lookup_term(model, term):
     if len(terms) == 1:
         return model._meta.get_field(terms[0]).verbose_name
     else:
-        field = model._meta.get_field(name)
+        field = model._meta.get_field(terms[0])
         field_direct = not field.auto_created or field.concrete
         if field_direct:
-            m = field.related.parent_model
+            m = field.rel.parent_model
         else:
             m = field.model
 
