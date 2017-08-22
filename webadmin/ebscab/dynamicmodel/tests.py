@@ -1,14 +1,20 @@
+# -*- coding: utf-8 -*-
+
 """
 Tests for DynamicModel, DynamicModelWithSchema and DynamicForm
 """
 
-from django.test import TestCase
-from .models import DynamicModel, DynamicForm, DynamicSchema, \
-    DynamicSchemaField
-from django.db import models, connection
-from django.core.exceptions import ValidationError
-
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
+from django.db import models, connection
+from django.test import TestCase
+
+from .models import (
+    DynamicForm,
+    DynamicModel,
+    DynamicSchema,
+    DynamicSchemaField
+)
 
 
 class TestModel(DynamicModel):
@@ -95,8 +101,10 @@ class DynamicModelTest(TestCase):
     def test_extra_fields_db_save(self):
 
         model = TestModel()
-        DynamicSchemaField.objects.create(schema=model.get_schema(),
-            name='experiment', field_type='CharField')
+        DynamicSchemaField.objects.create(
+            schema=model.get_schema(),
+            name='experiment',
+            field_type='CharField')
 
         self.ex_val = "experimental value"
         model.experiment = self.ex_val
@@ -109,13 +117,16 @@ class DynamicModelTest(TestCase):
     def test_get_nonexistent_attr(self):
 
         model = TestModel()
-        self.assertRaises(AttributeError, getattr, model, "attribute_that_does_not_exist")
+        self.assertRaises(AttributeError, getattr, model,
+                          "attribute_that_does_not_exist")
 
     def test_dyn_attr_in_extra_fields(self):
 
         model = TestModel()
-        DynamicSchemaField.objects.create(schema=model.get_schema(),
-            name='experiment', field_type='CharField')
+        DynamicSchemaField.objects.create(
+            schema=model.get_schema(),
+            name='experiment',
+            field_type='CharField')
 
         self.ex_val = "experimental value"
         model.experiment = self.ex_val
@@ -124,22 +135,26 @@ class DynamicModelTest(TestCase):
 
         new_model = TestModel.objects.get(pk=model_db_id)
         self.assertEqual(new_model.extra_fields['experiment'],
-            new_model.experiment)
+                         new_model.experiment)
 
     def test_dyn_attr_changes_extra_fields(self):
 
         model = TestModel()
-        DynamicSchemaField.objects.create(schema=model.get_schema(), name='experiment2',
+        DynamicSchemaField.objects.create(
+            schema=model.get_schema(),
+            name='experiment2',
             field_type='CharField')
 
         model.experiment2 = "experiment2 value"
         self.assertEqual(model.extra_fields['experiment2'],
-            model.experiment2)
+                         model.experiment2)
 
     def test_accept_schema_attr(self):
 
         model = TestModel()
-        DynamicSchemaField.objects.create(schema=model.get_schema(), name='schema',
+        DynamicSchemaField.objects.create(
+            schema=model.get_schema(),
+            name='schema',
             field_type='CharField')
 
         model.schema = "schema value changed"
@@ -149,11 +164,14 @@ class DynamicModelTest(TestCase):
 
         model = TestModel()
         # this dyn field has no effect because _schema is reserved attr
-        DynamicSchemaField.objects.create(schema=model.get_schema(), name='_schema',
+        DynamicSchemaField.objects.create(
+            schema=model.get_schema(),
+            name='_schema',
             field_type='CharField')
 
         model._schema = "schema value changed"
-        self.assertNotEqual(model.get_extra_field_value('_schema'), model._schema)
+        self.assertNotEqual(
+            model.get_extra_field_value('_schema'), model._schema)
 
     def test_extend_ignore_attrs(self):
 
@@ -176,13 +194,17 @@ class DynamicModelTest(TestCase):
 
         model = TestModel()
 
-        DynamicSchemaField.objects.create(schema=model.get_schema(),
-            name='old_field', field_type='CharField')
+        DynamicSchemaField.objects.create(
+            schema=model.get_schema(),
+            name='old_field',
+            field_type='CharField')
 
         model.old_field = "old field value"
 
-        dsf = DynamicSchemaField.objects.get(schema=model.get_schema(),
-            name='old_field', field_type='CharField')
+        dsf = DynamicSchemaField.objects.get(
+            schema=model.get_schema(),
+            name='old_field',
+            field_type='CharField')
         dsf.name = 'new_field'
 
         self.assertRaises(ValidationError, dsf.save)
@@ -191,10 +213,14 @@ class DynamicModelTest(TestCase):
 
         model = TestModel()
 
-        f1 = DynamicSchemaField.objects.create(schema=model.get_schema(),
-            name='field_one', field_type='CharField')
-        DynamicSchemaField.objects.create(schema=model.get_schema(),
-            name='field_two', field_type='CharField')
+        f1 = DynamicSchemaField.objects.create(
+            schema=model.get_schema(),
+            name='field_one',
+            field_type='CharField')
+        DynamicSchemaField.objects.create(
+            schema=model.get_schema(),
+            name='field_two',
+            field_type='CharField')
 
         model.field_one = "field one"
         model.field_two = "field two"
@@ -267,7 +293,8 @@ class DynamicModelCachingTest(TestCase):
         with self.settings(DEBUG=True):
             m2m = M2MModel.objects.create()
             DynamicSchemaField.objects.create(
-                schema=DynamicSchema.get_for_model(TestModel), name='email',
+                schema=DynamicSchema.get_for_model(TestModel),
+                name='email',
                 field_type='EmailField')
             m2m.testmodels.add(
                 TestModel.objects.create(about='one'),
@@ -306,7 +333,8 @@ class DynamicModelCachingTest(TestCase):
 
             m2m = M2MModel.objects.create()
             DynamicSchemaField.objects.create(
-                schema=DynamicSchema.get_for_model(TestModel), name='email',
+                schema=DynamicSchema.get_for_model(TestModel),
+                name='email',
                 field_type='EmailField')
             m2m.testmodels.add(
                 TestModel.objects.create(about='one'),
@@ -370,8 +398,8 @@ class DynamicModelCachingTest(TestCase):
             self.assertIsNotNone(
                 cache.get(DynamicSchema.get_cache_key_static(TestModel, '')))
             self.assertIsNotNone(
-                cache.get(DynamicSchema.get_cache_key_static(TestModel,
-                    'some_value')))
+                cache.get(DynamicSchema.get_cache_key_static(
+                    TestModel, 'some_value')))
 
             DynamicSchema.objects.all().delete()
 
@@ -379,8 +407,8 @@ class DynamicModelCachingTest(TestCase):
             self.assertIsNone(
                 cache.get(DynamicSchema.get_cache_key_static(TestModel, '')))
             self.assertIsNone(
-                cache.get(DynamicSchema.get_cache_key_static(TestModel,
-                    'some_value')))
+                cache.get(DynamicSchema.get_cache_key_static(
+                    TestModel, 'some_value')))
 
     def test_delete_schema_clears_cache(self):
         with self.settings(DEBUG=True):
@@ -411,7 +439,9 @@ class DynamicFormTest(TestCase):
     def test_accept_any_extra_field(self):
 
         model = TestModel()
-        DynamicSchemaField.objects.create(schema=model.get_schema(), name='email',
+        DynamicSchemaField.objects.create(
+            schema=model.get_schema(),
+            name='email',
             field_type='EmailField')
 
         form = TestForm({
@@ -427,7 +457,9 @@ class DynamicFormTest(TestCase):
     def test_validate_schema_fields(self):
 
         model = TestModel()
-        DynamicSchemaField.objects.create(schema=model.get_schema(), name='email',
+        DynamicSchemaField.objects.create(
+            schema=model.get_schema(),
+            name='email',
             field_type='EmailField')
 
         # should fail with invalid email value
@@ -455,7 +487,9 @@ class DynamicFormTest(TestCase):
         get_schema_type_descriptor method declared
         """
         model = TypelessModel()
-        DynamicSchemaField.objects.create(schema=model.get_schema(), name='email',
+        DynamicSchemaField.objects.create(
+            schema=model.get_schema(),
+            name='email',
             field_type='EmailField')
 
         # should fail with invalid email value
@@ -482,9 +516,13 @@ class DynamicFormTest(TestCase):
 
         # init schema fields
         info_model = TestModel(type='info')
-        DynamicSchemaField.objects.create(schema=info_model.get_schema(), name='info',
+        DynamicSchemaField.objects.create(
+            schema=info_model.get_schema(),
+            name='info',
             field_type='TextField')
-        DynamicSchemaField.objects.create(schema=info_model.get_schema(), name='more_info',
+        DynamicSchemaField.objects.create(
+            schema=info_model.get_schema(),
+            name='more_info',
             field_type='TextField', required=False)
 
         # should pass with info value set and
@@ -500,7 +538,9 @@ class DynamicFormTest(TestCase):
     def test_form_create(self):
 
         model = TestModel()
-        DynamicSchemaField.objects.create(schema=model.get_schema(), name='email',
+        DynamicSchemaField.objects.create(
+            schema=model.get_schema(),
+            name='email',
             field_type='EmailField')
 
         form = TestForm({
@@ -513,7 +553,7 @@ class DynamicFormTest(TestCase):
         model_from_db = TestModel.objects.get(pk=model_from_form.id)
 
         self.assertEqual(model_from_form.extra_fields,
-            model_from_db.extra_fields)
+                         model_from_db.extra_fields)
 
     def test_false_form(self):
 

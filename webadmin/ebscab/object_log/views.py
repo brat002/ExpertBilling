@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
+
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden, HttpResponseRedirect
-from django.template.context import RequestContext
 from django.db.models.query_utils import Q
+from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
+from django.template.context import RequestContext
 
 from object_log.models import LogItem
 
@@ -29,10 +31,14 @@ def list_for_object(request, obj, rest=False):
     log = LogItem.objects.filter(q).select_related('user').distinct()
 
     if not rest:
-        return render_to_response('object_log/log.html',
-            {'log':log,
-             'context':{'user':request.user}
-             },
+        return render_to_response(
+            'object_log/log.html',
+            {
+                'log': log,
+                'context': {
+                    'user': request.user
+                }
+            },
             context_instance=RequestContext(request))
     else:
         return log
@@ -47,9 +53,12 @@ def list_for_user(request, pk, rest=False):
     """
     if not request.user.is_superuser:
         if not rest:
-            return HttpResponseForbidden('You are not authorized to view this page')
+            return HttpResponseForbidden(
+                'You are not authorized to view this page')
         else:
-            return {'error':'You are not authorized to view this page'}
+            return {
+                'error': 'You are not authorized to view this page'
+            }
 
     user = get_object_or_404(User, pk=pk)
     return list_for_object(request, user, rest)
@@ -64,14 +73,16 @@ def list_for_group(request, pk, rest=False):
     """
     if not request.user.is_superuser:
         if not rest:
-            return HttpResponseForbidden('You are not authorized to view this page')
+            return HttpResponseForbidden(
+                'You are not authorized to view this page')
         else:
-            return {'error':'You are not authorized to view this page'}
+            return {
+                'error': 'You are not authorized to view this page'
+            }
 
     group = get_object_or_404(Group, pk=pk)
 
     return list_for_object(request, group, rest)
-
 
 
 @login_required
@@ -85,16 +96,25 @@ def list_user_actions(request, pk, rest=False):
     """
     if not request.user.is_superuser:
         if not rest:
-            return HttpResponseForbidden('You are not authorized to view this page')
+            return HttpResponseForbidden(
+                'You are not authorized to view this page')
         else:
-            return {'error':'You are not authorized to view this page'}
+            return {
+                'error': 'You are not authorized to view this page'
+            }
 
     user = get_object_or_404(User, pk=pk)
     log_items = LogItem.objects.filter(user=user).select_related('user')
 
     if not rest:
-        return render_to_response('object_log/log.html',
-            {'log':log_items, 'context':{'user':request.user}},
+        return render_to_response(
+            'object_log/log.html',
+            {
+                'log': log_items,
+                'context': {
+                    'user': request.user
+                }
+            },
             context_instance=RequestContext(request))
     else:
         return log_items

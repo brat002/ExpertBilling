@@ -1,11 +1,14 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
+
 from importlib import import_module
+
 from django.conf import settings
+
 
 def load_object(import_path):
     """
     Shamelessly stolen from https://github.com/ojii/django-load
-    
+
     Loads an object from an 'import_path', like in MIDDLEWARE_CLASSES and the
     likes.
 
@@ -28,12 +31,12 @@ def load_object(import_path):
     module = import_module(module_name)
     return getattr(module, object_name)
 
+
 def get_backend_choices(currency=None):
     """
     Get active backends modules. Backend list can be filtered by supporting given currency.
     """
     backends_names = getattr(settings, 'SENDSMS_BACKENDS', [])
-
     return backends_names
 
 
@@ -46,4 +49,3 @@ def get_backend_settings(backend):
         return backends_settings[backend]
     except KeyError:
         return {}
-    

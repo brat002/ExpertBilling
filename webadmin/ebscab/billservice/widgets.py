@@ -1,6 +1,10 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
+
 from django import forms
-from django.contrib.admin import widgets   
+from django.core.exceptions import FieldError
+from django.template import Context
+from django.template.loader import get_template
+from django.utils.safestring import mark_safe
 
 
 class SplitDateTimeWidget(forms.widgets.MultiWidget):
@@ -10,7 +14,8 @@ class SplitDateTimeWidget(forms.widgets.MultiWidget):
 
     format = None
 
-    def __init__(self, date_attrs=None, time_attrs=None, date_format=None, time_format=None):
+    def __init__(self, date_attrs=None, time_attrs=None, date_format=None,
+                 time_format=None):
         widgets = (forms.widgets.DateInput(attrs=date_attrs, format=None),
                    forms.widgets.TimeInput(attrs=time_attrs, format=None))
         super(SplitDateTimeWidget, self).__init__(widgets, None)
@@ -19,15 +24,9 @@ class SplitDateTimeWidget(forms.widgets.MultiWidget):
         if value:
             return [value.date(), value.time().replace(microsecond=0)]
         return [None, None]
-    
 
-from django.template import Context
-from django.template.loader import get_template
-from django.utils.safestring import mark_safe
-from django.core.exceptions import FieldError
 
 class CheckboxSelectMultipleWithSelectAll(forms.CheckboxSelectMultiple):
-
     _all_selected = False
 
     def render(self, *args, **kwargs):
@@ -39,20 +38,24 @@ class CheckboxSelectMultipleWithSelectAll(forms.CheckboxSelectMultiple):
             raise FieldError("id required")
         select_all_id = kwargs["attrs"]["id"] + "_all"
         select_all_name = args[0] + "_all"
-        original = super(CheckboxSelectMultipleWithSelectAll, self).render(*args, **kwargs)
+        original = super(CheckboxSelectMultipleWithSelectAll,
+                         self).render(*args, **kwargs)
         template = get_template("widgets/MultipleSelectWithSelectAll.html")
-        context = Context({"original_widget":original, 
-                           "select_all_id":select_all_id, 
-                           'select_all_name':select_all_name, 
-                           'all_selected':self._all_selected,
-                           'empty':empty})
+        context = Context({"original_widget": original,
+                           "select_all_id": select_all_id,
+                           'select_all_name': select_all_name,
+                           'all_selected': self._all_selected,
+                           'empty': empty})
         return mark_safe(template.render(context))
 
     def value_from_datadict(self, *args, **kwargs):
-        original = super(CheckboxSelectMultipleWithSelectAll, self).value_from_datadict(*args, **kwargs)
-        select_all_name=args[2] + "_all"
+        original = super(CheckboxSelectMultipleWithSelectAll,
+                         self).value_from_datadict(*args, **kwargs)
+        select_all_name = args[2] + "_all"
+
         if select_all_name in args[0]:
             self._all_selected = True
         else:
             self._all_selected = False
+
         return original

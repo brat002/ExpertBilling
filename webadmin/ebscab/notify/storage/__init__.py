@@ -1,4 +1,7 @@
+# -*- coding: utf-8 -*-
+
 from django.conf import settings
+
 from notify.storage.base import BaseStorage
 
 
@@ -10,7 +13,9 @@ def get_storage(import_name):
     class_name = bits[-1]
     try:
         module = __import__('notify.storage.%s' % module_name,
-                            globals(), locals(), [class_name])
+                            globals(),
+                            locals(),
+                            [class_name])
         storage_class = getattr(module, class_name)
     except (AttributeError, ImportError):
         module = __import__(module_name, globals(), locals(), [class_name])
@@ -20,5 +25,6 @@ def get_storage(import_name):
     return storage_class
 
 
-Storage = get_storage(getattr(settings, 'NOTIFICATIONS_STORAGE',
+Storage = get_storage(getattr(settings,
+                              'NOTIFICATIONS_STORAGE',
                               'session.SessionStorage'))

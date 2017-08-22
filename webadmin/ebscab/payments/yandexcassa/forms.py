@@ -1,35 +1,39 @@
-#-*- coding: utf-8 -*-
-from django import forms
-from django.forms.fields import ChoiceField
-from django.utils.translation import ugettext as _
-from django.core.urlresolvers import reverse
+# -*- coding: utf-8 -*-
 
-from django.conf import settings
-from hashlib import md5
 from django import forms
 from django.conf import settings
+
 from .models import PAYMENT_TYPE
 
+
 def get_backend_param(param, default=None):
-    return settings.GETPAID_BACKENDS_SETTINGS['payments.yandexcassa'].get(param, default)
+    return (settings.GETPAID_BACKENDS_SETTINGS['payments.yandexcassa']
+            .get(param, default))
 
 
 class PaymentFillForm(forms.Form):
-    paymentType = forms.CharField(label='Способ оплаты',
-                                  widget=forms.Select(choices=PAYMENT_TYPE.CHOICES),
-                                  min_length=2, max_length=2,
-                                  initial=PAYMENT_TYPE.PC)
+    paymentType = forms.CharField(
+        label='Способ оплаты',
+        widget=forms.Select(
+            choices=PAYMENT_TYPE.CHOICES),
+        min_length=2, max_length=2,
+        initial=PAYMENT_TYPE.PC
+    )
     summ = forms.FloatField(label=u'Сумма')
 
     cps_email = forms.EmailField(label=u'Email', required=False)
-    cps_phone = forms.CharField(label=u'Телефон',
-                                max_length=15, required=False)
-    order = forms.IntegerField(widget=forms.widgets.HiddenInput, required=False)
+    cps_phone = forms.CharField(
+        label=u'Телефон',
+        max_length=15,
+        required=False
+    )
+    order = forms.IntegerField(
+        widget=forms.widgets.HiddenInput, required=False)
+
+    backend = forms.CharField(
+        initial='payments.yandexcassa', widget=forms.widgets.HiddenInput)
 
 
-
-    backend = forms.CharField(initial='payments.yandexcassa', widget=forms.widgets.HiddenInput)
-    
 class BasePaymentForm(forms.Form):
     """
         shopArticleId               <no use>
@@ -71,21 +75,26 @@ class BasePaymentForm(forms.Form):
 
         CHOICES = (
             (CHECK, 'Проверка заказа'),
-            (CPAYMENT, 'Уведомления о переводе'),
+            (CPAYMENT, 'Уведомления о переводе')
         )
 
-    shopId = forms.IntegerField(initial=get_backend_param('YANDEX_MONEY_SHOP_ID'))
+    shopId = forms.IntegerField(
+        initial=get_backend_param('YANDEX_MONEY_SHOP_ID'))
     scid = forms.IntegerField(initial=get_backend_param('YANDEX_MONEY_SCID'))
     customerNumber = forms.CharField(min_length=1, max_length=64)
-    paymentType = forms.CharField(label='Способ оплаты',
-                                  widget=forms.Select(choices=PAYMENT_TYPE.CHOICES),
-                                  min_length=2, max_length=2,
-                                  initial=PAYMENT_TYPE.PC)
+    paymentType = forms.CharField(
+        label='Способ оплаты',
+        widget=forms.Select(
+            choices=PAYMENT_TYPE.CHOICES),
+        min_length=2, max_length=2,
+        initial=PAYMENT_TYPE.PC
+    )
     orderSumBankPaycash = forms.IntegerField()
 
     md5 = forms.CharField(min_length=32, max_length=32)
     action = forms.CharField(max_length=16)
-    backend = forms.CharField(initial='payments.yandexcassa', widget=forms.widgets.HiddenInput)
+    backend = forms.CharField(
+        initial='payments.yandexcassa', widget=forms.widgets.HiddenInput)
 
     def clean_scid(self):
         scid = self.cleaned_data['scid']
@@ -103,17 +112,15 @@ class BasePaymentForm(forms.Form):
 
 
 class PaymentForm(BasePaymentForm):
+
     def get_display_field_names(self):
         return ['paymentType', 'cps_email', 'cps_phone', 'sum']
 
     sum = forms.FloatField(label=u'Сумма')
 
     cps_email = forms.EmailField(label=u'Email', required=False)
-    cps_phone = forms.CharField(label=u'Телефон',
-                                max_length=15, required=False)
-
-    #shopFailURL = forms.URLField(initial=reverse('yandexcassa-postback'))
-    #shopSuccessURL = forms.URLField(initial=reverse('yandexcassa-failure'))
+    cps_phone = forms.CharField(
+        label=u'Телефон', max_length=15, required=False)
 
     def __init__(self, *args, **kwargs):
 
@@ -127,7 +134,6 @@ class PaymentForm(BasePaymentForm):
             for name in self.fields:
                 if name not in self.get_display_field_names():
                     self.fields[name].widget = forms.HiddenInput()
-
 
 
 class CheckForm(BasePaymentForm):

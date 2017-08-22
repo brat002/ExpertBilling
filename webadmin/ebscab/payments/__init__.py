@@ -1,11 +1,18 @@
+# -*- coding: utf-8 -*-
+
+from django.conf import settings
 from django.core.urlresolvers import reverse
+
+from models import Payment
+from forms import PaymentForm
+
 
 PAYMENT_VARIANTS = {
     'default': ('payments.dummy.DummyProvider', {
-            'url': 'http://google.pl/',
-        },
-    ),
+        'url': 'http://google.pl/'
+    })
 }
+
 
 class BasicProvider(object):
     '''
@@ -25,13 +32,12 @@ class BasicProvider(object):
         '''
         Creates a new payment. Always use this method instead of manually
         creating a Payment instance directly.
-        
+
         All arguments are passed directly to Payment constructor.
-        
+
         When implementing a new payment provider, you may overload this method
         to return a specialized version of Payment instead.
         '''
-        from models import Payment
         payment = Payment(variant=self._variant, *args, **kwargs)
         if commit:
             payment.save()
@@ -41,7 +47,7 @@ class BasicProvider(object):
         '''
         Converts a payment into a dict containing transaction data. Use
         get_form instead to get a form suitable for templates.
-        
+
         When implementing a new payment provider, overload this method to
         transfer provider-specific data.
         '''
@@ -51,8 +57,9 @@ class BasicProvider(object):
         '''
         Converts *payment* into a form suitable for Django templates.
         '''
-        from forms import PaymentForm
-        return PaymentForm(self.get_hidden_fields(payment), self._action, self._method)
+        return PaymentForm(self.get_hidden_fields(payment),
+                           self._action,
+                           self._method)
 
     def process_data(self, request):
         '''
@@ -60,21 +67,21 @@ class BasicProvider(object):
         '''
         raise NotImplementedError
 
+
 def factory(variant='default'):
     '''
     Takes the optional *variant* name and returns an appropriate implementation.
     '''
-    from django.conf import settings
     variants = getattr(settings, 'PAYMENT_VARIANTS', PAYMENT_VARIANTS)
     handler, config = variants.get(variant, (None, None))
     if not handler:
         raise ValueError('Payment variant does not exist: %s' % variant)
     path = handler.split('.')
     if len(path) < 2:
-        raise ValueError('Payment variant uses an invalid payment module: %s' % variant)
+        raise ValueError(
+            'Payment variant uses an invalid payment module: %s' % variant)
     module_path = '.'.join(path[:-1])
     klass_name = path[-1]
     module = __import__(module_path, globals(), locals(), [klass_name])
     klass = getattr(module, klass_name)
     return klass(variant=variant, **config)
-

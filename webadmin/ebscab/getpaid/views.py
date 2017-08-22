@@ -1,13 +1,14 @@
-# Create your views here.
+# -*- coding: utf-8 -*-
+
 from django.conf import settings
-from django.core.exceptions import PermissionDenied, ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
-from django.http import Http404, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template.response import TemplateResponse
-from django.views.generic import DetailView
-from django.views.generic.base import RedirectView, TemplateView
+from django.views.generic.base import RedirectView
 from django.views.generic.edit import FormView
+
 from getpaid.forms import PaymentMethodForm, SelectPaymentMethodForm
 from getpaid.models import Payment
 from getpaid.signals import redirecting_to_payment_gateway_signal
@@ -16,69 +17,82 @@ from getpaid.signals import redirecting_to_payment_gateway_signal
 class SelectPaymentView(FormView):
     form_class = SelectPaymentMethodForm
     template_name = 'billservice/transaction_detail.html'
-    #template_name = "getpaid/payment_post_form.html"
 
     def get_form(self, form_class):
         return form_class(**self.get_form_kwargs())
 
     def form_valid(self, form):
-                                 
-        return HttpResponseRedirect("%s?backend=%s" % (reverse('getpaid-new-payment'), form.cleaned_data['backend']))
+        return HttpResponseRedirect(
+            "%s?backend=%s" % (reverse('getpaid-new-payment'),
+                               form.cleaned_data['backend']))
 
-    
 
 class NewPaymentView(FormView):
     form_class = PaymentMethodForm
     template_name = 'billservice/transaction_detail.html'
 
     def get_form(self, form_class=None):
-        processor = Payment(backend = self.request.GET.get('backend') or self.request.POST.get('backend')).get_processor()
+        processor = (Payment(backend=self.request.GET.get('backend') or
+                             self.request.POST.get('backend')).get_processor())
         a = self.get_form_kwargs()
-        a.update({'initial': {'backend':self.request.GET.get('backend')}})
+        a.update({
+            'initial': {
+                'backend': self.request.GET.get('backend')
+            }
+        })
         return processor.form()(**a)
-
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data()
         context['payment_form'] = self.get_form()
-        return TemplateResponse(request = self.request,
-            template = 'billservice/transaction_detail.html',
-            context = context)
+        return TemplateResponse(
+            request=self.request,
+            template='billservice/transaction_detail.html',
+            context=context)
 
     def post(self, request, *args, **kwargs):
         context = self.get_context_data()
         context['payment_form'] = self.get_form()
         if not context['payment_form'].is_valid():
-            return TemplateResponse(request = self.request,
-                template = 'billservice/transaction_detail.html',
-                context = context)
+            return TemplateResponse(
+                request=self.request,
+                template='billservice/transaction_detail.html',
+                context=context)
         return super(NewPaymentView, self).post(request, *args, **kwargs)
 
-            
     def form_valid(self, form):
         from getpaid.models import Payment
 
-        payment = Payment.create(self.request.user.account, form.cleaned_data['order'], form.cleaned_data['backend'], amount = form.cleaned_data['summ'])
+        payment = Payment.create(
+            self.request.user.account,
+            form.cleaned_data['order'],
+            form.cleaned_data['backend'],
+            amount=form.cleaned_data['summ'])
         processor = payment.get_processor()(payment)
         gateway_url_tuple = processor.get_gateway_url(self.request, payment)
         payment.change_status('in_progress')
         order = form.cleaned_data['order']
-            
-        redirecting_to_payment_gateway_signal.send(sender=None, request=self.request, order=order, payment=payment, backend=form.cleaned_data['backend'])
+
+        redirecting_to_payment_gateway_signal.send(
+            sender=None,
+            request=self.request,
+            order=order,
+            payment=payment,
+            backend=form.cleaned_data['backend'])
 
         if gateway_url_tuple[1].upper() == 'GET':
             return HttpResponseRedirect(gateway_url_tuple[0])
         elif gateway_url_tuple[1].upper() == 'POST':
             context = self.get_context_data()
-            context['gateway_url'] = processor.get_gateway_url(self.request, payment)[0]
+            context['gateway_url'] = processor.get_gateway_url(
+                self.request, payment)[0]
             context['form'] = processor.get_form(gateway_url_tuple[2])
 
-            return TemplateResponse(request = self.request,
-                template = "getpaid/payment_post_form.html",
-                context = context)
+            return TemplateResponse(request=self.request,
+                                    template="getpaid/payment_post_form.html",
+                                    context=context)
         else:
             raise ImproperlyConfigured()
-
 
 
 class FallbackView(RedirectView):
@@ -87,7 +101,7 @@ class FallbackView(RedirectView):
 
     def get_redirect_url(self, **kwargs):
         self.payment = get_object_or_404(Payment, pk=self.kwargs['pk'])
-        if self.success :
+        if self.success:
             url_name = getattr(settings, 'GETPAID_SUCCESS_URL_NAME', None)
             if url_name is not None:
                 return reverse(url_name, kwargs={'pk': self.payment.order_id})

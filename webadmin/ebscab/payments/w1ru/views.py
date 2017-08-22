@@ -1,32 +1,28 @@
-import logging
-from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect
-from django.views.generic.base import View
-from payments.w1ru import PaymentProcessor
-from getpaid.models import Payment
-from django.conf import settings
-from BeautifulSoup import BeautifulSoup
+# -*- coding: utf-8 -*-
 
-from billservice.models import Account
-logger = logging.getLogger('payments.w1ru')
+import logging
+
+from django.http import HttpResponse
+from django.views.generic.base import View
 from django.views.generic.base import TemplateView
+
+from payments.w1ru import PaymentProcessor
+
+
+logger = logging.getLogger('payments.w1ru')
 
 
 class PayView(View):
+
     def post(self, request, *args, **kwargs):
-
-
         try:
-                status = PaymentProcessor.postback(request)
-
-                
+            status = PaymentProcessor.postback(request)
         except KeyError:
-            logger.warning('Got malformed POST request: %s' % str(request.POST))
+            logger.warning('Got malformed POST request: %s' %
+                           str(request.POST))
             return HttpResponse('MALFORMED')
 
         return HttpResponse(status)
-
-
 
 
 class SuccessView(TemplateView):
@@ -42,8 +38,7 @@ class SuccessView(TemplateView):
     def post(self, request, **kwargs):
         return self.render_to_response({})
 
-        
-    
+
 class FailureView(TemplateView):
 
     template_name = "accounts/payment_failure.html"
@@ -53,4 +48,3 @@ class FailureView(TemplateView):
 
     def post(self, request, **kwargs):
         return self.render_to_response({})
-    

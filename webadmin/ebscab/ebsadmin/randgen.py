@@ -1,12 +1,14 @@
+# -*- coding: utf-8 -*-
 # Context-free grammar random name generator
 # Jeremy Thurgood <jerith@is.und.ac.za>
 # Highly experimental at present, but sort of working
 
 import random
 import re
-import sys
+
 from django.conf import settings
-import os
+
+
 # This should be done using gettext for i18n, but I can't be bothered to figure
 # out how to do it properly, so I'm using replacement strings for now.
 stringUndefinedNonTerminal = "Undefined non-terminal \"%(undefinedNonTerminal)s\" in rule \"%(rule)s\"."
@@ -15,8 +17,10 @@ stringUndefinedNonTerminal = "Undefined non-terminal \"%(undefinedNonTerminal)s\
 # with minimum effort (for the user and the code)
 orkGrammar = {
     "name": ["<nameStart><nameMiddle0to6><nameEnd>"],
-    "nameMiddle0to6": ["","<nameMiddle>", "<nameMiddle><nameMiddle>", "<nameMiddle><nameMiddle><nameMiddle>"],
-    "nameStart": ["<nsCons><nmVowel>", "<nsCons><nmVowel>", "<nsCons><nmVowel>", "<nsVowel>"],
+    "nameMiddle0to6": ["", "<nameMiddle>", "<nameMiddle><nameMiddle>",
+                       "<nameMiddle><nameMiddle><nameMiddle>"],
+    "nameStart": ["<nsCons><nmVowel>", "<nsCons><nmVowel>",
+                  "<nsCons><nmVowel>", "<nsVowel>"],
     "nameMiddle": ["<nmCons><nmVowel>"],
     "nameEnd": ["<neCons><neVowel>", "<neCons>", "<neCons>"],
     "nsCons": ["D", "G", "K", "T", "Gr"],
@@ -29,12 +33,14 @@ orkGrammar = {
 
 fooGrammar = {
     "name": ["<nameStart><nameMiddle0to2><nameEnd>"],
-    "nameMiddle0to2": ["","<nameMiddle>", "<nameMiddle><nameMiddle>"],
-    "nameStart": ["<nsCons><nmVowel>", "<nsCons><nmVowel>", "<nsCons><nmVowel>", "<nsVowel>"],
+    "nameMiddle0to2": ["", "<nameMiddle>", "<nameMiddle><nameMiddle>"],
+    "nameStart": ["<nsCons><nmVowel>", "<nsCons><nmVowel>",
+                  "<nsCons><nmVowel>", "<nsVowel>"],
     "nameMiddle": ["<nmCons><nmVowel>"],
     "nameEnd": ["<neCons><neVowel>", "<neCons>", "<neCons>"],
     "nsCons": ["J", "M", "P", "N", "Y", "D", "F"],
-    "nmCons": ["l", "m", "lm", "th", "r", "s", "ss", "p", "f", "mb", "b", "lb", "d", "lf"],
+    "nmCons": ["l", "m", "lm", "th", "r", "s", "ss", "p", "f", "mb", "b",
+               "lb", "d", "lf"],
     "neCons": ["r", "n", "m", "s", "y", "l", "th", "b", "lb", "f", "lf"],
     "nsVowel": ["A", "Au", "Ei"],
     "nmVowel": ["a", "e", "i", "o", "u", "au", "oa", "ei"],
@@ -49,6 +55,8 @@ reNonTerminal = re.compile(r"<(\w+)>")
 # the data types ourselves instead of asking a human to do it.  As such, error
 # strings are hardcoded.  Anyone who sees them would be messing around in here
 # anyway.
+
+
 def checkTypes(nameGrammar):
     """Check given grammar object for correct datatypes.
 
@@ -70,6 +78,7 @@ def checkTypes(nameGrammar):
 # probably won't provide useful output anyway.  If this stuff gets big enough
 # it may be pushed into its own module.
 
+
 def checkUndefinedNonTerminals(nameGrammar):
     """Check given grammar for undefined non-terminals.
 
@@ -84,9 +93,13 @@ def checkUndefinedNonTerminals(nameGrammar):
             matchNonTerminal = reNonTerminal.search(tempStr)
             while matchNonTerminal:
                 if matchNonTerminal.group(1) not in nameGrammar:
-                    return {"undefinedNonTerminal": matchNonTerminal.group(1), "rule": rule}
+                    return {
+                        "undefinedNonTerminal": matchNonTerminal.group(1),
+                        "rule": rule
+                    }
                 tempStr = reNonTerminal.sub("", tempStr, 1)
                 matchNonTerminal = reNonTerminal.search(tempStr)
+
 
 def checkUnproductiveNonTerminals(nameGrammar):
     """Check grammar for possibly unproductive non-terminals.
@@ -104,9 +117,10 @@ def checkUnproductiveNonTerminals(nameGrammar):
     def recurse(a):
         if a == 5:
             return a
-        return recurse(a+1)
+        return recurse(a + 1)
 
-    grammarUnchecked = dict([(rule, "".join(rhs)) for (rule, rhs) in nameGrammar.items()])
+    grammarUnchecked = dict([(rule, "".join(rhs))
+                             for (rule, rhs) in nameGrammar.items()])
     grammarProductive = []
     finished = False
     while not finished:
@@ -122,7 +136,7 @@ def checkUnproductiveNonTerminals(nameGrammar):
                 matchString = matchNonTerminal.group(1)
                 if matchString not in grammarProductive:
                     break
-                rhs = rhs.replace("<"+matchString+">", "")
+                rhs = rhs.replace("<" + matchString + ">", "")
                 finished = False
                 matchNonTerminal = reNonTerminal.search(rhs)
             if not matchNonTerminal:
@@ -135,6 +149,7 @@ def checkUnproductiveNonTerminals(nameGrammar):
 # More grammar checking functions to come:
 #   Unused non-terminals
 # Loop detection would be nice, but currently a little impractical.
+
 
 def checkUnusedNonTerminals(nameGrammar):
     """Check grammar for non-terminals that can never be reached.
@@ -149,6 +164,8 @@ def checkUnusedNonTerminals(nameGrammar):
 
 # verifyGrammar() uses the above functions to verify the correctness of a
 # grammar.  This isn't perfect, but it should catch the most common problems.
+
+
 def verifyGrammar(nameGrammar):
     error = checkTypes(nameGrammar)
     if error:
@@ -162,8 +179,9 @@ def verifyGrammar(nameGrammar):
 # Now to the meat of the problem, which is actually almost trivial thanks to
 # the dictionary data type.  I love python ;-)
 
+
 def nameGen():
-    nameGrammar=fooGrammar
+    nameGrammar = fooGrammar
     nameStr = random.choice(nameGrammar["name"])
     matchNonTerminal = reNonTerminal.search(nameStr)
     while matchNonTerminal:
@@ -175,13 +193,14 @@ def nameGen():
 #from whrandom import choice
 import string
 
+
 def GenPasswd():
     chars = ''
     if settings.PASSWORD_CONTAIN_LETTERS:
         chars += string.letters
     if settings.PASSWORD_CONTAIN_DIGITS:
         chars += string.digits
-    newpasswd=''
+    newpasswd = ''
     for i in range(settings.PASSWORD_LENGTH):
         newpasswd = newpasswd + random.choice(chars)
     return newpasswd
@@ -193,13 +212,11 @@ def GenUsername():
         chars += string.letters
     if settings.LOGIN_CONTAIN_DIGITS:
         chars += string.digits
-    newpasswd=''
+    newpasswd = ''
     for i in range(settings.LOGIN_LENGTH):
         newpasswd = newpasswd + random.choice(chars)
     return newpasswd
 
+
 def GenPasswd2(length=8, chars=string.letters + string.digits):
     return ''.join([random.choice(chars) for i in range(length)])
-
-#print nameGen(fooGrammar)
-#print GenPasswd2()

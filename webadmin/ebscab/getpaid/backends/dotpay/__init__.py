@@ -1,17 +1,20 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import datetime
-from decimal import Decimal
 import hashlib
 import logging
 import urllib
+from decimal import Decimal
+
 from django.contrib.sites.models import Site
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
+
 from getpaid import signals
 from getpaid.backends import PaymentProcessorBase
+
 
 logger = logging.getLogger('getpaid.backends.dotpay')
 
@@ -27,31 +30,37 @@ class DotpayTransactionStatus:
 class PaymentProcessor(PaymentProcessorBase):
     BACKEND = 'getpaid.backends.dotpay'
     BACKEND_NAME = _('Dotpay')
-    BACKEND_ACCEPTED_CURRENCY = ('PLN', 'EUR', 'USD', 'GBP', 'JPY', 'CZK', 'SEK' )
+    BACKEND_ACCEPTED_CURRENCY = (
+        'PLN', 'EUR', 'USD', 'GBP', 'JPY', 'CZK', 'SEK')
     BACKEND_LOGO_URL = 'getpaid/backends/dotpay/dotpay_logo.png'
 
     _ALLOWED_IP = ('195.150.9.37', )
     _ACCEPTED_LANGS = ('pl', 'en', 'de', 'it', 'fr', 'es', 'cz', 'ru', 'bg')
     _GATEWAY_URL = 'https://ssl.dotpay.eu/'
-    _ONLINE_SIG_FIELDS = ('id', 'control', 't_id', 'amount', 'email', 'service', 'code', 'username', 'password', 't_status')
+    _ONLINE_SIG_FIELDS = ('id', 'control', 't_id', 'amount', 'email',
+                          'service', 'code', 'username', 'password',
+                          't_status')
 
     @staticmethod
     def compute_sig(params, fields, PIN):
-        text = PIN + ":" + (u":".join(map(lambda field: params.get(field, ''), fields)))
+        text = PIN + ":" + (u":".join(map(lambda field: params.get(field, ''),
+                                          fields)))
         return hashlib.md5(text).hexdigest()
 
     @staticmethod
     def online(params, ip):
-
-        allowed_ip = PaymentProcessor.get_backend_setting('allowed_ip', PaymentProcessor._ALLOWED_IP)
+        allowed_ip = PaymentProcessor.get_backend_setting(
+            'allowed_ip', PaymentProcessor._ALLOWED_IP)
 
         if len(allowed_ip) != 0 and ip not in allowed_ip:
-            logger.warning('Got message from not allowed IP %s' % str(allowed_ip))
+            logger.warning('Got message from not allowed IP %s' %
+                           str(allowed_ip))
             return 'IP ERR'
 
         PIN = PaymentProcessor.get_backend_setting('PIN', '')
 
-        if params['md5'] != PaymentProcessor.compute_sig(params, PaymentProcessor._ONLINE_SIG_FIELDS, PIN):
+        if params['md5'] != PaymentProcessor.compute_sig(
+                params, PaymentProcessor._ONLINE_SIG_FIELDS, PIN):
             logger.warning('Got message with wrong sig, %s' % str(params))
             return 'SIG ERR'
 
@@ -66,10 +75,12 @@ class PaymentProcessor(PaymentProcessorBase):
         try:
             payment = Payment.objects.get(pk=int(params['control']))
         except (ValueError, Payment.DoesNotExist):
-            logger.error('Got message for non existing Payment, %s' % str(params))
+            logger.error('Got message for non existing Payment, %s' %
+                         str(params))
             return 'PAYMENT ERR'
 
-        amount, currency = params.get('orginal_amount', params['amount'] + ' PLN').split(' ')
+        amount, currency = params.get(
+            'orginal_amount', params['amount'] + ' PLN').split(' ')
 
         if currency != payment.currency.upper():
             logger.error('Got message with wrong currency, %s' % str(params))
@@ -77,7 +88,6 @@ class PaymentProcessor(PaymentProcessorBase):
 
         payment.external_id = params.get('t_id', '')
         payment.description = params.get('email', '')
-
 
         if int(params['t_status']) == DotpayTransactionStatus.FINISHED:
             payment.amount_paid = Decimal(amount)
@@ -87,9 +97,10 @@ class PaymentProcessor(PaymentProcessorBase):
                 payment.change_status('paid')
             else:
                 payment.change_status('partially_paid')
-        elif int(params['t_status']) in [DotpayTransactionStatus.REJECTED, DotpayTransactionStatus.RECLAMATION, DotpayTransactionStatus.REFUNDED]:
+        elif int(params['t_status']) in [DotpayTransactionStatus.REJECTED,
+                                         DotpayTransactionStatus.RECLAMATION,
+                                         DotpayTransactionStatus.REFUNDED]:
             payment.change_status('failed')
-
 
         return 'OK'
 
@@ -103,13 +114,11 @@ class PaymentProcessor(PaymentProcessorBase):
 
     def get_URL(self, pk):
         current_site = Site.objects.get_current()
-        url = reverse('getpaid-dotpay-return', kwargs={'pk' : pk})
+        url = reverse('getpaid-dotpay-return', kwargs={'pk': pk})
         if PaymentProcessor.get_backend_setting('force_ssl', False):
             return 'https://%s%s' % (current_site.domain, url)
         else:
             return 'http://%s%s' % (current_site.domain, url)
-
-
 
     def get_gateway_url(self, request):
         """
@@ -117,29 +126,34 @@ class PaymentProcessor(PaymentProcessorBase):
         """
         params = {
             'id': PaymentProcessor.get_backend_setting('id'),
-            'description' : self.get_order_description(self.payment, self.payment.order),
-            'amount' : self.payment.amount,
-            'currency' : self.payment.currency,
-            'type' : 0, # show "return" button after finished payment
-            'control' : self.payment.pk,
+            'description': self.get_order_description(
+                self.payment, self.payment.order),
+            'amount': self.payment.amount,
+            'currency': self.payment.currency,
+            'type': 0,  # show "return" button after finished payment
+            'control': self.payment.pk,
             'URL': self.get_URL(self.payment.pk),
             'URLC': self.get_URLC(),
         }
 
         user_data = {
-            'email' : None,
-            'lang' : None,
+            'email': None,
+            'lang': None,
         }
-        signals.user_data_query.send(sender=None, order=self.payment.order, user_data=user_data)
+        signals.user_data_query.send(
+            sender=None, order=self.payment.order, user_data=user_data)
 
         if user_data['email']:
             params['email'] = user_data['email']
 
-        if user_data['lang'] and user_data['lang'].lower() in PaymentProcessor._ACCEPTED_LANGS:
+        if user_data['lang'] and user_data['lang'].lower() in \
+                PaymentProcessor._ACCEPTED_LANGS:
             params['lang'] = user_data['lang'].lower()
         elif PaymentProcessor.get_backend_setting('lang', False) and \
-             PaymentProcessor.get_backend_setting('lang').lower() in PaymentProcessor._ACCEPTED_LANGS:
-            params['lang'] = PaymentProcessor.get_backend_setting('lang').lower()
+                PaymentProcessor.get_backend_setting('lang').lower() in \
+                PaymentProcessor._ACCEPTED_LANGS:
+            params['lang'] = PaymentProcessor.get_backend_setting(
+                'lang').lower()
 
         if PaymentProcessor.get_backend_setting('onlinetransfer', False):
             params['onlinetransfer'] = 1
@@ -150,12 +164,16 @@ class PaymentProcessor(PaymentProcessorBase):
         if PaymentProcessor.get_backend_setting('tax', False):
             params['tax'] = 1
 
-
-        if PaymentProcessor.get_backend_setting('method', 'get').lower() == 'post':
-            return self._GATEWAY_URL , 'POST', params
-        elif PaymentProcessor.get_backend_setting('method', 'get').lower() == 'get':
+        if PaymentProcessor.get_backend_setting('method', 'get').lower() == \
+                'post':
+            return self._GATEWAY_URL, 'POST', params
+        elif PaymentProcessor.get_backend_setting('method', 'get').lower() == \
+                'get':
             for key in params.keys():
                 params[key] = unicode(params[key]).encode('utf-8')
-            return self._GATEWAY_URL + '?' + urllib.urlencode(params), "GET", {}
+            return (self._GATEWAY_URL + '?' + urllib.urlencode(params),
+                    "GET",
+                    {})
         else:
-            raise ImproperlyConfigured('Dotpay payment backend accepts only GET or POST')
+            raise ImproperlyConfigured(
+                'Dotpay payment backend accepts only GET or POST')

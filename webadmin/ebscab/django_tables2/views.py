@@ -1,7 +1,10 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
 from __future__ import unicode_literals
+
 from django.core.exceptions import ImproperlyConfigured
 from django.views.generic.list import ListView
+
 from .config import RequestConfig
 
 

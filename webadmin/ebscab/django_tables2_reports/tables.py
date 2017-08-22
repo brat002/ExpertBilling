@@ -14,14 +14,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>.
 
-import django_tables2 as tables
 
 from django.template.context import RequestContext
 from django.template.loader import get_template
 from django.utils.translation import ugettext as _
 
-from django_tables2_reports.csv_to_excel import HAS_PYEXCELERATOR, convert_to_excel
-from django_tables2_reports.utils import DEFAULT_PARAM_PREFIX, generate_prefixto_report
+import django_tables2 as tables
+from django_tables2_reports.csv_to_excel import (
+    HAS_PYEXCELERATOR,
+    convert_to_excel
+)
+from django_tables2_reports.utils import (
+    DEFAULT_PARAM_PREFIX,
+    generate_prefixto_report
+)
 
 
 class TableReport(tables.Table):
@@ -31,7 +37,8 @@ class TableReport(tables.Table):
     def __init__(self, *args, **kwargs):
         if not 'template' in kwargs:
             kwargs['template'] = 'django_tables2_reports/table.html'
-        prefix_param_report = kwargs.pop('prefix_param_report', DEFAULT_PARAM_PREFIX)
+        prefix_param_report = kwargs.pop(
+            'prefix_param_report', DEFAULT_PARAM_PREFIX)
         super(TableReport, self).__init__(*args, **kwargs)
         self.param_report = generate_prefixto_report(self, prefix_param_report)
         self.formats = [(_('CSV'), 'csv')]
@@ -51,9 +58,8 @@ class TableReport(tables.Table):
         context.update(request.extra_context)
         self.context = context
         param_report = generate_prefixto_report(self)
-        return template.render(RequestContext(request,
-                               {'table': self,
-                                'param_report': param_report}))
+        return template.render(RequestContext(
+            request, {'table': self, 'param_report': param_report}))
 
     def as_xls(self, request):
         return self.as_csv(request)

@@ -1,4 +1,5 @@
-#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 """
 Jutda Helpdesk - A Django powered ticket tracker for small enterprise.
 
@@ -8,20 +9,27 @@ scripts/escalate_tickets.py - Easy way to escalate tickets based on their age,
                               designed to be run from Cron or similar.
 """
 
-from datetime import datetime, timedelta, date
 import getopt
-from optparse import make_option
 import sys
+from datetime import datetime, timedelta, date
+from optparse import make_option
 
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 from django.utils.translation import ugettext as _
 
-from helpdesk.models import Queue, Ticket, FollowUp, EscalationExclusion, TicketChange
+from helpdesk.models import (
+    EscalationExclusion,
+    FollowUp,
+    Queue,
+    Ticket,
+    TicketChange
+)
 from helpdesk.lib import send_templated_mail
 
 
 class Command(BaseCommand):
+
     def __init__(self):
         BaseCommand.__init__(self)
 
@@ -34,7 +42,7 @@ class Command(BaseCommand):
                 action='store_true',
                 default=False,
                 help='Display a list of dates excluded'),
-            )
+        )
 
     def handle(self, *args, **options):
         verbose = False
@@ -60,7 +68,9 @@ class Command(BaseCommand):
 
 def escalate_tickets(queues, verbose):
     """ Only include queues with escalation configured """
-    queryset = Queue.objects.filter(escalate_days__isnull=False).exclude(escalate_days=0)
+    queryset = (Queue.objects
+                .filter(escalate_days__isnull=False)
+                .exclude(escalate_days=0))
     if queues:
         queryset = queryset.filter(slug__in=queues)
 
@@ -76,24 +86,19 @@ def escalate_tickets(queues, verbose):
                 days += 1
             workdate = workdate + timedelta(days=1)
 
-
         req_last_escl_date = date.today() - timedelta(days=days)
 
         if verbose:
             print "Processing: %s" % q
 
-        for t in q.ticket_set.filter(
-                  Q(status=Ticket.OPEN_STATUS)
-                | Q(status=Ticket.REOPENED_STATUS)
-            ).exclude(
-                priority=1
-            ).filter(
-                  Q(on_hold__isnull=True)
-                | Q(on_hold=False)
-            ).filter(
-                  Q(last_escalation__lte=req_last_escl_date)
-                | Q(last_escalation__isnull=True)
-            ):
+        for t in (q.ticket_set
+                  .filter(Q(status=Ticket.OPEN_STATUS) |
+                          Q(status=Ticket.REOPENED_STATUS))
+                  .exclude(priority=1)
+                  .filter(Q(on_hold__isnull=True) |
+                          Q(on_hold=False))
+                  .filter(Q(last_escalation__lte=req_last_escl_date) |
+                          Q(last_escalation__isnull=True))):
 
             t.last_escalation = datetime.now()
             t.priority -= 1
@@ -101,7 +106,7 @@ def escalate_tickets(queues, verbose):
 
             context = {
                 'ticket': t,
-                'queue': q,
+                'queue': q
             }
 
             if t.submitter_email:
@@ -110,8 +115,8 @@ def escalate_tickets(queues, verbose):
                     context,
                     recipients=t.submitter_email,
                     sender=t.queue.from_address,
-                    fail_silently=True,
-                    )
+                    fail_silently=True
+                )
 
             if t.queue.updated_ticket_cc:
                 send_templated_mail(
@@ -119,8 +124,8 @@ def escalate_tickets(queues, verbose):
                     context,
                     recipients=t.queue.updated_ticket_cc,
                     sender=t.queue.from_address,
-                    fail_silently=True,
-                    )
+                    fail_silently=True
+                )
 
             if t.assigned_to:
                 send_templated_mail(
@@ -128,30 +133,30 @@ def escalate_tickets(queues, verbose):
                     context,
                     recipients=t.assigned_to.email,
                     sender=t.queue.from_address,
-                    fail_silently=True,
-                    )
+                    fail_silently=True
+                )
 
             if verbose:
                 print "  - Esclating %s from %s>%s" % (
                     t.ticket,
-                    t.priority+1,
+                    t.priority + 1,
                     t.priority
-                    )
+                )
 
             f = FollowUp(
-                ticket = t,
-                title = 'Ticket Escalated',
+                ticket=t,
+                title='Ticket Escalated',
                 date=datetime.now(),
                 public=True,
-                comment=_('Ticket escalated after %s days' % q.escalate_days),
+                comment=_('Ticket escalated after %s days' % q.escalate_days)
             )
             f.save()
 
             tc = TicketChange(
-                followup = f,
-                field = _('Priority'),
-                old_value = t.priority + 1,
-                new_value = t.priority,
+                followup=f,
+                field=_('Priority'),
+                old_value=t.priority + 1,
+                new_value=t.priority
             )
             tc.save()
 

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 '''
 Base temporary notification storage.
 
@@ -7,7 +9,9 @@ two methods ``_get`` and ``_store`` overridden.
 
 from django.utils.encoding import force_unicode, StrAndUnicode
 
+
 class Notification(StrAndUnicode):
+
     def __init__(self, message, tags='', extras=None):
         self.message = force_unicode(message)
         self.tags = tags
@@ -18,6 +22,7 @@ class Notification(StrAndUnicode):
 
 
 class BaseStorage(object):
+
     def __init__(self, request, *args, **kwargs):
         self.request = request
         self._new_data = []
@@ -54,7 +59,7 @@ class BaseStorage(object):
         if self.used:
             self._store(self._new_data, response)
         elif self.added_new:
-            self._store(self._data+self._new_data, response)
+            self._store(self._data + self._new_data, response)
 
     def add(self, message, tags='', **extras):
         if not message:

@@ -1,8 +1,10 @@
-# coding: utf-8
-from .utils import A, getargspec
+# -*- coding: utf-8 -*-
+
+import six
 from django.db import models
 from django.db.models.fields import FieldDoesNotExist
-import six
+
+from .utils import A, getargspec
 
 
 class BoundRow(object):
@@ -65,6 +67,7 @@ class BoundRow(object):
                    object, a `dict`, or something else.
 
     """
+
     def __init__(self, record, table):
         self._record = record
         self._table = table
@@ -111,7 +114,8 @@ class BoundRow(object):
         if isinstance(penultimate, models.Model):
             try:
                 field = penultimate._meta.get_field(remainder)
-                display = getattr(penultimate, 'get_%s_display' % remainder, None)
+                display = getattr(penultimate, 'get_%s_display' %
+                                  remainder, None)
                 if field.choices and display:
                     value = display()
                     remainder = None
@@ -126,12 +130,12 @@ class BoundRow(object):
             return bound_column.default
 
         available = {
-            'value':        value,
-            'record':       self.record,
-            'column':       bound_column.column,
+            'value': value,
+            'record': self.record,
+            'column': bound_column.column,
             'bound_column': bound_column,
-            'bound_row':    self,
-            'table':        self._table,
+            'bound_row': self,
+            'table': self._table,
         }
         expected = {}
 
@@ -174,6 +178,7 @@ class BoundRows(object):
 
     This is used for `.Table.rows`.
     """
+
     def __init__(self, data, table):
         self.data = data
         self.table = table

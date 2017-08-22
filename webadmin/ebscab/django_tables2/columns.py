@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
+
 from __future__ import absolute_import, unicode_literals
+
+import warnings
+import inspect
+from itertools import ifilter, islice
+
 from django.core.urlresolvers import reverse
 from django.db.models.fields import FieldDoesNotExist
 from django.template import Context, Template
@@ -8,11 +14,9 @@ from django.utils.datastructures import SortedDict
 from django.utils.functional import curry
 from django.utils.html import escape
 from django.utils.safestring import mark_safe, SafeData
-from itertools import ifilter, islice
-import warnings
-import inspect
+
 from .templatetags.django_tables2 import title
-from .utils import A, AttributeDict, Attrs, OrderBy, OrderByTuple, Sequence
+from .utils import A, AttributeDict, Attrs, OrderBy, OrderByTuple
 
 
 funcs = ifilter(curry(hasattr, inspect), ('getfullargspec', 'getargspec'))
@@ -80,7 +84,8 @@ class Column(object):  # pylint: disable=R0902
             raise TypeError('accessor must be a string or callable, not %s' %
                             type(accessor).__name__)
         if callable(accessor) and default is not None:
-            raise TypeError('accessor must be string when default is used, not callable')
+            raise TypeError(
+                'accessor must be string when default is used, not callable')
         self.accessor = A(accessor) if accessor else None
         self._default = default
         self.verbose_name = verbose_name
@@ -99,8 +104,10 @@ class Column(object):  # pylint: disable=R0902
             attrs = Attrs(attrs)
         self.attrs = attrs
         # massage order_by into an OrderByTuple or None
-        order_by = (order_by, ) if isinstance(order_by, basestring) else order_by
-        self.order_by = OrderByTuple(order_by) if order_by is not None else None
+        order_by = (order_by, ) if isinstance(
+            order_by, basestring) else order_by
+        self.order_by = OrderByTuple(
+            order_by) if order_by is not None else None
 
         self.creation_counter = Column.creation_counter
         Column.creation_counter += 1
@@ -192,6 +199,7 @@ class CheckBoxColumn(Column):
     - *th__input* -- If defined: used *instead of* ``input`` in table header.
     - *td__input* -- If defined: used *instead of* ``input`` in table body.
     """
+
     def __init__(self, attrs=None, **extra):
         header_attrs = extra.pop('header_attrs', None)
         # For backwards compatibility, passing in a normal dict effectively
@@ -238,6 +246,7 @@ class BaseLinkColumn(Column):
     Adds support for an ``a`` key in ``attrs`` which is added to the rendered
     ``<a href="...">`` tag.
     """
+
     def __init__(self, attrs=None, *args, **kwargs):
         # backwards compatible translation for naive attrs value
         attrs = attrs or Attrs()
@@ -262,7 +271,8 @@ class BaseLinkColumn(Column):
             uri=escape(uri),
             attrs=" %s" % attrs.as_html() if attrs else "",
             text=escape(text),
-            get_params_string='' if not get_params_dict else '?'+"&".join( "%s=%s"%item for item in get_params_dict.items() )
+            get_params_string='' if not get_params_dict else '?' +
+            "&".join("%s=%s" % item for item in get_params_dict.items())
         )
         return mark_safe(html)
 
@@ -316,8 +326,9 @@ class LinkColumn(BaseLinkColumn):
 
     - *a* -- ``<a>`` elements in ``<td>``.
     """
+
     def __init__(self, viewname, urlconf=None, args=None, kwargs=None,
-                 current_app=None, attrs=None, get_params={},  **extra):
+                 current_app=None, attrs=None, get_params={}, **extra):
         super(LinkColumn, self).__init__(attrs, **extra)
         self.viewname = viewname
         self.urlconf = urlconf
@@ -325,7 +336,6 @@ class LinkColumn(BaseLinkColumn):
         self.kwargs = kwargs
         self.current_app = current_app
         self.get_params = get_params
-        
 
     def render(self, value, record, bound_column):  # pylint: disable=W0221
         # Remember that value is actually what would have normally been put
@@ -343,15 +353,15 @@ class LinkColumn(BaseLinkColumn):
         params = {}
         if self.viewname:
             params[b'viewname'] = (self.viewname.resolve(record)
-                                 if isinstance(self.viewname, A)
-                                 else self.viewname)
+                                   if isinstance(self.viewname, A)
+                                   else self.viewname)
         if self.urlconf:
             params[b'urlconf'] = (self.urlconf.resolve(record)
-                                 if isinstance(self.urlconf, A)
-                                 else self.urlconf)
+                                  if isinstance(self.urlconf, A)
+                                  else self.urlconf)
         if self.args:
             params[b'args'] = [a.resolve(record) if isinstance(a, A) else a
-                              for a in self.args]
+                               for a in self.args]
         if self.kwargs:
             params[b'kwargs'] = {}
             for key, val in self.kwargs.items():
@@ -365,12 +375,12 @@ class LinkColumn(BaseLinkColumn):
                 # If we're dealing with an Accessor (A), resolve it, otherwise
                 # use the value verbatim.
                 get_params_dict[key] = (val.resolve(record)
-                                          if isinstance(val, A) else val)
-                
+                                        if isinstance(val, A) else val)
+
         if self.current_app:
             params[b'current_app'] = (self.current_app.resolve(record)
-                                     if isinstance(self.current_app, A)
-                                     else self.current_app)
+                                      if isinstance(self.current_app, A)
+                                      else self.current_app)
         return self.render_link(reverse(**params), value, get_params_dict=get_params_dict)
 
 
@@ -463,6 +473,7 @@ class TemplateColumn(Column):
         ``RequestContext``, the table **must** be rendered via
         :ref:`{% render_table %} <template-tags.render_table>`.
     """
+
     def __init__(self, template_code=None, template_name=None, **extra):
         super(TemplateColumn, self).__init__(**extra)
         self.template_code = template_code
@@ -510,6 +521,7 @@ class BoundColumn(object):
                                age = tables.Column()
 
     """
+
     def __init__(self, table, column, name):
         self._table = table
         self._column = column
@@ -540,17 +552,22 @@ class BoundColumn(object):
 
         # Find the relevant th attributes (fall back to cell if th isn't
         # explicitly specified).
-        attrs["td"] = td = AttributeDict(attrs.get('td', attrs.get('cell', {})))
-        attrs["th"] = th = AttributeDict(attrs.get("th", attrs.get("cell", {})))
+        attrs["td"] = td = AttributeDict(
+            attrs.get('td', attrs.get('cell', {})))
+        attrs["th"] = th = AttributeDict(
+            attrs.get("th", attrs.get("cell", {})))
         # make set of existing classes.
-        th_class = set((c for c in th.get("class", "").split(" ") if c))  # pylint: disable=C0103
-        td_class = set((c for c in td.get("class", "").split(" ") if c))  # pylint: disable=C0103
+        th_class = set((c for c in th.get("class", "").split(
+            " ") if c))  # pylint: disable=C0103
+        td_class = set((c for c in td.get("class", "").split(
+            " ") if c))  # pylint: disable=C0103
         # add classes for ordering
         if self.orderable:
             th_class.add("orderable")
             th_class.add("sortable")  # backwards compatible
         if self.is_ordered:
-            th_class.add("desc" if self.order_by_alias.is_descending else "asc")
+            th_class.add(
+                "desc" if self.order_by_alias.is_descending else "asc")
         # Always add the column name as a class
         th_class.add(self.name)
         td_class.add(self.name)
@@ -665,7 +682,8 @@ class BoundColumn(object):
             {% endif %}
 
         """
-        order_by = OrderBy((self.table.order_by or {}).get(self.name, self.name))
+        order_by = OrderBy(
+            (self.table.order_by or {}).get(self.name, self.name))
         order_by.next = order_by.opposite if self.is_ordered else order_by
         return order_by
 
@@ -768,6 +786,7 @@ class BoundColumns(object):
     :type  table: :class:`.Table` object
     :param table: the table containing the columns
     """
+
     def __init__(self, table):
         self.table = table
         self.columns = SortedDict()
@@ -779,7 +798,8 @@ class BoundColumns(object):
         for name, bound_column in self.iteritems():
             bound_column.render = getattr(self.table, 'render_' + bound_column.name,
                                           bound_column.column.render)
-            bound_column._render_args = getargspec(bound_column.render).args[1:]
+            bound_column._render_args = getargspec(
+                bound_column.render).args[1:]
 
     def iternames(self):
         return (name for name, column in self.iteritems())

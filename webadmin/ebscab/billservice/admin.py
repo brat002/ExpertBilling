@@ -1,29 +1,38 @@
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
+
 from django.contrib import admin
 
-from billservice.models import SystemUser, SubAccount, Account , Transaction, TransactionType, City, Street, House, IPPool, IPInUse, SettlementPeriod, TimePeriod, AddonService
-from billservice.models import SheduleLog, PeriodicalServiceLog
+from billservice.models import (
+    Account,
+    AddonService,
+    City,
+    House,
+    IPInUse,
+    IPPool,
+    PeriodicalServiceLog,
+    SettlementPeriod,
+    SheduleLog,
+    Street,
+    SubAccount,
+    SystemUser,
+    TimePeriod,
+    Transaction,
+    TransactionType
+)
 
 
-admin.site.register(SystemUser)
-admin.site.register(SubAccount)
 admin.site.register(Account)
-admin.site.register(Transaction)
-
-admin.site.register(City)
-admin.site.register(Street)
-admin.site.register(House)
-
-admin.site.register(IPPool)
-admin.site.register(IPInUse)
-
-admin.site.register(TransactionType)
-
-admin.site.register(SettlementPeriod)
-admin.site.register(TimePeriod)
 admin.site.register(AddonService)
-
-admin.site.register(SheduleLog)
+admin.site.register(City)
+admin.site.register(House)
+admin.site.register(IPInUse)
+admin.site.register(IPPool)
 admin.site.register(PeriodicalServiceLog)
-
-
+admin.site.register(SettlementPeriod)
+admin.site.register(SheduleLog)
+admin.site.register(Street)
+admin.site.register(SubAccount)
+admin.site.register(SystemUser)
+admin.site.register(TimePeriod)
+admin.site.register(Transaction)
+admin.site.register(TransactionType)

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Jutda Helpdesk - A Django powered ticket tracker for small enterprise.
 
@@ -7,24 +9,32 @@ urls.py - Mapping of URL's to our various views. Note we always used NAMED
           views for simplicity in linking later on.
 """
 
-from django.conf import settings
-from django.conf.urls import *
+from django.conf.urls import patterns, url
+from django.contrib import admin
 from django.contrib.auth.decorators import login_required
 from django.contrib.syndication.views import Feed as django_feed
-from django.contrib import admin
 
 from helpdesk.views.feeds import feed_setup
 
+
 admin.autodiscover()
-urlpatterns = patterns('helpdesk.views.staff',
+
+
+urlpatterns = patterns(
+    'helpdesk.views.staff',
     url(r'^dashboard/$',
         'dashboard',
         name='helpdesk_dashboard'),
 
-    url(r'^ticket/info/$', 'ticket_info', name='ticket_info'),
-    url(r'^ticket/followup/$', 'followup_edit', name='followup_edit'),
-    url(r'^ticket/assign/$', 'ticket_assign', name='ticket_assign'),
-    
+    url(r'^ticket/info/$',
+        'ticket_info',
+        name='ticket_info'),
+    url(r'^ticket/followup/$',
+        'followup_edit',
+        name='followup_edit'),
+    url(r'^ticket/assign/$', 'ticket_assign',
+        name='ticket_assign'),
+
     url(r'^tickets/$',
         'tickets',
         name='helpdesk_list'),
@@ -92,7 +102,7 @@ urlpatterns = patterns('helpdesk.views.staff',
     url(r'^save_query/$',
         'save_query',
         name='helpdesk_savequery'),
-    
+
     url(r'^delete_query/(?P<id>[0-9]+)/$',
         'delete_saved_query',
         name='helpdesk_delete_query'),
@@ -112,12 +122,13 @@ urlpatterns = patterns('helpdesk.views.staff',
     url(r'^ignore/delete/(?P<id>[0-9]+)/$',
         'email_ignore_del',
         name='helpdesk_email_ignore_del'),
-    url(r'^queue/select/$', 'queueselect', name='queueselect'),
-
-    
+    url(r'^queue/select/$',
+        'queueselect',
+        name='queueselect')
 )
 
-urlpatterns += patterns('helpdesk.views.public',
+urlpatterns += patterns(
+    'helpdesk.views.public',
     url(r'^$',
         'view_tickets',
         name='helpdesk_home'),
@@ -125,16 +136,17 @@ urlpatterns += patterns('helpdesk.views.public',
     url(r'^view/$',
         'view_ticket',
         name='helpdesk_public_view'),
-                        
+
     url(r'^add/$',
         'add_ticket',
-        name='helpdesk_public_add'),   
+        name='helpdesk_public_add'),
     url(r'^publicticket/(?P<ticket_id>[0-9]+)/update/$',
         'update_ticket',
-        name='helpdesk_updatepublicticket'),               
+        name='helpdesk_updatepublicticket')
 )
 
-urlpatterns += patterns('',
+urlpatterns += patterns(
+    '',
     url(r'^rss/(?P<url>.*)/$',
         login_required(django_feed),
         {'feed_dict': feed_setup},
@@ -151,11 +163,11 @@ urlpatterns += patterns('',
     url(r'^logout/$',
         'django.contrib.auth.views.logout',
         {'next_page': '../'},
-        name='logout'),
-    
+        name='logout')
 )
 
-urlpatterns += patterns('helpdesk.views.kb',
+urlpatterns += patterns(
+    'helpdesk.views.kb',
     url(r'^kb/$',
         'index', name='helpdesk_kb_index'),
 
@@ -166,29 +178,5 @@ urlpatterns += patterns('helpdesk.views.kb',
         'item', name='helpdesk_kb_item'),
 
     url(r'^kb/(?P<item>[0-9]+)/vote/$',
-        'vote', name='helpdesk_kb_vote'),
+        'vote', name='helpdesk_kb_vote')
 )
-
-"""
-urlpatterns += patterns('',
-    url(r'^api/$',
-        'django.views.generic.simple.direct_to_template',
-        {'template': 'helpdesk/help_api.html',},
-        name='helpdesk_api_help'),
-    
-    url(r'^help/context/$',
-        'django.views.generic.simple.direct_to_template',
-        {'template': 'helpdesk/help_context.html',},
-        name='helpdesk_help_context'),
-    
-    url(r'^system_settings/$',
-        'django.views.generic.simple.direct_to_template',
-        {
-            'template': 'helpdesk/system_settings.html',
-            'extra_context': {
-                'ADMIN_URL': getattr(settings, 'ADMIN_URL', '/admin/'),
-            },
-        },
-        name='helpdesk_system_settings'),
-)
-"""

@@ -1,4 +1,5 @@
-#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 """
 Jutda Helpdesk - A Django powered ticket tracker for small enterprise.
 
@@ -9,18 +10,29 @@ scripts/create_escalation_exclusion.py - Easy way to routinely add particular
                                          escalation should take place.
 """
 
-from datetime import datetime, timedelta, date
 import getopt
-from optparse import make_option
 import sys
+from datetime import timedelta, date
+from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
-from django.db.models import Q
 
 from helpdesk.models import EscalationExclusion, Queue
 
 
+day_names = {
+    'monday': 0,
+    'tuesday': 1,
+    'wednesday': 2,
+    'thursday': 3,
+    'friday': 4,
+    'saturday': 5,
+    'sunday': 6,
+}
+
+
 class Command(BaseCommand):
+
     def __init__(self):
         BaseCommand.__init__(self)
 
@@ -41,7 +53,7 @@ class Command(BaseCommand):
                 action='store_true',
                 default=False,
                 help='Display a list of dates excluded'),
-            )
+        )
 
     def handle(self, *args, **options):
         days = options['days']
@@ -54,7 +66,8 @@ class Command(BaseCommand):
             verbose = True
 
         # this should already be handled by optparse
-        if not occurrences: occurrences = 1
+        if not occurrences:
+            occurrences = 1
         if not (days and occurrences):
             raise CommandError('One or more occurrences must be specified.')
 
@@ -67,18 +80,8 @@ class Command(BaseCommand):
                     raise CommandError("Queue %s does not exist." % queue)
                 queues.append(q)
 
-        create_exclusions(days=days, occurrences=occurrences, verbose=verbose, queues=queues)
-
-
-day_names = {
-    'monday': 0,
-    'tuesday': 1,
-    'wednesday': 2,
-    'thursday': 3,
-    'friday': 4,
-    'saturday': 5,
-    'sunday': 6,
-}
+        create_exclusions(days=days, occurrences=occurrences,
+                          verbose=verbose, queues=queues)
 
 
 def create_exclusions(days, occurrences, verbose, queues):
@@ -90,12 +93,16 @@ def create_exclusions(days, occurrences, verbose, queues):
         i = 0
         while i < occurrences:
             if day == workdate.weekday():
-                if EscalationExclusion.objects.filter(date=workdate).count() == 0:
-                    esc = EscalationExclusion(name='Auto Exclusion for %s' % day_name, date=workdate)
+                if (EscalationExclusion.objects
+                        .filter(date=workdate)
+                        .count()) == 0:
+                    esc = EscalationExclusion(
+                        name='Auto Exclusion for %s' % day_name, date=workdate)
                     esc.save()
 
                     if verbose:
-                        print "Created exclusion for %s %s" % (day_name, workdate)
+                        print("Created exclusion for %s %s" %
+                              (day_name, workdate))
 
                     for q in queues:
                         esc.queues.add(q)
@@ -117,7 +124,10 @@ def usage():
 if __name__ == '__main__':
     # This script can be run from the command-line or via Django's manage.py.
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'd:o:q:v', ['days=', 'occurrences=', 'verbose', 'queues='])
+        opts, args = getopt.getopt(
+            sys.argv[1:],
+            'd:o:q:v',
+            ['days=', 'occurrences=', 'verbose', 'queues='])
     except getopt.GetoptError:
         usage()
         sys.exit(2)
@@ -138,7 +148,8 @@ if __name__ == '__main__':
         if o in ('-o', '--occurrences'):
             occurrences = int(a)
 
-    if not occurrences: occurrences = 1
+    if not occurrences:
+        occurrences = 1
     if not (days and occurrences):
         usage()
         sys.exit(2)
@@ -153,4 +164,7 @@ if __name__ == '__main__':
                 sys.exit(2)
             queues.append(q)
 
-    create_exclusions(days=days, occurrences=occurrences, verbose=verbose, queues=queues)
+    create_exclusions(days=days,
+                      occurrences=occurrences,
+                      verbose=verbose,
+                      queues=queues)

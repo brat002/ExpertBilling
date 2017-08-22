@@ -1,9 +1,14 @@
+# -*- coding: utf-8 -*-
+
 import unittest
+
 from django import http
+
 from notify.middleware import NotificationsMiddleware
 
 
 class MiddlewareTest(unittest.TestCase):
+
     def setUp(self):
         self.middleware = NotificationsMiddleware()
 

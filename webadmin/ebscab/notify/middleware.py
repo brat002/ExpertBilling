@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 '''
 Middleware which handles temporary notifications.
 '''
@@ -6,6 +8,7 @@ from notify.storage import Storage
 
 
 class NotificationsMiddleware(object):
+
     def process_request(self, request):
         request.notifications = Storage(request)
 
