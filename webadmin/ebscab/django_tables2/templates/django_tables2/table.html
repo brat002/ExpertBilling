@@ -1,20 +1,110 @@
 {% spaceless %}
-{% load django_tables2 %}
-{% load i18n %}
-{% if table.page %}
-<div class="table-container">
-{% endif %}
+{% load querystring from django_tables2 %}
+{% load format_paginator from ebsadmin_tags %}
+{% load trans blocktrans from i18n %}
+{% load ebsadmin_tags %}
+        <script type="text/javascript"> 
+        $(document).ready(function() {
+            $("#id_per_page{{table.name}}").change(function(){
+            	//$.cookie('ebs_per_page{{table.name}}',  $("#id_per_page{{table.name}}").val());
+            	
+                var url = "{% url 'table_settings' %}"; // the script where you handle the form input.
+                $(".columns_submit").attr('disabled', 'disabled');
+                var form = $('#{{table.columns_form.table_name.value}}');
+
+                
+                var c = [];
+                var columns = form.find(".columns").serialize();
+
+                var table_name = '{{table.name}}';
+                $.ajax({
+                       type: "POST",
+                       url: url,
+                       data: columns+'&table_name='+table_name+'&per_page='+ $("#id_per_page{{table.name}}").val(), // serializes the form's elements.
+                       success: function(data)
+                       {
+                    	   location.href=location.href.replace(/&?paginate=False/i, "").replace(/#/i, "");
+                       }
+                     });
+                
+            	
+            })
+            $(".columns").multiselect({button:'btn btn-small'}); 
+            
+            $("#submit{{table.columns_form.table_name.value}}").bind('click', function() {
+
+                var url = "{% url 'table_settings' %}"; // the script where you handle the form input.
+                $(".columns_submit").attr('disabled', 'disabled');
+                var form = $('#{{table.columns_form.table_name.value}}');
+
+                
+                var c = [];
+                var columns = form.find(".columns").serialize();
+
+                var table_name = '{{table.name}}';
+                $.ajax({
+                       type: "POST",
+                       url: url,
+                       data: columns+'&table_name='+table_name+'&per_page='+ $("#id_per_page{{table.name}}").val(), // serializes the form's elements.
+                       success: function(data)
+                       {
+                    	   window.location.reload();
+                       }
+                     });
+
+                return false; // avoid to execute the actual submit of the form.
+            });
+            $('.open-dialog').click(function(){
+            	a=$(this)
+            	$('#'+a.attr('rel')).removeClass('hidden');
+	            $('#'+a.attr('rel')).dialog2({
+	                title: "Настройка таблицы", 
+	                autoOpen: true,
+	                removeOnClose: false
+	            });
+        })
+        
+        });
+        
+
+
+</script>
+
+<div>
+
 {% block table %}
-<table{% if table.attrs %} {{ table.attrs.as_html }}{% endif %}>
-    {% nospaceless %}
+
+<table{% if table.attrs %} {{ table.attrs.as_html }}{% endif %} id="id_main_table">
     {% block table.thead %}
     <thead>
         <tr>
         {% for column in table.columns %}
             {% if column.orderable %}
-            <th {{ column.attrs.th.as_html }}><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">{{ column.header }}</a></th>
+            <th {{ column.attrs.th.as_html }}><a href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">{{ column.header }}</a>{% if table.columns_form %}{% if forloop.last %}
+            <div class="btn-group pull-right">
+  <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">
+    <i class='icon-wrench'></i>
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu">
+    <li><a class='open-dialog  black-text' href="#" style='color:black' rel="dialog{{table.columns_form.table_name.value}}"><i class='icon-wrench'></i>Настроить</a></li>
+  {% block table.report %}
+  {% endblock %}
+  </ul>
+</div>
+{% endif %}{% endif %}</th>
             {% else %}
-            <th {{ column.attrs.th.as_html }}>{{ column.header }}</th>
+            <th {{ column.attrs.th.as_html }}>{{ column.header }}{% if table.columns_form %}{% if forloop.last %}<div class="btn-group pull-right">
+  <a class="btn btn-mini dropdown-toggle" data-toggle="dropdown" href="#">
+    <i class='icon-wrench'></i>
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu">
+    <li><a class='open-dialog black-text'  href="#" style='color:black' rel="dialog{{table.columns_form.table_name.value}}"><i class='icon-wrench'></i>Настроить</a></li>
+  {% block table.report2 %}
+  {% endblock %}
+  </ul>
+</div>{% endif %}{% endif %}</th>
             {% endif %}
         {% endfor %}
         </tr>
@@ -24,9 +114,9 @@
     <tbody>
         {% for row in table.page.object_list|default:table.rows %} {# support pagination #}
         {% block table.tbody.row %}
-        <tr class="{{ forloop.counter|divisibleby:2|yesno:"even,odd" }}"> {# avoid cycle for Django 1.2-1.6 compatibility #}
+        <tr  class="{{ row.record.get_row_class}}">
             {% for column, cell in row.items %}
-                <td {{ column.attrs.td.as_html }}>{% if column.localize == None %}{{ cell }}{% else %}{% if column.localize %}{{ cell|localize }}{% else %}{{ cell|unlocalize }}{% endif %}{% endif %}</td>
+                <td {{ column.attrs.td.as_html }}>{{ cell }}</td>
             {% endfor %}
         </tr>
         {% endblock table.tbody.row %}
@@ -39,35 +129,87 @@
         {% endfor %}
     </tbody>
     {% endblock table.tbody %}
-    {% block table.tfoot %}
-    <tfoot></tfoot>
-    {% endblock table.tfoot %}
-    {% endnospaceless %}
+	{% block table.tfoot %}
+	<tfoot>
+	
+	    {% for row in table.footer %}
+	      <tr>  
+	      {% for column, cell in row.items %}
+	          {% if forloop.first %}
+	          <th>Итого: </th>
+	          {% else %}
+	            <th>{{ cell }}</th>
+	          {% endif %}
+	      {% endfor %}
+	      </tr>    
+	    {% endfor %}
+	
+	</tfoot>    
+	{% endblock %}  
 </table>
+{% if total_summ %}
+<strong>Всего на сумму:</strong> {{total_summ|intspace}}<br/>
+{% endif %}
+{% if onpage_summ %}
+<strong>Сумма на странице:</strong> {{onpage_summ|intspace}}<br/>
+{% endif %}
+{% if table.columns_form %}
+<div id="dialog{{table.columns_form.table_name.value}}" class='hidden' title="Настройка внешнего вида таблицы" >
+  
+
+<formset id='{{table.columns_form.table_name.value}}'>
+
+<div>
+        {{table.columns_form.columns}}&nbsp;{{table.columns_form.table_name}}
+</div>
+<div>
+      <input type="button"  id='submit{{table.columns_form.table_name.value}}'  class=" btn btn-small btn-info" name="save_columns" value="Сохранить настройки">
+</div>
+
+
+</formset>
+
+</div>{% endif %}
+
 {% endblock table %}
 
+
 {% if table.page %}
-{% with table.page.paginator.count as total %}
-{% with table.page.object_list|length as count %}
-{% block pagination %}
-<ul class="pagination">
+
+<div class="pagination  pagination-centered">
+    <ul>
     {% if table.page.has_previous %}
-    {% nospaceless %}{% block pagination.previous %}<li class="previous"><a href="{% querystring table.prefixed_page_field=table.page.previous_page_number %}">{% trans "Previous" %}</a></li>{% endblock pagination.previous %}{% endnospaceless %}
+    <li><a href="{% querystring table.prefixed_page_field=table.page.previous_page_number %}">{% trans "Previous" %}</a></li>
     {% endif %}
-
-    {% if table.page.has_previous or table.page.has_next %}
-    {% nospaceless %}{% block pagination.current %}<li class="current">{% blocktrans with table.page.number as current and table.paginator.num_pages as total %}Page {{ current }} of {{ total }}{% endblocktrans %}</li>{% endblock pagination.current %}{% endnospaceless %}
-    {% endif %}
-
+    {% for i in table.page.paginator.page_range|format_paginator:table.page.number  %}
+	    {% ifequal i  '...' %}
+	       <li><a class="disabled" >{{i}}</a></li>
+	    {% else %}
+		    {% ifequal table.page.number i%}
+		      <li><a class="active" >{{i}}</a></li>
+		    {% else %}
+		      <li><a href="{% querystring table.prefixed_page_field=i %}" >{{i}}</a></li>
+		    {% endifequal %}
+	    {% endifequal %}
+    {% endfor %}
+    
     {% if table.page.has_next %}
-    {% nospaceless %}{% block pagination.next %}<li class="next"><a href="{% querystring table.prefixed_page_field=table.page.next_page_number %}">{% trans "Next" %}</a></li>{% endblock pagination.next %}{% endnospaceless %}
+    <li><a href="{% querystring table.prefixed_page_field=table.page.next_page_number %}">{% trans "Next" %}</a></li>
     {% endif %}
+    <li><a href="{% querystring 'paginate'='False' %}">Все</a></li>
+    <li>
+         {{table.per_page_form.per_page}}
 
-    {% nospaceless %}{% block pagination.cardinality %}<li class="cardinality">{% if total != count %}{% blocktrans %}{{ count }} of {{ total }}{% endblocktrans %}{% else %}{{ total }}{% endif %} {% if total == 1 %}{{ table.data.verbose_name }}{% else %}{{ table.data.verbose_name_plural }}{% endif %}</li>{% endblock pagination.cardinality %}{% endnospaceless %}
-</ul>
-{% endblock pagination %}
-{% endwith %}
-{% endwith %}
+       </li>
+        </ul>
 </div>
+
+
+
+
+
+{% else %}
+<input type='hidden' value='25' name='id_per_page{{table.name}}'>
 {% endif %}
+</div>
 {% endspaceless %}

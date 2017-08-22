@@ -139,7 +139,8 @@ INSTALLED_APPS = (
     'autocomplete_light',
     'selectable',
     'mathfilters',
-    'captcha'
+    'captcha',
+    'cassa'
 )
 
 
