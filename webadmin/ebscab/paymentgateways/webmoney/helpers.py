@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.template.loader import get_template
+from django.shortcuts import render
 
 
 def render_to(template=None):
@@ -10,6 +11,6 @@ def render_to(template=None):
             if not isinstance(output, dict):
                 return output
             tmpl = output.pop('TEMPLATE', template)
-            return get_template(tmpl).render(output, request)
+            return render(request, tmpl, output)
         return wrapper
     return renderer

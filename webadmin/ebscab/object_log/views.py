@@ -5,7 +5,7 @@ from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.query_utils import Q
 from django.http import HttpResponseForbidden, HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.template.loader import get_template
 
 from object_log.models import LogItem
@@ -31,14 +31,14 @@ def list_for_object(request, obj, rest=False):
     log = LogItem.objects.filter(q).select_related('user').distinct()
 
     if not rest:
-        return get_template('object_log/log.html').render(
-            {
-                'log': log,
-                'context': {
-                    'user': request.user
-                }
-            },
-            request)
+        return render(request,
+                      'object_log/log.html',
+                      {
+                          'log': log,
+                          'context': {
+                              'user': request.user
+                          }
+                      })
     else:
         return log
 
@@ -106,14 +106,14 @@ def list_user_actions(request, pk, rest=False):
     log_items = LogItem.objects.filter(user=user).select_related('user')
 
     if not rest:
-        return get_template('object_log/log.html').render(
-            {
-                'log': log_items,
-                'context': {
-                    'user': request.user
-                }
-            },
-            request)
+        return render(request,
+                      'object_log/log.html',
+                      {
+                          'log': log_items,
+                          'context': {
+                              'user': request.user
+                          }
+                      })
     else:
         return log_items
 

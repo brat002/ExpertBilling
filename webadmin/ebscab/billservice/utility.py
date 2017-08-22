@@ -5,7 +5,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 
 from django.conf import settings
-from django.template.loader import get_template
+from django.shortcuts import render
 
 from billservice.forms import LoginForm
 
@@ -175,4 +175,4 @@ def is_login_user(request):
         'MEDIA_URL': settings.MEDIA_URL,
         'form': form,
     }
-    return get_template('registration/login.html').render(context, request)
+    return render(request, 'registration/login.html', context)

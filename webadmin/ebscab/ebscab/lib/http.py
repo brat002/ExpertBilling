@@ -7,6 +7,7 @@ from decimal import Decimal
 
 import ipaddr
 from django.http import HttpResponse
+from django.shortcuts import render
 from django.template.loader import get_template
 
 
@@ -36,7 +37,7 @@ class MyJSONEncoder(json.JSONEncoder):
 
 
 def render_response(request, tmpl, output):
-    return get_template(tmpl).render(output, request)
+    return render(request, tmpl, output)
 
 
 class JsonResponse(HttpResponse):

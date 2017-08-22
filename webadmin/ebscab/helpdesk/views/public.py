@@ -6,9 +6,8 @@ from datetime import datetime
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.template import engines
-from django.template.loader import get_template
 from django.utils.translation import ugettext as _
 
 from helpdesk.forms import PublicTicketForm
@@ -47,8 +46,7 @@ def add_ticket(request):
         if form.is_valid():
             if text_is_spam(form.cleaned_data['body'], request):
                 # This submission is spam. Let's not save it.
-                return get_template('helpdesk/public_spam.html').render(
-                    {}, request)
+                return render(request, 'helpdesk/public_spam.html', {})
             else:
                 ticket = form.save(request.user)
                 return HttpResponseRedirect('%s?ticket=%s&email=%s' % (
@@ -73,8 +71,7 @@ def add_ticket(request):
             for q in Queue.objects.filter(allow_public_submission=True)
         ]
 
-    return get_template('helpdesk/public_homepage.html').render(
-        {'form': form}, request)
+    return render(request, 'helpdesk/public_homepage.html', {'form': form})
 
 
 @login_required
@@ -117,16 +114,17 @@ def view_ticket(request):
 
                 return update_ticket(request, ticket_id, public=True)
 
-            return get_template('helpdesk/public_view_ticket.html').render(
-                {'ticket': ticket}, request)
+            return render(request,
+                          'helpdesk/public_view_ticket.html',
+                          {'ticket': ticket})
 
-    return get_template('helpdesk/public_view_form.html').render(
-        {
-            'ticket': ticket,
-            'email': email,
-            'error_message': error_message
-        },
-        request)
+    return render(request,
+                  'helpdesk/public_view_form.html',
+                  {
+                      'ticket': ticket,
+                      'email': email,
+                      'error_message': error_message
+                  })
 
 
 @login_required

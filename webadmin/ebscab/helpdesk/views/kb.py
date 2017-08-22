@@ -11,8 +11,7 @@ views/kb.py - Public-facing knowledgebase views. The knowledgebase is a
 """
 
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404
-from django.template.loader import get_template
+from django.shortcuts import get_object_or_404, render
 
 from helpdesk.models import KBCategory, KBItem
 
@@ -20,26 +19,27 @@ from helpdesk.models import KBCategory, KBItem
 def index(request):
     category_list = KBCategory.objects.all()
     # TODO: It'd be great to have a list of most popular items here.
-    return get_template('helpdesk/kb_index.html').render(
-        {'categories': category_list},
-        request)
+    return render(request,
+                  'helpdesk/kb_index.html',
+                  {'categories': category_list})
 
 
 def category(request, slug):
     category = get_object_or_404(KBCategory, slug__iexact=slug)
     items = category.kbitem_set.all()
-    return get_template('helpdesk/kb_category.html').render(
-        {
-            'category': category,
-            'items': items
-        },
-        request)
+    return render(request,
+                  'helpdesk/kb_category.html',
+                  {
+                      'category': category,
+                      'items': items
+                  })
 
 
 def item(request, item):
     item = get_object_or_404(KBItem, pk=item)
-    return get_template('helpdesk/kb_item.html').render({'item': item},
-                                                        request)
+    return render(request,
+                  'helpdesk/kb_item.html',
+                  {'item': item})
 
 
 def vote(request, item):
