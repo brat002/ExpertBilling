@@ -754,7 +754,6 @@ billservice_account.id in (
                 res = res.filter(credit=credit)
 
             res = res.distinct()
-
             table = AccountsReportTable(res)
             table_to_report = RequestConfig(
                 request,
@@ -765,16 +764,16 @@ billservice_account.id in (
                 return create_report_http_response(table_to_report, request)
 
             return {
-                "table": table,
-             'form': form,
-             'resultTab': True
+                'table': table,
+                'form': form,
+                'resultTab': True
             }
 
         else:
             print form._errors
             return {
                 'status': False,
-             'form': form
+                'form': form
             }
     else:
         form = SearchAccountForm()
@@ -823,7 +822,7 @@ def authlogreport(request):
                 return create_report_http_response(table_to_report, request)
 
             return {
-                "table": table,
+                'table': table,
                 'form': form,
                 'resultTab': True
             }
@@ -898,7 +897,7 @@ def ipinusereport(request):
                 return create_report_http_response(table_to_report, request)
 
             return {
-                "table": table,
+                'table': table,
                 'form': form,
                 'resultTab': True
             }
@@ -906,7 +905,7 @@ def ipinusereport(request):
         else:
             return {
                 'status': False,
-             'form': form
+                'form': form
             }
     else:
         form = IpInUseLogForm()
@@ -955,7 +954,7 @@ def ballancehistoryreport(request):
                 return create_report_http_response(table_to_report, request)
 
             return {
-                "table": table,
+                'table': table,
                 'form': form,
                 'resultTab': True
             }
@@ -1195,14 +1194,14 @@ def accountedit(request):
                 d = {
                     'account_id': accid,
                     'username': username,
-                 'year': year,
-                  'month': month,
-                   'day': day,
+                    'year': year,
+                    'month': month,
+                    'day': day,
                     'hour': hour,
                     'minute': minute,
                     'second': second,
                     'contract_num': contract_counter
-                    }
+                }
 
                 contract = (contract_template % d) if contract_template else ''
                 model.contract = contract
@@ -1394,7 +1393,7 @@ def subaccountedit(request):
             return {
                 'subaccount': subaccount,
                 'account': account,
-                "action_log_table": action_log_table,
+                'action_log_table': action_log_table,
                 'accountaddonservice_table': table,
                 'form': form
             }
@@ -1412,8 +1411,8 @@ def subaccountedit(request):
         return {
             'subaccount': subaccount,
             'account': account,
-            "action_log_table": action_log_table,
-            "accountaddonservice_table": table,
+            'action_log_table': action_log_table,
+            'accountaddonservice_table': table,
             'form': form
         }
 
@@ -1455,7 +1454,6 @@ def accounthardware(request):
                 'status': True
             }
         else:
-
             return {
                 'form': form,
                 'status': False
@@ -1527,7 +1525,6 @@ def suspendedperiod(request):
                 'status': True
             }
         else:
-
             return {
                 'form': form,
                 'status': False
@@ -1725,7 +1722,7 @@ def accountaddonservice_edit(request):
         'form': form,
         'status': False,
         'account': account,
-        "accountaddonservice": accountaddonservice
+        'accountaddonservice': accountaddonservice
     }
 
 
@@ -1819,7 +1816,7 @@ def activesessionreport(request):
                 return create_report_http_response(table_to_report, request)
 
             return {
-                "table": table,
+                'table': table,
                 'form': form
             }
 
@@ -1860,9 +1857,8 @@ def activesessionreport(request):
 
         form = SessionFilterForm(initial={'only_active': True})
         return {
-            "table": table,
-            'form': form,
-            "table": table
+            'table': table,
+            'form': form
         }
 
 
@@ -1885,10 +1881,10 @@ def template(request):
     if table_to_report:
         return create_report_http_response(table_to_report, request)
     return {
-        "list_url": reverse('template'),
-        "list_header": _(u'Шаблоны документов'),
-        "add_btn_url": reverse('template_edit'),
-        "table": table
+        'list_url': reverse('template'),
+        'list_header': _(u'Шаблоны документов'),
+        'add_btn_url': reverse('template_edit'),
+        'table': table
     }
 
 
@@ -1933,7 +1929,6 @@ def template_edit(request):
 
             return HttpResponseRedirect(reverse("template"))
         else:
-
             return {
                 'form': form,
                 'template': item
@@ -1990,12 +1985,12 @@ def subaccount_delete(request):
                          _(u'Субаккаунт удалён.'),
                          extra_tags='alert-success')
         return {
-            "status": True
+            'status': True
         }
     else:
         return {
-            "status": False,
-            "message": "SubAccount not found"
+            'status': False,
+            'message': 'SubAccount not found'
         }
 
 
@@ -2013,14 +2008,14 @@ def accounttariff_delete(request):
             item = AccountTarif.objects.get(id=id)
         except Exception, e:
             return {
-                "status": False,
-                "message": _(u"Указанный тарифный план не найден "
+                'status': False,
+                'message': _(u"Указанный тарифный план не найден "
                              u"тарифный план %s") % str(e)
             }
         if item.datetime < datetime.datetime.now():
             return {
-                "status": False,
-                "message": _(u"Невозможно удалить вступивший в силу "
+                'status': False,
+                'message': _(u"Невозможно удалить вступивший в силу "
                              u"тарифный план")
             }
 
@@ -2031,15 +2026,15 @@ def accounttariff_delete(request):
                          _(u'Тарифный план применён.'),
                          extra_tags='alert-success')
         return {
-            "status": True
+            'status': True
         }
     else:
         messages.error(request,
                        _(u'Ошибка при изменении тарифного плана.'),
                        extra_tags='alert-danger')
         return {
-            "status": False,
-            "message": "AccountTarif not found"
+            'status': False,
+            'message': "AccountTarif not found"
         }
 
 
@@ -2060,12 +2055,12 @@ def accounthardware_delete(request):
 
         model.delete()
         return {
-            "status": True
+            'status': True
         }
     else:
         return {
-            "status": False,
-            "message": "AccountHardware not found"
+            'status': False,
+            'message': 'AccountHardware not found'
         }
 
 
@@ -2088,12 +2083,12 @@ def accountaddonservice_deactivate(request):
         model.deactivated = datetime.datetime.now()
         model.save()
         return {
-            "status": True
+            'status': True
         }
     else:
         return {
-            "status": False,
-            "message": "AccountAddonService not found"
+            'status': False,
+            'message': 'AccountAddonService not found'
         }
 
 
@@ -2115,12 +2110,12 @@ def accountaddonservice_delete(request):
 
         model.delete()
         return {
-            "status": True
+            'status': True
         }
     else:
         return {
-            "status": False,
-            "message": "AccountAddonService not found"
+            'status': False,
+            'message': "AccountAddonService not found"
         }
 
 
@@ -2139,20 +2134,20 @@ def suspendedperiod_delete(request):
             item = SuspendedPeriod.objects.get(id=id)
         except Exception, e:
             return {
-                "status": False,
-                "message": _(u"Указанный период не найден %s") % str(e)
+                'status': False,
+                'message': _(u"Указанный период не найден %s") % str(e)
             }
 
         log('DELETE', request.user, item)
 
         item.delete()
         return {
-            "status": True
+            'status': True
         }
     else:
         return {
-            "status": False,
-            "message": "SuspendedPeriod not found"
+            'status': False,
+            'message': 'SuspendedPeriod not found'
         }
 
 
@@ -2170,20 +2165,20 @@ def template_delete(request):
             item = Template.objects.get(id=id)
         except Exception, e:
             return {
-                "status": False,
-                "message": _(u"Указанный шаблон не найден %s") % str(e)
+                'status': False,
+                'message': _(u"Указанный шаблон не найден %s") % str(e)
             }
 
         log('DELETE', request.user, item)
 
         item.delete()
         return {
-            "status": True
+            'status': True
         }
     else:
         return {
-            "status": False,
-            "message": "Template not found"
+            'status': False,
+            'message': 'Template not found'
         }
 
 
@@ -2211,15 +2206,15 @@ def totaltransaction_delete(request):
         except Exception, e:
             print e
             return {
-                "status": False,
-                "message": _(u"Указанные проводки не найдены %s") % str(e)
+                'status': False,
+                'message': _(u"Указанные проводки не найдены %s") % str(e)
             }
 
         return {
-            "status": True
+            'status': True
         }
     else:
         return {
-            "status": False,
-            "message": "Transaction not found"
+            'status': False,
+            'message': 'Transaction not found'
         }
