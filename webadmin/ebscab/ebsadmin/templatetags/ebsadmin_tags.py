@@ -125,7 +125,7 @@ class PermissionNode(template.Node):
         return ""
 
 
-@register.assignment_tag(takes_context=True)
+@register.simple_tag(takes_context=True)
 def get_server_time(context):
     try:
         return datetime.datetime.now()
