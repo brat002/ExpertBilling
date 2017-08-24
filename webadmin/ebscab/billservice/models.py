@@ -410,8 +410,7 @@ class PeriodicalServiceHistory(models.Model):
         decimal_places=5,
         max_digits=20,
         blank=True,
-        default=0,
-        on_delete=models.CASCADE
+        default=0
     )
     account = models.ForeignKey('Account', on_delete=models.CASCADE)
     type = models.ForeignKey(
@@ -744,7 +743,7 @@ class PrepaidTraffic(models.Model):
     )
     size = models.FloatField(
         verbose_name=_(u'Размер в байтах'), default=0, blank=True)
-    group = models.ForeignKey("Group", on_delete=CASCADE)
+    group = models.ForeignKey("Group", on_delete=models.CASCADE)
 
     def __unicode__(self):
         return u"%s" % self.size
