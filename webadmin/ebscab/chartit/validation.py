@@ -47,6 +47,10 @@ def _validate_field_lookup_term(model, term):
 
 def _clean_source(source):
     if isinstance(source, ModelBase):
+        # TODO: source is instance or class?
+        # https://docs.djangoproject.com/en/1.11/releases/1.10/#miscellaneous
+        # The _base_manager and _default_manager attributes are removed
+        # from model instances. They remain accessible on the model class.
         return source._base_manager.all()
     elif isinstance(source, Manager):
         return source.all()
