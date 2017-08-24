@@ -10,12 +10,11 @@ __homepage__ = "http://code.google.com/p/django-ajax-selects/"
 
 
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.db.models.fields.related import ForeignKey, ManyToManyField
 from django.forms.models import ModelForm
 from django.utils.text import capfirst
-from django.utils.translation import ugettext_lazy as _, ugettext
+from django.utils.translation import ugettext_lazy as _
 
 
 default_app_config = 'ajax_select.apps.AjaxSelectConfig'
@@ -63,6 +62,8 @@ class LookupChannel(object):
             one of these models. This enables the green popup +
             Default is the standard django permission check
         """
+        from django.contrib.contenttypes.models import ContentType  # pragma
+
         ctype = ContentType.objects.get_for_model(argmodel)
         return user.has_perm("%s.add_%s" % (ctype.app_label, ctype.model))
 

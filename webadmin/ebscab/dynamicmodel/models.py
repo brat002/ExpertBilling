@@ -300,6 +300,7 @@ class DynamicSchemaField(models.Model):
 
     class Meta:
         unique_together = ('schema', 'name')
+        app_label = 'dynamicmodel'
 
     objects = DynamicSchemaFieldManager()
 

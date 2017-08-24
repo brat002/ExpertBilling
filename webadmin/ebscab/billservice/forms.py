@@ -23,7 +23,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
 from django_select2 import *
-from django_select2.fields import AutoModelSelect2Field
+from django_select2.widgets import AutoModelSelect2Field
 
 from ajax_select.fields import AutoCompleteSelectMultipleField
 from billservice.models import (
