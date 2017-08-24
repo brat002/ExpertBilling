@@ -21,7 +21,6 @@ from django.utils.encoding import force_unicode
 from django.utils.html import conditional_escape, escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
-
 from django_select2 import *
 from django_select2.widgets import AutoModelSelect2Field
 
