@@ -206,7 +206,7 @@ class DynamicSchema(models.Model):
 
     objects = DynamicSchemaManager()
 
-    model = models.ForeignKey(ContentType)
+    model = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     type_value = models.CharField(max_length=100, null=True, blank=True)
 
     def __unicode__(self):
@@ -305,7 +305,11 @@ class DynamicSchemaField(models.Model):
     objects = DynamicSchemaFieldManager()
 
     schema = models.ForeignKey(
-        DynamicSchema, verbose_name=u'Класс объекта', related_name='fields')
+        DynamicSchema,
+        verbose_name=u'Класс объекта',
+        related_name='fields',
+        on_delete=models.CASCADE
+    )
     name = models.CharField(
         max_length=100,
         verbose_name=u'Имя поля',

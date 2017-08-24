@@ -457,7 +457,7 @@ class TrafficNode(models.Model):
     """
     Направления трафика. Внутри одного класса не должно быть пересекающихся направлений
     """
-    traffic_class = models.ForeignKey(TrafficClass)
+    traffic_class = models.ForeignKey(TrafficClass, on_delete=models.CASCADE)
     name = models.CharField(verbose_name=_(u'Название'), max_length=255)
     protocol = models.IntegerField(choices=PROTOCOLS, default=0)
 

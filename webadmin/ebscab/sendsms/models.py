@@ -13,7 +13,7 @@ from utils import get_backend_choices
 
 
 class Message(models.Model):
-    account = models.ForeignKey(Account)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     to = models.CharField(max_length=64)
     body = models.TextField()
     flash = models.BooleanField(blank=True, default=False)

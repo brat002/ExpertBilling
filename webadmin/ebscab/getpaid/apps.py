@@ -2,6 +2,7 @@
 
 from django.apps import AppConfig
 from django.contrib import admin
+from django.db import models
 
 from getpaid.admin import PaymentAdmin
 
@@ -19,7 +20,8 @@ class GetpaidConfig(AppConfig):
                             unique=False,
                             blank=True,
                             null=True,
-                            related_name='payments')
+                            related_name='payments',
+                            on_delete=models.CASCADE)
 
         from getpaid.models import Payment  # after register
 

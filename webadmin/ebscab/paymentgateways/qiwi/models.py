@@ -10,7 +10,7 @@ from .apps import PaymentGatewaysQiwiConfig
 class Invoice(models.Model):
     txn_id = models.CharField(
         max_length=64, blank=True, null=True)  # qiwi transaction id
-    account = models.ForeignKey(Account)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     phone = models.CharField(max_length=15)
     summ = models.DecimalField(decimal_places=2, max_digits=20)
     prev_balance = models.DecimalField(
