@@ -8,7 +8,7 @@ celery==3.1.25
 django-autocomplete-light==2.3.3
 django-crispy-forms==1.6.1
 django-mathfilters==0.4.0
-Django-Select2==4.3.2
+Django-Select2==5.0.3
 django-selectable==1.0.0
 django-simple-captcha==0.5.5
 django-tagging==0.4.5
