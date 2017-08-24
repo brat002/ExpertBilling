@@ -378,8 +378,6 @@ sortpaginate=True if not request.GET.get('paginate') == 'False' else False''',
             total = False
             tf = TransactionReportForm(request.GET)
 
-            print by_groups, len(by_groups)
-
             if len(by_groups) == 1 and 'TrafficTransaction' in by_groups:
                 res = TrafficTransaction.objects.all()
                 table = TrafficTransactionReportTable
@@ -770,7 +768,6 @@ billservice_account.id in (
             }
 
         else:
-            print form._errors
             return {
                 'status': False,
                 'form': form
@@ -2191,11 +2188,9 @@ def totaltransaction_delete(request):
             'message': _(u'У вас нет прав на удаление проводок')
         }
     transactions = request.POST.getlist('transactions')
-    print transactions
     if transactions:
         try:
             for item in transactions:
-                print item
                 table, tr_id = item.split('__')
                 model = model_by_table.get(table)
                 item = model.objects.get(id=tr_id)
@@ -2204,7 +2199,6 @@ def totaltransaction_delete(request):
 
                 item.delete()
         except Exception, e:
-            print e
             return {
                 'status': False,
                 'message': _(u"Указанные проводки не найдены %s") % str(e)
