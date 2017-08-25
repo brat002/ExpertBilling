@@ -12,8 +12,6 @@ from django.forms.fields import (
 from django.forms.models import ModelChoiceField
 from django.forms.widgets import (
     HiddenInput,
-    RadioFieldRenderer,
-    RadioChoiceInput,
     RadioSelect
 )
 from django.utils.encoding import force_unicode
@@ -21,38 +19,21 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
 from getpaid.models import Order
+from getpaid.utils import get_backend_choices, import_name
 
-from utils import get_backend_choices, import_name
 
-
-class PaymentRadioInput(RadioChoiceInput):
-
-    def __init__(self, name, value, attrs, choice, index):
-        super(PaymentRadioInput, self).__init__(
-            name, value, attrs, choice, index)
-        logo_url = import_name(choice[0]).PaymentProcessor.get_logo_url()
+def backend_with_image_label(backends):
+    backends_with_img = []
+    for backend in backends:
+        backend_module = backend[0]
+        backend_label = backend[1]
+        logo_url = import_name(backend_module).PaymentProcessor.get_logo_url()
         if logo_url:
-            self.choice_label = mark_safe('<img src="%s%s" alt="%s">' % (
+            backend_label = mark_safe('<img src="%s%s" alt="%s">' % (
                 getattr(settings, 'STATIC_URL', ''),
                 logo_url,
-                force_unicode(choice[1])))
-
-
-class PaymentRadioFieldRenderer(RadioFieldRenderer):
-
-    def __iter__(self):
-        for i, choice in enumerate(self.choices):
-            yield PaymentRadioInput(
-                self.name, self.value, self.attrs.copy(), choice, i)
-
-    def __getitem__(self, idx):
-        choice = self.choices[idx]  # Let the IndexError propogate
-        return PaymentRadioInput(
-            self.name, self.value, self.attrs.copy(), choice, idx)
-
-
-class PaymentRadioSelect(RadioSelect):
-    renderer = PaymentRadioFieldRenderer
+                force_unicode(backend_label)))
+        backends_with_img.append((backend_module, backend_label))
 
 
 class PaymentMethodForm(forms.Form):
@@ -60,18 +41,14 @@ class PaymentMethodForm(forms.Form):
     Displays all available payments backends as choice list.
     """
 
-    order = ModelChoiceField(
-        widget=HiddenInput, required=False, queryset=Order.objects.all())
-    summ = FloatField(label=_("Amount"), initial=0, required=True)
-
     def __init__(self, *args, **kwargs):
         super(PaymentMethodForm, self).__init__(*args, **kwargs)
         backends = get_backend_choices()
         self.fields['backend'] = ChoiceField(
-            choices=backends,
-            initial=backends[0][0] if len(backends) else '',
+            choices=backend_with_image_label(backends),
+            initial=backends[0][0] if backends else '',
             label=_("Payment method"),
-            widget=PaymentRadioSelect
+            widget=RadioSelect
         )
 
     order = ModelChoiceField(
@@ -88,10 +65,10 @@ class SelectPaymentMethodForm(forms.Form):
         super(SelectPaymentMethodForm, self).__init__(*args, **kwargs)
         backends = get_backend_choices()
         self.fields['backend'] = ChoiceField(
-            choices=backends,
-            initial=backends[0][0] if len(backends) else '',
+            choices=backend_with_image_label(backends),
+            initial=backends[0][0] if backends else '',
             label=_("Payment method"),
-            widget=PaymentRadioSelect
+            widget=RadioSelect
         )
 
     order = ModelChoiceField(
@@ -118,8 +95,8 @@ class GenericForm(forms.Form):
         super(GenericForm, self).__init__(*args, **kwargs)
         backends = get_backend_choices()
         self.fields['backend'] = ChoiceField(
-            choices=backends,
-            initial=backends[0][0] if len(backends) else '',
+            choices=backend_with_image_label(backends),
+            initial=backends[0][0] if backends else '',
             widget=widgets.HiddenInput
         )
     summ = FloatField()

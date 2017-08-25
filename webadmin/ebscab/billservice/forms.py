@@ -232,33 +232,8 @@ class ModelLinkWidget(forms.widgets.HiddenInput):
 ''' % ( escape(unicode(value))))
 
 
-class MyRadioInput(forms.widgets.RadioChoiceInput):
-
-    def __unicode__(self):
-        if 'id' in self.attrs:
-            label_for = ' for="%s_%s"' % (self.attrs['id'], self.index)
-        else:
-            label_for = ''
-        choice_label = conditional_escape(force_unicode(self.choice_label))
-        return mark_safe(u'<label class="radio inline" %s>%s %s</label>' % (
-            label_for, self.tag(), choice_label))
-
-
-class MyCustomRenderer(forms.widgets.RadioFieldRenderer):
-
-    def __iter__(self):
-        for i, choice in enumerate(self.choices):
-            yield MyRadioInput(
-                self.name, self.value, self.attrs.copy(), choice, i)
-
-    def __getitem__(self, idx):
-        choice = self.choices[idx]  # Let the IndexError propogate
-        return MyRadioInput(
-            self.name, self.value, self.attrs.copy(), choice, idx)
-
-    def render(self):
-        return mark_safe(u'\n'.join(
-            [u'%s' % force_unicode(w) for w in self]))
+class InlineRadioSelect(forms.widgets.RadioSelect):
+    template_name = 'billservice/inline_radio_select.html'
 
 
 class MyMultipleCheckBoxInput(forms.widgets.CheckboxSelectMultiple):
@@ -586,7 +561,7 @@ class SearchAccountForm(forms.Form):
             ('no', _(u'Нет')),
             ('undefined', _(u'Не важно'))
         ),
-        widget=forms.RadioSelect(renderer=MyCustomRenderer)
+        widget=InlineRadioSelect
     )
     limit_blocked = forms.ChoiceField(
         label=_(u'Блокировка по лимитам'),
@@ -596,7 +571,7 @@ class SearchAccountForm(forms.Form):
             ('no', _(u'Нет')),
             ('undefined', _(u'Не важно'))
         ),
-        widget=forms.RadioSelect(renderer=MyCustomRenderer))
+        widget=InlineRadioSelect)
     nas = forms.ModelMultipleChoiceField(
         label=_(u"Сервер доступа субаккаунта"),
         queryset=Nas.objects.all(),
@@ -784,7 +759,7 @@ class IpInUseLogForm(forms.Form):
             ('static', _(u'Статические')),
             ('', _(u'Любые'))
         ),
-        widget=forms.RadioSelect(renderer=MyCustomRenderer)
+        widget=InlineRadioSelect
     )
 
 
