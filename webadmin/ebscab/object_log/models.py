@@ -176,17 +176,27 @@ class LogItem(models.Model):
     Single entry in log
     """
     action = models.ForeignKey(
-        LogAction, verbose_name=u'Действие', related_name="entries")
+        LogAction,
+        verbose_name=u'Действие',
+        related_name="entries",
+        on_delete=models.CASCADE
+    )
     #action = models.CharField(max_length=128)
     timestamp = models.DateTimeField(verbose_name=u'Дата', auto_now_add=True)
     user = models.ForeignKey(
-        User, verbose_name=u'Пользователь', related_name='log_items')
+        User,
+        verbose_name=u'Пользователь',
+        related_name='log_items',
+        on_delete=models.CASCADE
+    )
 
     object_type1 = models.ForeignKey(
         ContentType,
         verbose_name=u'Тип объекта',
         related_name='log_items1',
-        null=True)
+        null=True,
+        on_delete=models.CASCADE
+    )
     object_id1 = models.PositiveIntegerField(null=True)
     object1 = GenericForeignKey("object_type1", "object_id1")
 

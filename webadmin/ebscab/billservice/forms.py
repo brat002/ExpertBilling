@@ -22,9 +22,6 @@ from django.utils.html import conditional_escape, escape
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
-from django_select2 import *
-from django_select2.fields import AutoModelSelect2Field
-
 from ajax_select.fields import AutoCompleteSelectMultipleField
 from billservice.models import (
     AccessParameters,
@@ -100,28 +97,6 @@ from sendsms.utils import get_backend_choices
 import IPy
 from widgets import CheckboxSelectMultipleWithSelectAll
 from lookups import HardwareLookup
-
-
-class HardwareChoices(AutoModelSelect2Field):
-    queryset = Hardware.objects  # .filter(accounthardware__isnull=True)
-    max_results = 20
-    search_fields = [
-        'name__icontains',
-        'model__name__icontains',
-        'sn__icontains',
-        'comment__icontains'
-    ]
-
-
-class NewHardwareChoices(AutoModelSelect2Field):
-    queryset = Hardware.objects.filter(accounthardware__isnull=True)
-    max_results = 20
-    search_fields = [
-        'name__icontains',
-        'model__name__icontains',
-        'sn__icontains',
-        'comment__icontains'
-    ]
 
 
 class PasswordTextInput(forms.widgets.Input):

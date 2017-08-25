@@ -42,7 +42,7 @@ class PaymentFactory(models.Model, AbstractMixin):
 
     ORDER_MODEL = None
 
-    account = models.ForeignKey(Account)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     amount = models.DecimalField(_("amount"), decimal_places=4, max_digits=20)
     currency = models.CharField(_("currency"), max_length=3)
     status = models.CharField(
