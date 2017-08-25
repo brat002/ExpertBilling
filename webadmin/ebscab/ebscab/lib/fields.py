@@ -8,6 +8,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import lookups
 from django.forms import fields, widgets
 from django.forms.widgets import PasswordInput
 from ipaddr import _IPAddrBase, IPNetwork
@@ -87,14 +88,6 @@ class IPNetworkField(models.Field):
     def from_db_value(self, value, expression, connection, context):
         return self.to_python(value)
 
-    def get_prep_lookup(self, lookup_type, value):
-        if lookup_type == 'exact':
-            return self.get_prep_value(value)
-        elif lookup_type == 'in':
-            return [self.get_prep_value(v) for v in value]
-        else:
-            raise TypeError('Lookup type %r not supported.' % lookup_type)
-
     def get_prep_value(self, value):
         if isinstance(value, _IPAddrBase):
             value = '%s' % value
@@ -108,6 +101,22 @@ class IPNetworkField(models.Field):
         }
         defaults.update(kwargs)
         return super(IPNetworkField, self).formfield(**defaults)
+
+
+class IPNetworkFieldExact(lookups.Exact):
+
+    def get_prep_lookup(self, lookup_type, value):
+        return self.get_prep_value(value)
+
+IPNetworkField.register_lookup(IPNetworkFieldExact)
+
+
+class IPNetworkFieldIn(lookups.In):
+
+    def get_prep_lookup(self, lookup_type, value):
+        return [self.get_prep_value(v) for v in value]
+
+IPNetworkField.register_lookup(IPNetworkFieldIn)
 
 
 class PasswordHashField(models.Field):

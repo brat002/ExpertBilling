@@ -21,6 +21,10 @@ class DynamicModel(models.Model):
     def __init__(self, *args, **kwargs):
         self._schema = None
         super(DynamicModel, self).__init__(*args, **kwargs)
+        # HACK: django 1.10 change class create process
+        # it avoid cyclic call __getattr__
+        self.__dict__['_inited'] = True
+
         self.get_schema()
         self._sync_with_schema()
 
@@ -62,13 +66,15 @@ class DynamicModel(models.Model):
         return ''
 
     def __getattr__(self, attr_name):
-        if attr_name in self.extra_fields:
+        # HACK: django 1.10 change class create process
+        if self.__dict__.get('_inited') and attr_name in self.extra_fields:
             return self.extra_fields[attr_name]
         else:
             return getattr(super(DynamicModel, self), attr_name)
 
     def __setattr__(self, attr_name, value):
-        if hasattr(self, 'extra_fields') and \
+        # HACK: django 1.10 change class create process
+        if self.__dict__.get('_inited') and hasattr(self, 'extra_fields') and \
                 attr_name not in [el.name for el in self._meta.fields] and \
                 attr_name not in ['_schema'] and \
                 attr_name in self.get_extra_fields_names():
