@@ -66,7 +66,6 @@ class IPNetworkQuerySet(models.query.QuerySet):
 
 
 class IPNetworkField(models.Field):
-    __metaclass__ = models.SubfieldBase
     description = "IP Network Field with CIDR support"
     empty_strings_allowed = False
 
@@ -84,6 +83,9 @@ class IPNetworkField(models.Field):
             return IPNetwork(value.encode('latin-1'))
         except Exception, e:
             raise ValidationError(e)
+
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
 
     def get_prep_lookup(self, lookup_type, value):
         if lookup_type == 'exact':
@@ -109,7 +111,6 @@ class IPNetworkField(models.Field):
 
 
 class PasswordHashField(models.Field):
-    __metaclass__ = models.SubfieldBase
     description = "Store password as hash"
 
     def db_type(self, connection):
@@ -118,6 +119,9 @@ class PasswordHashField(models.Field):
     def to_python(self, value):
         if not value:
             return None
+
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
 
     def get_prep_value(self, value):
         if value:
@@ -342,6 +346,9 @@ class BaseEncryptedField(models.Field):
                          self.cipher_class.block_size).decode(self.charset)
         return value or ''
 
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
+
     def get_prep_value(self, value):
         if value and not self.is_encrypted(value):
             # If we have a value and it's not encrypted, do the following before storing in the database:
@@ -358,7 +365,6 @@ class BaseEncryptedField(models.Field):
 
 
 class EncryptedTextField(BaseEncryptedField):
-    __metaclass__ = models.SubfieldBase
 
     def formfield(self, **kwargs):
         defaults = {'widget': forms.TextInput}

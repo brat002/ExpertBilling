@@ -3,11 +3,7 @@
 import datetime
 import math
 import os
-import sys
 from decimal import Decimal
-
-# TODO: wtf?
-sys.path.append(os.path.abspath('../../'))
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -17,6 +13,11 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
+from django.contrib.auth import (
+    authenticate,
+    login as log_in,
+    logout as log_out
+)
 
 from ebsadmin.cardlib import (
     add_addonservice,
@@ -38,7 +39,6 @@ from paymentgateways.qiwi.qiwiapi import (
 from radius.models import ActiveSession
 
 import IPy
-from billservice import authenticate, log_in, log_out
 from billservice.models import (
     Account,
     AccountAddonService,

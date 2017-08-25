@@ -1,14 +1,23 @@
 # -*- coding: utf-8 -*-
 
-import autocomplete_light
+from autocomplete_light import shortcuts as autocomplete_light
 from django.conf import settings
-from django.conf.urls import include, patterns, url
+from django.conf.urls import include, url
 from django.contrib import admin
 from django.db.backends.postgresql_psycopg2.base import DatabaseFeatures
+from django.views import static
+from django.views.i18n import javascript_catalog
 
 from ajax_select import urls as ajax_select_urls
-from billservice.views import SelectPaymentView
-# from helpdesk import admin as helpdesk_admin
+from billservice import views as billservice_views
+from cassa import views as cassa_views
+from helpdesk.views import account as helpdesk_account_views
+from paymentgateways.osmp_customproviders import views as \
+    osmp_customproviders_views
+from paymentgateways.quickpay import views as quickpay_views
+from paymentgateways.rapida import views as rapida_views
+from paymentgateways.sberbank import views as sberbank_views
+from statistics import views as statistics_views
 
 
 DatabaseFeatures.can_return_id_from_insert = False
@@ -17,138 +26,124 @@ autocomplete_light.autodiscover()
 
 admin.autodiscover()
 
-urlpatterns = patterns('',
-    # Example:
-    # (r'^ebscab/', include('ebscab.foo.urls')),
-    #(r'^$','ebscab.billing.views.index'),
-    #url('^helpdesk/admin/(.*)', helpdesk_admin.site.urls, name='helpdesk_admin'),
-    (r'^media/(?P<path>.*)$', 'django.views.static.serve',
-     {'document_root': settings.MEDIA_ROOT}),
-    (r'^static/(?P<path>.*)$', 'django.views.static.serve',
-     {'document_root': settings.STATIC_ROOT}),
-    # Uncomment this for admin:
-    (r'^objectlog/', include('object_log.urls')),
-    (r'^helpdesk/', include('helpdesk.urls')),
-    (r'^webmoney/', include('paymentgateways.webmoney.urls')),
-    (r'^ebsadmin/', include('ebsadmin.urls')),
+
+urlpatterns = [
+    url(r'^media/(?P<path>.*)$',
+        static.serve,
+        {'document_root': settings.MEDIA_ROOT}),
+    url(r'^static/(?P<path>.*)$',
+        static.serve,
+        {'document_root': settings.STATIC_ROOT}),
+    url(r'^objectlog/', include('object_log.urls')),
+    url(r'^helpdesk/', include('helpdesk.urls')),
+    url(r'^webmoney/', include('paymentgateways.webmoney.urls')),
+    url(r'^ebsadmin/', include('ebsadmin.urls')),
     url(r'^cassa/', include('ebsadmin.cashier.urls')),
-    (r'^reports/', include('ebsadmin.reportsystem.urls')),
-    (r'^admin/lookups/', include(ajax_select_urls)),
-    (r'^admin/', include(admin.site.urls)),
-    (r'^admin_media/jsi18n',
-     'django.views.i18n.javascript_catalog'),
-    (r'^i18n/', include('django.conf.urls.i18n')),
+    url(r'^reports/', include('ebsadmin.reportsystem.urls')),
+    url(r'^admin/lookups/', include(ajax_select_urls)),
+    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin_media/jsi18n',
+        javascript_catalog),
+    url(r'^i18n/', include('django.conf.urls.i18n')),
     url(r'', include('getpaid.urls')),
-    #url(r'^webcab/pay/(?P<pk>\d+)/$', OrderView.as_view(), name='order-payment-view'),
-    #url(r'^webcab/pay/$', PaymentView.as_view(), name='payment-view'),
-    url(r'^webcab/pay/$', SelectPaymentView.as_view(),
+    url(r'^webcab/pay/$',
+        billservice_views.SelectPaymentView.as_view(),
         name='payment-view'),
     url(r'^autocomplete/', include('autocomplete_light.urls')),
-    (r'^selectable/', include('selectable.urls')),
-    url(r'^captcha/', include('captcha.urls')),
-    #(r'^static/(?P<path>.*)$', 'django.contrib.staticfiles.views.serve')
+    url(r'^selectable/', include('selectable.urls')),
+    url(r'^captcha/', include('captcha.urls'))
+]
 
-)  # + patterns((r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.STATIC_ROOT}))
-
-#urlpatterns += staticfiles_urlpatterns()
-urlpatterns += patterns(
-    'billservice.views',
-    # Uncomment this for admin:
-    #(r'^$', 'index'),
-    url(r'^$', 'index', name='billservice_index'),
-    url(r'^login/$', 'login', name='login'),
-    url(r'^register/$', 'register', name='register'),
-
-    (r'^simple_login/$', 'simple_login'),
-    (r'^get_ballance/$', 'get_ballance'),
-    (r'^prepaid/$', 'account_prepays_traffic'),
-    url(r'^accounts/logout/$', 'login_out',
+urlpatterns += [
+    url(r'^$', billservice_views.index, name='billservice_index'),
+    url(r'^login/$', billservice_views.login, name='login'),
+    url(r'^register/$', billservice_views.register, name='register'),
+    url(r'^simple_login/$', billservice_views.simple_login),
+    url(r'^get_ballance/$', billservice_views.get_ballance),
+    url(r'^prepaid/$', billservice_views.account_prepays_traffic),
+    url(r'^accounts/logout/$',
+        billservice_views.login_out,
         name='account_logout'),
-    (r'^promise/$', 'get_promise'),
-    (r'^payment/$', 'make_payment'),
-    (r'^qiwi_payment/$', 'qiwi_payment'),
-    (r'^qiwi_payment/balance/$', 'qiwi_balance'),
-    (r'^transaction/$', 'transaction'),
-    (r'^session/info/$', 'vpn_session'),
-    (r'^password/change/$', 'change_password'),
-    (r'^email/change/$', 'change_email'),
-    (r'^password/form/$', 'password_form'),
-    (r'^tariff/change/$', 'change_tariff'),
-    (r'^tariff/form/$', 'change_tariff_form'),
-    (r'^card/activation/$', 'card_acvation'),
-    (r'^card/form/$', 'card_form'),
-    (r'^traffic/limit/$', 'traffic_limit'),
-    (r'^statistics/$', 'statistics'),
-    (r'^services/$', 'addon_service'),
-    (r'^service/(?P<action>set|del)/(?P<id>\d+)/$', 'service_action'),
-    (r'^services/info/$', 'services_info'),
-    (r'^service/history/info/$', 'periodical_service_history'),
-    (r'^addon/services/transaction/info/$',
-     'addon_service_transaction'),
-    (r'^traffic/transaction/info/$', 'traffic_transaction'),
-    (r'^traffic/volume/info/$', 'traffic_volume'),
-    (r'^one/time/history/info/$', 'one_time_history'),
-    (r'^news/delete/$', 'news_delete'),
-    (r'^subaccount/password/form/(?P<subaccount_id>\d+)/$',
-     'subaccount_password_form'),
-    (r'^subaccount/password/change/$',
-     'subaccount_change_password'),
-    (r'^service/(?P<action>set|del)/(?P<id>\d+)/$', 'service_action'),
-    (r'^account/block/$', 'user_block'),
-    (r'^account/block/action/$', 'userblock_action'),
-)
+    url(r'^promise/$', billservice_views.get_promise),
+    url(r'^payment/$', billservice_views.make_payment),
+    url(r'^qiwi_payment/$', billservice_views.qiwi_payment),
+    url(r'^qiwi_payment/balance/$', billservice_views.qiwi_balance),
+    url(r'^transaction/$', billservice_views.transaction),
+    url(r'^session/info/$', billservice_views.vpn_session),
+    url(r'^password/change/$', billservice_views.change_password),
+    url(r'^email/change/$', billservice_views.change_email),
+    url(r'^password/form/$', billservice_views.password_form),
+    url(r'^tariff/change/$', billservice_views.change_tariff),
+    url(r'^tariff/form/$', billservice_views.change_tariff_form),
+    url(r'^card/activation/$', billservice_views.card_acvation),
+    url(r'^card/form/$', billservice_views.card_form),
+    url(r'^traffic/limit/$', billservice_views.traffic_limit),
+    url(r'^statistics/$', billservice_views.statistics),
+    url(r'^services/$', billservice_views.addon_service),
+    url(r'^service/(?P<action>set|del)/(?P<id>\d+)/$',
+        billservice_views.service_action),
+    url(r'^services/info/$', billservice_views.services_info),
+    url(r'^service/history/info/$', billservice_views.periodical_service_history),
+    url(r'^addon/services/transaction/info/$',
+        billservice_views.addon_service_transaction),
+    url(r'^traffic/transaction/info/$', billservice_views.traffic_transaction),
+    url(r'^traffic/volume/info/$', billservice_views.traffic_volume),
+    url(r'^one/time/history/info/$', billservice_views.one_time_history),
+    url(r'^news/delete/$', billservice_views.news_delete),
+    url(r'^subaccount/password/form/(?P<subaccount_id>\d+)/$',
+        billservice_views.subaccount_password_form),
+    url(r'^subaccount/password/change/$',
+        billservice_views.subaccount_change_password),
+    url(r'^account/block/$', billservice_views.user_block),
+    url(r'^account/block/action/$', billservice_views.userblock_action)
+]
 
-urlpatterns = urlpatterns + patterns(
-    'helpdesk.views.account',
+urlpatterns = urlpatterns + [
     # list user's tickets
-    url(r'^account/helpdesk/$', 'list_tickets',
+    url(r'^account/helpdesk/$',
+        helpdesk_account_views.list_tickets,
         name='helpdesk_account_tickets'),
     # create new ticket
-    url(r'^account/helpdesk/add$', 'create_ticket',
+    url(r'^account/helpdesk/add$',
+        helpdesk_account_views.create_ticket,
         name='helpdesk_account_tickets_add'),
     # change/post comment
-    url(r'^account/helpdesk/(?P<ticket_id>[\d]+)/$', 'view_ticket',
-        name='helpdesk_account_tickets_view'),
-)
+    url(r'^account/helpdesk/(?P<ticket_id>[\d]+)/$',
+        helpdesk_account_views.view_ticket,
+        name='helpdesk_account_tickets_view')
+]
 
-urlpatterns += patterns(
-    'statistics.views',
-    #(?P<id>\d+)
-    (r'^statistics/account/$', 'account_stat'),
-    (r'^statistics/subaccount/$', 'subaccounts_stat'),
-    (r'^statistics/subaccount_filter/$',
-     'subaccounts_filter_stat'),
-    (r'^statistics/nasses_filter/$', 'nasses_filter_stat'),
-    (r'^statistics/subaccount_period_filter/$',
-     'subaccounts_period_stat'),
-    (r'^statistics/overall/$', 'overall_stat'),
-    (r'^statistics/nasses_stat/$', 'nasses_stat'),
-    (r'^statistics/nasses_period_filter/$', 'nasses_period_stat'),
-    (r'^statistics/nas_stat/$', 'nas_stat'),
-)
+urlpatterns += [
+    url(r'^statistics/account/$', statistics_views.account_stat),
+    url(r'^statistics/subaccount/$', statistics_views.subaccounts_stat),
+    url(r'^statistics/subaccount_filter/$',
+        statistics_views.subaccounts_filter_stat),
+    url(r'^statistics/nasses_filter/$', statistics_views.nasses_filter_stat),
+    url(r'^statistics/subaccount_period_filter/$',
+        statistics_views.subaccounts_period_stat),
+    url(r'^statistics/overall/$', statistics_views.overall_stat),
+    url(r'^statistics/nasses_stat/$', statistics_views.nasses_stat),
+    url(r'^statistics/nasses_period_filter/$',
+        statistics_views.nasses_period_stat),
+    url(r'^statistics/nas_stat/$', statistics_views.nas_stat)
+]
 
-urlpatterns += patterns(
-    'cassa.views',
-    #(?P<id>\d+)
-    (r'^cassa/$', 'index'),
-)
+urlpatterns += [
+    url(r'^cassa/$', cassa_views.index)
+]
 
-urlpatterns += patterns(
-    'paymentgateways.quickpay.views',
-    (r'^quickpay/payment/$', 'payment'),
-)
+urlpatterns += [
+    url(r'^quickpay/payment/$', quickpay_views.payment)
+]
 
-urlpatterns += patterns(
-    'paymentgateways.osmp_customproviders.views',
-    (r'^osmp_custom/payment/$', 'payment'),
-)
+urlpatterns += [
+    url(r'^osmp_custom/payment/$', osmp_customproviders_views.payment)
+]
 
-urlpatterns += patterns(
-    'paymentgateways.rapida.views',
-    (r'^pg/rapida/payment/$', 'payment'),
-)
+urlpatterns += [
+    url(r'^pg/rapida/payment/$', rapida_views.payment)
+]
 
-urlpatterns += patterns(
-    'paymentgateways.sberbank.views',
-    (r'^pg/sberbank/payment/$', 'payment'),
-)
+urlpatterns += [
+    url(r'^pg/sberbank/payment/$', sberbank_views.payment)
+]

@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from django.conf.urls import patterns, url
+from django.conf.urls import url
 
 from views import PayView, SuccessView, FailureView
 
 
-urlpatterns = patterns(
-    '',
+urlpatterns = [
     url(r'^w1ru/postback/$',
         PayView.as_view(),
         name='getpaid-w1ru-postback'),
@@ -16,4 +15,4 @@ urlpatterns = patterns(
     url(r'^w1ru/failure/$',
         FailureView.as_view(),
         name='getpaid-w1ru-failure')
-)
+]

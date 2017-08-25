@@ -44,7 +44,6 @@ class LoginUserBackend(ModelBackend):
     def authenticate(self, username=None, password=None):
         log.debug("auth called with args: %r" % locals())
         account = get_account(username=username)
-        # print account
         if account and check_password(account, password):
             if isinstance(account, SystemUser) and not account.status:
                 return

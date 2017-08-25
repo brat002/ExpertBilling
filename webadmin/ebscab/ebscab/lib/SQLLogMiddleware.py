@@ -26,7 +26,7 @@ import time
 
 from django.conf import settings
 from django.db import connection
-from django.template import Context, Template
+from django.template import Template
 
 
 class SQLLogMiddleware:
@@ -81,7 +81,7 @@ class SQLLogMiddleware:
         ''')
         timerequest = round(time.time() - self.start, 3)
         queries = connection.queries
-        html = t.render(Context(locals()))
+        html = t.render(locals())
         if debug_sql == True:
             if response.get("content-type", "").startswith("text/html"):
                 response.write(html)

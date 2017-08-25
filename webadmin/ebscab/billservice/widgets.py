@@ -2,7 +2,6 @@
 
 from django import forms
 from django.core.exceptions import FieldError
-from django.template import Context
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
 
@@ -41,11 +40,13 @@ class CheckboxSelectMultipleWithSelectAll(forms.CheckboxSelectMultiple):
         original = super(CheckboxSelectMultipleWithSelectAll,
                          self).render(*args, **kwargs)
         template = get_template("widgets/MultipleSelectWithSelectAll.html")
-        context = Context({"original_widget": original,
-                           "select_all_id": select_all_id,
-                           'select_all_name': select_all_name,
-                           'all_selected': self._all_selected,
-                           'empty': empty})
+        context = {
+            "original_widget": original,
+            "select_all_id": select_all_id,
+            'select_all_name': select_all_name,
+            'all_selected': self._all_selected,
+            'empty': empty
+        }
         return mark_safe(template.render(context))
 
     def value_from_datadict(self, *args, **kwargs):

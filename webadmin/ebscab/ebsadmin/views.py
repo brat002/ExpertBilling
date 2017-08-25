@@ -3,17 +3,17 @@
 import commands
 import datetime
 
-from mako.template import Template as mako_template
-from django.template import Context, Template as DjangoTemplate
+from django.contrib.auth import authenticate, login as log_in
 from django.db import connection
-from django.http import HttpResponse
-from django.utils.translation import ugettext as _
-from django.utils.safestring import mark_safe
 from django.db.models.fields import DecimalField
 from django.db.models.fields.related import ForeignKey
+from django.http import HttpResponse
+from django.template import Template as DjangoTemplate
+from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext as _
+from mako.template import Template as mako_template
 
 import IPy
-from billservice import authenticate, log_in
 from billservice.forms import (
     DocumentModelForm,
     DocumentRenderForm,
@@ -857,16 +857,16 @@ def documentrender(request):
         data = ''
         if template.type.id == 1:
             account = Account.objects.get(id=form.cleaned_data.get('account'))
-            c = Context({'account': account})
+            c = {'account': account}
 
         if template.type.id == 5:
             tr = Transaction.objects.get(
                 id=form.cleaned_data.get('transaction'))
-            c = Context({'transaction': tr})
+            c = {'transaction': tr}
 
         if template.type.id == 7:
             # cards
-            c = Context({'cards': form.cleaned_data.get('cards')})
+            c = {'cards': form.cleaned_data.get('cards')}
 
         try:
             data = t.render(c)
@@ -897,28 +897,28 @@ def templaterender(request):
         cur = connection.cursor()
         if templatetype.id == 1:
             account = Account.objects.all()[0]
-            c = Context({
+            c = {
                 'account': account,
                 'connection': cur
-            })
+            }
 
         if templatetype.id == 2:
             account = Account.objects.all()[0]
             operator = Organization.objects.all()[0]
-            c = Context({
+            c = {
                 'account': account,
                 'operator': operator,
                 'connection': cur
-            })
+            }
 
         if templatetype.id == 5:
             transaction = Transaction.objects.all()[0]
             operator = Organization.objects.all()[0]
-            c = Context({
+            c = {
                 'transaction': transaction,
                 'operator': operator,
                 'connection': cur
-            })
+            }
 
         try:
             data = t.render(c)

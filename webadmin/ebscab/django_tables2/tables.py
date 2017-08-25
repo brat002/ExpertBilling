@@ -9,7 +9,6 @@ from collections import OrderedDict
 import six
 from django.core.paginator import Paginator
 from django.db.models.fields import FieldDoesNotExist
-from django.template import RequestContext
 from django.template.loader import get_template
 
 from . import columns
@@ -472,7 +471,7 @@ class TableBase(object):
         """
         template = get_template(self.template)
         request = build_request()
-        return template.render(RequestContext(request, {'table': self}))
+        return template.render({'table': self}, request)
 
     @property
     def attrs(self):

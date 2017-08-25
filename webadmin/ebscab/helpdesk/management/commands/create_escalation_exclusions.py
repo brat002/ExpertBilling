@@ -13,7 +13,6 @@ scripts/create_escalation_exclusion.py - Easy way to routinely add particular
 import getopt
 import sys
 from datetime import timedelta, date
-from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
 
@@ -36,24 +35,23 @@ class Command(BaseCommand):
     def __init__(self):
         BaseCommand.__init__(self)
 
-        self.option_list += (
-            make_option(
-                '--days', '-d',
-                help='Days of week (monday, tuesday, etc)'),
-            make_option(
-                '--occurrences', '-o',
-                type='int',
-                default=1,
-                help='Occurrences: How many weeks ahead to exclude this day'),
-            make_option(
-                '--queues', '-q',
-                help='Queues to include (default: all). Use queue slugs'),
-            make_option(
-                '--escalate-verbosely', '-x',
-                action='store_true',
-                default=False,
-                help='Display a list of dates excluded'),
-        )
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--days', '-d',
+            help='Days of week (monday, tuesday, etc)')
+        parser.add_argument(
+            '--occurrences', '-o',
+            type='int',
+            default=1,
+            help='Occurrences: How many weeks ahead to exclude this day')
+        parser.add_argument(
+            '--queues', '-q',
+            help='Queues to include (default: all). Use queue slugs')
+        parser.add_argument(
+            '--escalate-verbosely', '-x',
+            action='store_true',
+            default=False,
+            help='Display a list of dates excluded')
 
     def handle(self, *args, **options):
         days = options['days']

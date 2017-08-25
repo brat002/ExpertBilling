@@ -7,7 +7,7 @@ import json
 from django import forms
 from django.conf import settings
 from django.forms.widgets import Widget, Select, Input, CheckboxInput
-from django.template import loader, Context
+from django.template import loader
 from django.utils.dates import MONTHS
 from django.utils.encoding import smart_unicode
 from django.utils.html import escape
@@ -143,11 +143,11 @@ class SelectDateTimeWidget(Widget):
                                            self.is_null)
 
         t = loader.get_template(self.template)
-        return t.render(Context({
+        return t.render({
             'select_field': mark_safe(u'\n'.join(output)),
             'null_field': null_field,
-            'name': name,
-        }))
+            'name': name
+        })
 
     def value_from_datadict(self, data, files, name):
         null_field = self.null_field % name

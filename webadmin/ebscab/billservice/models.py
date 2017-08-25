@@ -815,7 +815,7 @@ class AccountPrepaysTrafic(models.Model):
         to=PrepaidTraffic, null=True, on_delete=models.CASCADE)
     size = models.FloatField(blank=True, default=0, verbose_name=_(u'Остаток'))
     datetime = models.DateTimeField(
-        auto_now_add=True, default='', verbose_name=_(u'Начислен'))
+        auto_now_add=True, verbose_name=_(u'Начислен'))
     current = models.BooleanField(default=False, verbose_name=_(u'Текущий'))
     reseted = models.BooleanField(default=False, verbose_name=_(u'Сброшен'))
 
@@ -850,7 +850,7 @@ class AccountPrepaysRadiusTrafic(models.Model):
         to='RadiusTraffic', null=True, on_delete=models.SET_NULL)
     size = models.FloatField(blank=True, default=0)
     direction = models.IntegerField()
-    datetime = models.DateTimeField(auto_now_add=True, default='')
+    datetime = models.DateTimeField(auto_now_add=True)
     current = models.BooleanField(default=False)
     reseted = models.BooleanField(default=False)
 
@@ -879,7 +879,7 @@ class AccountPrepaysTime(models.Model):
     prepaid_time_service = models.ForeignKey(
         to=TimeAccessService, null=True, on_delete=models.SET_NULL)
     size = models.IntegerField(default=0, blank=True)
-    datetime = models.DateTimeField(auto_now_add=True, default='')
+    datetime = models.DateTimeField(auto_now_add=True)
     current = models.BooleanField(default=False)
     reseted = models.BooleanField(default=False)
 
@@ -1488,8 +1488,7 @@ class TransactionType(models.Model):
     allowed_systemusers = models.ManyToManyField(
         "SystemUser",
         verbose_name=u'Разрешено выполнять',
-        blank=True,
-        null=True
+        blank=True
     )
     is_bonus = models.BooleanField(
         verbose_name=u'Является бонусной', blank=True, default=False)
@@ -1676,7 +1675,7 @@ class AccountIPNSpeed(models.Model):
 
 
 class SheduleLog(models.Model):
-    account = models.ForeignKey(to=Account, unique=True)
+    account = models.OneToOneField(Account)
     accounttarif = models.ForeignKey(to=AccountTarif, blank=True, null=True)
     ballance_checkout = models.DateTimeField(blank=True, null=True)
     prepaid_traffic_reset = models.DateTimeField(blank=True, null=True)
@@ -3697,7 +3696,7 @@ class NotificationsSettings(models.Model):
     balance_notifications = models.BooleanField(
         default=False,
         verbose_name=_(u'Уведомления о недостатке баланса')
-        )
+    )
     balance_edge = models.FloatField(
         verbose_name=_(u'Граница баланса'),
         help_text=_(u'Граница, с которой слать уведомления  о недостатке '

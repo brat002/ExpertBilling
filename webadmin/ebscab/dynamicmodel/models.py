@@ -16,7 +16,7 @@ class DynamicModel(models.Model):
     class Meta:
         abstract = True
 
-    extra_fields = JSONField(editable=False, default="{}")
+    extra_fields = JSONField(editable=False, default={})
 
     def __init__(self, *args, **kwargs):
         self._schema = None

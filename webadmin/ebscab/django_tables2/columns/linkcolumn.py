@@ -86,9 +86,9 @@ class LinkColumn(BaseLinkColumn):
             name = models.CharField(max_length=200)
 
         # urls.py
-        urlpatterns = patterns('',
+        urlpatterns = [
             url('people/(\d+)/', views.people_detail, name='people_detail')
-        )
+        ]
 
         # tables.py
         from django_tables2.utils import A  # alias for Accessor

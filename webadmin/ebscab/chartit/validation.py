@@ -28,30 +28,19 @@ def _validate_field_lookup_term(model, term):
     """
     # TODO: Memoization for speed enchancements?
     terms = term.split('__')
-    model_fields = model._meta.get_all_field_names()
+    model_fields = [f.name for f in model._meta.get_fields()]
     if terms[0] not in model_fields:
         raise APIInputError("Field %r does not exist. Valid lookups are %s." %
                             (terms[0], ', '.join(model_fields)))
     if len(terms) == 1:
         return model._meta.get_field(terms[0]).verbose_name
     else:
-        # DocString details for model._meta.get_field_by_name
-        #
-        # Returns a tuple (field_object, model, direct, m2m), where
-        #     field_object is the Field instance for the given name,
-        #     model is the model containing this field (None for
-        #         local fields),
-        #     direct is True if the field exists on this model,
-        #     and m2m is True for many-to-many relations.
-        # When 'direct' is False, 'field_object' is the corresponding
-        # RelatedObject for this field (since the field doesn't have
-        # an instance associated with it).
-        field_details = model._meta.get_field_by_name(terms[0])
-        # if the field is direct field
-        if field_details[2]:
-            m = field_details[0].related.parent_model
+        field = model._meta.get_field(terms[0])
+        field_direct = not field.auto_created or field.concrete
+        if field_direct:
+            m = field.rel.parent_model
         else:
-            m = field_details[0].model
+            m = field.model
 
         return _validate_field_lookup_term(m, '__'.join(terms[1:]))
 

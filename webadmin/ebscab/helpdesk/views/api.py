@@ -20,8 +20,7 @@ from django import forms
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
-from django.template import loader, Context
+from django.template import loader
 
 from helpdesk.forms import TicketForm
 from helpdesk.lib import send_templated_mail
@@ -50,7 +49,7 @@ def api(request, method):
     """
 
     if method == 'help':
-        return render_to_response('helpdesk/help_api.html')
+        return loader.get_temlate('helpdesk/help_api.html').render()
 
     if request.method != 'POST':
         return api_return(STATUS_ERROR_BADMETHOD)

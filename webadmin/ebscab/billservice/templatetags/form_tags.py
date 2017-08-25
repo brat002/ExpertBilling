@@ -31,7 +31,7 @@ class FormFieldNode(template.Node):
                 pass
         for param in self.params:
             _context[param] = True
-        return t.render(template.Context(_context))
+        return t.render(_context)
 
 
 @register.tag

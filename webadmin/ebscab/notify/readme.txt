@@ -17,7 +17,7 @@ The default temporary storage uses sessions, so it is best to place this after
 the ``SessionMiddleware``.
 
 You can also install the context processor into your
-``TEMPLATE_CONTEXT_PROCESSORS`` setting::
+``TEMPLATES`` setting::
 
     'django_notify.context_processors.notifications',
 

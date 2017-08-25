@@ -18,8 +18,8 @@ from django.http import (
     HttpResponseForbidden,
     HttpResponseRedirect
 )
-from django.shortcuts import render_to_response, get_object_or_404
-from django.template import loader, Context, RequestContext
+from django.shortcuts import get_object_or_404, render
+from django.template import engines
 from django.utils.translation import ugettext as _
 
 from billservice.helpers import systemuser_required
@@ -87,7 +87,7 @@ def dashboard(request):
     """
 
     tickets = (Ticket.objects
-               .filter(assigned_to=request.user)
+               .filter(assigned_to=request.user.account)
                .exclude(status=Ticket.CLOSED_STATUS))
 
     ticket_table = UnpagedTicketTable(tickets)
@@ -124,15 +124,15 @@ ORDER BY q.id;
     """)
     dash_tickets = query_to_dict(cursor.fetchall(), cursor.description)
 
-    return render_to_response('helpdesk/dashboard.html', RequestContext(
-        request,
-        {
-            'user_tickets': tickets,
-            'unassigned_tickets': unassigned_tickets,
-            'dash_tickets': dash_tickets,
-            'ticket_table': ticket_table,
-            'unassigned_ticket_table': unassigned_ticket_table
-        }))
+    return render(request,
+                  'helpdesk/dashboard.html',
+                  {
+                      'user_tickets': tickets,
+                      'unassigned_tickets': unassigned_tickets,
+                      'dash_tickets': dash_tickets,
+                      'ticket_table': ticket_table,
+                      'unassigned_ticket_table': unassigned_ticket_table
+                  })
 
 
 dashboard = staff_member_required(dashboard)
@@ -147,10 +147,9 @@ def delete_ticket(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
 
     if request.method == 'GET':
-        return render_to_response('helpdesk/delete_ticket.html',
-                                  RequestContext(request, {
-                                      'ticket': ticket,
-                                  }))
+        return render(request,
+                      'helpdesk/delete_ticket.html',
+                      {'ticket': ticket})
     else:
         ticket.delete()
         return HttpResponseRedirect(reverse('helpdesk_home'))
@@ -190,19 +189,20 @@ def view_ticket(request, ticket_id):
 
         return update_ticket(request, ticket_id)
 
-    return render_to_response('helpdesk/ticket.html', RequestContext(
-        request,
-        {
-            'ticket': ticket,
-            'active_users': (User.objects
-                             .filter(is_active=True)
-                             .filter(is_staff=True)),
-            'priorities': Ticket.PRIORITY_CHOICES,
-            'preset_replies': (PreSetReply.objects
-                               .filter(Q(queues=ticket.queue) | Q(queues__isnull=True))),
+    return render(request,
+                  'helpdesk/ticket.html',
+                  {
+                      'ticket': ticket,
+                      'active_users': (User.objects
+                                       .filter(is_active=True)
+                                       .filter(is_staff=True)),
+                      'priorities': Ticket.PRIORITY_CHOICES,
+                      'preset_replies': (PreSetReply.objects
+                                         .filter(Q(queues=ticket.queue) |
+                                                 Q(queues__isnull=True))),
 
-            'tags_enabled': HAS_TAG_SUPPORT
-        }))
+                      'tags_enabled': HAS_TAG_SUPPORT
+                  })
 
 view_ticket = staff_member_required(view_ticket)
 
@@ -429,7 +429,7 @@ def update_ticket(request, ticket_id, public=False):
     # We need to allow the 'ticket' and 'queue' contexts to be applied to the
     # comment.
     context = safe_template_context(ticket)
-    comment = loader.get_template_from_string(comment).render(Context(context))
+    comment = engines['django'].from_string(comment).render(context)
 
     if owner is None and ticket.assigned_to:
         owner = ticket.assigned_to.id
@@ -726,7 +726,7 @@ def mass_update(request):
                 messages_sent_to.append(t.assigned_to.email)
 
             if t.queue.updated_ticket_cc and \
-                t.queue.updated_ticket_cc not in messages_sent_to:
+                    t.queue.updated_ticket_cc not in messages_sent_to:
                 send_templated_mail(
                     'closed_cc',
                     context,
@@ -903,6 +903,7 @@ For more information, read the \
 <a href="http://docs.djangoproject.com/en/dev/ref/databases/#sqlite-string-matching">\
 Django Documentation on string matching in SQLite</a>.''')
 
+    # TODO: fix undefined variable
     urlsafe_query = b64encode(cPickle.dumps(query_params))
     user_saved_queries = SavedSearch.objects.filter(
         Q(user=request.user) | Q(shared__exact=True))
@@ -917,26 +918,26 @@ Django Documentation on string matching in SQLite</a>.''')
         # FIXME: restrict this to tags that are actually in use
         tag_choices = Tag.objects.all()
 
-    return render_to_response('helpdesk/ticket_list.html', RequestContext(
-        request,
-        dict(
-            context,
-            query_string="&".join(query_string),
-            tickets=tickets,
-            assigned_to_choices=User.objects.filter(
-                is_active=True, is_staff=True),
-            owner_choices=User.objects.filter(
-                is_active=True),
-            queue_choices=Queue.objects.all(),
-            status_choices=Ticket.STATUS_CHOICES,
-            tag_choices=tag_choices,
-            urlsafe_query=urlsafe_query,
-            user_saved_queries=user_saved_queries,
-            query_params=query_params,
-            from_saved_query=from_saved_query,
-            search_message=search_message,
-            tags_enabled=HAS_TAG_SUPPORT
-        )))
+    return render(request,
+                  'helpdesk/ticket_list.html',
+                  dict(
+                      context,
+                      query_string="&".join(query_string),
+                      tickets=tickets,
+                      assigned_to_choices=User.objects.filter(
+                          is_active=True, is_staff=True),
+                      owner_choices=User.objects.filter(
+                          is_active=True),
+                      queue_choices=Queue.objects.all(),
+                      status_choices=Ticket.STATUS_CHOICES,
+                      tag_choices=tag_choices,
+                      urlsafe_query=urlsafe_query,
+                      user_saved_queries=user_saved_queries,
+                      query_params=query_params,
+                      from_saved_query=from_saved_query,
+                      search_message=search_message,
+                      tags_enabled=HAS_TAG_SUPPORT
+                  ))
 
 ticket_list = staff_member_required(ticket_list)
 
@@ -1035,11 +1036,12 @@ def tickets(request):
         if table_to_report:
             return create_report_http_response(table_to_report, request)
 
-    return render_to_response('helpdesk/tickets.html',
-                              RequestContext(request, {
-                                  'form': form,
-                                  'table': table
-                              }))
+    return render(request,
+                  'helpdesk/tickets.html',
+                  {
+                      'form': form,
+                      'table': table
+                  })
 
 
 def edit_ticket(request, ticket_id):
@@ -1052,11 +1054,13 @@ def edit_ticket(request, ticket_id):
     else:
         form = EditTicketForm(instance=ticket)
 
-    return render_to_response('helpdesk/create_ticket.html',
-                              RequestContext(request, {
-                                  'form': form,
-                                  'tags_enabled': HAS_TAG_SUPPORT,
-                              }))
+    return render(request,
+                  'helpdesk/create_ticket.html',
+                  {
+                      'form': form,
+                      'tags_enabled': HAS_TAG_SUPPORT
+                  })
+
 edit_ticket = staff_member_required(edit_ticket)
 
 
@@ -1096,11 +1100,12 @@ def create_ticket(request):
         form.fields['assigned_to'].initial = request.user.account
         form.fields['owner'].initial = request.user
 
-    return render_to_response('helpdesk/create_ticket.html',
-                              RequestContext(request, {
-                                  'form': form,
-                                  'tags_enabled': HAS_TAG_SUPPORT
-                              }))
+    return render(request,
+                  'helpdesk/create_ticket.html',
+                  {
+                      'form': form,
+                      'tags_enabled': HAS_TAG_SUPPORT
+                  })
 
 create_ticket = staff_member_required(create_ticket)
 
@@ -1158,20 +1163,18 @@ unhold_ticket = staff_member_required(unhold_ticket)
 
 
 def rss_list(request):
-    return render_to_response('helpdesk/rss_list.html',
-                              RequestContext(request, {
-                                  'queues': Queue.objects.all()
-                              }))
+    return render(request,
+                  'helpdesk/rss_list.html',
+                  {'queues': Queue.objects.all()})
 
 rss_list = staff_member_required(rss_list)
 
 
 def report_index(request):
     number_tickets = Ticket.objects.all().count()
-    return render_to_response('helpdesk/report_index.html',
-                              RequestContext(request, {
-                                  'number_tickets': number_tickets
-                              }))
+    return render(request,
+                  'helpdesk/report_index.html',
+                  {'number_tickets': number_tickets})
 
 report_index = staff_member_required(report_index)
 
@@ -1180,7 +1183,6 @@ def run_report(request, report):
     priority_sql = []
     priority_columns = []
     for p in Ticket.PRIORITY_CHOICES:
-        print dir(p[1])
         priority_sql.append(
             "COUNT(CASE t.priority WHEN '%s' THEN t.id END) AS \"%s\"" %
             (p[0], p[1]._proxy____cast()))
@@ -1330,13 +1332,14 @@ def run_report(request, report):
     else:
         chart_url = ''
 
-    return render_to_response('helpdesk/report_output.html',
-                              RequestContext(request, {
-                                  'headings': columns,
-                                  'data': data,
-                                  'chart': chart_url,
-                                  'title': title,
-                              }))
+    return render(request,
+                  'helpdesk/report_output.html',
+                  {
+                      'headings': columns,
+                      'data': data,
+                      'chart': chart_url,
+                      'title': title
+                  })
 
 run_report = staff_member_required(run_report)
 
@@ -1366,10 +1369,9 @@ def delete_saved_query(request, id):
         query.delete()
         return HttpResponseRedirect(reverse('helpdesk_list'))
     else:
-        return render_to_response('helpdesk/confirm_delete_saved_query.html',
-                                  RequestContext(request, {
-                                      'query': query
-                                  }))
+        return render(request,
+                      'helpdesk/confirm_delete_saved_query.html',
+                      {'query': query})
 
 delete_saved_query = staff_member_required(delete_saved_query)
 
@@ -1384,19 +1386,17 @@ def user_settings(request):
     else:
         form = UserSettingsForm(s.settings)
 
-    return render_to_response('helpdesk/user_settings.html',
-                              RequestContext(request, {
-                                  'form': form
-                              }))
+    return render(request,
+                  'helpdesk/user_settings.html',
+                  {'form': form})
 
 user_settings = staff_member_required(user_settings)
 
 
 def email_ignore(request):
-    return render_to_response('helpdesk/email_ignore_list.html',
-                              RequestContext(request, {
-                                  'ignore_list': IgnoreEmail.objects.all()
-                              }))
+    return render(request,
+                  'helpdesk/email_ignore_list.html',
+                  {'ignore_list': IgnoreEmail.objects.all()})
 
 email_ignore = superuser_required(email_ignore)
 
@@ -1410,10 +1410,10 @@ def email_ignore_add(request):
     else:
         form = EmailIgnoreForm(request.GET)
 
-    return render_to_response('helpdesk/email_ignore_add.html',
-                              RequestContext(request, {
-                                  'form': form
-                              }))
+    return render(request,
+                  'helpdesk/email_ignore_add.html',
+                  {'form': form})
+
 email_ignore_add = superuser_required(email_ignore_add)
 
 
@@ -1423,10 +1423,9 @@ def email_ignore_del(request, id):
         ignore.delete()
         return HttpResponseRedirect(reverse('helpdesk_email_ignore'))
     else:
-        return render_to_response('helpdesk/email_ignore_del.html',
-                                  RequestContext(request, {
-                                      'ignore': ignore
-                                  }))
+        return render(request,
+                      'helpdesk/email_ignore_del.html',
+                      {'ignore': ignore})
 
 email_ignore_del = superuser_required(email_ignore_del)
 
@@ -1434,11 +1433,12 @@ email_ignore_del = superuser_required(email_ignore_del)
 def ticket_cc(request, ticket_id):
     ticket = get_object_or_404(Ticket, id=ticket_id)
     copies_to = ticket.ticketcc_set.all()
-    return render_to_response('helpdesk/ticket_cc_list.html',
-                              RequestContext(request, {
-                                  'copies_to': copies_to,
-                                  'ticket': ticket
-                              }))
+    return render(request,
+                  'helpdesk/ticket_cc_list.html',
+                  {
+                      'copies_to': copies_to,
+                      'ticket': ticket
+                  })
 
 ticket_cc = staff_member_required(ticket_cc)
 
@@ -1456,11 +1456,12 @@ def ticket_cc_add(request, ticket_id):
                 kwargs={'ticket_id': ticket.id}))
     else:
         form = TicketCCForm()
-    return render_to_response('helpdesk/ticket_cc_add.html',
-                              RequestContext(request, {
-                                  'ticket': ticket,
-                                  'form': form
-                              }))
+    return render(request,
+                  'helpdesk/ticket_cc_add.html',
+                  {
+                      'ticket': ticket,
+                      'form': form
+                  })
 
 ticket_cc_add = staff_member_required(ticket_cc_add)
 
@@ -1472,10 +1473,7 @@ def ticket_cc_del(request, ticket_id, cc_id):
         return HttpResponseRedirect(reverse(
             'helpdesk_ticket_cc',
             kwargs={'ticket_id': cc.ticket.id}))
-    return render_to_response('helpdesk/ticket_cc_del.html',
-                              RequestContext(request, {
-                                  'cc': cc
-                              }))
+    return render(request, 'helpdesk/ticket_cc_del.html', {'cc': cc})
 
 ticket_cc_del = staff_member_required(ticket_cc_del)
 

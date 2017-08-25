@@ -9,7 +9,7 @@ from itertools import ifilter, islice
 
 from django.core.urlresolvers import reverse
 from django.db.models.fields import FieldDoesNotExist
-from django.template import Context, Template
+from django.template import Template
 from django.template.loader import render_to_string
 from django.utils.functional import curry
 from django.utils.html import escape
@@ -311,9 +311,9 @@ class LinkColumn(BaseLinkColumn):
             name = models.CharField(max_length=200)
 
         # urls.py
-        urlpatterns = patterns('',
+        urlpatterns = [
             url('people/(\d+)/', views.people_detail, name='people_detail')
-        )
+        ]
 
         # tables.py
         from django_tables2.utils import A  # alias for Accessor
@@ -485,7 +485,7 @@ class TemplateColumn(Column):
         # If the table is being rendered using `render_table`, it hackily
         # attaches the context to the table as a gift to `TemplateColumn`. If
         # the table is being rendered via `Table.as_html`, this won't exist.
-        context = getattr(table, 'context', Context())
+        context = getattr(table, 'context', {})
         context.update({'record': record})
         try:
             if self.template_code:

@@ -4,7 +4,7 @@ import datetime
 
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.template import Context, Template
+from django.template import Template
 
 from sendsms.api import get_connection
 from billservice.models import Account
@@ -41,9 +41,7 @@ class Message(models.Model):
             self.send()
 
     def set_body(self):
-        self.body = Template(self.body).render(Context({
-            'account': self.account
-        }))
+        self.body = Template(self.body).render({'account': self.account})
         super(Message, self).save()
 
     class Meta:

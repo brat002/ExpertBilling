@@ -10,7 +10,6 @@ sys.path.append('/opt/ebs/data/workers/')
 
 DEBUG = True
 DEBUG_SQL = False
-TEMPLATE_DEBUG = DEBUG
 USE_TZ = False
 
 ADMINS = (
@@ -65,43 +64,39 @@ SECRET_KEY = '%!a5^gik_4lgzt+k)vyo6)y68_3!u^*j(ujks7(=6f2j89d=x&'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder'
-    #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader'
-    #     'django.template.loaders.eggs.Loader',
-)
-
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.contrib.auth.context_processors.auth',
-    'notification.context_processors.auth',
-    'django.core.context_processors.request',
-    'django.core.context_processors.media',
-    'django.core.context_processors.static',
-    'django.contrib.messages.context_processors.messages',
-    'ebscab.lib.context_processors.default_current_view_name',
-    'ebscab.lib.context_processors.project_settings'
-)
-
-TEMPLATE_DIRS = (
-    '/opt/ebs/web/ebscab/templates',
-    #'/opt/ebs/web/ebscab/helpdesk/templates',
-    '%s/templates/' % os.path.abspath('.')
-)
-
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            '/opt/ebs/web/ebscab/templates',
+            '%s/templates/' % os.path.abspath('.')
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'notification.context_processors.auth',
+                'django.template.context_processors.request',
+                'django.template.context_processors.media',
+                'django.template.context_processors.static',
+                'django.contrib.messages.context_processors.messages',
+                'ebscab.lib.context_processors.default_current_view_name',
+                'ebscab.lib.context_processors.project_settings'
+            ]
+        }
+    }
+]
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
-    #'lib.threadlocals.ThreadLocalsMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    #'billservice.middleware.UrlFilter',
     'ebsadmin.middleware.Version'
 )
 
@@ -162,7 +157,6 @@ AJAX_SELECT_BOOTSTRAP = False
 AJAX_SELECT_INLINES = 'inline'
 
 AUTHENTICATION_BACKENDS = (
-    #'helpdesk.backend.LoginSystemUserBackend',
     'billservice.backend.LoginUserBackend',
 )
 
@@ -207,9 +201,7 @@ ENABLE_SELECT2_MULTI_PROCESS_SUPPORT = False
 CURRENCY = u' руб'
 
 HOTSPOT_ONLY_PIN = False
-GETPAID_BACKENDS = (  # 'getpaid.backends.easypay',
-    #'getpaid.backends.platezhkaua',
-)
+GETPAID_BACKENDS = tuple()
 PROVIDER_LOGO = 'img/ebs.jpg'  # in media dir
 GETPAID_BACKENDS_SETTINGS = {
     # Please provide your settings for backends
@@ -281,10 +273,8 @@ SENDSMS_DEFAULT_FROM_PHONE = '+11111111111'
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 CAPTCHA_FONT_SIZE = 18
-#CAPTCHA_FONT_PATH = 'media/LiberationSans-Regular.ttf'
 CAPTCHA_LETTER_ROTATION = (-1, 1)
 CAPTCHA_NOISE_FUNCTIONS = ('captcha.helpers.noise_dots',)
-#TEST_RUNNER = 'testrunner.NoDbTestRunner'
 
 PERSONAL_AREA_STAFF_MENU = [
     ('helpdesk_dashboard', u'Сводка', ''),

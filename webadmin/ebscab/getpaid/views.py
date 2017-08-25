@@ -18,7 +18,7 @@ class SelectPaymentView(FormView):
     form_class = SelectPaymentMethodForm
     template_name = 'billservice/transaction_detail.html'
 
-    def get_form(self, form_class):
+    def get_form(self, form_class=form_class):
         return form_class(**self.get_form_kwargs())
 
     def form_valid(self, form):

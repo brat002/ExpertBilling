@@ -69,9 +69,6 @@ class JSONFormField(Field):
 
 class JSONFieldBase(object):
 
-    # Used so to_python() is called
-    __metaclass__ = models.SubfieldBase
-
     def __init__(self, *args, **kwargs):
         self.dump_kwargs = kwargs.pop('dump_kwargs', {'cls': JSONEncoder})
         self.load_kwargs = kwargs.pop('load_kwargs', {})
@@ -87,6 +84,9 @@ class JSONFieldBase(object):
                 pass
 
         return value
+
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
 
     def get_db_prep_value(self, value, connection, prepared=False):
         """Convert JSON object to a string"""
