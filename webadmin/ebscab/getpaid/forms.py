@@ -60,6 +60,10 @@ class PaymentMethodForm(forms.Form):
     Displays all available payments backends as choice list.
     """
 
+    order = ModelChoiceField(
+        widget=HiddenInput, required=False, queryset=Order.objects.all())
+    summ = FloatField(label=_("Amount"), initial=0, required=True)
+
     def __init__(self, *args, **kwargs):
         super(PaymentMethodForm, self).__init__(*args, **kwargs)
         backends = get_backend_choices()
