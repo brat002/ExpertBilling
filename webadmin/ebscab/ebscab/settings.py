@@ -201,7 +201,7 @@ ENABLE_SELECT2_MULTI_PROCESS_SUPPORT = False
 CURRENCY = u' руб'
 
 HOTSPOT_ONLY_PIN = False
-GETPAID_BACKENDS = tuple()
+GETPAID_BACKENDS = []
 PROVIDER_LOGO = 'img/ebs.jpg'  # in media dir
 GETPAID_BACKENDS_SETTINGS = {
     # Please provide your settings for backends
@@ -294,8 +294,6 @@ try:
     import settings_local
     if 'GETPAID_BACKENDS' in settings_local.__dict__:
         INSTALLED_APPS += settings_local.GETPAID_BACKENDS
-    else:
-        INSTALLED_APPS += ()
 except Exception, ex:
     print ex
 
