@@ -23,7 +23,7 @@ from getpaid.utils import get_backend_choices, import_name
 
 
 def backend_with_image_label(backends):
-    backends_with_img = []
+    result = []
     for backend in backends:
         backend_module = backend[0]
         backend_label = backend[1]
@@ -33,7 +33,8 @@ def backend_with_image_label(backends):
                 getattr(settings, 'STATIC_URL', ''),
                 logo_url,
                 force_unicode(backend_label)))
-        backends_with_img.append((backend_module, backend_label))
+        result.append((backend_module, backend_label))
+    return result
 
 
 class PaymentMethodForm(forms.Form):
