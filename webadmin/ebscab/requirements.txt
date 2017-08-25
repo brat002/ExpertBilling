@@ -11,7 +11,7 @@ django-mathfilters==0.4.0
 django-selectable==1.0.0
 django-simple-captcha==0.5.5
 django-tagging==0.4.5
-Django==1.10.7
+Django==1.11.4
 ecdsa==0.9
 ipaddr==2.1.10
 IPy==0.81
