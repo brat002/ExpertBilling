@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# $HeadURL: https://svn.inl.fr/inl-svn/src/tools/ipy/tags/IPy-0.55/IPy.py $
+# $Id: IPy.py 8947 2007-08-16 13:50:45Z haypo $
 
 """
 IPy - class and tools for handling of IPv4 and IPv6 addresses and networks.
@@ -8,13 +10,12 @@ Further Information might be available at:
 http://software.inl.fr/trac/trac.cgi/wiki/IPy
 """
 
-# $HeadURL: https://svn.inl.fr/inl-svn/src/tools/ipy/tags/IPy-0.55/IPy.py $
-# $Id: IPy.py 8947 2007-08-16 13:50:45Z haypo $
+import types
+
 
 __rcsid__ = '$Id: IPy.py 8947 2007-08-16 13:50:45Z haypo $'
 __version__ = '0.55'
 
-import types
 
 # New in API 0.5: if true, it rejects uncommon net mask like "172.30.1.0/22".
 # Default is enable, ie. raise ValueError on such netmask.

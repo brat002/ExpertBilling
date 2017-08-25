@@ -6,6 +6,7 @@ import os
 import sys
 from decimal import Decimal
 
+# TODO: wtf?
 sys.path.append(os.path.abspath('../../'))
 
 from django.conf import settings
@@ -23,8 +24,8 @@ from ebsadmin.cardlib import (
     activate_pay_card
 )
 from getpaid.forms import SelectPaymentMethodForm
-from lib.decorators import render_to, ajax_request
-from lib.paginator import SimplePaginator
+from ebscab.lib.decorators import render_to, ajax_request
+from ebscab.lib.paginator import SimplePaginator
 from paymentgateways.qiwi.forms import QiwiPaymentRequestForm
 from paymentgateways.qiwi.models import Invoice as QiwiInvoice
 from paymentgateways.qiwi.qiwiapi import (

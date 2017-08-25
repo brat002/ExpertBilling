@@ -1003,7 +1003,7 @@ def create_usersettings(sender, created_models=[], instance=None,
     """
     Helper function to create UserSettings instances as
     required, eg when we first create the UserSettings database
-    table via 'syncdb' or when we save a new user.
+    table via 'migrate' or when we save a new user.
 
     If we end up with users with no UserSettings, then we get horrible
     'DoesNotExist: UserSettings matching query does not exist.' errors.
@@ -1024,7 +1024,7 @@ def create_usersettings(sender, created_models=[], instance=None,
                 s = UserSettings(user=u)
                 s.save()
 
-models.signals.post_syncdb.connect(create_usersettings)
+models.signals.post_migrate.connect(create_usersettings)
 models.signals.post_save.connect(create_usersettings, sender=User)
 
 
@@ -1137,12 +1137,14 @@ class TicketCC(models.Model):
     can_view = models.BooleanField(
         _('Can View Ticket?'),
         blank=True,
+        default=False,
         help_text=_('Can this CC login to view the ticket details?')
     )
 
     can_update = models.BooleanField(
         _('Can Update Ticket?'),
         blank=True,
+        default=False,
         help_text=_('Can this CC login and update the ticket?')
     )
 

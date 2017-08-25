@@ -519,6 +519,7 @@ class EmailIgnoreForm(forms.ModelForm):
 
     class Meta:
         model = IgnoreEmail
+        fields = '__all__'
 
 
 class TicketCCForm(forms.ModelForm):

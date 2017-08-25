@@ -7,15 +7,19 @@ This is not a complete class, to be usable it should be subclassed and the
 two methods ``_get`` and ``_store`` overridden.
 '''
 
-from django.utils.encoding import force_unicode, StrAndUnicode
+from django.utils.encoding import force_unicode, python_2_unicode_compatible
 
 
-class Notification(StrAndUnicode):
+class Notification(object):
 
     def __init__(self, message, tags='', extras=None):
         self.message = force_unicode(message)
         self.tags = tags
         self.extras = extras or {}
+
+    @python_2_unicode_compatible
+    def __str__(self):
+        return self.message
 
     def __unicode__(self):
         return force_unicode(self.message)

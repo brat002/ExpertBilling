@@ -1,4 +1,0 @@
-ebscab
-======
-
-ExpertBilling Web Interface

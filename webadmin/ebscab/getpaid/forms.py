@@ -13,7 +13,7 @@ from django.forms.models import ModelChoiceField
 from django.forms.widgets import (
     HiddenInput,
     RadioFieldRenderer,
-    RadioInput,
+    RadioChoiceInput,
     RadioSelect
 )
 from django.utils.encoding import force_unicode
@@ -25,7 +25,7 @@ from getpaid.models import Order
 from utils import get_backend_choices, import_name
 
 
-class PaymentRadioInput(RadioInput):
+class PaymentRadioInput(RadioChoiceInput):
 
     def __init__(self, name, value, attrs, choice, index):
         super(PaymentRadioInput, self).__init__(

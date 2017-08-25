@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import json
+
+from django.apps import apps
 from django.contrib.admin import site
-from django.db import models
 from django.http import HttpResponse
-from django.utils import simplejson
 
 from ajax_select import get_lookup
 
@@ -32,7 +33,7 @@ def ajax_lookup(request, channel):
     else:
         instances = []
 
-    results = simplejson.dumps([
+    results = json.dumps([
         {
             'pk': unicode(getattr(item, 'pk', None)),
             'value': lookup.get_result(item),
@@ -41,7 +42,7 @@ def ajax_lookup(request, channel):
         } for item in instances
     ])
 
-    return HttpResponse(results, mimetype='application/javascript')
+    return HttpResponse(results, content_type='application/javascript')
 
 
 def add_popup(request, app_label, model):
@@ -55,7 +56,7 @@ def add_popup(request, app_label, model):
         and instead of calling django's dismissAddAnontherPopup(win,newId,newRepr)
         it calls didAddPopup(win,newId,newRepr) which was added inline with bootstrap.html
     """
-    themodel = models.get_model(app_label, model)
+    themodel = apps.get_model(app_label, model)
     admin = site._registry[themodel]
 
     # TODO : should detect where we really are

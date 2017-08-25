@@ -6,7 +6,7 @@ import pytils
 from django import template
 from django.conf import settings
 
-from lib.threadlocals import get_request
+from ebscab.lib.threadlocals import get_request
 
 
 register = template.Library()

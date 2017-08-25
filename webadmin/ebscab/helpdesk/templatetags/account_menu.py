@@ -5,7 +5,7 @@ from django import template
 from django.conf import settings
 
 from helpdesk.settings import PERSONAL_AREA_MENU
-from lib.menu import Menu
+from ebscab.lib.menu import Menu
 
 
 register = template.Library()

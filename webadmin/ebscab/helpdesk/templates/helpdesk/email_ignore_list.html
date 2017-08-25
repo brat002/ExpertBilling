@@ -1,5 +1,7 @@
 {% extends "helpdesk/base.html" %}{% load i18n %}
 
+{% load cycle from future %}
+
 {% block helpdesk_title %}{% trans "Ignored E-Mail Addresses" %}{% endblock %}
 
 {% block helpdesk_body %}{% blocktrans %}
@@ -14,7 +16,7 @@
 </thead>
 <tbody>
 {% for ignore in ignore_list %}
-<tr class='row_{% cycle odd,even %}'>
+<tr class='row_{% cycle "odd" "even" %}'>
     <td>{{ ignore.name }}</td>
     <td>{{ ignore.email_address }}</td>
     <td>{{ ignore.date }}</td>

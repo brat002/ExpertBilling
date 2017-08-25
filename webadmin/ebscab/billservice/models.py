@@ -13,8 +13,8 @@ from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from dynamicmodel.models import DynamicModel
-from ebscab.nas.models import Nas, TrafficClass
-from lib.fields import IPNetworkField, EncryptedTextField
+from ebscab.lib.fields import IPNetworkField, EncryptedTextField
+from nas.models import Nas, TrafficClass
 
 import IPy
 
@@ -162,30 +162,30 @@ PERMISSION_ROLES = (
 class SoftDeleteManager(models.Manager):
     """Use this manager to get objects that have a deleted field"""
 
-    def get_query_set(self):
-        return super(SoftDeleteManager, self).get_query_set().filter(deleted=False)
+    def get_queryset(self):
+        return super(SoftDeleteManager, self).get_queryset().filter(deleted=False)
 
     def all_with_deleted(self):
-        return super(SoftDeleteManager, self).get_query_set()
+        return super(SoftDeleteManager, self).get_queryset()
 
     def deleted_set(self):
-        return super(SoftDeleteManager, self).get_query_set().filter(deleted=True)
+        return super(SoftDeleteManager, self).get_queryset().filter(deleted=True)
 
 
 class SoftDeletedDateManager(models.Manager):
     ''' Use this manager to get objects that have a deleted field '''
 
-    def get_query_set(self):
+    def get_queryset(self):
         return (super(SoftDeletedDateManager, self)
-                .get_query_set()
+                .get_queryset()
                 .filter(deleted__isnull=True))
 
     def all_with_deleted(self):
-        return super(SoftDeletedDateManager, self).get_query_set()
+        return super(SoftDeletedDateManager, self).get_queryset()
 
     def deleted_set(self):
         return (super(SoftDeletedDateManager, self)
-                .get_query_set()
+                .get_queryset()
                 .filter(deleted__isnull=False))
 
 
@@ -1617,7 +1617,7 @@ class AccountTarif(models.Model):
     )
     datetime = models.DateTimeField(
         verbose_name=_(u'C даты'), default='', blank=True)
-    periodical_billed = models.BooleanField(blank=True)
+    periodical_billed = models.BooleanField(blank=True, default=False)
 
     class Admin:
         ordering = ['-datetime']
@@ -1798,7 +1798,10 @@ class SystemUser(models.Model):
         null=True,
         verbose_name=_(u"Группа доступа")
     )
-    is_superuser = models.BooleanField(verbose_name=_(u"Суперадминистратор"))
+    is_superuser = models.BooleanField(
+        default=False,
+        verbose_name=_(u"Суперадминистратор")
+    )
 
     permcache = {}
 
@@ -2709,8 +2712,8 @@ class AccountAddonService(models.Model):
     activated = models.DateTimeField(verbose_name=_(u'Активирована'))
     deactivated = models.DateTimeField(
         verbose_name=_(u'Отключена'), blank=True, null=True)
-    action_status = models.BooleanField()
-    speed_status = models.BooleanField()
+    action_status = models.BooleanField(default=False)
+    speed_status = models.BooleanField(default=False)
     temporary_blocked = models.DateTimeField(
         verbose_name=_(u'Пауза до'), blank=True, null=True)
     last_checkout = models.DateTimeField(
@@ -2815,7 +2818,7 @@ class SubAccount(models.Model):
         verbose_name=_(u'Пароль'), blank=True, default='')
     ipn_ip_address = IPNetworkField(blank=True, null=True, default='0.0.0.0')
     ipn_mac_address = models.CharField(blank=True, max_length=17, default='')
-    vpn_ip_address = models.IPAddressField(
+    vpn_ip_address = models.GenericIPAddressField(
         blank=True, null=True, default='0.0.0.0')
     allow_mac_update = models.BooleanField(default=False)
     nas = models.ForeignKey(
@@ -2831,7 +2834,7 @@ class SubAccount(models.Model):
         null=True,
         verbose_name=_(u'Поставлен в очередь на изменение статуса')
     )
-    need_resync = models.BooleanField()
+    need_resync = models.BooleanField(default=False)
     speed = models.TextField(blank=True)
     switch = models.ForeignKey(
         "Switch", blank=True, null=True, on_delete=models.SET_NULL)
@@ -3360,7 +3363,11 @@ class Hardware(models.Model):
         default='',
         verbose_name=_(u"Серийный номер")
     )
-    ipaddress = models.IPAddressField(blank=True, verbose_name=_(u"IP адрес"))
+    ipaddress = models.GenericIPAddressField(
+        blank=True,
+        null=True,
+        verbose_name=_(u"IP адрес")
+    )
     macaddress = models.CharField(
         blank=True, default='', max_length=32, verbose_name=_(u"MAC адрес"))
     comment = models.TextField(
@@ -3430,7 +3437,7 @@ class TotalTransactionReport(models.Model):
     bill = models.TextField()
     description = models.TextField()
     end_promise = models.DateTimeField()
-    promise_expired = models.BooleanField()
+    promise_expired = models.BooleanField(default=False)
 
     def get_remove_url(self):
         return "%s?type=%s&id=%s" % (reverse('totaltransaction_delete'), (self.table, self.id))
@@ -3535,8 +3542,12 @@ class Switch(models.Model):
         blank=True,
         default=''
     )
-    ipaddress = models.IPAddressField(
-        blank=True, verbose_name=_(u"IP адрес"), default=None)
+    ipaddress = models.GenericIPAddressField(
+        blank=True,
+        null=True,
+        verbose_name=_(u"IP адрес"),
+        default=None
+    )
     macaddress = models.CharField(
         max_length=32, verbose_name=_(u"MAC адрес"), blank=True, default='')
     management_method = models.IntegerField(
@@ -3673,7 +3684,9 @@ class PermissionGroup(models.Model):
 class NotificationsSettings(models.Model):
     tariffs = models.ManyToManyField(Tariff)
     payment_notifications = models.BooleanField(
-        verbose_name=_(u'Уведомления при пополнении баланса'))
+        default=False,
+        verbose_name=_(u'Уведомления при пополнении баланса')
+    )
     payment_notifications_template = models.TextField(
         verbose_name=_(u'Шаблон уведомления о платеже'),
         # TODO: fix typo
@@ -3682,7 +3695,9 @@ class NotificationsSettings(models.Model):
         default=''
     )
     balance_notifications = models.BooleanField(
-        verbose_name=_(u'Уведомления о недостатке баланса'))
+        default=False,
+        verbose_name=_(u'Уведомления о недостатке баланса')
+        )
     balance_edge = models.FloatField(
         verbose_name=_(u'Граница баланса'),
         help_text=_(u'Граница, с которой слать уведомления  о недостатке '

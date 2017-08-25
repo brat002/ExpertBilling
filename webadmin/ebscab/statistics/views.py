@@ -8,7 +8,7 @@ import os
 from django.conf import settings
 
 from billservice.models import Account, SubAccount
-from lib.decorators import render_to
+from ebscab.lib.decorators import render_to
 from nas.models import Nas
 
 

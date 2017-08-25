@@ -10,9 +10,9 @@ from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
 from ebscab.lib.decorators import render_to, ajax_request
 from ebscab.lib.ssh_paramiko import ssh_client
-from ebscab.nas.forms import NasForm
-from ebscab.nas.models import actions
-from ebscab.nas.models import Nas
+from nas.forms import NasForm
+from nas.models import actions
+from nas.models import Nas
 from object_log.models import LogItem
 
 from ebsadmin.tables import NasTable

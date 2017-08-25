@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 from datetime import datetime
 from decimal import Decimal
 from itertools import izip_longest
@@ -7,11 +8,10 @@ from itertools import izip_longest
 import ipaddr
 import posixpath
 from django import template
-from django.utils import simplejson
 from django.utils.safestring import mark_safe
 from django.conf import settings
 
-from ebscab.chartit.charts import Chart, PivotChart
+from chartit.charts import Chart, PivotChart
 
 
 def default(obj):
@@ -24,7 +24,7 @@ def default(obj):
     else:
         if type(obj) == ipaddr.IPv4Network or type(obj) == ipaddr.IPAddress:
             return str(obj)
-        return simplejson.JSONEncoder.default(self, obj)
+        return json.JSONEncoder.default(self, obj)
 
 try:
     CHARTIT_JS_REL_PATH = settings.CHARTIT_JS_REL_PATH
@@ -86,7 +86,7 @@ def load_charts(chart_list=None, render_to=''):
             if render_to:
                 hco['chart']['renderTo'] = render_to
         embed_script = (embed_script % (
-            simplejson.dumps(chart_list, use_decimal=True, default=default),
+            json.dumps(chart_list, use_decimal=True, default=default),
             CHART_LOADER_URL))
     else:
         embed_script = embed_script % ((), CHART_LOADER_URL)

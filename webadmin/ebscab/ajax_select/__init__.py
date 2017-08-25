@@ -18,6 +18,9 @@ from django.utils.text import capfirst
 from django.utils.translation import ugettext_lazy as _, ugettext
 
 
+default_app_config = 'ajax_select.apps.AjaxSelectConfig'
+
+
 class LookupChannel(object):
 
     """Subclass this, setting model and overiding the methods below to taste"""
@@ -218,9 +221,8 @@ def make_channel(app_model, arg_search_field):
             app_model :   app_name.model_name
             search_field :  the field to search against and to display in search results
     """
-    from django.db import models
-    app_label, model_name = app_model.split(".")
-    themodel = models.get_model(app_label, model_name)
+    from django.apps import apps
+    themodel = apps.get_model(app_model)
 
     class MadeLookupChannel(LookupChannel):
 

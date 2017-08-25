@@ -9,7 +9,7 @@ from collections import defaultdict
 from copy import deepcopy
 
 from django import forms
-from django.contrib.sites.models import RequestSite
+from django.contrib.sites.requests import RequestSite
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.forms import ValidationError

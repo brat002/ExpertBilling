@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import json
 
-import simplejson as json
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -53,7 +53,7 @@ from billservice.models import (
     Transaction,
     TransactionType
 )
-from django_tables2 import RequestConfig as DTRequestConfig
+from django_tables2.config import RequestConfig as DTRequestConfig
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
 from ebscab.lib.decorators import render_to, ajax_request

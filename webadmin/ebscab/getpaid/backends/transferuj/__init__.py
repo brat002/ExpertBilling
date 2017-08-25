@@ -6,10 +6,10 @@ import logging
 import urllib
 from decimal import Decimal
 
+from django.apps import apps
 from django.contrib.sites.models import Site
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
-from django.db.models.loading import get_model
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 
@@ -69,7 +69,7 @@ class PaymentProcessor(PaymentProcessorBase):
             logger.warning('Got message with wrong id, %s' % str(params))
             return 'ID ERR'
 
-        Payment = get_model('getpaid', 'Payment')
+        Payment = apps.get_model('getpaid', 'Payment')
         try:
             payment = \
                 Payment.objects.select_related('order').get(pk=int(tr_crc))

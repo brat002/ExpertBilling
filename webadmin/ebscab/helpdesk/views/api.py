@@ -13,6 +13,7 @@ The API documentation can be accessed by visiting http://helpdesk/api/help/
 through templates/helpdesk/help_api.html.
 """
 
+import json
 from datetime import datetime
 
 from django import forms
@@ -21,7 +22,6 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import loader, Context
-from django.utils import simplejson
 
 from helpdesk.forms import TicketForm
 from helpdesk.lib import send_templated_mail
@@ -119,7 +119,7 @@ class API:
     def api_public_list_queues(self):
         return api_return(
             STATUS_OK,
-            simplejson.dumps([
+            json.dumps([
                 {
                     "id": "%s" % q.id,
                     "title": "%s" % q.title
