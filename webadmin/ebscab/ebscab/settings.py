@@ -4,6 +4,8 @@ import logging
 import os
 import sys
 
+from tzlocal import get_localzone
+
 
 sys.path.append('/opt/ebs/data/workers/')
 
@@ -36,8 +38,7 @@ CACHES = {
     }
 }
 
-# system time zone.
-TIME_ZONE = None  # This will use system timezone. Don`t touch this.
+TIME_ZONE = get_localzone().zone
 
 LANGUAGE_CODE = 'ru-RU'
 
@@ -200,7 +201,7 @@ ENABLE_SELECT2_MULTI_PROCESS_SUPPORT = False
 CURRENCY = u' руб'
 
 HOTSPOT_ONLY_PIN = False
-GETPAID_BACKENDS = tuple()
+GETPAID_BACKENDS = []
 PROVIDER_LOGO = 'img/ebs.jpg'  # in media dir
 GETPAID_BACKENDS_SETTINGS = {
     # Please provide your settings for backends
@@ -293,8 +294,6 @@ try:
     import settings_local
     if 'GETPAID_BACKENDS' in settings_local.__dict__:
         INSTALLED_APPS += settings_local.GETPAID_BACKENDS
-    else:
-        INSTALLED_APPS += ()
 except Exception, ex:
     print ex
 

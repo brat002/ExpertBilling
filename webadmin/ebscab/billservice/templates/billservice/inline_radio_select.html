@@ -1,0 +1,7 @@
+{% with id=widget.attrs.id %}
+	{% for group, options, index in widget.optgroups %}
+			{% for option in options %}
+				{% include 'billservice/inline_radio_option.html' with widget=option %}
+			{% endfor %}
+	{% endfor %}
+{% endwith %}
