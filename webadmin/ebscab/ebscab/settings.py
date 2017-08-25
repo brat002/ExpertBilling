@@ -4,6 +4,8 @@ import logging
 import os
 import sys
 
+from tzlocal import get_localzone
+
 
 sys.path.append('/opt/ebs/data/workers/')
 
@@ -36,8 +38,7 @@ CACHES = {
     }
 }
 
-# system time zone.
-TIME_ZONE = None  # This will use system timezone. Don`t touch this.
+TIME_ZONE = get_localzone().zone
 
 LANGUAGE_CODE = 'ru-RU'
 
