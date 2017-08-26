@@ -13,7 +13,6 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
 from billservice.forms import (
-    AccountAddonService,
     AccountAddonServiceModelForm,
     AccountExtraForm,
     AccountForm,
@@ -35,6 +34,7 @@ from billservice.forms import (
 from billservice.helpers import systemuser_required
 from billservice.models import (
     Account,
+    AccountAddonService,
     AccountHardware,
     AccountSuppAgreement,
     AccountTarif,
