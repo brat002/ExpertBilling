@@ -280,7 +280,7 @@ class makoNode(template.Node):
         return rendered
 
 
-@register.assignment_tag(takes_context=True)
+@register.simple_tag(takes_context=True)
 def get_switch_port(context, switch, port):
     if not switch or not port:
         return
@@ -314,7 +314,7 @@ def get_switch_port(context, switch, port):
         return item
 
 
-@register.assignment_tag(takes_context=True)
+@register.simple_tag(takes_context=True)
 def get_subaccount_sessions_info(context, subaccount, count=5):
     try:
         return (ActiveSession.objects
@@ -324,7 +324,7 @@ def get_subaccount_sessions_info(context, subaccount, count=5):
         return None
 
 
-@register.assignment_tag(takes_context=True)
+@register.simple_tag(takes_context=True)
 def get_subaccount_vpn_active(context, subaccount):
     try:
         return (ActiveSession.objects

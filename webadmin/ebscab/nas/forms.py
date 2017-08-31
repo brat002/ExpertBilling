@@ -119,6 +119,7 @@ class NasForm(ModelForm):
 
     class Meta:
         model = Nas
+        fields = '__all__'
 
 
 class TrafficClassForm(ModelForm):
@@ -127,6 +128,7 @@ class TrafficClassForm(ModelForm):
 
     class Meta:
         model = TrafficClass
+        fields = '__all__'
 
 
 class TrafficNodeForm(ModelForm):
@@ -138,3 +140,4 @@ class TrafficNodeForm(ModelForm):
 
     class Meta:
         model = TrafficNode
+        fields = '__all__'

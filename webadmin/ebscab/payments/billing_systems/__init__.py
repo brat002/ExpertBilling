@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import datetime
+import hashlib
+
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
+
 from getpaid.backends import PaymentProcessorBase
-import hashlib
-import datetime
-import listeners
 from billservice.models import Account
+
+import listeners
 
 
 class TransactionStatus:
@@ -22,7 +25,6 @@ CHECK_BODY_SUCCESS = """<err_code>%(ERR_CODE)s</err_code><err_text>%(ERR_TEXT)s<
 
 CHECK_BODY_ERROR = """<err_code>%(ERR_CODE)s</err_code><err_text>%(ERR_TEXT)s</err_text>"""
 
-# PAYMENT_BODY=u"""<err_code>%(ERR_CODE)s</err_code><err_text>%(ERR_TEXT)s</err_text><account>%(ACCOUNT)s</account><reg_id>%(REG_ID)s</reg_id><reg_date>%(REG_DATE)s</reg_date>"""
 PAYMENT_BODY = u"""<err_code>%(ERR_CODE)s</err_code><err_text>%(ERR_TEXT)s</err_text><account>%(ACCOUNT)s</account>"""
 PAYMENT_FREAK_BODY = u"""<err_code>%(ERR_CODE)s</err_code><err_text>%(ERR_TEXT)s</err_text><account>%(ACCOUNT)s</account>"""
 
@@ -56,7 +58,8 @@ class PaymentProcessor(PaymentProcessorBase):
     def error(body, code, text=''):
         body_error = CHECK_BODY_ERROR.encode('utf-8') % {
             'ERR_CODE': code,
-            'ERR_TEXT': text.encode('utf-8') or ERRCODES.get(str(code)).encode('utf-8'),
+            'ERR_TEXT': (text.encode('utf-8') or
+                         ERRCODES.get(str(code)).encode('utf-8'))
         }
 
         return BODY_ERR.encode('utf-8') % {
@@ -66,8 +69,8 @@ class PaymentProcessor(PaymentProcessorBase):
 
     @staticmethod
     def compute_sig(body, text):
-        req_sign = (
-            body.request.sign.text if body.request.sign else '').encode('utf-8')
+        req_sign = (body.request.sign.text if body.request.sign
+                    else '').encode('utf-8')
 
         s = text + req_sign + \
             PaymentProcessor.get_backend_setting(
@@ -78,17 +81,17 @@ class PaymentProcessor(PaymentProcessorBase):
 
     @staticmethod
     def check_sig(body):
-        req_sign = (
-            body.request.sign.text if body.request.sign else '').encode('utf-8')
+        req_sign = (body.request.sign.text if body.request.sign
+                    else '').encode('utf-8')
         if not req_sign:
             return False
 
-        text = (u"".join(unicode(item)
-                         for item in body.request.params.contents)).encode('utf-8')
+        text = (u"".join(unicode(item) for item in
+                         body.request.params.contents)).encode('utf-8')
 
-        s = text + \
-            PaymentProcessor.get_backend_setting(
-                'PASSWORD', '').encode('utf-8')
+        s = text + (PaymentProcessor
+                    .get_backend_setting('PASSWORD', '')
+                    .encode('utf-8'))
         sign = hashlib.md5(s).hexdigest()
 
         return req_sign.lower() == sign.lower()
@@ -101,8 +104,8 @@ class PaymentProcessor(PaymentProcessorBase):
         except Account.DoesNotExist, ex:
             return PaymentProcessor.error(body, 20)
 
-        pay_amount = body.request.params.pay_amount.text if body.request.params.pay_amount else 0
-        # print "body.request.params.pay_amount",body.request.params.pay_amount
+        pay_amount = (body.request.params.pay_amount.text
+                      if body.request.params.pay_amount else 0)
         if not pay_amount:
             return PaymentProcessor.error(body, 29)
 
@@ -120,7 +123,9 @@ class PaymentProcessor(PaymentProcessorBase):
 
         ret = BODY.encode('utf-8') % {
             'BODY': body_error,
-            'SIGN': str(PaymentProcessor.compute_sig(body, body_error).encode('utf-8'))
+            'SIGN': str(PaymentProcessor
+                        .compute_sig(body, body_error)
+                        .encode('utf-8'))
         }
         return ret
 
@@ -148,16 +153,16 @@ class PaymentProcessor(PaymentProcessorBase):
             print e
 
         if not payment:
-
-            payment = Payment.create(
-                account, None, PaymentProcessor.BACKEND, amount=amount, external_id=paymentid)
+            payment = Payment.create(account,
+                                     None,
+                                     PaymentProcessor.BACKEND,
+                                     amount=amount,
+                                     external_id=paymentid)
 
         reply_body = PAYMENT_BODY.encode('utf-8') % {
             'ERR_CODE': 0,
             'ERR_TEXT': ERRCODES.get('0'),
-            #'REG_ID': payment.id,
             'ACCOUNT': account.contract,
-            #'REG_DATE': payment.created_on.strftime('%Y-%m-%dT%H:%M:%S'),
             'BALLANCE': '%.2f' % float(account.ballance or 0),
         }
         reply_body = reply_body.encode('utf-8')

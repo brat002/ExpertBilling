@@ -310,12 +310,14 @@ class Ticket(models.Model):
         max_length=200,
     )
 
-    queue = models.ForeignKey(Queue, verbose_name=_(u'Queue'))
+    queue = models.ForeignKey(
+        Queue, verbose_name=_(u'Queue'), on_delete=models.CASCADE)
     owner = models.ForeignKey(
         User,
         related_name='submitted_by',
         null=False, blank=False,
-        verbose_name=_(u'Owner')
+        verbose_name=_(u'Owner'),
+        on_delete=models.CASCADE
     )
     source = models.CharField(
         choices=source_types,
@@ -329,7 +331,8 @@ class Ticket(models.Model):
         verbose_name=_('Account'),
         blank=True,
         null=True,
-        help_text=_(u'Аккаунт, с которым связана текущая задача')
+        help_text=_(u'Аккаунт, с которым связана текущая задача'),
+        on_delete=models.CASCADE
     )
     notify_owner = models.BooleanField(
         blank=True, default=True, verbose_name=_(u'Notify owner'))
@@ -338,7 +341,8 @@ class Ticket(models.Model):
         verbose_name=_(u'Исполнитель'),
         related_name='assigned_to',
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.CASCADE
     )
     created = models.DateTimeField(_(u'Created'), blank=True)
     due_date = models.DateTimeField(_(u'Due'), blank=True, null=True)
@@ -545,7 +549,7 @@ class FollowUp(models.Model):
     although all staff can see them.
     """
 
-    ticket = models.ForeignKey(Ticket)
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
 
     date = models.DateTimeField(_('Date'),)
     title = models.CharField(_('Title'), max_length=200, blank=True, null=True)
@@ -557,8 +561,10 @@ class FollowUp(models.Model):
         help_text=_('Public tickets are viewable by the submitter and all '
                     'staff, but non-public tickets can only be seen by staff.')
     )
-    systemuser = models.ForeignKey(SystemUser, blank=True, null=True)
-    account = models.ForeignKey(Account, blank=True, null=True)
+    systemuser = models.ForeignKey(
+        SystemUser, blank=True, null=True, on_delete=models.CASCADE)
+    account = models.ForeignKey(
+        Account, blank=True, null=True, on_delete=models.CASCADE)
     new_status = models.IntegerField(
         _('New Status'), choices=Ticket.STATUS_CHOICES, blank=True, null=True)
     objects = FollowUpManager()
@@ -588,7 +594,7 @@ class TicketChange(models.Model):
     etc) are tracked here for display purposes.
     """
 
-    followup = models.ForeignKey(FollowUp)
+    followup = models.ForeignKey(FollowUp, on_delete=models.CASCADE)
 
     field = models.CharField(
         _('Field'),
@@ -647,7 +653,7 @@ class Attachment(models.Model):
     attachment, or it could be uploaded via the web interface.
     """
 
-    followup = models.ForeignKey(FollowUp)
+    followup = models.ForeignKey(FollowUp, on_delete=models.CASCADE)
 
     file = models.FileField(
         _('File'),
@@ -702,7 +708,6 @@ class PreSetReply(models.Model):
     queues = models.ManyToManyField(
         Queue,
         blank=True,
-        null=True,
         help_text=_('Leave blank to allow this reply to be used for all '
                     'queues, or select those queues you wish to limit this reply to.')
     )
@@ -744,7 +749,6 @@ class EscalationExclusion(models.Model):
     queues = models.ManyToManyField(
         Queue,
         blank=True,
-        null=True,
         help_text=_('Leave blank for this exclusion to be applied to all '
                     'queues, or select those queues you wish to exclude with this '
                     'entry.'),
@@ -858,7 +862,7 @@ class KBItem(models.Model):
     An item within the knowledgebase. Very straightforward question/answer
     style system.
     """
-    category = models.ForeignKey(KBCategory)
+    category = models.ForeignKey(KBCategory, on_delete=models.CASCADE)
 
     title = models.CharField(
         _('Title'),
@@ -926,7 +930,7 @@ class SavedSearch(models.Model):
         * All tickets containing the word 'billing'.
          etc...
     """
-    systemuser = models.ForeignKey(SystemUser)
+    systemuser = models.ForeignKey(SystemUser, on_delete=models.CASCADE)
 
     title = models.CharField(
         _('Query Name'),
@@ -962,7 +966,7 @@ class UserSettings(models.Model):
     We should always refer to user.usersettings.settings['setting_name'].
     """
 
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     settings_pickled = models.TextField(
         _('Settings Dictionary'),
@@ -1003,7 +1007,7 @@ def create_usersettings(sender, created_models=[], instance=None,
     """
     Helper function to create UserSettings instances as
     required, eg when we first create the UserSettings database
-    table via 'syncdb' or when we save a new user.
+    table via 'migrate' or when we save a new user.
 
     If we end up with users with no UserSettings, then we get horrible
     'DoesNotExist: UserSettings matching query does not exist.' errors.
@@ -1024,7 +1028,7 @@ def create_usersettings(sender, created_models=[], instance=None,
                 s = UserSettings(user=u)
                 s.save()
 
-models.signals.post_syncdb.connect(create_usersettings)
+models.signals.post_migrate.connect(create_usersettings)
 models.signals.post_save.connect(create_usersettings, sender=User)
 
 
@@ -1037,7 +1041,6 @@ class IgnoreEmail(models.Model):
     queues = models.ManyToManyField(
         Queue,
         blank=True,
-        null=True,
         help_text=_('Leave blank for this e-mail to be ignored on all '
                     'queues, or select those queues you wish to ignore '
                     'this e-mail for.')
@@ -1117,14 +1120,15 @@ class TicketCC(models.Model):
     an existing system user.
     """
 
-    ticket = models.ForeignKey(Ticket)
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
 
     user = models.ForeignKey(
         User,
         blank=True,
         null=True,
         help_text=_('User who wishes to receive updates for this ticket.'),
-        verbose_name=_(u'User')
+        verbose_name=_(u'User'),
+        on_delete=models.CASCADE
     )
 
     email = models.EmailField(
@@ -1137,12 +1141,14 @@ class TicketCC(models.Model):
     can_view = models.BooleanField(
         _('Can View Ticket?'),
         blank=True,
+        default=False,
         help_text=_('Can this CC login to view the ticket details?')
     )
 
     can_update = models.BooleanField(
         _('Can Update Ticket?'),
         blank=True,
+        default=False,
         help_text=_('Can this CC login and update the ticket?')
     )
 

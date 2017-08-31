@@ -13,8 +13,8 @@ from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
 from dynamicmodel.models import DynamicModel
-from ebscab.nas.models import Nas, TrafficClass
-from lib.fields import IPNetworkField, EncryptedTextField
+from ebscab.lib.fields import IPNetworkField, EncryptedTextField
+from nas.models import Nas, TrafficClass
 
 import IPy
 
@@ -162,30 +162,30 @@ PERMISSION_ROLES = (
 class SoftDeleteManager(models.Manager):
     """Use this manager to get objects that have a deleted field"""
 
-    def get_query_set(self):
-        return super(SoftDeleteManager, self).get_query_set().filter(deleted=False)
+    def get_queryset(self):
+        return super(SoftDeleteManager, self).get_queryset().filter(deleted=False)
 
     def all_with_deleted(self):
-        return super(SoftDeleteManager, self).get_query_set()
+        return super(SoftDeleteManager, self).get_queryset()
 
     def deleted_set(self):
-        return super(SoftDeleteManager, self).get_query_set().filter(deleted=True)
+        return super(SoftDeleteManager, self).get_queryset().filter(deleted=True)
 
 
 class SoftDeletedDateManager(models.Manager):
     ''' Use this manager to get objects that have a deleted field '''
 
-    def get_query_set(self):
+    def get_queryset(self):
         return (super(SoftDeletedDateManager, self)
-                .get_query_set()
+                .get_queryset()
                 .filter(deleted__isnull=True))
 
     def all_with_deleted(self):
-        return super(SoftDeletedDateManager, self).get_query_set()
+        return super(SoftDeletedDateManager, self).get_queryset()
 
     def deleted_set(self):
         return (super(SoftDeletedDateManager, self)
-                .get_query_set()
+                .get_queryset()
                 .filter(deleted__isnull=False))
 
 
@@ -219,7 +219,10 @@ class TimePeriodNode(models.Model):
     сутки, месяц, год и т.д.)
     """
     time_period = models.ForeignKey(
-        TimePeriod, verbose_name=_(u"Период времени"))
+        TimePeriod,
+        verbose_name=_(u"Период времени"),
+        on_delete=models.CASCADE
+    )
     name = models.CharField(
         max_length=255,
         verbose_name=_(u'Название подпериода'),
@@ -319,7 +322,7 @@ class PeriodicalService(models.Model):
         (4, _(u'Больше или равно')),
         (5, _(u'Больше'))
     )
-    tarif = models.ForeignKey('Tariff')
+    tarif = models.ForeignKey('Tariff', on_delete=models.CASCADE)
     name = models.CharField(max_length=255, verbose_name=_(u'Название'))
     settlement_period = models.ForeignKey(
         to=SettlementPeriod,
@@ -439,7 +442,7 @@ class OneTimeService(models.Model):
     Справочник разовых услуг
     TODO: Сделать справочники валют
     """
-    tarif = models.ForeignKey('Tariff')
+    tarif = models.ForeignKey('Tariff', on_delete=models.CASCADE)
     name = models.CharField(
         max_length=255,
         verbose_name=_(u'Название разовой услуги'),
@@ -537,9 +540,16 @@ class TimeAccessNode(models.Model):
     Нода тарификации по времени
     """
     time_access_service = models.ForeignKey(
-        to=TimeAccessService, related_name="time_access_nodes")
-    time_period = models.ForeignKey(to=TimePeriod, verbose_name=_(
-        u'Промежуток'), null=True, on_delete=models.SET_NULL)
+        to=TimeAccessService,
+        related_name="time_access_nodes",
+        on_delete=models.CASCADE
+    )
+    time_period = models.ForeignKey(
+        to=TimePeriod,
+        verbose_name=_(u'Промежуток'),
+        null=True,
+        on_delete=models.SET_NULL
+    )
     cost = models.FloatField(verbose_name=_(u'Стоимость за минуту'), default=0)
 
     def __unicode__(self):
@@ -655,7 +665,9 @@ class TimeSpeed(models.Model):
     Настройки скорости в интервал времени
     """
     access_parameters = models.ForeignKey(
-        to=AccessParameters, related_name="access_speed")
+        to=AccessParameters,
+        related_name="access_speed",
+        on_delete=models.CASCADE)
     time = models.ForeignKey(TimePeriod, on_delete=models.CASCADE)
     # от 1 до 8
     priority = models.IntegerField(
@@ -726,11 +738,12 @@ class PrepaidTraffic(models.Model):
     traffic_transmit_service = models.ForeignKey(
         to="TrafficTransmitService",
         verbose_name=_(u"Услуга доступа по трафику"),
-        related_name="prepaid_traffic"
+        related_name="prepaid_traffic",
+        on_delete=models.CASCADE
     )
     size = models.FloatField(
         verbose_name=_(u'Размер в байтах'), default=0, blank=True)
-    group = models.ForeignKey("Group")
+    group = models.ForeignKey("Group", on_delete=models.CASCADE)
 
     def __unicode__(self):
         return u"%s" % self.size
@@ -772,7 +785,8 @@ class TrafficTransmitNodes(models.Model):
     traffic_transmit_service = models.ForeignKey(
         to=TrafficTransmitService,
         verbose_name=_(u"Услуга доступа по трафику"),
-        related_name="traffic_transmit_nodes"
+        related_name="traffic_transmit_nodes",
+        on_delete=models.CASCADE
     )
     timeperiod = models.ForeignKey(
         to=TimePeriod,
@@ -815,7 +829,7 @@ class AccountPrepaysTrafic(models.Model):
         to=PrepaidTraffic, null=True, on_delete=models.CASCADE)
     size = models.FloatField(blank=True, default=0, verbose_name=_(u'Остаток'))
     datetime = models.DateTimeField(
-        auto_now_add=True, default='', verbose_name=_(u'Начислен'))
+        auto_now_add=True, verbose_name=_(u'Начислен'))
     current = models.BooleanField(default=False, verbose_name=_(u'Текущий'))
     reseted = models.BooleanField(default=False, verbose_name=_(u'Сброшен'))
 
@@ -850,7 +864,7 @@ class AccountPrepaysRadiusTrafic(models.Model):
         to='RadiusTraffic', null=True, on_delete=models.SET_NULL)
     size = models.FloatField(blank=True, default=0)
     direction = models.IntegerField()
-    datetime = models.DateTimeField(auto_now_add=True, default='')
+    datetime = models.DateTimeField(auto_now_add=True)
     current = models.BooleanField(default=False)
     reseted = models.BooleanField(default=False)
 
@@ -879,7 +893,7 @@ class AccountPrepaysTime(models.Model):
     prepaid_time_service = models.ForeignKey(
         to=TimeAccessService, null=True, on_delete=models.SET_NULL)
     size = models.IntegerField(default=0, blank=True)
-    datetime = models.DateTimeField(auto_now_add=True, default='')
+    datetime = models.DateTimeField(auto_now_add=True)
     current = models.BooleanField(default=False)
     reseted = models.BooleanField(default=False)
 
@@ -900,7 +914,7 @@ class AccountPrepaysTime(models.Model):
 
 
 class TrafficLimit(models.Model):
-    tarif = models.ForeignKey('Tariff')
+    tarif = models.ForeignKey('Tariff', on_delete=models.CASCADE)
     name = models.CharField(max_length=255, verbose_name=_(u'Название'))
     settlement_period = models.ForeignKey(
         to=SettlementPeriod,
@@ -914,7 +928,11 @@ class TrafficLimit(models.Model):
                     u"Если не установлен-старт берётся из расчётного периода")
     )
     size = models.IntegerField(verbose_name=_(u'Размер в байтах'), default=0)
-    group = models.ForeignKey("Group", verbose_name=_(u"Группа"))
+    group = models.ForeignKey(
+        "Group",
+        verbose_name=_(u"Группа"),
+        on_delete=models.CASCADE
+    )
     mode = models.BooleanField(
         default=False,
         blank=True,
@@ -1015,7 +1033,8 @@ class Tariff(models.Model):
         to=SettlementPeriod,
         blank=True,
         null=True,
-        verbose_name=_(u'Расчётный период')
+        verbose_name=_(u'Расчётный период'),
+        on_delete=models.CASCADE
     )
     ps_null_ballance_checkout = models.BooleanField(
         verbose_name=_(u'Производить снятие денег  при нулевом баллансе'),
@@ -1488,8 +1507,7 @@ class TransactionType(models.Model):
     allowed_systemusers = models.ManyToManyField(
         "SystemUser",
         verbose_name=u'Разрешено выполнять',
-        blank=True,
-        null=True
+        blank=True
     )
     is_bonus = models.BooleanField(
         verbose_name=u'Является бонусной', blank=True, default=False)
@@ -1601,23 +1619,26 @@ class AccountTarif(models.Model):
     account = models.ForeignKey(
         verbose_name=_(u'Пользователь'),
         to=Account,
-        related_name='related_accounttarif'
+        related_name='related_accounttarif',
+        on_delete=models.CASCADE
     )
     prev_tarif = models.ForeignKey(
         to=Tariff,
         verbose_name=_(u'Предыдущий тарифный план'),
         blank=True,
         null=True,
-        related_name="account_prev_tarif"
+        related_name="account_prev_tarif",
+        on_delete=models.CASCADE
     )
     tarif = models.ForeignKey(
         to=Tariff,
         verbose_name=_(u'Тарифный план'),
-        related_name="account_tarif"
+        related_name="account_tarif",
+        on_delete=models.CASCADE
     )
     datetime = models.DateTimeField(
         verbose_name=_(u'C даты'), default='', blank=True)
-    periodical_billed = models.BooleanField(blank=True)
+    periodical_billed = models.BooleanField(blank=True, default=False)
 
     class Admin:
         ordering = ['-datetime']
@@ -1652,7 +1673,7 @@ class AccountIPNSpeed(models.Model):
     Класс описывает настройки скорости для пользователей с тарифными планами IPN
     После создания пользователя должна создваться запись в этой таблице
     """
-    account = models.ForeignKey(to=Account)
+    account = models.ForeignKey(to=Account, on_delete=models.CASCADE)
     speed = models.CharField(max_length=32, default='')
     state = models.BooleanField(blank=True, default=False)
     static = models.BooleanField(
@@ -1676,8 +1697,9 @@ class AccountIPNSpeed(models.Model):
 
 
 class SheduleLog(models.Model):
-    account = models.ForeignKey(to=Account, unique=True)
-    accounttarif = models.ForeignKey(to=AccountTarif, blank=True, null=True)
+    account = models.OneToOneField(Account)
+    accounttarif = models.ForeignKey(
+        to=AccountTarif, blank=True, null=True, on_delete=models.CASCADE)
     ballance_checkout = models.DateTimeField(blank=True, null=True)
     prepaid_traffic_reset = models.DateTimeField(blank=True, null=True)
     prepaid_traffic_accrued = models.DateTimeField(blank=True, null=True)
@@ -1796,9 +1818,13 @@ class SystemUser(models.Model):
         "PermissionGroup",
         blank=True,
         null=True,
-        verbose_name=_(u"Группа доступа")
+        verbose_name=_(u"Группа доступа"),
+        on_delete=models.CASCADE
     )
-    is_superuser = models.BooleanField(verbose_name=_(u"Суперадминистратор"))
+    is_superuser = models.BooleanField(
+        default=False,
+        verbose_name=_(u"Суперадминистратор")
+    )
 
     permcache = {}
 
@@ -1890,7 +1916,7 @@ class TemplateType(models.Model):
 
 class Template(models.Model):
     name = models.CharField(max_length=255)
-    type = models.ForeignKey(TemplateType)
+    type = models.ForeignKey(TemplateType, on_delete=models.CASCADE)
     body = models.TextField()
 
     def __unicode__(self):
@@ -2091,7 +2117,7 @@ class Dealer(models.Model):
 
 
 class SaleCard(models.Model):
-    dealer = models.ForeignKey(Dealer)
+    dealer = models.ForeignKey(Dealer, on_delete=models.CASCADE)
     sum_for_pay = models.FloatField(
         blank=True, verbose_name=_(u"Сумма к оплате"), default=0)
     paydeffer = models.IntegerField(
@@ -2115,9 +2141,10 @@ class SaleCard(models.Model):
 
 
 class DealerPay(models.Model):
-    dealer = models.ForeignKey(Dealer)
+    dealer = models.ForeignKey(Dealer, on_delete=models.CASCADE)
     pay = models.FloatField()
-    salecard = models.ForeignKey(SaleCard, blank=True, null=True)
+    salecard = models.ForeignKey(
+        SaleCard, blank=True, null=True, on_delete=models.CASCADE)
     created = models.DateTimeField()
 
     class Meta:
@@ -2130,8 +2157,10 @@ class DealerPay(models.Model):
 
 
 class Document(models.Model):
-    account = models.ForeignKey(Account, blank=True, null=True)
-    type = models.ForeignKey(Template, blank=True, null=True)
+    account = models.ForeignKey(
+        Account, blank=True, null=True, on_delete=models.CASCADE)
+    type = models.ForeignKey(
+        Template, blank=True, null=True, on_delete=models.CASCADE)
     body = models.TextField()
     contractnumber = models.CharField(max_length=1024)
     date_start = models.DateTimeField(blank=True)
@@ -2142,7 +2171,7 @@ class Document(models.Model):
 
 
 class SuspendedPeriod(models.Model):
-    account = models.ForeignKey(Account)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     start_date = models.DateTimeField(verbose_name=_(u"Дата начала"))
     end_date = models.DateTimeField(
         verbose_name=_(u"Дата конца"), blank=True, null=True)
@@ -2200,14 +2229,14 @@ class Group(models.Model):
 
 
 class GroupStat(models.Model):
-    group = models.ForeignKey(Group)
-    account = models.ForeignKey(Account)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     bytes = models.IntegerField()
     datetime = models.DateTimeField()
 
 
 class GlobalStat(models.Model):
-    account = models.ForeignKey(Account)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     bytes_in = models.BigIntegerField()
     bytes_out = models.BigIntegerField()
     datetime = models.DateTimeField()
@@ -2274,8 +2303,8 @@ class SpeedLimit(models.Model):
 
 
 class AccountSpeedLimit(models.Model):
-    account = models.ForeignKey(Account)
-    speedlimit = models.ForeignKey(SpeedLimit)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    speedlimit = models.ForeignKey(SpeedLimit, on_delete=models.CASCADE)
 
 
 class IPPool(models.Model):
@@ -2293,7 +2322,12 @@ class IPPool(models.Model):
     start_ip = models.GenericIPAddressField(verbose_name=_(u'C IP'))
     end_ip = models.GenericIPAddressField(verbose_name=_(u'По IP'))
     next_ippool = models.ForeignKey(
-        "IPPool", verbose_name=_(u'Следующий пул'), blank=True, null=True)
+        "IPPool",
+        verbose_name=_(u'Следующий пул'),
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE
+    )
 
     class Meta:
         ordering = ['name']
@@ -2437,8 +2471,10 @@ class TPChangeRule(models.Model):
 
 
 class RadiusAttrs(models.Model):
-    tarif = models.ForeignKey(Tariff, blank=True, null=True)
-    nas = models.ForeignKey(Nas, blank=True, null=True)
+    tarif = models.ForeignKey(
+        Tariff, blank=True, null=True, on_delete=models.CASCADE)
+    nas = models.ForeignKey(
+        Nas, blank=True, null=True, on_delete=models.CASCADE)
     vendor = models.IntegerField(blank=True, null=True, default=0)
     attrid = models.IntegerField(blank=True, null=True, default=0)
     account_status = models.IntegerField(
@@ -2638,8 +2674,9 @@ class AddonService(models.Model):
 
 
 class AddonServiceTarif(models.Model):
-    tarif = models.ForeignKey(Tariff)
-    service = models.ForeignKey(AddonService, verbose_name=_(u"Услуга"))
+    tarif = models.ForeignKey(Tariff, on_delete=models.CASCADE)
+    service = models.ForeignKey(
+        AddonService, verbose_name=_(u"Услуга"), on_delete=models.CASCADE)
     activation_count = models.IntegerField(
         verbose_name=_(u"Активаций за расчётный период"),
         blank=True,
@@ -2649,7 +2686,8 @@ class AddonServiceTarif(models.Model):
         SettlementPeriod,
         verbose_name=_(u"Расчётный период"),
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.CASCADE
     )
     type = models.IntegerField(
         verbose_name=_(u"Тип активации"),
@@ -2709,8 +2747,8 @@ class AccountAddonService(models.Model):
     activated = models.DateTimeField(verbose_name=_(u'Активирована'))
     deactivated = models.DateTimeField(
         verbose_name=_(u'Отключена'), blank=True, null=True)
-    action_status = models.BooleanField()
-    speed_status = models.BooleanField()
+    action_status = models.BooleanField(default=False)
+    speed_status = models.BooleanField(default=False)
     temporary_blocked = models.DateTimeField(
         verbose_name=_(u'Пауза до'), blank=True, null=True)
     last_checkout = models.DateTimeField(
@@ -2815,7 +2853,7 @@ class SubAccount(models.Model):
         verbose_name=_(u'Пароль'), blank=True, default='')
     ipn_ip_address = IPNetworkField(blank=True, null=True, default='0.0.0.0')
     ipn_mac_address = models.CharField(blank=True, max_length=17, default='')
-    vpn_ip_address = models.IPAddressField(
+    vpn_ip_address = models.GenericIPAddressField(
         blank=True, null=True, default='0.0.0.0')
     allow_mac_update = models.BooleanField(default=False)
     nas = models.ForeignKey(
@@ -2831,7 +2869,7 @@ class SubAccount(models.Model):
         null=True,
         verbose_name=_(u'Поставлен в очередь на изменение статуса')
     )
-    need_resync = models.BooleanField()
+    need_resync = models.BooleanField(default=False)
     speed = models.TextField(blank=True)
     switch = models.ForeignKey(
         "Switch", blank=True, null=True, on_delete=models.SET_NULL)
@@ -3116,7 +3154,8 @@ class SubAccount(models.Model):
 
 
 class BalanceHistory(models.Model):
-    account = models.ForeignKey(Account, verbose_name=_(u"Аккаунт"))
+    account = models.ForeignKey(
+        Account, verbose_name=_(u"Аккаунт"), on_delete=models.CASCADE)
     balance = models.DecimalField(
         max_digits=30, decimal_places=20, verbose_name=_(u"Баланс"))
     summ = models.DecimalField(
@@ -3149,7 +3188,7 @@ class City(models.Model):
 
 class Street(models.Model):
     name = models.CharField(max_length=320)
-    city = models.ForeignKey(City)
+    city = models.ForeignKey(City, on_delete=models.CASCADE)
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -3165,7 +3204,7 @@ class Street(models.Model):
 
 class House(models.Model):
     name = models.CharField(max_length=320)
-    street = models.ForeignKey(Street)
+    street = models.ForeignKey(Street, on_delete=models.CASCADE)
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -3237,14 +3276,16 @@ class RadiusTraffic(models.Model):
 
 
 class RadiusTrafficNode(models.Model):
-    radiustraffic = models.ForeignKey(RadiusTraffic)
+    radiustraffic = models.ForeignKey(RadiusTraffic, on_delete=models.CASCADE)
     value = models.BigIntegerField(
         verbose_name=_(u"Объём"),
         help_text=_(u"Объём, с которого действует указаная цена"),
         default=0
     )
     timeperiod = models.ForeignKey(
-        TimePeriod, verbose_name=_(u"Период тарификации"))
+        TimePeriod,
+        verbose_name=_(u"Период тарификации"),
+        on_delete=models.CASCADE)
     cost = models.DecimalField(
         verbose_name=_(u"Цена"),
         help_text=_(u"Цена за единицу тарификации"),
@@ -3331,9 +3372,15 @@ class HardwareType(models.Model):
 class Model(models.Model):
     name = models.TextField(verbose_name=_(u"Модель"))
     manufacturer = models.ForeignKey(
-        Manufacturer, verbose_name=_(u"Производитель"))
+        Manufacturer,
+        verbose_name=_(u"Производитель"),
+        on_delete=models.CASCADE
+    )
     hardwaretype = models.ForeignKey(
-        HardwareType, verbose_name=_(u"Тип оборудования"))
+        HardwareType,
+        verbose_name=_(u"Тип оборудования"),
+        on_delete=models.CASCADE
+    )
 
     def __unicode__(self):
         return u'%s/%s/%s' % (self.hardwaretype, self.manufacturer, self.name)
@@ -3351,7 +3398,8 @@ class Model(models.Model):
 
 
 class Hardware(models.Model):
-    model = models.ForeignKey(Model, verbose_name=_(u"Модель"))
+    model = models.ForeignKey(
+        Model, verbose_name=_(u"Модель"), on_delete=models.CASCADE)
     name = models.CharField(
         max_length=500, blank=True, default='', verbose_name=_(u"Название"))
     sn = models.CharField(
@@ -3360,7 +3408,11 @@ class Hardware(models.Model):
         default='',
         verbose_name=_(u"Серийный номер")
     )
-    ipaddress = models.IPAddressField(blank=True, verbose_name=_(u"IP адрес"))
+    ipaddress = models.GenericIPAddressField(
+        blank=True,
+        null=True,
+        verbose_name=_(u"IP адрес")
+    )
     macaddress = models.CharField(
         blank=True, default='', max_length=32, verbose_name=_(u"MAC адрес"))
     comment = models.TextField(
@@ -3386,8 +3438,9 @@ class Hardware(models.Model):
 
 
 class AccountHardware(models.Model):
-    account = models.ForeignKey(Account)
-    hardware = models.ForeignKey(Hardware, verbose_name=_(u"Устройство"))
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    hardware = models.ForeignKey(
+        Hardware, verbose_name=_(u"Устройство"), on_delete=models.CASCADE)
     datetime = models.DateTimeField(blank=True, verbose_name=_(u"Дата выдачи"))
     returned = models.DateTimeField(
         blank=True, verbose_name=_(u"Дата возврата"))
@@ -3413,7 +3466,8 @@ class TotalTransactionReport(models.Model):
     service_id = models.IntegerField()
     table = models.CharField(max_length=128)
     created = models.DateTimeField()
-    tariff = models.ForeignKey(Tariff, blank=True, null=True)
+    tariff = models.ForeignKey(
+        Tariff, blank=True, null=True, on_delete=models.CASCADE)
     summ = models.DecimalField(decimal_places=10, max_digits=30)
     prev_balance = models.DecimalField(
         verbose_name=(u'Предыдущий баланс'),
@@ -3422,15 +3476,17 @@ class TotalTransactionReport(models.Model):
         blank=True,
         default=0
     )
-    account = models.ForeignKey(Account)
-    type = models.ForeignKey(TransactionType, to_field='internal_name')
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    type = models.ForeignKey(
+        TransactionType, to_field='internal_name', on_delete=models.CASCADE)
     is_bonus = models.BooleanField(
         blank=True, default=False, verbose_name=u'Бонус')
-    systemuser = models.ForeignKey(SystemUser, blank=True, null=True)
+    systemuser = models.ForeignKey(
+        SystemUser, blank=True, null=True, on_delete=models.CASCADE)
     bill = models.TextField()
     description = models.TextField()
     end_promise = models.DateTimeField()
-    promise_expired = models.BooleanField()
+    promise_expired = models.BooleanField(default=False)
 
     def get_remove_url(self):
         return "%s?type=%s&id=%s" % (reverse('totaltransaction_delete'), (self.table, self.id))
@@ -3442,9 +3498,13 @@ class TotalTransactionReport(models.Model):
 
 
 class PeriodicalServiceLog(models.Model):
-    service = models.ForeignKey(PeriodicalService, verbose_name=_(u'Услуга'))
+    service = models.ForeignKey(
+        PeriodicalService, verbose_name=_(u'Услуга'), on_delete=models.CASCADE)
     accounttarif = models.ForeignKey(
-        AccountTarif, verbose_name=_(u'Тариф аккаунта'))
+        AccountTarif,
+        verbose_name=_(u'Тариф аккаунта'),
+        on_delete=models.CASCADE
+    )
     datetime = models.DateTimeField(verbose_name=_(u'Последнее списание'))
 
     def get_remove_url(self):
@@ -3535,8 +3595,12 @@ class Switch(models.Model):
         blank=True,
         default=''
     )
-    ipaddress = models.IPAddressField(
-        blank=True, verbose_name=_(u"IP адрес"), default=None)
+    ipaddress = models.GenericIPAddressField(
+        blank=True,
+        null=True,
+        verbose_name=_(u"IP адрес"),
+        default=None
+    )
     macaddress = models.CharField(
         max_length=32, verbose_name=_(u"MAC адрес"), blank=True, default='')
     management_method = models.IntegerField(
@@ -3627,7 +3691,7 @@ class SwitchPort(models.Model):
 
 
 class SwitchPortStat(models.Model):
-    switchport = models.ForeignKey(SwitchPort)
+    switchport = models.ForeignKey(SwitchPort, on_delete=models.CASCADE)
     oper_status = models.IntegerField(choices=PORT_OPER_STATUS, default=4)
     admin_status = models.IntegerField(choices=ADMIN_OPER_STATUS)
     out_bytes = models.IntegerField()
@@ -3673,7 +3737,9 @@ class PermissionGroup(models.Model):
 class NotificationsSettings(models.Model):
     tariffs = models.ManyToManyField(Tariff)
     payment_notifications = models.BooleanField(
-        verbose_name=_(u'Уведомления при пополнении баланса'))
+        default=False,
+        verbose_name=_(u'Уведомления при пополнении баланса')
+    )
     payment_notifications_template = models.TextField(
         verbose_name=_(u'Шаблон уведомления о платеже'),
         # TODO: fix typo
@@ -3682,7 +3748,9 @@ class NotificationsSettings(models.Model):
         default=''
     )
     balance_notifications = models.BooleanField(
-        verbose_name=_(u'Уведомления о недостатке баланса'))
+        default=False,
+        verbose_name=_(u'Уведомления о недостатке баланса')
+    )
     balance_edge = models.FloatField(
         verbose_name=_(u'Граница баланса'),
         help_text=_(u'Граница, с которой слать уведомления  о недостатке '
@@ -3719,8 +3787,11 @@ class NotificationsSettings(models.Model):
 
 
 class AccountNotification(models.Model):
-    account = models.ForeignKey(Account)
-    notificationsettings = models.ForeignKey(NotificationsSettings)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    notificationsettings = models.ForeignKey(
+        NotificationsSettings,
+        on_delete=models.CASCADE
+    )
     ballance_notification_count = models.IntegerField(blank=True, default=0)
     ballance_notification_last_date = models.DateTimeField(
         blank=True, null=True)
@@ -3730,14 +3801,21 @@ class AccountNotification(models.Model):
 
 class AccountSuppAgreement(models.Model):
     suppagreement = models.ForeignKey(
-        'SuppAgreement', verbose_name=_(u"Дополнительное соглашение"))
-    account = models.ForeignKey('Account', verbose_name=_(u"Аккаунт"))
+        'SuppAgreement',
+        verbose_name=_(u"Дополнительное соглашение"),
+        on_delete=models.CASCADE
+    )
+    account = models.ForeignKey(
+        'Account',
+        verbose_name=_(u"Аккаунт"),
+        on_delete=models.CASCADE)
     contract = models.CharField(_(u"Номер"), max_length=128)
     accounthardware = models.ForeignKey(
         'AccountHardware',
         blank=True,
         null=True,
-        verbose_name=_(u"Связанное оборудование")
+        verbose_name=_(u"Связанное оборудование"),
+        on_delete=models.CASCADE
     )
     created = models.DateTimeField(_(u"Создано"))
     closed = models.DateTimeField(_(u"Закрыто"), blank=True, null=True)

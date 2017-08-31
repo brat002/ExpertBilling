@@ -2,7 +2,7 @@
 
 from jsonfield import JSONField
 from django.contrib.auth.models import User
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -35,7 +35,7 @@ class Comment(models.Model):
     content_type = models.ForeignKey(
         ContentType, related_name="comments_set", null=True, blank=True)
     object_id = models.PositiveIntegerField(null=True, blank=True)
-    object = generic.GenericForeignKey(
+    object = GenericForeignKey(
         ct_field='content_type', fk_field='object_id')
     comment = models.TextField(verbose_name=_(u'Комментарий'))
     done_comment = models.TextField(

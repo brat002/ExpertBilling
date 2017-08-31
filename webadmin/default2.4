@@ -1,78 +1,78 @@
 <VirtualHost *:80>
-        ServerAdmin webmaster@localhost
+				ServerAdmin webmaster@localhost
 
-        DocumentRoot /opt/ebs/web/ebscab
-        <Directory />
+				DocumentRoot /opt/ebs/web/ebscab
+				<Directory />
 #COMMENT NEXT TWO LINES FOR APACHE <2.4
 #                Order allow,deny
 #                Allow from all
 ###UNKOMMENT FOR APACHE 2.4
-              <IfVersion < 2.3 > 
-                Order allow,deny
-                Allow from all
-              </IfVersion>
-              <IfVersion >= 2.3>
-                Require all granted
-              </IfVersion>
-        </Directory>
+							<IfVersion < 2.3 >
+								Order allow,deny
+								Allow from all
+							</IfVersion>
+							<IfVersion >= 2.3>
+								Require all granted
+							</IfVersion>
+				</Directory>
 
-        Alias /media/ /opt/ebs/web/ebscab/media/
+				Alias /media/ /opt/ebs/web/ebscab/media/
 
-        <Directory /opt/ebs/web/ebscab/media>
+				<Directory /opt/ebs/web/ebscab/media>
 #COMMENT NEXT TWO LINES FOR APACHE <2.4
 #                Order allow,deny
 #                Allow from all
 ###UNKOMMENT FOR APACHE 2.4
-              <IfVersion < 2.3 > 
-                Order allow,deny
-                Allow from all
-              </IfVersion>
-              <IfVersion >= 2.3>
-                Require all granted
-              </IfVersion>
-        </Directory>
-        
-        Alias /static/ /opt/ebs/web/ebscab/static/
+							<IfVersion < 2.3 >
+								Order allow,deny
+								Allow from all
+							</IfVersion>
+							<IfVersion >= 2.3>
+								Require all granted
+							</IfVersion>
+				</Directory>
 
-        <Directory /opt/ebs/web/ebscab/static>
+				Alias /static/ /opt/ebs/web/ebscab/static/
+
+				<Directory /opt/ebs/web/ebscab/static>
 #COMMENT NEXT TWO LINES FOR APACHE <2.4
 #                Order allow,deny
 #                Allow from all
 ###UNKOMMENT FOR APACHE 2.4
-              <IfVersion < 2.3 > 
-                Order allow,deny
-                Allow from all
-              </IfVersion>
-              <IfVersion >= 2.3>
-                Require all granted
-              </IfVersion>
-        </Directory>
-        
-        Alias /admin_media/ /opt/ebs/venv/lib/python2.7/site-packages/django/contrib/admin/media/
+							<IfVersion < 2.3 >
+								Order allow,deny
+								Allow from all
+							</IfVersion>
+							<IfVersion >= 2.3>
+								Require all granted
+							</IfVersion>
+				</Directory>
 
-        <Directory /opt/ebs/venv/lib/python2.7/site-packages/django/contrib/admin/media/>
+				Alias /admin_media/ /opt/ebs/venv/lib/python2.7/site-packages/django/contrib/admin/media/
+
+				<Directory /opt/ebs/venv/lib/python2.7/site-packages/django/contrib/admin/media/>
 #COMMENT NEXT TWO LINES FOR APACHE <2.4
 #                Order allow,deny
 #                Allow from all
 ###UNKOMMENT FOR APACHE 2.4
-              <IfVersion < 2.3 > 
-                Order allow,deny
-                Allow from all
-              </IfVersion>
-              <IfVersion >= 2.3>
-                Require all granted
-              </IfVersion>
-        </Directory>
-        
+							<IfVersion < 2.3 >
+								Order allow,deny
+								Allow from all
+							</IfVersion>
+							<IfVersion >= 2.3>
+								Require all granted
+							</IfVersion>
+				</Directory>
+
 		WSGIApplicationGroup %{GLOBAL}
-        WSGIScriptAlias / /opt/ebs/web/django.wsgi
+				WSGIScriptAlias / /opt/ebs/web/ebscab/ebscab/wsgi.py
 
-        ErrorLog /opt/ebs/web/error.log
+				ErrorLog /opt/ebs/web/error.log
 
-        # Possible values include: debug, info, notice, warn, error, crit,
-        # alert, emerg.
-        LogLevel warn
+				# Possible values include: debug, info, notice, warn, error, crit,
+				# alert, emerg.
+				LogLevel warn
 
-        CustomLog /var/log/apache2/access.log combined
+				CustomLog /var/log/apache2/access.log combined
 
 </VirtualHost>

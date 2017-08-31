@@ -3,8 +3,8 @@
 from django.db import models
 from django.utils.translation import ugettext as _
 
-from ebscab.billservice.models import Account, SubAccount, IPInUse
-from ebscab.nas.models import Nas
+from billservice.models import Account, SubAccount, IPInUse
+from nas.models import Nas
 
 
 SERVICE_TYPES = (

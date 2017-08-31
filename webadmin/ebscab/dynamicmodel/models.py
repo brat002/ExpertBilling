@@ -16,11 +16,15 @@ class DynamicModel(models.Model):
     class Meta:
         abstract = True
 
-    extra_fields = JSONField(editable=False, default="{}")
+    extra_fields = JSONField(editable=False, default={})
 
     def __init__(self, *args, **kwargs):
         self._schema = None
         super(DynamicModel, self).__init__(*args, **kwargs)
+        # HACK: django 1.10 change class create process
+        # it avoid cyclic call __getattr__
+        self.__dict__['_inited'] = True
+
         self.get_schema()
         self._sync_with_schema()
 
@@ -49,7 +53,8 @@ class DynamicModel(models.Model):
                 field.required, self.get_extra_field_value(field.name)
 
     def get_extra_fields_names(self):
-        return [name for name, verbose_name, field_type, required, value in self.get_extra_fields()]
+        return [name for name, verbose_name, field_type, required, value in
+                self.get_extra_fields()]
 
     def get_schema(self):
         type_value = ''
@@ -61,13 +66,15 @@ class DynamicModel(models.Model):
         return ''
 
     def __getattr__(self, attr_name):
-        if attr_name in self.extra_fields:
+        # HACK: django 1.10 change class create process
+        if self.__dict__.get('_inited') and attr_name in self.extra_fields:
             return self.extra_fields[attr_name]
         else:
             return getattr(super(DynamicModel, self), attr_name)
 
     def __setattr__(self, attr_name, value):
-        if hasattr(self, 'extra_fields') and \
+        # HACK: django 1.10 change class create process
+        if self.__dict__.get('_inited') and hasattr(self, 'extra_fields') and \
                 attr_name not in [el.name for el in self._meta.fields] and \
                 attr_name not in ['_schema'] and \
                 attr_name in self.get_extra_fields_names():
@@ -97,23 +104,25 @@ class DynamicForm(forms.ModelForm):
                 "DynamicForm.Meta.model must be inherited from DynamicModel")
 
         if self.instance and hasattr(self.instance, 'get_extra_fields'):
-            for name, verbose_name, field_type, req, value in self.instance.get_extra_fields():
+            for name, verbose_name, field_type, req, value in \
+                    self.instance.get_extra_fields():
                 field_mapping_case = dict(self.field_mapping)[field_type]
-                self.fields[name] = field_mapping_case['field'](required=req,
-                                                                widget=field_mapping_case.get(
-                                                                    'widget'),
-                                                                initial=self.instance.get_extra_field_value(
-                                                                    name),
-                                                                label=verbose_name.capitalize() if verbose_name else
-                                                                " ".join(name.split("_")).capitalize())
+                self.fields[name] = field_mapping_case['field'](
+                    required=req,
+                    widget=field_mapping_case.get('widget'),
+                    initial=self.instance.get_extra_field_value(name),
+                    label=verbose_name.capitalize() if verbose_name
+                    else " ".join(name.split("_")).capitalize()
+                )
 
     def save(self, force_insert=False, force_update=False, commit=True):
         m = super(DynamicForm, self).save(commit=False)
 
         extra_fields = {}
 
-        extra_fields_names = [name for name, verbose_name, field_type, req, value
-                              in self.instance.get_extra_fields()]
+        extra_fields_names = [
+            name for name, verbose_name, field_type, req, value in
+            self.instance.get_extra_fields()]
 
         for cleaned_key in self.cleaned_data.keys():
             if cleaned_key in extra_fields_names:
@@ -132,8 +141,11 @@ class DynamicExtraForm(forms.ModelForm):
         ('FloatField', {'field': forms.FloatField}),
         ('DecimalField', {'field': forms.DecimalField}),
         ('DateField', {'field': forms.DateField}),
-        ('DateTimeField', {'field': forms.DateTimeField, 'widget': forms.widgets.DateTimeInput(
-            attrs={'class': 'datepicker'})}),
+        ('DateTimeField', {
+            'field': forms.DateTimeField,
+            'widget': forms.widgets.DateTimeInput(
+                attrs={'class': 'datepicker'})
+        }),
         ('CharField', {'field': forms.CharField}),
         ('TextField', {'field': forms.CharField, 'widget': forms.Textarea}),
         ('EmailField', {'field': forms.EmailField}),
@@ -147,15 +159,16 @@ class DynamicExtraForm(forms.ModelForm):
                 "DynamicExtraForm.Meta.model must be inherited from DynamicModel")
 
         if self.instance and hasattr(self.instance, 'get_extra_fields'):
-            for name, verbose_name, field_type, req, value in self.instance.get_extra_fields():
+            for name, verbose_name, field_type, req, value in \
+                    self.instance.get_extra_fields():
                 field_mapping_case = dict(self.field_mapping)[field_type]
-                self.fields[name] = field_mapping_case['field'](required=req,
-                                                                widget=field_mapping_case.get(
-                                                                    'widget'),
-                                                                initial=self.instance.get_extra_field_value(
-                                                                    name),
-                                                                label=verbose_name.capitalize() if verbose_name else
-                                                                " ".join(name.split("_")).capitalize())
+                self.fields[name] = field_mapping_case['field'](
+                    required=req,
+                    widget=field_mapping_case.get('widget'),
+                    initial=self.instance.get_extra_field_value(name),
+                    label=verbose_name.capitalize() if verbose_name
+                    else " ".join(name.split("_")).capitalize()
+                )
 
     def save(self, force_insert=False, force_update=False, commit=True):
         return self.cleaned_data
@@ -179,7 +192,7 @@ class DynamicSchemaQuerySet(models.query.QuerySet):
 
 class DynamicSchemaManager(models.Manager):
 
-    def get_query_set(self):
+    def get_queryset(self):
         return DynamicSchemaQuerySet(self.model, using=self._db)
 
     def get_for_model(self, model_class, type_value=''):
@@ -194,11 +207,12 @@ class DynamicSchemaManager(models.Manager):
 class DynamicSchema(models.Model):
 
     class Meta:
+        app_label = 'dynamicmodel'
         unique_together = ('model', 'type_value')
 
     objects = DynamicSchemaManager()
 
-    model = models.ForeignKey(ContentType)
+    model = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     type_value = models.CharField(max_length=100, null=True, blank=True)
 
     def __unicode__(self):
@@ -218,7 +232,8 @@ class DynamicSchema(models.Model):
     @classmethod
     def get_cache_key_static(cls, model_class, type_value):
         return "%s-%s-%s-%s" % ('DYNAMICMODEL_SCHEMA_CACHE_KEY',
-                                model_class._meta.app_label, model_class._meta.module_name,
+                                model_class._meta.app_label,
+                                model_class._meta.model_name,
                                 type_value)
 
     def get_cache_key(self):
@@ -229,16 +244,19 @@ class DynamicSchema(models.Model):
     def renew_cache_static(cls, model_class, type_value):
         cache_key = cls.get_cache_key_static(model_class, type_value)
 
-        if not cls.objects.filter(type_value=type_value,
-                                  model=ContentType.objects.get_for_model(model_class)).exists():
+        if not (cls.objects
+                .filter(type_value=type_value,
+                        model=ContentType.objects.get_for_model(model_class))
+                .exists()):
 
-            cls.objects.create(type_value=type_value,
-                               model=ContentType.objects.get_for_model(model_class))
-
-        schema = cls.objects.prefetch_related('fields')\
-            .get(
+            cls.objects.create(
                 type_value=type_value,
                 model=ContentType.objects.get_for_model(model_class))
+
+        schema = (cls.objects
+                  .prefetch_related('fields')
+                  .get(type_value=type_value,
+                       model=ContentType.objects.get_for_model(model_class)))
 
         cache.set(cache_key, schema)
         return schema
@@ -270,7 +288,7 @@ class DynamicSchemaFieldQuerySet(models.query.QuerySet):
 
 class DynamicSchemaFieldManager(models.Manager):
 
-    def get_query_set(self):
+    def get_queryset(self):
         return DynamicSchemaFieldQuerySet(self.model, using=self._db)
 
 
@@ -288,17 +306,34 @@ class DynamicSchemaField(models.Model):
 
     class Meta:
         unique_together = ('schema', 'name')
+        app_label = 'dynamicmodel'
 
     objects = DynamicSchemaFieldManager()
 
     schema = models.ForeignKey(
-        DynamicSchema, verbose_name=u'Класс объекта', related_name='fields')
-    name = models.CharField(max_length=100, verbose_name=u'Имя поля', validators=[RegexValidator(r'^[\w]+$',
-                                                                                                 message="Имя может содержать только латинские буквы/цифры и символ подчёркивания.")])
+        DynamicSchema,
+        verbose_name=u'Класс объекта',
+        related_name='fields',
+        on_delete=models.CASCADE
+    )
+    name = models.CharField(
+        max_length=100,
+        verbose_name=u'Имя поля',
+        validators=[
+            RegexValidator(r'^[\w]+$',
+                           message=("Имя может содержать только латинские "
+                                    "буквы/цифры и символ подчёркивания."))
+        ]
+    )
     verbose_name = models.CharField(
         max_length=100, verbose_name=u'Заголовок поля', null=True, blank=True)
-    field_type = models.CharField(max_length=100, verbose_name=u'Тип значения',
-                                  help_text=u'Не меняйте тип значения. Это может привести к ошибкам в работе системы.', choices=FIELD_TYPES)
+    field_type = models.CharField(
+        max_length=100,
+        verbose_name=u'Тип значения',
+        help_text=(u'Не меняйте тип значения. Это может привести к '
+                   u'ошибкам в работе системы.'),
+        choices=FIELD_TYPES
+    )
     required = models.BooleanField(verbose_name=u'Обязательное', default=True)
 
     def save(self, *args, **kwargs):
@@ -332,10 +367,6 @@ class DynamicSchemaField(models.Model):
 
         fields = [f.name for f in DynamicSchemaField._meta.fields]
         fields.remove('verbose_name')
-
-        # for field_name in fields:
-        # if old_model.__dict__.get(field_name) != self.__dict__.get(field_name):
-        #    raise ValidationError("%s value cannot be modified" % field_name)
 
     def __unicode__(self):
         return "%s - %s" % (self.schema, self.name)

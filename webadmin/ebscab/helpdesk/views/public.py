@@ -6,8 +6,8 @@ from datetime import datetime
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response, get_object_or_404
-from django.template import loader, Context, RequestContext
+from django.shortcuts import get_object_or_404, render
+from django.template import engines
 from django.utils.translation import ugettext as _
 
 from helpdesk.forms import PublicTicketForm
@@ -24,7 +24,7 @@ from helpdesk.models import (
     TicketChange
 )
 from helpdesk.settings import HAS_TAG_SUPPORT
-from lib.decorators import render_to, login_required
+from ebscab.lib.decorators import render_to, login_required
 
 
 @login_required
@@ -46,7 +46,7 @@ def add_ticket(request):
         if form.is_valid():
             if text_is_spam(form.cleaned_data['body'], request):
                 # This submission is spam. Let's not save it.
-                return render_to_response('helpdesk/public_spam.html', RequestContext(request, {}))
+                return render(request, 'helpdesk/public_spam.html', {})
             else:
                 ticket = form.save(request.user)
                 return HttpResponseRedirect('%s?ticket=%s&email=%s' % (
@@ -71,10 +71,7 @@ def add_ticket(request):
             for q in Queue.objects.filter(allow_public_submission=True)
         ]
 
-    return render_to_response('helpdesk/public_homepage.html',
-                              RequestContext(request, {
-                                  'form': form,
-                              }))
+    return render(request, 'helpdesk/public_homepage.html', {'form': form})
 
 
 @login_required
@@ -117,17 +114,17 @@ def view_ticket(request):
 
                 return update_ticket(request, ticket_id, public=True)
 
-            return render_to_response('helpdesk/public_view_ticket.html',
-                                      RequestContext(request, {
-                                          'ticket': ticket,
-                                      }))
+            return render(request,
+                          'helpdesk/public_view_ticket.html',
+                          {'ticket': ticket})
 
-    return render_to_response('helpdesk/public_view_form.html',
-                              RequestContext(request, {
-                                  'ticket': ticket,
-                                  'email': email,
-                                  'error_message': error_message,
-                              }))
+    return render(request,
+                  'helpdesk/public_view_form.html',
+                  {
+                      'ticket': ticket,
+                      'email': email,
+                      'error_message': error_message
+                  })
 
 
 @login_required
@@ -152,7 +149,7 @@ def update_ticket(request, ticket_id, public=False):
     # We need to allow the 'ticket' and 'queue' contexts to be applied to the
     # comment.
     context = safe_template_context(ticket)
-    comment = loader.get_template_from_string(comment).render(Context(context))
+    comment = engines['django'].from_string(comment).render(context)
 
     f = FollowUp(ticket=ticket, date=datetime.now(), comment=comment)
     f.account = request.user.account

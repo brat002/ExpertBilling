@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import json
 from decimal import Decimal
 from sys import modules
 
 import ipaddr
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.generic import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
 from django.db.utils import DatabaseError
-from django.template import Context
 from django.template.loader import get_template
-from django.utils import simplejson
 
 from ebsadmin.lib import instance_dict
 
@@ -28,7 +27,7 @@ def default(obj):
     else:
         if type(obj) == ipaddr.IPv4Network or type(obj) == ipaddr.IPAddress:
             return str(obj)
-        return simplejson.JSONEncoder().default(obj)
+        return json.JSONEncoder().default(obj)
 
 
 def compare(old, new):
@@ -52,7 +51,6 @@ class LogActionManager(models.Manager):
         else:
             self._DELAYED.append((key, template, build_cache))
 
-    @transaction.commit_manually
     def _register(self, key, template, build_cache=None):
         """
         Registers and caches an LogAction type
@@ -60,6 +58,7 @@ class LogActionManager(models.Manager):
         @param key : Key identifying log action
         @param template : template associated with key
         """
+        transaction.set_autocommit(False)
         try:
             try:
                 action = self.get_from_cache(key)
@@ -76,6 +75,7 @@ class LogActionManager(models.Manager):
             transaction.rollback()
         finally:
             transaction.commit()
+            transaction.set_autocommit(True)
 
     def _register_delayed(sender, **kwargs):
         """
@@ -87,7 +87,7 @@ class LogActionManager(models.Manager):
         try:
             for args in LogActionManager._DELAYED:
                 LogAction.objects._register(*args)
-            models.signals.post_syncdb.disconnect(
+            models.signals.post_migrate.disconnect(
                 LogActionManager._register_delayed)
             LogActionManager._SYNCED = True
         except DatabaseError:
@@ -96,7 +96,7 @@ class LogActionManager(models.Manager):
 
     # connect signal for delayed registration.  Filter by this module so that
     # it is only called once
-    models.signals.post_syncdb.connect(
+    models.signals.post_migrate.connect(
         _register_delayed, sender=modules['object_log.models'])
 
     def get_from_cache(self, key):
@@ -176,17 +176,27 @@ class LogItem(models.Model):
     Single entry in log
     """
     action = models.ForeignKey(
-        LogAction, verbose_name=u'Действие', related_name="entries")
+        LogAction,
+        verbose_name=u'Действие',
+        related_name="entries",
+        on_delete=models.CASCADE
+    )
     #action = models.CharField(max_length=128)
     timestamp = models.DateTimeField(verbose_name=u'Дата', auto_now_add=True)
     user = models.ForeignKey(
-        User, verbose_name=u'Пользователь', related_name='log_items')
+        User,
+        verbose_name=u'Пользователь',
+        related_name='log_items',
+        on_delete=models.CASCADE
+    )
 
     object_type1 = models.ForeignKey(
         ContentType,
         verbose_name=u'Тип объекта',
         related_name='log_items1',
-        null=True)
+        null=True,
+        on_delete=models.CASCADE
+    )
     object_id1 = models.PositiveIntegerField(null=True)
     object1 = GenericForeignKey("object_type1", "object_id1")
 
@@ -202,7 +212,7 @@ class LogItem(models.Model):
     @property
     def data(self):
         if self._data is None and not self.serialized_data is None:
-            self._data = simplejson.loads(self.serialized_data)
+            self._data = json.loads(self.serialized_data)
         return self._data
 
     @data.setter
@@ -230,15 +240,15 @@ class LogItem(models.Model):
                    .select_related('user')
                    .distinct())[0]
             if log:
-                sd = simplejson.loads(log.serialized_data)
+                sd = json.loads(log.serialized_data)
 
         except:
             pass
 
         if self._data is not None and self.serialized_data is None:
-            self.serialized_data = simplejson.dumps(
+            self.serialized_data = json.dumps(
                 self._data, ensure_ascii=False, default=default)
-            self.changed_data = simplejson.dumps(
+            self.changed_data = json.dumps(
                 compare(sd.get('object1_str', {}),
                         self._data.get('object1_str', {})),
                 ensure_ascii=False,
@@ -254,7 +264,7 @@ class LogItem(models.Model):
         context['log_item'] = self
         action = LogAction.objects.get_from_cache(self.action_id)
         template = get_template(action.template)
-        return template.render(Context(context))
+        return template.render(context)
 
     def __repr__(self):
         return ('time: %s user: %s object_type1: %s' %

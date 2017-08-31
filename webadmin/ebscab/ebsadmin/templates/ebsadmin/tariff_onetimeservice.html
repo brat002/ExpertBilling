@@ -4,53 +4,53 @@
 {% load render_table from django_tables2 %}
 
 {% block extra_head %}
-  {{block.super}}
+	{{block.super}}
 {% endblock %}
 
 {% block tariff_content %}
-  <legend>{% blocktrans %}Разовые услуги{% endblocktrans %}</legend>
+	<legend>{% blocktrans %}Разовые услуги{% endblocktrans %}</legend>
 
-  <div class="alert alert-info">
-    {% blocktrans %}Разовые услуги позволяют производить списания при подключении пользователя на тарифный план.{% endblocktrans %}
-  </div>
+	<div class="alert alert-info">
+		{% blocktrans %}Разовые услуги позволяют производить списания при подключении пользователя на тарифный план.{% endblocktrans %}
+	</div>
 
-  <fieldset>
-    {{ formset.non_form_errors.as_ul }}
-    <table id="formset" class="table table-bordered table-condensed">
-      {% for form in formset.forms %}
-      {% if forloop.first %}
-      <thead><tr>
-        {% for field in form.visible_fields %}
-        <th>{{ field.label|capfirst }}</th>
-        {% endfor %}
-      </tr></thead>
-      {% endif %}
-      <tr class="{% cycle row1,row2 %}">
-        {% for field in form.visible_fields %}
-        <td>
-          {# Include the hidden fields in the form #}
-          {% if forloop.first %}
-          {% for hidden in form.hidden_fields %}
-          {{ hidden }}
-          {% endfor %}
-          {% endif %}
-          {{ field.errors.as_ul }}
-          {{ field }}
-        </td>
-        {% endfor %}
-      </tr>
-      {% endfor %}
-    </table>
-    
-    {% if table %}{% render_table table %}{% endif %}
-    
-    <div class="btn-toolbar">
-      <a href="{% url 'onetimeservice_edit' %}?tariff_id={{tariff.id}}"
-          class="btn btn-success general-modal-dialog"
-          data-dlgtitle="{% blocktrans %}Добавить разовую услугу{% endblocktrans %}"
-          data-dlgid="ps-modal">
-        {% blocktrans %}Добавить{% endblocktrans %}
-      </a>
-    </div>
-  </fieldset>
+	<fieldset>
+		{{ formset.non_form_errors.as_ul }}
+		<table id="formset" class="table table-bordered table-condensed">
+			{% for form in formset.forms %}
+			{% if forloop.first %}
+			<thead><tr>
+				{% for field in form.visible_fields %}
+				<th>{{ field.label|capfirst }}</th>
+				{% endfor %}
+			</tr></thead>
+			{% endif %}
+			<tr class="{% cycle 'row1' 'row2' %}">
+				{% for field in form.visible_fields %}
+				<td>
+					{# Include the hidden fields in the form #}
+					{% if forloop.first %}
+					{% for hidden in form.hidden_fields %}
+					{{ hidden }}
+					{% endfor %}
+					{% endif %}
+					{{ field.errors.as_ul }}
+					{{ field }}
+				</td>
+				{% endfor %}
+			</tr>
+			{% endfor %}
+		</table>
+
+		{% if table %}{% render_table table %}{% endif %}
+
+		<div class="btn-toolbar">
+			<a href="{% url 'onetimeservice_edit' %}?tariff_id={{tariff.id}}"
+					class="btn btn-success general-modal-dialog"
+					data-dlgtitle="{% blocktrans %}Добавить разовую услугу{% endblocktrans %}"
+					data-dlgid="ps-modal">
+				{% blocktrans %}Добавить{% endblocktrans %}
+			</a>
+		</div>
+	</fieldset>
 {% endblock %}

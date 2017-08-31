@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 
 from billservice.models import SystemUser
-from billservice.widgets import SplitDateTimeWidget
 from object_log.models import LogAction
 
 

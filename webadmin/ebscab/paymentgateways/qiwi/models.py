@@ -4,11 +4,13 @@ from django.db import models
 
 from billservice.models import Account
 
+from .apps import PaymentGatewaysQiwiConfig
+
 
 class Invoice(models.Model):
     txn_id = models.CharField(
         max_length=64, blank=True, null=True)  # qiwi transaction id
-    account = models.ForeignKey(Account)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     phone = models.CharField(max_length=15)
     summ = models.DecimalField(decimal_places=2, max_digits=20)
     prev_balance = models.DecimalField(
@@ -21,3 +23,6 @@ class Invoice(models.Model):
     accepted = models.BooleanField(default=False)
     date_accepted = models.DateTimeField(blank=True, null=True)
     deleted = models.BooleanField(default=False)
+
+    class Meta:
+        app_label = PaymentGatewaysQiwiConfig.name

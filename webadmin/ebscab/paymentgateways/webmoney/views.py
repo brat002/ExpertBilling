@@ -13,13 +13,13 @@ from django.http import (
     HttpResponseBadRequest,
     HttpResponseNotAllowed
 )
-from django.template import loader, RequestContext
+from django.template import loader
 try:
     from django.views.decorators.csrf import csrf_exempt
 except ImportError:
     from django.contrib.csrf.middleware import csrf_exempt
 
-from lib.decorators import render_to
+from ebscab.lib.decorators import render_to
 
 import settings
 from forms import *
@@ -39,7 +39,8 @@ def simple_payment(request):
                 amount=amount).id,
             'LMI_PAYMENT_DESC': loader.render_to_string(
                 'wm_sample/simple_payment_desc.txt',
-                RequestContext(request)).strip()[:255],
+                {},
+                request).strip()[:255],
         }
         resp['form'] = PaymentRequestForm(initial=initial)
 

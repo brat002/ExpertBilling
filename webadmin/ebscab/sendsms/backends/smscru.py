@@ -33,7 +33,7 @@ class SmsBackend(BaseSmsBackend):
             'translit': self.translit,
             'flash': self.flash,
             'phones': message.to,
-            'mes': message.body,  # .encode('utf-8'),
+            'mes': message.body
         }
 
         resp = sendsmscru_post.delay(self.SEND_ADDR, parameters, id=message.id)

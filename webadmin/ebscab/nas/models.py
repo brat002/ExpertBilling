@@ -5,8 +5,7 @@ from django.db import models
 from django.db.models import Max
 from django.utils.translation import ugettext_lazy as _
 
-from lib.fields import EncryptedTextField
-from lib.fields import IPNetworkField
+from ebscab.lib.fields import EncryptedTextField, IPNetworkField
 
 
 NAS_LIST = (
@@ -321,7 +320,7 @@ class Nas(models.Model):
     identify = models.CharField(verbose_name=_(u'RADIUS имя'), max_length=255)
     name = models.CharField(
         verbose_name=_(u'Имя'), max_length=255, unique=True)
-    ipaddress = models.IPAddressField(
+    ipaddress = models.GenericIPAddressField(
         verbose_name=_(u'IP адрес'), max_length=255)
     secret = EncryptedTextField(
         verbose_name=_(u'Секретная фраза'),
@@ -458,7 +457,7 @@ class TrafficNode(models.Model):
     """
     Направления трафика. Внутри одного класса не должно быть пересекающихся направлений
     """
-    traffic_class = models.ForeignKey(TrafficClass)
+    traffic_class = models.ForeignKey(TrafficClass, on_delete=models.CASCADE)
     name = models.CharField(verbose_name=_(u'Название'), max_length=255)
     protocol = models.IntegerField(choices=PROTOCOLS, default=0)
 
@@ -472,8 +471,12 @@ class TrafficNode(models.Model):
     dst_port = models.IntegerField(
         verbose_name=u'Dst port', blank=True, default=0)
 
-    next_hop = models.IPAddressField(
-        verbose_name=u'next Hop', blank=True, default='0.0.0.0')
+    next_hop = models.GenericIPAddressField(
+        verbose_name=u'next Hop',
+        blank=True,
+        null=True,
+        default='0.0.0.0'
+    )
     in_index = models.IntegerField(
         verbose_name=u'SNMP IN', blank=True, default=0)
     out_index = models.IntegerField(

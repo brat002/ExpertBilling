@@ -3,17 +3,17 @@
 import sys
 from datetime import datetime
 
+from django.apps import apps
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models.loading import cache as app_cache
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 
-from billservice.models import Account, Transaction
+from billservice.models import Account
 
-import signals
-from abstract_mixin import AbstractMixin
-from utils import import_backend_modules, get_backend_settings
+from getpaid import signals
+from getpaid.abstract_mixin import AbstractMixin
+from getpaid.utils import import_backend_modules, get_backend_settings
 
 
 PAYMENT_STATUS_CHOICES = [
@@ -28,9 +28,9 @@ PAYMENT_STATUS_CHOICES = [
 
 class PaymentManager(models.Manager):
 
-    def get_query_set(self):
+    def get_queryset(self):
         return (super(PaymentManager, self)
-                .get_query_set()
+                .get_queryset()
                 .select_related('order'))
 
 
@@ -42,7 +42,7 @@ class PaymentFactory(models.Model, AbstractMixin):
 
     ORDER_MODEL = None
 
-    account = models.ForeignKey(Account)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     amount = models.DecimalField(_("amount"), decimal_places=4, max_digits=20)
     currency = models.CharField(_("currency"), max_length=3)
     status = models.CharField(
@@ -180,12 +180,6 @@ def register_to_payment(order_class, **kwargs):
     # Now build models for backends
     backend_models_modules = import_backend_modules('models')
     for backend_name, models in backend_models_modules.items():
-        app_cache.register_models(backend_name, *models.build_models(Payment))
+        for model in models.build_models(Payment):
+            apps.register_model(backend_name, model)
     return Payment
-
-
-register_to_payment(Transaction,
-                    unique=False,
-                    blank=True,
-                    null=True,
-                    related_name='payments')

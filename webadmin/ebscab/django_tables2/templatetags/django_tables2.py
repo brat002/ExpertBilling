@@ -4,18 +4,20 @@ from __future__ import absolute_import, unicode_literals
 
 import re
 import tokenize
+from collections import OrderedDict
 
-import django_tables2 as tables
 import six
 from django import template
 from django.core.exceptions import ImproperlyConfigured
 from django.template import TemplateSyntaxError, Variable, Node
 from django.template.defaultfilters import stringfilter, title as old_title
 from django.template.loader import get_template, select_template
-from django.utils.datastructures import SortedDict
+from django.templatetags.l10n import register as l10n_register
 from django.utils.html import escape
 from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
+
+from django_tables2 import tables
 from django_tables2.config import RequestConfig
 
 
@@ -23,7 +25,7 @@ register = template.Library()
 kwarg_re = re.compile(r"(?:(.+)=)?(.+)")
 context_processor_error_msg = (
     "{%% %s %%} requires django.core.context_processors.request "
-    "to be in your settings.TEMPLATE_CONTEXT_PROCESSORS in order for "
+    "to be in your settings.TEMPLATES in order for "
     "the included template tags to function correctly."
 )
 
@@ -38,7 +40,7 @@ def token_kwargs(bits, parser):
     """
     if not bits:
         return {}
-    kwargs = SortedDict()
+    kwargs = OrderedDict()
     while bits:
         match = kwarg_re.match(bits[0])
         if not match or not match.group(1):
@@ -211,7 +213,7 @@ class RenderTableNode(Node):
             # achieved is to temporarily attach the context to the table,
             # which TemplateColumn then looks for and uses.
             table.context = context
-            return template.render(context)
+            return template.render(context.flatten())
         finally:
             del table.context
             context.pop()
@@ -292,16 +294,8 @@ def title(value):
 title.is_safe = True
 
 
-# Django 1.2 doesn't include the l10n template tag library (and it's non-
-# trivial to implement) so for Django 1.2 the localize functionality is
-# disabled.
-try:
-    from django.templatetags.l10n import register as l10n_register
-except ImportError:
-    localize = unlocalize = lambda x: x  # no-op
-else:
-    localize = l10n_register.filters['localize']
-    unlocalize = l10n_register.filters['unlocalize']
+localize = l10n_register.filters['localize']
+unlocalize = l10n_register.filters['unlocalize']
 
 register.filter('localize', localize)
 register.filter('unlocalize', unlocalize)

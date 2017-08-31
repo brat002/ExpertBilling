@@ -11,7 +11,6 @@ from xml.dom.minidom import parseString, Node
 
 from django.core.exceptions import ImproperlyConfigured
 from django.template.base import Template
-from django.template.context import Context
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _
 

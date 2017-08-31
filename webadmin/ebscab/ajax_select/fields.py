@@ -6,7 +6,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
-from django.forms.util import flatatt
+from django.forms.utils import flatatt
 from django.template.defaultfilters import escapejs
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
@@ -14,8 +14,6 @@ from django.utils.translation import ugettext as _
 
 from ajax_select import get_lookup
 
-
-##########################################################################
 
 class AutoCompleteSelectWidget(forms.widgets.TextInput):
 
@@ -122,9 +120,6 @@ class AutoCompleteSelectField(forms.fields.CharField):
 
     def check_can_add(self, user, model):
         _check_can_add(self, user, model)
-
-
-##########################################################################
 
 
 class AutoCompleteSelectMultipleWidget(forms.widgets.SelectMultiple):
@@ -347,7 +342,7 @@ def autoselect_fields_check_can_add(form, model, user):
     """ check the form's fields for any autoselect fields and enable their widgets with + sign add links if permissions allow"""
     for name, form_field in form.declared_fields.iteritems():
         if isinstance(form_field, (AutoCompleteSelectMultipleField, AutoCompleteSelectField)):
-            db_field = model._meta.get_field_by_name(name)[0]
+            db_field = model._meta.get_field(name)
             form_field.check_can_add(user, db_field.rel.to)
 
 

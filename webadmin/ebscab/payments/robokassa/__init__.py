@@ -9,7 +9,8 @@ from copy import deepcopy
 from hashlib import md5
 
 from django import forms
-from django.contrib.sites.models import RequestSite, Site
+from django.contrib.sites.requests import RequestSite
+from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from django.utils.timezone import utc
 from django.utils.translation import ugettext_lazy as _

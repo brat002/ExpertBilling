@@ -6,7 +6,6 @@ from django.db import connection
 from django.db.models import Sum
 from django.utils.translation import ugettext_lazy as _
 
-import django_tables2 as django_tables
 from billservice.helpers import systemuser_required
 from billservice.models import (
     Account,
@@ -17,6 +16,7 @@ from billservice.models import (
     TotalTransactionReport,
     Transaction
 )
+from django_tables2 import columns, rows
 from django_tables2.utils import A
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.tables import TableReport
@@ -32,7 +32,7 @@ from ebsadmin.reportsystem.forms import (
 from ebsadmin.tables import FormatFloatColumn
 
 
-class FormatFloatColumn(django_tables.Column):
+class FormatFloatColumn(columns.Column):
 
     def render(self, value):
         return "%.2f" % float(value) if value else ''
@@ -42,7 +42,7 @@ class FormatFloatColumn(django_tables.Column):
 @render_to("reportsystem/generic.html")
 def render_report(request, slug):
     class AccountTransactionsSumm(TableReport):
-        username = django_tables.Column()
+        username = columns.Column()
         summ = FormatFloatColumn()
 
         class Meta:
@@ -165,7 +165,7 @@ def cashierdailyreport(request, slug):
         form = CachierReportForm(request.GET)
         if form.is_valid():
             class TypeTransactionsSumm(TableReport):
-                type__name = django_tables.Column(
+                type__name = columns.Column(
                     verbose_name=_(u'Тип операции'))
                 summ = FormatFloatColumn()
 
@@ -174,7 +174,7 @@ def cashierdailyreport(request, slug):
                         form, *args, **kwargs)
                     self.footer_data = self.TableDataClass(
                         data=[pp.aggregate(summ=Sum('summ'))], table=self)
-                    self.footer = django_tables.rows.BoundRows(
+                    self.footer = rows.BoundRows(
                         self.footer_data, self)
 
                 class Meta:
@@ -237,7 +237,7 @@ def totaltransactionreport(request, slug):
         form = ReportForm(request.GET)
         if form.is_valid():
             class TotalTransactionsSumm(TableReport):
-                type__name = django_tables.Column(
+                type__name = columns.Column(
                     verbose_name=_(u'Тип операции'))
                 summ = FormatFloatColumn()
 
@@ -246,7 +246,7 @@ def totaltransactionreport(request, slug):
                         form, *args, **kwargs)
                     self.footer_data = self.TableDataClass(
                         data=[pp.aggregate(summ=Sum('summ'))], table=self)
-                    self.footer = django_tables.rows.BoundRows(
+                    self.footer = rows.BoundRows(
                         self.footer_data, self)
 
                 class Meta:
@@ -309,8 +309,8 @@ def accountperiodreport(request, slug):
         form = AccountBallanceForm(request.GET)
         if form.is_valid():
             class AccountPeriodReportTable(TableReport):
-                username = django_tables.Column(verbose_name=_(u'Логин'))
-                fullname = django_tables.Column(verbose_name=_(u'ФИО'))
+                username = columns.Column(verbose_name=_(u'Логин'))
+                fullname = columns.Column(verbose_name=_(u'ФИО'))
                 balance_start = FormatFloatColumn(
                     verbose_name=_(u'Начальный баланс'))
                 periodic_summ = FormatFloatColumn(
@@ -425,8 +425,8 @@ def A__():
         form = AccountBallanceForm(request.GET)
         if form.is_valid():
             class TariffStatReportTable(TableReport):
-                name = django_tables.Column()
-                accounts_count = django_tables.Column()
+                name = columns.Column()
+                accounts_count = columns.Column()
 
                 class Meta:
                     attrs = {
@@ -502,20 +502,20 @@ def switchports_report(request, slug):
     name = rep.get(slug)[1]
     if request.GET and request.method == 'GET':
         class SwitchPortsReportTable(TableReport):
-            account = django_tables.LinkColumn(
+            account = columns.LinkColumn(
                 'account_edit',
                 get_params={
                     'id': A('account_id')
                 },
                 verbose_name=_(u'Аккаунт'))
-            switch = django_tables.LinkColumn(
+            switch = columns.LinkColumn(
                 'switch',
                 get_params={
                     'id': A('switch_id')
                 },
                 verbose_name=_(u'Switch')
             )
-            port = django_tables.Column()
+            port = columns.Column()
 
             class Meta:
                 attrs = {

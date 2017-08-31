@@ -240,14 +240,6 @@ def get_balance(phone=None, password=None):
 
 
 def process_invoices():
-    sys.path.append('/opt/ebs/web/')
-    sys.path.append('/opt/ebs/web/ebscab/')
-    sys.path.append('../../../')
-    sys.path.append('../../')
-    sys.path.append('.')
-
-    os.environ['DJANGO_SETTINGS_MODULE'] = 'ebscab.settings'
-
     a = Invoice.objects.filter(autoaccept=False, accepted=False, deleted=False)
     pattern = '<bill txn-id="%s"/>'
     p = ''

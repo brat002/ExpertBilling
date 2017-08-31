@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 
+default_app_config = 'paymentgateways.apps.PaymentGatewaysConfig'
+
+
 class Payment(object):
 
     def __init__(self):

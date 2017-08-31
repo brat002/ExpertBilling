@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import copy
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from itertools import groupby, izip
-
-# use SortedDict instead of native OrderedDict for Python 2.6 compatibility
-from django.utils.datastructures import SortedDict
 
 from chartdata import PivotDataPool, DataPool
 from exceptions import APIInputError
@@ -262,7 +259,7 @@ class Chart(object):
                 y_aliases_multi = []
                 y_types_multi = []
                 y_hco_list_multi = []
-                y_values_multi = SortedDict()
+                y_values_multi = OrderedDict()
                 y_terms_multi = []
                 for x_term, y_terms in x_y_terms_tuples:
                     # x related
@@ -550,7 +547,6 @@ class PivotChart(object):
             for lv in dss[term]['_lv_set']:
                 data = [dss[term]['_cv_lv_dfv'][cv].get(lv, None) for cv
                         in cv_raw]
-                #name = '-'.join(dstd['legend_by']) + ":" + "-".join(lv)
                 term_pretty_name = term.replace('_', ' ')
                 name = term_pretty_name.title() if not lv else "-".join(lv)
                 hco = copy.deepcopy(options)

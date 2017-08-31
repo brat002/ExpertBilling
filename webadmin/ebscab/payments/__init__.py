@@ -3,9 +3,6 @@
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
-from models import Payment
-from forms import PaymentForm
-
 
 PAYMENT_VARIANTS = {
     'default': ('payments.dummy.DummyProvider', {
@@ -38,6 +35,8 @@ class BasicProvider(object):
         When implementing a new payment provider, you may overload this method
         to return a specialized version of Payment instead.
         '''
+        from models import Payment  # pragma
+
         payment = Payment(variant=self._variant, *args, **kwargs)
         if commit:
             payment.save()
@@ -57,6 +56,8 @@ class BasicProvider(object):
         '''
         Converts *payment* into a form suitable for Django templates.
         '''
+        from forms import PaymentForm  # pragma
+
         return PaymentForm(self.get_hidden_fields(payment),
                            self._action,
                            self._method)

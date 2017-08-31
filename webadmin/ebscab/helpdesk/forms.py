@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-import autocomplete_light
+from autocomplete_light import shortcuts as autocomplete_light
 from crispy_forms.bootstrap import FormActions
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Submit, Button, Field, Fieldset
@@ -519,6 +519,7 @@ class EmailIgnoreForm(forms.ModelForm):
 
     class Meta:
         model = IgnoreEmail
+        fields = '__all__'
 
 
 class TicketCCForm(forms.ModelForm):

@@ -4,13 +4,13 @@ from __future__ import absolute_import, unicode_literals
 
 import warnings
 import inspect
+from collections import OrderedDict
 from itertools import ifilter, islice
 
 from django.core.urlresolvers import reverse
 from django.db.models.fields import FieldDoesNotExist
-from django.template import Context, Template
+from django.template import Template
 from django.template.loader import render_to_string
-from django.utils.datastructures import SortedDict
 from django.utils.functional import curry
 from django.utils.html import escape
 from django.utils.safestring import mark_safe, SafeData
@@ -311,9 +311,9 @@ class LinkColumn(BaseLinkColumn):
             name = models.CharField(max_length=200)
 
         # urls.py
-        urlpatterns = patterns('',
+        urlpatterns = [
             url('people/(\d+)/', views.people_detail, name='people_detail')
-        )
+        ]
 
         # tables.py
         from django_tables2.utils import A  # alias for Accessor
@@ -485,7 +485,7 @@ class TemplateColumn(Column):
         # If the table is being rendered using `render_table`, it hackily
         # attaches the context to the table as a gift to `TemplateColumn`. If
         # the table is being rendered via `Table.as_html`, this won't exist.
-        context = getattr(table, 'context', Context())
+        context = getattr(table, 'context', {})
         context.update({'record': record})
         try:
             if self.template_code:
@@ -778,7 +778,7 @@ class BoundColumns(object):
     ``BoundColumn`` objects. It provides methods that make accessing
     columns easier than if they were stored in a ``list`` or
     ``dict``. ``Columns`` has a similar API to a ``dict`` (it
-    actually uses a ``SortedDict`` interally).
+    actually uses a ``OrderedDict`` interally).
 
     At the moment you'll only come across this class when you access a
     :attr:`.Table.columns` property.
@@ -789,7 +789,7 @@ class BoundColumns(object):
 
     def __init__(self, table):
         self.table = table
-        self.columns = SortedDict()
+        self.columns = OrderedDict()
         for name, column in self.table.base_columns.iteritems():
             self.columns[name] = BoundColumn(self.table, column, name)
 

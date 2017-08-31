@@ -12,9 +12,8 @@ scripts/escalate_tickets.py - Easy way to escalate tickets based on their age,
 import getopt
 import sys
 from datetime import datetime, timedelta, date
-from optparse import make_option
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 from django.utils.translation import ugettext as _
 
@@ -33,16 +32,15 @@ class Command(BaseCommand):
     def __init__(self):
         BaseCommand.__init__(self)
 
-        self.option_list += (
-            make_option(
-                '--queues', '-q',
-                help='Queues to include (default: all). Use queue slugs'),
-            make_option(
-                '--verbose', '-v',
-                action='store_true',
-                default=False,
-                help='Display a list of dates excluded'),
-        )
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--queues', '-q',
+            help='Queues to include (default: all). Use queue slugs')
+        parser.add_argument(
+            '--verbose', '-v',
+            action='store_true',
+            default=False,
+            help='Display a list of dates excluded')
 
     def handle(self, *args, **options):
         verbose = False

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import autocomplete_light
+from autocomplete_light import shortcuts as autocomplete_light
 from django.contrib.auth.models import User
 
 from models import Account, SystemUser
