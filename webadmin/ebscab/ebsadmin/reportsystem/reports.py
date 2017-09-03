@@ -29,13 +29,7 @@ from ebsadmin.reportsystem.forms import (
     ReportForm,
     SwitchReportForm
 )
-from ebsadmin.tables import FormatFloatColumn
-
-
-class FormatFloatColumn(columns.Column):
-
-    def render(self, value):
-        return "%.2f" % float(value) if value else ''
+from ebsadmin.columns import FormatFloatColumn
 
 
 @systemuser_required

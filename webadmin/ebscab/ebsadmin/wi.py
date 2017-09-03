@@ -83,7 +83,7 @@ from ebsadmin.tables import (
     TrafficTransactionReportTable,
     TransactionReportTable
 )
-from ebsadmin.transactionreport import TRANSACTION_MODELS, model_by_table
+from ebsadmin.constants import MODEL_BY_TABLE, TRANSACTION_MODELS
 
 
 BAD_REQUEST = u"Ошибка передачи параметров"
@@ -2192,7 +2192,7 @@ def totaltransaction_delete(request):
         try:
             for item in transactions:
                 table, tr_id = item.split('__')
-                model = model_by_table.get(table)
+                model = MODEL_BY_TABLE.get(table)
                 item = model.objects.get(id=tr_id)
 
                 log('DELETE', request.user, item)
