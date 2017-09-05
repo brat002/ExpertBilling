@@ -385,3 +385,17 @@ def text_is_spam(text, request):
         return ak.comment_check(text, data=ak_data)
 
     return False
+
+
+def attachment_path(instance, filename):
+    """
+    Provide a file path that will help prevent files being overwritten, by
+    putting attachments in a folder off attachments for ticket/followup_id/.
+    """
+    os.umask(0)
+    path = 'uploads/helpdesk/attachments/%s/%s' % (
+        instance.followup.ticket.ticket_for_url, instance.followup.id)
+    att_path = os.path.join(settings.MEDIA_ROOT, path)
+    if not os.path.exists(att_path):
+        os.makedirs(att_path, 0777)
+    return os.path.join(path, filename)
