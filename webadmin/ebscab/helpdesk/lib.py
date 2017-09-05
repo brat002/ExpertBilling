@@ -19,10 +19,10 @@ except ImportError:
     from base64 import decodestring as b64decode
 
 from django.conf import settings
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib.sites.models import Site
 from django.core.mail import EmailMultiAlternatives
 from django.template import engines
-from django.contrib.sites.models import Site
-
 
 try:
     from helpdesk.akismet import Akismet
@@ -399,3 +399,9 @@ def attachment_path(instance, filename):
     if not os.path.exists(att_path):
         os.makedirs(att_path, 0777)
     return os.path.join(path, filename)
+
+
+staff_member_required = user_passes_test(
+    lambda u: u.is_authenticated() and u.is_active and u.is_staff)
+superuser_required = user_passes_test(
+    lambda u: u.is_authenticated() and u.is_active and u.is_superuser)
