@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from itertools import chain, dropwhile
-from operator import mul, attrgetter, __not__
+import json
+from itertools import chain
+from operator import mul, __not__
 
+import psycopg2
+import psycopg2.extras
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.db.models.fields import DateField, DecimalField
 from django.db.models.fields.related import ForeignKey
-from django.db.models.query import REPR_OUTPUT_SIZE, EmptyQuerySet
+
+from billservice.models import AddonService, PeriodicalService, TransactionType
 
 
 LEADING_PAGE_RANGE_DISPLAYED = TRAILING_PAGE_RANGE_DISPLAYED = 10
@@ -121,6 +125,125 @@ def digg_paginator(cnt, current):
     }
 
 
+def mul_it(it1, it2):
+    '''
+    Element-wise iterables multiplications.
+    '''
+    assert len(it1) == len(it2), \
+        "Can not element-wise multiply iterables of different length."
+    return map(mul, it1, it2)
+
+
+def chain_sing(*iterables_or_items):
+    '''
+    As itertools.chain except that if an argument is not iterable then chain it
+    as a singleton.
+    '''
+    for iter_or_item in iterables_or_items:
+        if hasattr(iter_or_item, '__iter__'):
+            for item in iter_or_item:
+                yield item
+        else:
+            yield iter_or_item
+
+
+def gettransactiontypes(current=[]):
+    res = []
+    for t in TransactionType.objects.all():
+        d = []
+        if t.internal_name == 'PS_AT_START':
+            pstypes = PeriodicalService.objects.filter(cash_method='AT_START')
+            d = []
+            for pstype in pstypes:
+                key = 'PS_AT_START___%s' % pstype.id
+                d.append({
+                    'title': pstype.name,
+                    'key': key,
+                    'select': True if key in current else False
+                })
+        if t.internal_name == 'PS_AT_END':
+            pstypes = PeriodicalService.objects.filter(cash_method='AT_END')
+            d = []
+            for pstype in pstypes:
+                key = 'PS_AT_END___%s' % pstype.id
+                d.append({
+                    'title': pstype.name,
+                    'key': key,
+                    'select': True if key in current else False
+                })
+
+        if t.internal_name == 'PS_GRADUAL':
+            pstypes = PeriodicalService.objects.filter(cash_method='GRADUAL')
+            d = []
+            for pstype in pstypes:
+                key = 'PS_GRADUAL___%s' % pstype.id
+                d.append({
+                    'title': pstype.name,
+                    'key': key,
+                    'select': True if key in current else False
+                })
+
+        if t.internal_name == 'ADDONSERVICE_PERIODICAL_GRADUAL':
+            pstypes = AddonService.objects.filter(sp_type='GRADUAL')
+            d = []
+            for pstype in pstypes:
+                key = 'ADDONSERVICE_PERIODICAL_GRADUAL___%s' % pstype.id
+                d.append({
+                    'title': pstype.name,
+                    'key': key,
+                    'select': True if key in current else False
+                })
+
+        if t.internal_name == 'ADDONSERVICE_PERIODICAL_AT_START':
+            pstypes = AddonService.objects.filter(sp_type='AT_START')
+            d = []
+            for pstype in pstypes:
+                key = 'ADDONSERVICE_PERIODICAL_AT_START___%s' % pstype.id
+                d.append({
+                    'title': pstype.name,
+                    'key': key,
+                    'select': True if key in current else False
+                })
+        if t.internal_name == 'ADDONSERVICE_PERIODICAL_AT_END':
+            pstypes = AddonService.objects.filter(sp_type='AT_END')
+            d = []
+            for pstype in pstypes:
+                key = 'ADDONSERVICE_PERIODICAL_AT_END___%s' % pstype.id
+                d.append({
+                    'title': pstype.name,
+                    'key': key,
+                    'select': True if key in current else False
+                })
+        if t.internal_name == 'ADDONSERVICE_ONETIME':
+            pstypes = AddonService.objects.filter(service_type='onetime')
+            d = []
+            for pstype in pstypes:
+                key = 'ADDONSERVICE_ONETIME___%s' % pstype.id
+                d.append({
+                    'title': pstype.name,
+                    'key': key,
+                    'select': True if key in current else False
+                })
+
+        res.append({
+            'title': t.name,
+            'key': t.internal_name,
+            'children': d,
+            'isFolder': True if d else False,
+            'select': True if t.internal_name in current else False
+        })
+
+    res = {
+        'title': u'Все',
+        'key': 'all',
+        'children': res,
+        'isFolder': True,
+        'select': True
+    }
+    res = json.dumps(res, ensure_ascii=False)
+    return res
+
+
 class ExtDirectStore(object):
     """
     Implement the server-side needed to load an Ext.data.DirectStore
@@ -197,27 +320,25 @@ class ExtDirectStore(object):
 
             objects = page.object_list
 
-        # return self.serialize(objects, total)
         return objects, total
 
 
-def mul_it(it1, it2):
-    '''
-    Element-wise iterables multiplications.
-    '''
-    assert len(it1) == len(it2), \
-        "Can not element-wise multiply iterables of different length."
-    return map(mul, it1, it2)
+class DBWrap:
 
+    def __init__(self, dsn):
+        self.connection = None
+        self._cur = None
+        self.dsn = dsn
 
-def chain_sing(*iterables_or_items):
-    '''
-    As itertools.chain except that if an argument is not iterable then chain it
-    as a singleton.
-    '''
-    for iter_or_item in iterables_or_items:
-        if hasattr(iter_or_item, '__iter__'):
-            for item in iter_or_item:
-                yield item
-        else:
-            yield iter_or_item
+    @property
+    def cursor(self):
+        if self.connection is None:
+            self.connection = psycopg2.connect(self.dsn)
+            # set autocommit transations
+            self.connection.set_isolation_level(0)
+            self._cur = self.connection.cursor(
+                cursor_factory=psycopg2.extras.RealDictCursor)
+        elif not self._cur:
+            self._cur = self.connection.cursor(
+                cursor_factory=psycopg2.extras.RealDictCursor)
+        return self._cur
