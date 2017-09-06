@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 
+from django.utils.translation import ugettext_lazy as _
 from tzlocal import get_localzone
 
 
@@ -39,6 +40,11 @@ CACHES = {
 }
 
 TIME_ZONE = get_localzone().zone
+
+LANGUAGES = [
+    ('ru', _('Русский')),
+    ('en', _('Английский'))
+]
 
 LANGUAGE_CODE = 'ru-RU'
 
