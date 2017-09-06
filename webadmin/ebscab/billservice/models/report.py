@@ -39,6 +39,7 @@ class TotalTransactionReport(models.Model):
     promise_expired = models.BooleanField(default=False)
 
     def get_remove_url(self):
+        # FIXME: not enough arguments
         return "%s?type=%s&id=%s" % (reverse('totaltransaction_delete'),
                                      (self.table, self.id))
 
