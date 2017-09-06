@@ -21,6 +21,7 @@ except ImportError:
 
 from ebscab.utils.decorators import render_to
 
+# TODO: fix imports
 import settings
 from forms import *
 from models import Payment
