@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext as _
 
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from ebscab.lib.decorators import render_to
 from object_log.models import LogItem
 

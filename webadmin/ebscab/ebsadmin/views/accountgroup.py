@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
 from billservice.forms import AccountGroupForm
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import AccountGroup
 from django_tables2.config import RequestConfig
 from django_tables2_reports.config import RequestConfigReport as RequestConfig

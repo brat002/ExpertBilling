@@ -7,7 +7,7 @@ from django.utils.translation import ugettext as _
 from mako.template import Template as mako_template
 
 from billservice.forms import DocumentModelForm, DocumentRenderForm
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import (
     Account,
     Document,

@@ -20,7 +20,7 @@ from billservice.forms import (
     SubAccountPartialForm,
     SuspendedPeriodBatchForm
 )
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import (
     Account,
     AccountAddonService,

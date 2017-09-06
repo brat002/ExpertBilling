@@ -9,7 +9,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from billservice.forms import TemplateForm, TemplateSelectForm
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import Account, Organization, Template, Transaction
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response

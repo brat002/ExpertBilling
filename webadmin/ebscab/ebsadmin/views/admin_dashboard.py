@@ -4,7 +4,7 @@ import datetime
 
 from django.db.models import Q
 
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import (
     Account,
     RegistrationRequest,

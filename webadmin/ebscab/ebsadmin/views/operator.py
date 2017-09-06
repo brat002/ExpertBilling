@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
 from billservice.forms import OperatorForm
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import Operator
 from ebscab.lib.decorators import render_to
 from object_log.models import LogItem

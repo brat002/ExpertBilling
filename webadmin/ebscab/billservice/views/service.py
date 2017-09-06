@@ -17,7 +17,7 @@ from billservice.models import (
     AddonServiceTransaction,
     PeriodicalServiceHistory
 )
-from billservice.utility import settlement_period_info
+from billservice.utils import settlement_period_info
 from billservice.views.utils import addon_queryset
 
 

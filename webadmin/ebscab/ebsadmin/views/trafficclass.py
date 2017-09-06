@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 from IPy import IP
 
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
 from ebscab.lib.decorators import render_to, ajax_request

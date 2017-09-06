@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
 from billservice.forms import HardwareTypeForm
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import HardwareType
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response

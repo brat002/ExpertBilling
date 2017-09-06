@@ -13,7 +13,7 @@ from billservice.forms import (
     AccountPrepaysTimeSearchForm
 )
 from billservice.models import AccountPrepaysTime
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 
 from ebsadmin.tables import AccountPrepaysTimeTable
 

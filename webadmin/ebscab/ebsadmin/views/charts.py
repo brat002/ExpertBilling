@@ -49,7 +49,7 @@ from django.db import connection
 from django.shortcuts import render_to_response, HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 
 from ebsadmin.forms import chartdata, ReportForm
 

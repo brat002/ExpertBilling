@@ -7,7 +7,7 @@ from billservice.forms import (
     AccountPrepaysRadiusTraficForm,
     AccountPrepaysRadiusTraficSearchForm
 )
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import AccountPrepaysRadiusTrafic
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response

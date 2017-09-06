@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 
 import billservice.models as bsmodels
 from billservice.forms import TransactionReportForm
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import (
     AddonServiceTransaction,
     PeriodicalServiceHistory,

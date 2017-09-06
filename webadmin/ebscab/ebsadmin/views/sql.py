@@ -2,7 +2,7 @@
 
 from django.db import connection
 
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from ebscab.lib.decorators import ajax_request
 from object_log.models import LogItem
 

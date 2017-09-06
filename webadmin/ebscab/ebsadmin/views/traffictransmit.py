@@ -9,7 +9,7 @@ from billservice.forms import (
     TrafficTransmitNodeForm,
     TrafficTransmitServiceForm
 )
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import (
     PrepaidTraffic,
     Tariff,

@@ -9,7 +9,7 @@ from billservice.forms import (
     TimeAccessNodeForm,
     TimeAccessServiceForm
 )
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import Tariff, TimeAccessNode, TimeAccessService
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from ebscab.lib.decorators import ajax_request, render_to

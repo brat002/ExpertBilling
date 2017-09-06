@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from billservice.forms import CashierAccountForm
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import Account, Transaction
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response

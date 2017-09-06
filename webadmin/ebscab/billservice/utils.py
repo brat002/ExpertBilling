@@ -5,9 +5,12 @@ import datetime
 from dateutil.relativedelta import relativedelta
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
 from billservice.forms import LoginForm
+from billservice.models import SystemUser
 
 
 def in_period(time_start, length, repeat_after, now=None):
@@ -176,3 +179,19 @@ def is_login_user(request):
         'form': form,
     }
     return render(request, 'registration/login.html', context)
+
+
+def systemuser_required(func):
+
+    def wrapper(request, *args, **kw):
+        user = request.user
+
+        if not user.id:
+            return HttpResponseRedirect(
+                '%s?next=%s' % (reverse('login'), request.get_full_path()))
+        else:
+            if not isinstance(user.account, SystemUser):
+                return HttpResponseRedirect(reverse('billservice_index'))
+
+            return func(request, *args, **kw)
+    return wrapper

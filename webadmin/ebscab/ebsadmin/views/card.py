@@ -17,7 +17,7 @@ from billservice.forms import (
     CardSearchForm,
     SaleCardForm
 )
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import Card, Dealer, SaleCard, DealerPay
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
