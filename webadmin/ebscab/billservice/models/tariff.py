@@ -205,9 +205,8 @@ class NotificationsSettings(models.Model):
     )
     balance_notifications_template = models.TextField(
         verbose_name=_(u'Шаблон уведомления о недостатке денег'),
-        # TODO: fix typo
         help_text=_(u'Можно использовать переменные account. Для рендеринга '
-                    u'используоется Django Template Engine.'),
+                    u'используется Django Template Engine.'),
         default=''
     )
     notification_type = models.CharField(
