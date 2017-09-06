@@ -2,9 +2,9 @@
 
 
 import datetime
-import os
-import sys
 import urllib2
+
+from django.utils.translation import ugettext_lazy as _
 
 from paymentgateways.qiwi.models import Invoice
 from xml_helper import xml2obj
