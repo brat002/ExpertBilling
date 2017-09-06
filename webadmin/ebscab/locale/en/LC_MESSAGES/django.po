@@ -1,0 +1,90 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-09-07 01:39+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: templates/admin/base_site.html:3
+msgid "Управление конфигурацией"
+msgstr ""
+
+#: templates/admin/base_site.html:6
+msgid "Log out"
+msgstr ""
+
+#: templates/base_extended.html:11
+msgid " Моя учетная запись"
+msgstr ""
+
+#: templates/base_extended.html:14
+msgid "Смена пароля"
+msgstr ""
+
+#: templates/base_extended.html:17
+msgid "Смена тарифного плана"
+msgstr ""
+
+#: templates/base_extended.html:20
+msgid "Активация карточки"
+msgstr ""
+
+#: templates/base_extended.html:23
+msgid "Выход из системы"
+msgstr ""
+
+#: templates/base_extended.html:30
+msgid "Операции с балансом"
+msgstr ""
+
+#: templates/base_extended.html:33
+msgid "Пополнить счёт"
+msgstr ""
+
+#: templates/base_extended.html:37
+msgid "Подключаемые услуги"
+msgstr ""
+
+#: templates/base_extended.html:40
+msgid "Статистика"
+msgstr ""
+
+#: templates/base_extended.html:43
+msgid "Служба поддержки"
+msgstr ""
+
+#: templates/base_extended.html:58
+msgid "Информация о провайдере"
+msgstr ""
+
+#: templates/login_base.html:9
+msgid "АВТОРИЗАЦИЯ"
+msgstr ""
+
+#: templates/login_base.html:104
+msgid "Заявка на подключение"
+msgstr ""
+
+#: templates/login_base.html:111
+msgid "Закрыть"
+msgstr ""
+
+#: templates/login_base.html:112
+msgid "Подать заявку"
+msgstr ""
+
+#: templates/registration/login.html:24
+msgid "ВХОД В СИСТЕМУ"
+msgstr ""

@@ -1,0 +1,4243 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-09-07 01:39+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ebsadmin/cardlib.py:75
+msgid "Активация карты доступа"
+msgstr ""
+
+#: ebsadmin/cardlib.py:118
+msgid "Активация карты оплаты"
+msgstr ""
+
+#: ebsadmin/columns.py:10 ebsadmin/tables/account.py:83
+#: ebsadmin/templates/ebsadmin/notificationssettings_list.html:10
+msgid "Удалить?"
+msgstr ""
+
+#: ebsadmin/forms.py:16
+msgid "Сессии пользователей"
+msgstr ""
+
+#: ebsadmin/forms.py:17 ebsadmin/reportsystem/forms.py:28
+#: ebsadmin/templates/ebsadmin/base.html:76
+msgid "Аккаунты"
+msgstr ""
+
+#: ebsadmin/forms.py:21
+msgid "Потребление трафика выбранными аккаунтами"
+msgstr ""
+
+#: ebsadmin/forms.py:22 ebsadmin/forms.py:28 ebsadmin/forms.py:33
+msgid "МБ"
+msgstr ""
+
+#: ebsadmin/forms.py:27
+msgid "Потребление трафика аккаунтами(общее)"
+msgstr ""
+
+#: ebsadmin/forms.py:32
+msgid "Потребление трафика по серверам доступа"
+msgstr ""
+
+#: ebsadmin/forms.py:38
+msgid "Распределение трафика по тарифам"
+msgstr ""
+
+#: ebsadmin/forms.py:43
+msgid "Распределение трафика по группам трафика"
+msgstr ""
+
+#: ebsadmin/forms.py:48
+msgid "Распределение трафика по аккаунтам "
+msgstr ""
+
+#: ebsadmin/forms.py:53
+msgid "Распределение трафика по серверам доступа"
+msgstr ""
+
+#: ebsadmin/forms.py:58
+msgid "ТОП 10 по потреблению трафика "
+msgstr ""
+
+#: ebsadmin/forms.py:63
+msgid "Прирост абонентской базы "
+msgstr ""
+
+#: ebsadmin/forms.py:64 ebsadmin/tables/account.py:82
+msgid "Количество"
+msgstr ""
+
+#: ebsadmin/forms.py:70
+msgid "Распределение платежей/списаний по типам (сумма) "
+msgstr ""
+
+#: ebsadmin/forms.py:76
+msgid "Распределение платежей/списаний по типам(кол-во)"
+msgstr ""
+
+#: ebsadmin/forms.py:77
+msgid "шт."
+msgstr ""
+
+#: ebsadmin/forms.py:82
+msgid "Динамика изменения баланса "
+msgstr ""
+
+#: ebsadmin/forms.py:83 ebsadmin/forms.py:85
+msgid "Баланс"
+msgstr ""
+
+#: ebsadmin/forms.py:91
+msgid "Минута"
+msgstr ""
+
+#: ebsadmin/forms.py:92
+msgid "Час"
+msgstr ""
+
+#: ebsadmin/forms.py:93
+msgid "День"
+msgstr ""
+
+#: ebsadmin/forms.py:94
+msgid "Месяц"
+msgstr ""
+
+#: ebsadmin/forms.py:98
+msgid "Линия"
+msgstr ""
+
+#: ebsadmin/forms.py:99
+msgid "Кривая"
+msgstr ""
+
+#: ebsadmin/forms.py:100
+msgid "Вертикальная"
+msgstr ""
+
+#: ebsadmin/forms.py:101
+msgid "Горизонтальная"
+msgstr ""
+
+#: ebsadmin/forms.py:102
+msgid "Пирог"
+msgstr ""
+
+#: ebsadmin/forms.py:123
+msgid "С"
+msgstr ""
+
+#: ebsadmin/forms.py:130 ebsadmin/reportsystem/forms.py:21
+#: ebsadmin/reportsystem/forms.py:41 ebsadmin/reportsystem/forms.py:62
+msgid "По"
+msgstr ""
+
+#: ebsadmin/forms.py:153 ebsadmin/templates/ebsadmin/logview.html:15
+msgid "Лог"
+msgstr ""
+
+#: ebsadmin/forms.py:155
+msgid "Количество последних строк"
+msgstr ""
+
+#: ebsadmin/forms.py:161
+msgid "Класс трафика"
+msgstr ""
+
+#: ebsadmin/forms.py:164
+msgid "Наши сети (построчно)"
+msgstr ""
+
+#: ebsadmin/forms.py:166
+msgid ""
+"Перечислите ваши сети построчно. Последняя строка не должна быть пустой."
+msgstr ""
+
+#: ebsadmin/forms.py:170
+msgid "Файл с сетями назначения"
+msgstr ""
+
+#: ebsadmin/forms.py:171
+msgid "Пример:<br/> 192.168.11.0/24<br/>172.168.0.0/16<br/>127.0.0.0/8"
+msgstr ""
+
+#: ebsadmin/models.py:20 ebsadmin/tables/transaction.py:102
+msgid "Комментарий"
+msgstr ""
+
+#: ebsadmin/models.py:22
+msgid "Финальный комментарий"
+msgstr ""
+
+#: ebsadmin/models.py:26 ebsadmin/tables/cashier.py:31
+#: ebsadmin/tables/tickets.py:16
+msgid "Создан"
+msgstr ""
+
+#: ebsadmin/models.py:31
+msgid "Когда выполнен"
+msgstr ""
+
+#: ebsadmin/models.py:36
+msgid "Кем выполнен"
+msgstr ""
+
+#: ebsadmin/models.py:41
+msgid "Выполнить до "
+msgstr ""
+
+#: ebsadmin/models.py:45
+msgid "Удалён"
+msgstr ""
+
+#: ebsadmin/reportsystem/forms.py:14 ebsadmin/reportsystem/forms.py:33
+#: ebsadmin/reportsystem/forms.py:54
+msgid "C"
+msgstr ""
+
+#: ebsadmin/reportsystem/forms.py:70 ebsadmin/reportsystem/reports.py:163
+#: ebsadmin/reportsystem/reports.py:235
+msgid "Тип операции"
+msgstr ""
+
+#: ebsadmin/reportsystem/forms.py:81 ebsadmin/reportsystem/reports.py:510
+msgid "Switch"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:306 ebsadmin/tables/account.py:32
+#: ebsadmin/tables/cashier.py:44
+#: ebsadmin/templates/ebsadmin/card/generate.html:100
+msgid "Логин"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:307 ebsadmin/tables/cashier.py:23
+#: ebsadmin/tables/transaction.py:35 ebsadmin/tables/transaction.py:93
+#: ebsadmin/tables/transaction.py:163 ebsadmin/tables/transaction.py:205
+#: ebsadmin/tables/transaction.py:248
+msgid "ФИО"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:309
+msgid "Начальный баланс"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:311
+msgid "Списания по период. услугам"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:313
+msgid "Списания под подкл. услугам"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:315
+msgid "Списания за трафик"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:317
+msgid "Списания за время"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:319
+msgid "Пополнений баланса"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:321
+msgid "Вычеты и баланса"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:323
+msgid "Конечный баланс"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:504 ebsadmin/tables/payment.py:22
+#: ebsadmin/tables/sms.py:16 ebsadmin/tables/stat.py:13
+#: ebsadmin/tables/stat.py:28 ebsadmin/tables/transaction.py:30
+#: ebsadmin/tables/transaction.py:88 ebsadmin/tables/transaction.py:158
+#: ebsadmin/tables/transaction.py:201 ebsadmin/tables/transaction.py:244
+msgid "Аккаунт"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:581
+msgid "Отчёт по сумме платежей за период"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:584
+msgid "Отчёт по подключенным подключаемым услугам"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:587
+msgid "Отчёт по платежам за период"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:590
+msgid "Отчёт по сумме списаний за период"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:591
+msgid "Отчёт за период"
+msgstr ""
+
+#: ebsadmin/reportsystem/reports.py:594
+msgid "Занятые порты на коммутаторах"
+msgstr ""
+
+#: ebsadmin/tables/account.py:33 ebsadmin/tables/cashier.py:45
+msgid "Договор"
+msgstr ""
+
+#: ebsadmin/tables/account.py:40 ebsadmin/tables/cashier.py:53
+msgid "Подъезд"
+msgstr ""
+
+#: ebsadmin/tables/account.py:41 ebsadmin/tables/cashier.py:54
+msgid "Этаж"
+msgstr ""
+
+#: ebsadmin/tables/account.py:43 ebsadmin/tables/transaction.py:84
+#: ebsadmin/templates/ebsadmin/account_edit.html:1327
+msgid "Тариф"
+msgstr ""
+
+#: ebsadmin/tables/account.py:44 ebsadmin/tables/radius_.py:92
+msgid "IP"
+msgstr ""
+
+#: ebsadmin/tables/account.py:73 ebsadmin/tables/account.py:78
+#: ebsadmin/tables/hardware.py:37 ebsadmin/tables/hardware.py:42
+#: ebsadmin/tables/traffic.py:274
+msgid "Изменить тип"
+msgstr ""
+
+#: ebsadmin/tables/account.py:119
+msgid "Новый баланс"
+msgstr ""
+
+#: ebsadmin/tables/account.py:120 ebsadmin/tables/cashier.py:21
+#: ebsadmin/tables/stat.py:17 ebsadmin/tables/transaction.py:106
+msgid "Сумма"
+msgstr ""
+
+#: ebsadmin/tables/agreements.py:31
+msgid "У аккаунтов"
+msgstr ""
+
+#: ebsadmin/tables/cards.py:26
+msgid "Продана"
+msgstr ""
+
+#: ebsadmin/tables/cashier.py:30 ebsadmin/tables/transaction.py:44
+#: ebsadmin/tables/transaction.py:107 ebsadmin/tables/transaction.py:173
+#: ebsadmin/tables/transaction.py:210 ebsadmin/tables/transaction.py:257
+msgid "Предыдущий баланс"
+msgstr ""
+
+#: ebsadmin/tables/comments.py:36 ebsadmin/tables/log.py:42
+msgid "Объект"
+msgstr ""
+
+#: ebsadmin/tables/hardware.py:25
+msgid ""
+"Удалить? Удаление устройства вызовет удаление всех связаных с ним объектов в "
+"системе."
+msgstr ""
+
+#: ebsadmin/tables/hardware.py:45
+msgid ""
+"Удалить? Удаление типа оборудования вызовёт удаление всех связанных объектов "
+"в системе."
+msgstr ""
+
+#: ebsadmin/tables/hardware.py:74 ebsadmin/tables/hardware.py:79
+#: ebsadmin/tables/misc.py:22
+msgid "Изменить название"
+msgstr ""
+
+#: ebsadmin/tables/hardware.py:91 ebsadmin/tables/hardware.py:96
+msgid "Изменить модель"
+msgstr ""
+
+#: ebsadmin/tables/hardware.py:99
+msgid ""
+"Удалить? Удаление модели оборудования вызовет удаление всех связаных "
+"объектов в системе."
+msgstr ""
+
+#: ebsadmin/tables/ip.py:30
+msgid "IP в пуле"
+msgstr ""
+
+#: ebsadmin/tables/ip.py:35
+msgid "Используется"
+msgstr ""
+
+#: ebsadmin/tables/log.py:60
+msgid "Тариф аккаунта"
+msgstr ""
+
+#: ebsadmin/tables/log.py:62
+msgid "Доснятие до стоимости"
+msgstr ""
+
+#: ebsadmin/tables/log.py:64
+msgid "Обнуление предоплаченного трафика"
+msgstr ""
+
+#: ebsadmin/tables/log.py:66
+msgid "Начисление предоплаченного трафика"
+msgstr ""
+
+#: ebsadmin/tables/log.py:68
+msgid "Обнуление предоплаченного времени"
+msgstr ""
+
+#: ebsadmin/tables/log.py:70
+msgid "Начисление предоплаченного врeмени"
+msgstr ""
+
+#: ebsadmin/tables/log.py:72
+msgid "Блокировка баланса"
+msgstr ""
+
+#: ebsadmin/tables/log.py:80
+msgid ""
+"Удалить? Удаление записи приведёт к повторной тарификации указанной услуги с "
+"начала подключения пользователя на тарифный план."
+msgstr ""
+
+#: ebsadmin/tables/log.py:84
+msgid "Дата"
+msgstr ""
+
+#: ebsadmin/tables/news.py:15
+msgid "Удалить новость?"
+msgstr ""
+
+#: ebsadmin/tables/news.py:16
+msgid "Активна с"
+msgstr ""
+
+#: ebsadmin/tables/news.py:17
+msgid "Активна по"
+msgstr ""
+
+#: ebsadmin/tables/payment.py:16
+msgid "Изменить платёж"
+msgstr ""
+
+#: ebsadmin/tables/payment.py:25
+msgid ""
+"Внимание. Удаление платежа может вызвать нежелательные последствия при "
+"перетарификации. Если вы не уверены в своих действиях - лучше откажитесь от "
+"удаления."
+msgstr ""
+
+#: ebsadmin/tables/radius_.py:23
+msgid "Имя"
+msgstr ""
+
+#: ebsadmin/tables/radius_.py:25
+msgid ""
+"<a href='{% url 'radiusattr' %}?nas={{record.id}}' class='btn btn-mini btn-"
+"primary'>Изменить</a>"
+msgstr ""
+
+#: ebsadmin/tables/radius_.py:27 ebsadmin/tables/tariff.py:32
+msgid "RADIUS атрибуты"
+msgstr ""
+
+#: ebsadmin/tables/radius_.py:42
+msgid ""
+"Удалить? Все связанные с сервером доступа записи будут сброшены на значение "
+"по умолчанию для выбранной записи"
+msgstr ""
+
+#: ebsadmin/tables/radius_.py:63
+msgid "Изменить атрибут"
+msgstr ""
+
+#: ebsadmin/tables/radius_.py:81
+msgid "Последнее обновление"
+msgstr ""
+
+#: ebsadmin/tables/radius_.py:83
+msgid "Caller ID"
+msgstr ""
+
+#: ebsadmin/tables/radius_.py:89
+msgid "Адрес"
+msgstr ""
+
+#: ebsadmin/tables/radius_.py:94
+msgid "Протокол"
+msgstr ""
+
+#: ebsadmin/tables/radius_.py:96
+msgid "Онлайн"
+msgstr ""
+
+#: ebsadmin/tables/radius_.py:99
+msgid "NAS"
+msgstr ""
+
+#: ebsadmin/tables/radius_.py:103
+msgid "Байт"
+msgstr ""
+
+#: ebsadmin/tables/radius_.py:111
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:323
+msgid "Субаккаунт"
+msgstr ""
+
+#: ebsadmin/tables/radius_.py:121
+msgid "Action"
+msgstr ""
+
+#: ebsadmin/tables/services.py:37 ebsadmin/tables/services.py:42
+#: ebsadmin/tables/services.py:59 ebsadmin/tables/services.py:64
+msgid "Периодическая услуга"
+msgstr ""
+
+#: ebsadmin/tables/services.py:45
+msgid ""
+"Удалить? Удаление разовой услуги вызовет обнуление информации о списаниях по "
+"ней. Вместо этого рекомемендуется воспользоваться отключением услуги."
+msgstr ""
+
+#: ebsadmin/tables/services.py:67
+msgid ""
+"Удалить? Удаление периодической услуги вызовет обнуление информации о "
+"списаниях по ней. Вместо этого рекомемендуется воспользоваться отключением "
+"услуги."
+msgstr ""
+
+#: ebsadmin/tables/services.py:122
+msgid "Отключить подклюачемую услугу?"
+msgstr ""
+
+#: ebsadmin/tables/services.py:123
+msgid "Отключить"
+msgstr ""
+
+#: ebsadmin/tables/sms.py:21
+msgid "Удалить SMS сообщение?"
+msgstr ""
+
+#: ebsadmin/tables/stat.py:14
+msgid "Группа"
+msgstr ""
+
+#: ebsadmin/tables/stat.py:31
+msgid "ВХ"
+msgstr ""
+
+#: ebsadmin/tables/stat.py:34
+msgid "ИСХ"
+msgstr ""
+
+#: ebsadmin/tables/stat.py:35
+msgid "Последние данные"
+msgstr ""
+
+#: ebsadmin/tables/switch.py:16
+msgid ""
+"Удалить? Перед удалением коммутатора убедитесь, что он не используется в "
+"биллинг-системе"
+msgstr ""
+
+#: ebsadmin/tables/switch.py:38
+msgid "Порт"
+msgstr ""
+
+#: ebsadmin/tables/switch.py:43
+msgid "Битый"
+msgstr ""
+
+#: ebsadmin/tables/switch.py:48
+msgid "Аплинк"
+msgstr ""
+
+#: ebsadmin/tables/switch.py:53
+msgid "Защита"
+msgstr ""
+
+#: ebsadmin/tables/switch.py:58
+msgid "Мониторинг"
+msgstr ""
+
+#: ebsadmin/tables/switch.py:63
+msgid "Отключён"
+msgstr ""
+
+#: ebsadmin/tables/tariff.py:36
+msgid "Тип доступа"
+msgstr ""
+
+#: ebsadmin/tables/tariff.py:44
+msgid "Аккаунтов"
+msgstr ""
+
+#: ebsadmin/tables/tariff.py:48
+msgid "Скрыть?"
+msgstr ""
+
+#: ebsadmin/tables/tariff.py:49
+msgid "Скрыть"
+msgstr ""
+
+#: ebsadmin/tables/tariff.py:81
+msgid "Подключаемая услуга"
+msgstr ""
+
+#: ebsadmin/tables/tariff.py:84
+msgid "Вы действительно хотите удалить правило активации подключаемых услуг?"
+msgstr ""
+
+#: ebsadmin/tables/tariff.py:103
+msgid "Расчётный период"
+msgstr ""
+
+#: ebsadmin/tables/tariff.py:156
+msgid "Правило изменения скорости"
+msgstr ""
+
+#: ebsadmin/tables/tariff.py:160
+msgid "Удалить? Вы уверены, что хотите удалить строку?"
+msgstr ""
+
+#: ebsadmin/tables/tariff.py:184
+msgid "Правило тарификации времени"
+msgstr ""
+
+#: ebsadmin/tables/tariff.py:187
+msgid "Удалить правило тарификации времени?"
+msgstr ""
+
+#: ebsadmin/tables/templates.py:49
+msgid "Удалить шаблон номера договора?"
+msgstr ""
+
+#: ebsadmin/tables/tickets.py:18
+msgid "Статус"
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:37 ebsadmin/tables/traffic.py:42
+msgid "Изменить класс"
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:49
+msgid "Направления"
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:127
+msgid "Лимит трафика"
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:130
+msgid "Удалить лимит трафика?"
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:142
+msgid "Изменить скорость"
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:164
+msgid "Правило начисления предоплаченного трафика"
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:170
+msgid "Удалить? Вы уверены, что хотите удалить запись?"
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:179
+msgid ""
+"Удалить? Удаление группы трафика вызовет её удаление во всех тарифных планах."
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:190 ebsadmin/tables/traffic.py:222
+msgid "Изменить значения"
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:192 ebsadmin/tables/traffic.py:224
+#: ebsadmin/tables/traffic.py:276
+msgid "Аккаунт/Тариф"
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:196
+msgid "Начислено"
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:200 ebsadmin/tables/traffic.py:227
+msgid "Остаток"
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:207
+msgid "Осталось"
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:209 ebsadmin/tables/traffic.py:229
+#: ebsadmin/tables/traffic.py:277
+msgid "Начислен"
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:235 ebsadmin/tables/traffic.py:283
+msgid "Расходовано"
+msgstr ""
+
+#: ebsadmin/tables/traffic.py:262
+msgid "Правило тарификации трафика"
+msgstr ""
+
+#: ebsadmin/tables/transaction.py:39 ebsadmin/tables/transaction.py:97
+#: ebsadmin/tables/transaction.py:167 ebsadmin/tables/transaction.py:207
+#: ebsadmin/tables/transaction.py:252
+msgid "Адреc"
+msgstr ""
+
+#: ebsadmin/tables/transaction.py:43 ebsadmin/tables/transaction.py:104
+#: ebsadmin/tables/transaction.py:171
+msgid "Тип"
+msgstr ""
+
+#: ebsadmin/tables/transaction.py:46
+msgid "Выполнил"
+msgstr ""
+
+#: ebsadmin/tables/transaction.py:76
+msgid "Удалить проводку #{{ record.id }}?"
+msgstr ""
+
+#: ebsadmin/tables/transaction.py:101
+msgid "Платёжный документ"
+msgstr ""
+
+#: ebsadmin/tables/transaction.py:103
+msgid "ID Услуги"
+msgstr ""
+
+#: ebsadmin/tables/transaction.py:105
+msgid "Бонус"
+msgstr ""
+
+#: ebsadmin/tables/transaction.py:108
+msgid "Создана"
+msgstr ""
+
+#: ebsadmin/tables/transaction.py:109
+msgid "Окончание о.п."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:23
+#: ebsadmin/templates/ebsadmin/base.html:82
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:323
+msgid "Все аккаунты"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:32
+#: ebsadmin/templates/ebsadmin/accountsuppagreement_edit.html:24
+#: ebsadmin/templates/ebsadmin/accounttarif/batch_edit.html:51
+#: ebsadmin/templates/ebsadmin/accounttarif/edit.html:51
+#: ebsadmin/templates/ebsadmin/addonservice/edit.html:519
+#: ebsadmin/templates/ebsadmin/comment_edit.html:15
+#: ebsadmin/templates/ebsadmin/common/edit_form.html:32
+#: ebsadmin/templates/ebsadmin/contracttemplate/edit.html:27
+#: ebsadmin/templates/ebsadmin/dealer/edit.html:316
+#: ebsadmin/templates/ebsadmin/group/edit.html:34
+#: ebsadmin/templates/ebsadmin/nas/edit.html:368
+#: ebsadmin/templates/ebsadmin/news/edit.html:143
+#: ebsadmin/templates/ebsadmin/operator_edit.html:20
+#: ebsadmin/templates/ebsadmin/salecard/edit.html:185
+#: ebsadmin/templates/ebsadmin/settlement_period/edit.html:137
+#: ebsadmin/templates/ebsadmin/speedlimit_edit.html:209
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:331
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:586
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:766
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:814
+#: ebsadmin/templates/ebsadmin/suppagreement/edit.html:27
+#: ebsadmin/templates/ebsadmin/systemuser/edit.html:404
+#: ebsadmin/templates/ebsadmin/tariff_accessparameters.html:260
+#: ebsadmin/templates/ebsadmin/tariff_addonservicetariff_edit.html:77
+#: ebsadmin/templates/ebsadmin/tariff_edit_general.html:321
+#: ebsadmin/templates/ebsadmin/tariff_radiustraffic.html:141
+#: ebsadmin/templates/ebsadmin/tariff_timeaccessnode_edit.html:46
+#: ebsadmin/templates/ebsadmin/tariff_timeaccessservice.html:139
+#: ebsadmin/templates/ebsadmin/tariff_timespeed_edit.html:206
+#: ebsadmin/templates/ebsadmin/tariff_traffictransmitnode_edit.html:63
+#: ebsadmin/templates/ebsadmin/tariff_traffictransmitservice.html:53
+#: ebsadmin/templates/ebsadmin/template/edit.html:69
+#: ebsadmin/templates/ebsadmin/tpchangerule/edit.html:186
+#: ebsadmin/templates/ebsadmin/trafficclass/list.html:83
+#: ebsadmin/templates/ebsadmin/transactiontype/edit.html:28
+msgid "Сохранить"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:37
+msgid "Radius отчёты"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:42
+msgid "RADIUS авторизации"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:47
+msgid "RADIUS сессии"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:52
+msgid "Использованные IP-адреса"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:59
+msgid "Предоплаченные остатки"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:64
+msgid "NetFlow трафик"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:69
+msgid "RADIUS трафик"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:74
+msgid "Время"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:81
+msgid "Сообшение"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:86
+#: ebsadmin/templates/ebsadmin/accounts_list.html:917
+msgid "SMS"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:93
+#: ebsadmin/templates/ebsadmin/account_edit.html:94
+#: ebsadmin/templates/ebsadmin/accounts_list.html:152
+msgid "Отправить SMS"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:99
+msgid "Отправленные SMS"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:106
+#: ebsadmin/templates/ebsadmin/account_edit.html:491
+msgid "Подать заявку"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:117
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:341
+msgid "Карточка"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:118
+msgid "Услуги"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:119
+msgid "Персональные данные"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:120
+msgid "Юр. лицо"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:121
+#: ebsadmin/templates/ebsadmin/account_edit.html:1229
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:344
+#: ebsadmin/templates/ebsadmin/tariff_edit.html:62
+msgid "Прочее"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:127
+msgid "Карточка клиента"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:156
+msgid "Выберите шаблон документа"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:172
+msgid "Шаблон договора"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:254
+msgid "Дата создания"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:289
+msgid "Параметры доступа (упрощённый интерфейс)"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:348
+#: ebsadmin/templates/ebsadmin/account_edit.html:366
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:430
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:446
+msgid "Ping"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:488
+msgid "Запросы в HelpDesk"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:498
+#: ebsadmin/templates/ebsadmin/account_edit.html:1351
+#: ebsadmin/templates/ebsadmin/base.html:84
+msgid "Доп. соглашения"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:501
+msgid "Добавить соглашение"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:508
+msgid "Комментарии к аккаунту"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:978
+#: ebsadmin/templates/ebsadmin/addonservice/edit.html:46
+#: ebsadmin/templates/ebsadmin/base.html:244
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:342
+#: ebsadmin/templates/ebsadmin/tariff_addonservice.html:12
+#: ebsadmin/views/addonservice.py:41
+msgid "Подключаемые услуги"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:984
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:40
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:55
+msgid "Прикрепить подключаемую услугу"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1192
+msgid "Предыдущие тарифные планы"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1194
+#: ebsadmin/templates/ebsadmin/account_edit.html:1340
+msgid "Изменение тарифного плана"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1206
+msgid "Взятое в аренду оборудование"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1212
+msgid "Прикрепить оборудование"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1213
+#: ebsadmin/templates/ebsadmin/account_edit.html:1224
+#: ebsadmin/templates/ebsadmin/accountgroup/list.html:25
+#: ebsadmin/templates/ebsadmin/bonus_transaction_edit.html:13
+#: ebsadmin/templates/ebsadmin/common/list.html:24
+#: ebsadmin/templates/ebsadmin/contracttemplate/list.html:20
+#: ebsadmin/templates/ebsadmin/dealer/list.html:21
+#: ebsadmin/templates/ebsadmin/dynamicschemafield/list.html:24
+#: ebsadmin/templates/ebsadmin/group/list.html:20
+#: ebsadmin/templates/ebsadmin/hardwaretype/list.html:24
+#: ebsadmin/templates/ebsadmin/manufacturer/list.html:24
+#: ebsadmin/templates/ebsadmin/model/list.html:24
+#: ebsadmin/templates/ebsadmin/nas/list.html:25
+#: ebsadmin/templates/ebsadmin/notificationssettings_list.html:46
+#: ebsadmin/templates/ebsadmin/permissiongroup_list.html:17
+#: ebsadmin/templates/ebsadmin/radiusattr/list.html:22
+#: ebsadmin/templates/ebsadmin/settlement_period/list.html:22
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:596
+#: ebsadmin/templates/ebsadmin/tariff_accessparameters.html:253
+#: ebsadmin/templates/ebsadmin/tariff_addonservice.html:24
+#: ebsadmin/templates/ebsadmin/tariff_onetimeservice.html:52
+#: ebsadmin/templates/ebsadmin/tariff_periodicalservice.html:26
+#: ebsadmin/templates/ebsadmin/tariff_radiustraffic.html:30
+#: ebsadmin/templates/ebsadmin/tariff_timeaccessservice.html:30
+#: ebsadmin/templates/ebsadmin/tariff_trafficlimit.html:25
+#: ebsadmin/templates/ebsadmin/tariff_traffictransmitservice.html:34
+#: ebsadmin/templates/ebsadmin/tariff_traffictransmitservice.html:46
+#: ebsadmin/templates/ebsadmin/trafficclass/list.html:80
+#: ebsadmin/templates/ebsadmin/trafficnode_list.html:83
+msgid "Добавить"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1218
+msgid "Периоды без списаний"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1223
+msgid "Добавить период без списаний услуг"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1231
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:343
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:604
+msgid "Опции"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1341
+msgid "Изменить"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1365
+msgid "Итоговый баланс"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1369
+msgid "Обещанные платежи:"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1378
+msgid "Внести платеж"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1379
+#: ebsadmin/templates/ebsadmin/account_edit.html:1391
+msgid "Пополнить"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1383
+msgid "Бонусный счёт"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1390
+msgid "Внести бонусный платёж"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1398
+msgid "Пополнения баланса"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1403
+msgid "Списания баланса"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1408
+msgid "Обещанные платежи"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/account_edit.html:1413
+#: ebsadmin/templates/ebsadmin/ballancehistory_list.html:26
+#: ebsadmin/templates/ebsadmin/base.html:124
+msgid "История изменения баланса"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountaddonservice_edit.html:17
+#: ebsadmin/templates/ebsadmin/accounttarif/batch_edit.html:52
+#: ebsadmin/templates/ebsadmin/accounttarif/edit.html:52
+#: ebsadmin/templates/ebsadmin/bonus_transaction_edit.html:14
+#: ebsadmin/templates/ebsadmin/card/generate.html:183
+#: ebsadmin/templates/ebsadmin/card/update.html:165
+#: ebsadmin/templates/ebsadmin/dealer/select_window.html:22
+#: ebsadmin/templates/ebsadmin/payment/edit.html:21
+#: ebsadmin/templates/ebsadmin/template/select_window.html:31
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:126
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:162
+msgid "Закрыть"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountgroup/edit.html:12
+msgid "Группа абонентов"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountgroup/edit.html:38
+#: ebsadmin/templates/ebsadmin/accounthardware_edit.html:18
+#: ebsadmin/templates/ebsadmin/accountprepaysradiustraffic/edit.html:21
+#: ebsadmin/templates/ebsadmin/accountprepaystime/edit.html:21
+#: ebsadmin/templates/ebsadmin/accountprepaystraffic/edit.html:21
+#: ebsadmin/templates/ebsadmin/dynamicschemafield/edit.html:15
+#: ebsadmin/templates/ebsadmin/hardwaretype/edit.html:33
+#: ebsadmin/templates/ebsadmin/manufacturer/edit.html:17
+#: ebsadmin/templates/ebsadmin/model/edit.html:64
+#: ebsadmin/templates/ebsadmin/onetimeservice_edit.html:48
+#: ebsadmin/templates/ebsadmin/periodicalservice_edit.html:31
+#: ebsadmin/templates/ebsadmin/radiusattr/edit.html:13
+#: ebsadmin/templates/ebsadmin/suspendedperiod/batch_edit.html:43
+#: ebsadmin/templates/ebsadmin/suspendedperiod/edit.html:12
+#: ebsadmin/templates/ebsadmin/tariff_prepaidtraffic_edit.html:12
+#: ebsadmin/templates/ebsadmin/trafficclass/edit.html:63
+#: ebsadmin/templates/ebsadmin/trafficlimit_edit.html:126
+#: ebsadmin/templates/ebsadmin/trafficnode_edit.html:191
+msgid "Save Changes"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountgroup/edit.html:39
+#: ebsadmin/templates/ebsadmin/accounthardware_edit.html:19
+#: ebsadmin/templates/ebsadmin/accountprepaysradiustraffic/edit.html:22
+#: ebsadmin/templates/ebsadmin/accountprepaystime/edit.html:22
+#: ebsadmin/templates/ebsadmin/accountprepaystraffic/edit.html:22
+#: ebsadmin/templates/ebsadmin/comment_edit.html:16
+#: ebsadmin/templates/ebsadmin/dynamicschemafield/edit.html:16
+#: ebsadmin/templates/ebsadmin/hardwaretype/edit.html:34
+#: ebsadmin/templates/ebsadmin/manufacturer/edit.html:18
+#: ebsadmin/templates/ebsadmin/model/edit.html:65
+#: ebsadmin/templates/ebsadmin/onetimeservice_edit.html:49
+#: ebsadmin/templates/ebsadmin/periodicalservice_edit.html:32
+#: ebsadmin/templates/ebsadmin/radiusattr/edit.html:14
+#: ebsadmin/templates/ebsadmin/sendsms_batch_edit.html:44
+#: ebsadmin/templates/ebsadmin/speedlimit_edit.html:210
+#: ebsadmin/templates/ebsadmin/suspendedperiod/batch_edit.html:44
+#: ebsadmin/templates/ebsadmin/suspendedperiod/edit.html:13
+#: ebsadmin/templates/ebsadmin/tariff_addonservicetariff_edit.html:78
+#: ebsadmin/templates/ebsadmin/tariff_prepaidtraffic_edit.html:13
+#: ebsadmin/templates/ebsadmin/tariff_timeaccessnode_edit.html:47
+#: ebsadmin/templates/ebsadmin/tariff_timespeed_edit.html:207
+#: ebsadmin/templates/ebsadmin/tariff_traffictransmitnode_edit.html:64
+#: ebsadmin/templates/ebsadmin/trafficclass/edit.html:64
+#: ebsadmin/templates/ebsadmin/trafficlimit_edit.html:127
+#: ebsadmin/templates/ebsadmin/trafficnode_edit.html:194
+msgid "Close"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountgroup/list.html:13
+#: ebsadmin/templates/ebsadmin/base.html:83
+msgid "Группы абонентов"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountgroup/list.html:24
+msgid "Добавление группы абонентов"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountprepaysradiustraffic/edit.html:13
+#: ebsadmin/templates/ebsadmin/accountprepaystraffic/edit.html:13
+#: ebsadmin/templates/ebsadmin/tariff_radiustraffic.html:90
+#: ebsadmin/templates/ebsadmin/tariff_traffictransmitservice.html:38
+#: ebsadmin/templates/ebsadmin/tariff_traffictransmitservice.html:44
+msgid "Предоплаченный трафик"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountprepaysradiustraffic/list.html:14
+msgid "Остатки предоплаченного трафика(RADIUS тарификация)"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountprepaysradiustraffic/list.html:18
+#: ebsadmin/templates/ebsadmin/accountprepaystime/list.html:18
+#: ebsadmin/templates/ebsadmin/accountprepaystraffic/list.html:18
+#: ebsadmin/templates/ebsadmin/accounts_list.html:227
+#: ebsadmin/templates/ebsadmin/actionlog_list.html:22
+#: ebsadmin/templates/ebsadmin/activesession_list.html:162
+#: ebsadmin/templates/ebsadmin/authlog_list.html:14
+#: ebsadmin/templates/ebsadmin/ballancehistory_list.html:15
+#: ebsadmin/templates/ebsadmin/card/list.html:188
+#: ebsadmin/templates/ebsadmin/globalstat_list.html:15
+#: ebsadmin/templates/ebsadmin/groupstat_list.html:14
+#: ebsadmin/templates/ebsadmin/ipinuse_list.html:13
+#: ebsadmin/templates/ebsadmin/payment/list.html:14
+#: ebsadmin/templates/ebsadmin/periodicalservicelog_list.html:16
+#: ebsadmin/templates/ebsadmin/shedulelog_list.html:15
+#: ebsadmin/templates/ebsadmin/sms_list.html:14
+#: ebsadmin/templates/ebsadmin/transactionreport_list.html:79
+msgid "Фильтр"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountprepaysradiustraffic/list.html:19
+#: ebsadmin/templates/ebsadmin/accountprepaystime/list.html:19
+#: ebsadmin/templates/ebsadmin/accountprepaystraffic/list.html:19
+#: ebsadmin/templates/ebsadmin/accounts_list.html:228
+#: ebsadmin/templates/ebsadmin/actionlog_list.html:23
+#: ebsadmin/templates/ebsadmin/activesession_list.html:163
+#: ebsadmin/templates/ebsadmin/authlog_list.html:15
+#: ebsadmin/templates/ebsadmin/ballancehistory_list.html:16
+#: ebsadmin/templates/ebsadmin/card/list.html:189
+#: ebsadmin/templates/ebsadmin/charts/base.html:37
+#: ebsadmin/templates/ebsadmin/globalstat_list.html:16
+#: ebsadmin/templates/ebsadmin/groupstat_list.html:15
+#: ebsadmin/templates/ebsadmin/ipinuse_list.html:14
+#: ebsadmin/templates/ebsadmin/payment/list.html:15
+#: ebsadmin/templates/ebsadmin/periodicalservicelog_list.html:17
+#: ebsadmin/templates/ebsadmin/shedulelog_list.html:16
+#: ebsadmin/templates/ebsadmin/sms_list.html:15
+#: ebsadmin/templates/ebsadmin/transactionreport_list.html:80
+msgid "Отчёт"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountprepaysradiustraffic/list.html:30
+msgid "Поиск по остаткам предоплаченного  RADIUS трафика"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountprepaysradiustraffic/list.html:36
+#: ebsadmin/templates/ebsadmin/accountprepaystime/list.html:39
+#: ebsadmin/templates/ebsadmin/accountprepaystraffic/list.html:34
+#: ebsadmin/templates/ebsadmin/accounts_list.html:871
+#: ebsadmin/templates/ebsadmin/actionlog_list.html:135
+#: ebsadmin/templates/ebsadmin/activesession_list.html:307
+#: ebsadmin/templates/ebsadmin/authlog_list.html:33
+#: ebsadmin/templates/ebsadmin/card/list.html:455
+#: ebsadmin/templates/ebsadmin/globalstat_list.html:31
+#: ebsadmin/templates/ebsadmin/groupstat_list.html:31
+#: ebsadmin/templates/ebsadmin/ipinuse_list.html:30
+#: ebsadmin/templates/ebsadmin/payment/list.html:31
+#: ebsadmin/templates/ebsadmin/periodicalservicelog_list.html:33
+#: ebsadmin/templates/ebsadmin/shedulelog_list.html:33
+#: ebsadmin/templates/ebsadmin/sms_list.html:30
+#: ebsadmin/templates/ebsadmin/transactionreport_list.html:180
+msgid "Подобрать результаты"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountprepaystime/edit.html:13
+msgid "Предоплаченное время"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountprepaystime/list.html:14
+msgid "Остатки предоплаченного времени(RADIUS тарификация)"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountprepaystime/list.html:31
+msgid "Поиск по остаткам предоплаченного времени"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountprepaystraffic/list.html:14
+msgid "Остатки предоплаченного трафика(NetFlow тарификация)"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountprepaystraffic/list.html:29
+msgid "Поиск по остаткам трафика"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:101
+#: ebsadmin/templates/ebsadmin/transactionreport_list.html:38
+msgid "Произошла ошибка в обработке запросов сервером"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:134
+msgid "Добавление периода без списаний периодических услуг"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:170
+msgid "Требуется подтверждение. Выполнить действие?"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:181
+#: ebsadmin/templates/ebsadmin/admin_dashboard.html:52
+#: ebsadmin/templates/ebsadmin/card/list.html:54
+#: ebsadmin/templates/ebsadmin/card/list.html:80
+#: ebsadmin/templates/ebsadmin/card/list.html:103
+#: ebsadmin/templates/ebsadmin/notificationssettings_list.html:22
+#: ebsadmin/templates/ebsadmin/trafficclass/list.html:26
+#: ebsadmin/templates/ebsadmin/trafficnode_list.html:52
+msgid "Произошла непредвиденная ошибка"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:754
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:564
+msgid "IPN статус"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:828
+msgid "Юрлицо"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:831
+msgid "Да"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:834
+msgid "Нет"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:837
+msgid "Не важно"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:844
+msgid "Наименование"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:859
+msgid "Расчетный счет"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:872
+msgid "Очистить форму"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:882
+#: ebsadmin/templates/ebsadmin/base.html:80
+msgid "Новый аккаунт"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:886
+msgid "Изменить статус"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:890
+msgid "Активен"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:891
+msgid "Не активен"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:895
+msgid "Изменить ТП"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:900
+msgid "Удалить из системы"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:903
+msgid "Восстановить из архива"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:907
+msgid "В архив"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:911
+msgid "Период без ПУ"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accounts_list.html:914
+msgid "Сообщение"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountsuppagreement_edit.html:12
+#: ebsadmin/templates/ebsadmin/suppagreement/edit.html:13
+msgid "Виды доп. соглашений"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/accountsuppagreement_edit.html:18
+#: ebsadmin/templates/ebsadmin/suppagreement/edit.html:20
+msgid "Параметры соглашения"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/actionlog_list.html:35
+msgid "Поиск по логу действий"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/activesession_list.html:93
+msgid "Ошибка:"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/activesession_list.html:97
+#: ebsadmin/templates/ebsadmin/activesession_list.html:124
+#: ebsadmin/templates/ebsadmin/nas/edit.html:36
+msgid "Ошибка соединения"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/activesession_list.html:119
+#: ebsadmin/templates/ebsadmin/nas/edit.html:31
+msgid "Ошибка"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/activesession_list.html:173
+msgid "Фильтр по сессиям"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/addonservice/edit.html:52
+msgid "Параметры подключаемой услуги"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/addonservice/edit.html:84
+msgid "Правила активации"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/addonservice/edit.html:115
+msgid "Правила тарификации"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/addonservice/edit.html:188
+msgid "Досрочное отключение"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/addonservice/edit.html:233
+msgid "Выполнить действие"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/addonservice/edit.html:307
+msgid "Изменить настройки скорости"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/address_list.html:14
+#: ebsadmin/templates/ebsadmin/address_list.html:80
+#: ebsadmin/templates/ebsadmin/address_list.html:129
+#: ebsadmin/templates/ebsadmin/timeperiod_list.html:13
+#: ebsadmin/templates/ebsadmin/timeperiod_list.html:78
+msgid "Название"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/address_list.html:28
+#: ebsadmin/templates/ebsadmin/address_list.html:58
+#: ebsadmin/templates/ebsadmin/address_list.html:94
+#: ebsadmin/templates/ebsadmin/address_list.html:115
+#: ebsadmin/templates/ebsadmin/address_list.html:141
+#: ebsadmin/templates/ebsadmin/address_list.html:156
+#: ebsadmin/templates/ebsadmin/address_list.html:171
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:20
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:33
+#: ebsadmin/templates/ebsadmin/timeperiod_list.html:27
+#: ebsadmin/templates/ebsadmin/timeperiod_list.html:90
+#: ebsadmin/templates/ebsadmin/timeperiod_list.html:157
+msgid "В процессе отправки произошла ошибка"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/address_list.html:40
+msgid "Выберите город"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/address_list.html:74
+msgid "Выберите улицу"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/address_list.html:105
+#: ebsadmin/templates/ebsadmin/timeperiod_list.html:147
+msgid "Вы уверены, что хотите удалить запись?"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/address_list.html:244
+#: ebsadmin/templates/ebsadmin/timeperiod_list.html:173
+msgid "Двойной клик по элементу - редактировать"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/address_list.html:249
+msgid "Добавить город"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/address_list.html:252
+msgid "Добавить улицу"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/address_list.html:256
+msgid "Добавить дом"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/address_list.html:260
+#: ebsadmin/templates/ebsadmin/timeperiod_list.html:191
+msgid "Удалить элемент"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/admin_dashboard.html:13
+#: ebsadmin/templates/ebsadmin/tags/object_comments.html:9
+msgid "Редактировать комментарий"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/admin_dashboard.html:22
+#: ebsadmin/templates/ebsadmin/admin_dashboard.html:31
+#: ebsadmin/templates/ebsadmin/tags/object_comments.html:18
+msgid "Изменить запись"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/admin_dashboard.html:40
+#: ebsadmin/templates/ebsadmin/card/list.html:41
+#: ebsadmin/templates/ebsadmin/trafficnode_list.html:39
+msgid "Вы действительно хотите удалить?"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/admin_dashboard.html:76
+msgid "Количество аккаунтов:"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/admin_dashboard.html:81
+msgid "Неактивно аккаунтов:"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/admin_dashboard.html:86
+msgid "Аккаунтов за последнй день:"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/admin_dashboard.html:91
+msgid "Аккаунтов c отрицательным балансом:"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/admin_dashboard.html:96
+msgid "Аккаунтов c положительным балансом:"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/admin_dashboard.html:101
+msgid "Платежей за последнй день:"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/admin_dashboard.html:106
+msgid "RADIUS сессий:"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/admin_dashboard.html:111
+msgid "Администраторов:"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/admin_dashboard.html:116
+msgid "Заявок на подключение:"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/authlog_list.html:27
+#: ebsadmin/templates/ebsadmin/periodicalservicelog_list.html:27
+#: ebsadmin/templates/ebsadmin/shedulelog_list.html:27
+msgid "Поиск по логу авторизаций"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/ballancehistory_list.html:32
+msgid "Показать результаты"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:81
+msgid "Поиск"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:85
+#: ebsadmin/views/registrationrequest.py:41
+msgid "Запросы на подключение"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:86
+msgid "Настройка уведомлений"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:90
+#: ebsadmin/templates/ebsadmin/tariff_edit.html:16
+msgid "Тарифные планы"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:94
+#: ebsadmin/templates/ebsadmin/base.html:99
+msgid "Отчёты"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:105
+msgid "Аналитические отчёты"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:114
+msgid "Операции с л/c"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:119
+#: ebsadmin/templates/ebsadmin/payment/list.html:12
+msgid "Платежи через платёжные системы"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:130
+msgid "SMS сообщения"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:135
+msgid "Занятые IP адреса"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:140
+msgid "История RADIUS авторизаций"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:146
+#: ebsadmin/templates/ebsadmin/groupstat_list.html:12
+msgid "Тарифицированный трафик"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:151
+msgid "Предоплаченные единицы"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:156
+msgid "Предоплаченный трафик (NetFlow)"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:161
+msgid "Предоплаченный трафик (RADIUS)"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:166
+msgid "Предоплаченное время (RADIUS)"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:177
+msgid "Монитор"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:183
+msgid "Монитор сессий"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:188
+msgid "Монитор трафика"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:193
+msgid "Статистика"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:202
+msgid "Справочники"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:208
+#: ebsadmin/templates/ebsadmin/nas/edit.html:68
+#: ebsadmin/templates/ebsadmin/nas/list.html:17
+msgid "Серверы доступа"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:213
+#: ebsadmin/templates/ebsadmin/switch/edit.html:99 ebsadmin/views/switch.py:44
+msgid "Коммутаторы"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:218 ebsadmin/views/ippool.py:113
+msgid "IP пулы"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:223
+#: ebsadmin/templates/ebsadmin/trafficclass/list.html:69
+#: ebsadmin/templates/ebsadmin/trafficclass/upload.html:14
+#: ebsadmin/templates/ebsadmin/trafficnode_list.html:71
+msgid "Классы трафика"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:228
+#: ebsadmin/templates/ebsadmin/group/edit.html:13
+#: ebsadmin/templates/ebsadmin/group/list.html:12
+msgid "Группы трафика"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:234
+#: ebsadmin/templates/ebsadmin/settlement_period/edit.html:48
+#: ebsadmin/templates/ebsadmin/settlement_period/list.html:13
+msgid "Расчётные периоды"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:239
+msgid "Периоды тарификации"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:249
+msgid "Типы платежей"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:254
+#: ebsadmin/templates/ebsadmin/tpchangerule/edit.html:35
+#: ebsadmin/views/tpchangerule.py:42
+msgid "Правила смены тарифных планов"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:259 ebsadmin/views/template.py:46
+msgid "Шаблоны документов"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:264
+#: ebsadmin/templates/ebsadmin/contracttemplate/list.html:12
+msgid "Шаблоны номера договора"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:270
+msgid "Адреса"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:275
+msgid "Модуль новостей"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:279
+msgid "Оборудование"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:281 ebsadmin/views/hardware.py:42
+#: ebsadmin/views/hardware.py:87 ebsadmin/views/hardware.py:109
+msgid "Устройства"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:282
+#: ebsadmin/templates/ebsadmin/manufacturer/list.html:13
+msgid "Производители оборудования"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:283
+#: ebsadmin/templates/ebsadmin/hardwaretype/list.html:13
+msgid "Типы оборудования"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:284
+#: ebsadmin/templates/ebsadmin/model/list.html:13
+msgid "Модели оборудования"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:290
+#: ebsadmin/templates/ebsadmin/systemuser/edit.html:12
+#: ebsadmin/views/systemuser.py:44
+msgid "Системные пользователи"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:295
+#: ebsadmin/templates/ebsadmin/permissiongroup_list.html:12
+#: ebsadmin/views/permissiongroup.py:87 ebsadmin/views/permissiongroup.py:109
+msgid "Группы доступа"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:300
+msgid "Дополнительные атрибуты аккаунта"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:309
+#: ebsadmin/templates/ebsadmin/salecard/edit.html:31
+msgid "Карты"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:313
+msgid "Пул карт"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:314
+#: ebsadmin/templates/ebsadmin/dealer/edit.html:35
+#: ebsadmin/templates/ebsadmin/dealer/list.html:13
+msgid "Дилеры"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:315
+msgid "Накладные"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:322
+msgid "Сервис"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:328
+#: ebsadmin/templates/ebsadmin/logview.html:9
+msgid "Просмотр логов"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:333
+msgid "История действий пользователей"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:338
+msgid "Последние списания период. услуг"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:343
+msgid "Последние сервисные процедуры"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:348
+#: ebsadmin/templates/ebsadmin/operator_edit.html:12
+msgid "Информация о провайдере"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:353
+msgid "Интерфейс кассира"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:358
+msgid "Хелпдеск"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/base.html:363
+msgid "Выйти"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/generate.html:114
+msgid "Пин"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/generate.html:182
+#: ebsadmin/templates/ebsadmin/card/list.html:465
+#: ebsadmin/templates/ebsadmin/card/update.html:164
+#: ebsadmin/templates/reportsystem/generic.html:27
+msgid "Сгенерировать"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:18
+msgid "Сгенерировать пул карт"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:30
+msgid "Изменить параметры"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:114
+msgid "Выберите дилера"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:138
+msgid "Выберите шаблон карты"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:182
+msgid "Карточная система"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:469
+msgid "Экспресс-оплата"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:470
+msgid "HotSpot"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:471
+msgid "Карты VPN доступа"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:472
+msgid "Карты телефонии"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:478
+msgid "Действия"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:482
+msgid "Разрешить активацию"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:483
+msgid "Запретить активацию"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:484
+#: ebsadmin/templates/ebsadmin/trafficnode_list.html:86
+msgid "Удалить"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:490
+msgid "Изменить выбранные"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:496
+msgid "Передать дилеру"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/list.html:502
+msgid "Распечатать"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/update.html:12
+msgid "Изменить серию"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/card/update.html:12
+msgid "Укажите новую серию, чтобы переопределить значения в выбранных картах."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/charts/base.html:36
+msgid "Настройки"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/charts/base.html:43
+msgid "Параметры отчёта:"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/charts/base.html:188
+msgid "Построить"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/common/succ_operation.html:3
+msgid "Операция произведена успешно."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/contracttemplate/edit.html:13
+msgid "Шаблон номера договора"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/contracttemplate/edit.html:20
+#: ebsadmin/templates/ebsadmin/template/edit.html:63
+msgid "Параметры шаблона"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/dealer/edit.html:42
+msgid "Профиль дилера"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/dealer/edit.html:247
+msgid "Банк"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/dealer/select_window.html:21
+#: ebsadmin/templates/ebsadmin/template/select_window.html:30
+msgid "Выбрать"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/dynamicschemafield/list.html:13
+msgid "Дополнительные поля"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/dynamicschemafield/list.html:22
+msgid "Добавление дополнительных полей"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/globalstat_list.html:12
+msgid "Монитор активности(NetFlow)"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/group/edit.html:22
+msgid "Параметры группы трафика"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/group/edit.html:26
+msgid ""
+"Внимание, изменение настроек группы трафика автоматически отразится на всех "
+"связанных тарифных планах"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/hardwaretype/list.html:22
+msgid "Добавление типа оборудования"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/account_edit.html:28
+msgid "В процессе отправки произошла ошибка :("
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/account_edit.html:115
+#: ebsadmin/templates/ebsadmin/include_js/account_edit.html:173
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:64
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:124
+msgid "Подбор IP адреса"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/account_edit.html:115
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:64
+msgid "Выдать следующий IP из пула или показать доcтупные"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/account_edit.html:173
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:124
+msgid "Выдать следующий IP из пула или показать дсотупные"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/account_edit.html:306
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:261
+msgid "Внимание"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/account_edit.html:306
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:261
+msgid ""
+"Этот функционал поддерживается только при использовании RouterOS MikroTik"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/account_edit.html:310
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:265
+msgid "Вы не выбрали сервер доступа."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/account_edit.html:316
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:271
+msgid "Вы не указали IPN IP адрес."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/account_edit.html:335
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:291
+msgid "Не удалось получить MAC адрес по причине "
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:31
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:133
+msgid "Январь"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:32
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:133
+msgid "Февраль"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:33
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:133
+msgid "Март"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:34
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:133
+msgid "Апрель"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:35
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:133
+msgid "Май"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:36
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:133
+msgid "Июнь"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:37
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:133
+msgid "Июль"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:38
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:133
+msgid "Август"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:39
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:133
+msgid "Сентябрь"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:40
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:133
+msgid "Октябрь"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:41
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:133
+msgid "Ноябрь"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:42
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:133
+msgid "Декабрь"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:45
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:137
+msgid "вс"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:46
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:137
+msgid "пн"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:47
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:137
+msgid "вт"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:48
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:137
+msgid "ср"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:49
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:137
+msgid "чт"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:50
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:137
+msgid "пт"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/include_js/base.html:51
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:137
+msgid "сб"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/ipinuse_list.html:25
+msgid "Занятые IP адреса из пулов"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/logview.html:28
+msgid "Показать"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/manufacturer/list.html:22
+msgid "Добавление производителей оборудования"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/model/list.html:22
+msgid "Добавление модели оборудования"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/nas/edit.html:19
+msgid "Подождите"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/nas/edit.html:28
+msgid "Тест прошёл успешно"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/nas/edit.html:33
+#: ebsadmin/templates/ebsadmin/nas/edit.html:37
+#: ebsadmin/templates/ebsadmin/nas/edit.html:252
+msgid "Проверить"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/nas/edit.html:42
+msgid "Заполнить значениями?"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/nas/edit.html:42
+msgid ""
+"Заполнить значениями по-умолчанию для выбранного типа сервера доступа? "
+"Текущие настройки будут возвращены в первоначальное состояние"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/nas/edit.html:72
+#: ebsadmin/templates/ebsadmin/switch/edit.html:107
+#: ebsadmin/templates/ebsadmin/tariff_edit.html:29
+msgid "Общее"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/nas/edit.html:73
+msgid "Команды"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/nas/edit.html:79
+msgid "Параметры сервера доступа"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/nas/edit.html:101
+msgid "Значения для выбранного типа"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/nas/edit.html:146
+msgid "RADIUS параметры"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/nas/edit.html:198
+msgid "Атрибуты установки скорости через RADIUS"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/nas/edit.html:214
+msgid "Параметры SSH"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/nas/edit.html:250
+msgid "Проверить SSH подключение"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/nas/list.html:10
+msgid ""
+"Настройки серверов доступа являются важными составляющими логики работы "
+"системы. Не допускайте несанкционированного доступа к настройкам."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/news/edit.html:25
+msgid "Новости"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/news/edit.html:31
+msgid "Параметры новости"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/notificationssettings_list.html:42
+#: ebsadmin/views/notificationssettings.py:88
+#: ebsadmin/views/notificationssettings.py:114
+msgid "Уведомления"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/payment/edit.html:12
+msgid ""
+"Внимание. Вы редактируете данные, которые могут повлиять на целостность "
+"связанных объектов. Не меняйте эти значения, если для этого нет веских "
+"причин."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/periodicalservicelog_list.html:13
+msgid "Списания по периодическим услугам"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/radiusattr/list.html:12
+msgid "Дополнительные RADIUS атрибуты"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/radiusattr/list.html:20
+msgid "Добавление RADIUS атрибутов"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/salecard/edit.html:37
+msgid "Накладная на передачу карт дилеру"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/sendsms_batch_edit.html:35
+msgid "Символов"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/sendsms_batch_edit.html:43
+msgid "Save Change"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/sendsms_batch_edit.html:48
+msgid "Сначала выберите получателей"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/settlement_period/edit.html:54
+msgid "Параметры расчётного периода"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/shedulelog_list.html:13
+msgid "Лог системных операций"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/sms_list.html:39
+msgid "Создать новые SMS вы можете в отчёте по пользователям"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:350
+msgid "Профиль субаккаунта"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:353
+msgid "ID аккаунта"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:366
+msgid "ID субаккаунта"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:576
+msgid ""
+"Текущие IPN статусы отображены выше. Для их изменения - отметьте "
+"соответствующие пункты и сохраните субаккаунт. Изменения применятся в "
+"течении нескольких минут."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:594
+msgid "Активированные подключаемые услуги"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:802
+msgid ""
+"\n"
+"              <small>Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-"
+"rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-"
+"time] [priority] <br /> \n"
+"                Примеры:  <br /> \n"
+"                128k  - rx-rate=128000, tx-rate=128000 (no bursts)  <br /> \n"
+"                64k/128M - rx-rate=64000, tx-rate=128000000  <br /> \n"
+"                64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-"
+"burst-threshold=64000, rx/tx-burst-time=1s  <br /> \n"
+"                64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-"
+"burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s  <br /"
+"></small>\n"
+"                "
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/subaccount_edit.html:826
+msgid "Информация"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/switch/edit.html:88
+msgid "Во время обращения к серверу возникла ошибка"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/switch/edit.html:108
+msgid "Порты"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/switch/edit.html:120
+msgid ""
+"Укажите количество портов и сохраните коммутатор, чтобы приступить к "
+"редактированию портов"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/systemuser/edit.html:19
+msgid "Параметры учётной записи"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_accessparameters.html:251
+msgid "Добавить параметры изменения скорости"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_addonservice.html:15
+msgid ""
+"Здесь перечислены подключаемые услуги, доступные для самостоятельной "
+"активации аккаунтами через личный кабинет."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_addonservice.html:22
+msgid "Добавить правило активации подключаемой услуги"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_edit.html:26
+msgid "Параметры тарифного плана"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_edit.html:32
+msgid "Параметры доступа"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_edit.html:35
+msgid "Списания"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_edit.html:38
+#: ebsadmin/templates/ebsadmin/tariff_periodicalservice.html:12
+msgid "Периодические услуги"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_edit.html:41
+#: ebsadmin/templates/ebsadmin/tariff_onetimeservice.html:11
+msgid "Разовые услуги"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_edit.html:44
+msgid "Тарификация трафика"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_edit.html:53
+msgid "Лимиты"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_edit.html:56
+msgid "Тарификация времени"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_edit.html:59
+msgid "Radius постоплата времени"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_edit.html:65
+msgid "Доступные подключаемые услуги"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_edit.html:73
+msgid "Сохраните тарифный план, чтобы настроить его детально"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_edit_general.html:14
+msgid "Общие параметры"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_onetimeservice.html:14
+msgid ""
+"Разовые услуги позволяют производить списания при подключении пользователя "
+"на тарифный план."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_onetimeservice.html:50
+msgid "Добавить разовую услугу"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_periodicalservice.html:15
+msgid ""
+"Периодические услуги позволяют производить списания с указанным интервалом и "
+"способом."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_periodicalservice.html:24
+msgid "Добавить периодическую услугу"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_radiustraffic.html:16
+#: ebsadmin/templates/ebsadmin/tariff_timeaccessservice.html:16
+#: ebsadmin/templates/ebsadmin/tariff_traffictransmitservice.html:17
+msgid "Удалить услугу"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_radiustraffic.html:20
+msgid "Тарификация трафика по RADIUS"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_radiustraffic.html:28
+#: ebsadmin/templates/ebsadmin/tariff_timeaccessservice.html:28
+#: ebsadmin/templates/ebsadmin/tariff_traffictransmitservice.html:32
+msgid "Добавить параметры тарификации"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_radiustraffic.html:35
+msgid ""
+"Добавьте услугу тарификации RADIUS трафика, чтобы указать детальные "
+"параметры тарификации."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_radiustraffic.html:40
+#: ebsadmin/templates/ebsadmin/tariff_timeaccessservice.html:40
+msgid "Параметры тарификации"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_radiustraffic.html:147
+msgid "Добавить RADIUS тарификацию трафика"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_timeaccessservice.html:20
+msgid "Тарификация времени по RADIUS"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_timeaccessservice.html:35
+msgid ""
+"Добавьте услугу тарификации времени по RADIUS Accounting статистике, чтобы "
+"указать детальные параметры тарификации."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_timeaccessservice.html:147
+msgid "Добавить RADIUS тарификацию времени"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_trafficlimit.html:12
+msgid "Лимиты трафика"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_trafficlimit.html:15
+msgid ""
+"Лимиты трафика позволяют ограничить объём потребляемого трафика за указанный "
+"период времени."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_trafficlimit.html:23
+msgid "Добавить лимит трафика"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_traffictransmitservice.html:23
+msgid "Тарификация трафика по NetFlow"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_traffictransmitservice.html:49
+msgid ""
+"Сбрасывать предоплаченный трафик в конце расчётного периода (указан в общих "
+"настройках тарифного плана)"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tariff_traffictransmitservice.html:59
+msgid "Добавить услугу тарификации трафика"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/template/edit.html:52
+msgid "Шаблоны"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/template/edit.html:57
+msgid "Редактирование"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/template/edit.html:58
+msgid "Просмотр"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/template/edit.html:70
+msgid "Предпросмотр"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/timeperiod_list.html:43
+msgid "Выберите период"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/timeperiod_list.html:184
+msgid "Сохранить подпериод"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/timeperiod_list.html:190
+msgid "Добавить период"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/tpchangerule/edit.html:42
+msgid "Правило перехода на тарифный план"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/trafficclass/list.html:58
+msgid ""
+"<strong>Внимание!</strong> Просмотр классов происходит сверху-вниз. От "
+"меньшего веса к большему."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/trafficclass/list.html:62
+msgid "<strong>Внимание!</strong> Сохраните изменения, нажав кнопку Сохранить."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/trafficclass/list.html:78
+msgid "Добавить класс"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/trafficclass/upload.html:15
+msgid "Загрузка сетей в класс"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/trafficclass/upload.html:21
+msgid ""
+"<h3>Внимание!</h3>\n"
+"        Предварительно убедитесь в том, что вы не создадите дубликатов и, "
+"при необходимости, очистите класс от предыдущих подсетей."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/trafficclass/upload.html:26
+#: ebsadmin/templates/ebsadmin/transactiontype/edit.html:22
+msgid "Параметры"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/trafficclass/upload.html:32
+msgid "Создать"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/trafficclass/upload.html:39
+msgid "Созданные сети"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/trafficnode_list.html:15
+msgid "Добавить направление"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/trafficnode_list.html:25
+msgid "Изменить направление"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/trafficnode_list.html:80
+msgid "Загрузить из файла"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:38
+msgid ""
+"Возможно для вас не выбрано ни одного способа пополнения. <br />Настройте "
+"доступные вам способы"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:38
+msgid "здесь"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:125
+msgid "Оплатить"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/transaction_edit.html:161
+msgid "Печать чека"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/transactionreport_list.html:20
+msgid "Удалить выбранные проводки?"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/transactionreport_list.html:90
+msgid "Отчёт по платежам и списаниям"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/transactionreport_list.html:181
+msgid "Результаты на одной странице"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/transactionreport_list.html:192
+msgid ""
+"Общий отчёт содержит ряд связанных с производительностью ограниений на "
+"отображение данных. Для просмотра детальной информации об операциях - "
+"выберите однотипные типы списаний/пополнений."
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/transactionreport_list.html:200
+msgid "Удалить проводки"
+msgstr ""
+
+#: ebsadmin/templates/ebsadmin/transactiontype/edit.html:14
+#: ebsadmin/views/transactiontype.py:41
+msgid "Типы проводок"
+msgstr ""
+
+#: ebsadmin/views/access.py:50
+msgid "Параметры доступа успешно сохранены."
+msgstr ""
+
+#: ebsadmin/views/access.py:58
+msgid "При сохранении параметров доступа произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/access.py:65 ebsadmin/views/access.py:77
+#: ebsadmin/views/account.py:148 ebsadmin/views/account.py:212
+#: ebsadmin/views/accountgroup.py:27 ebsadmin/views/accountgroup.py:97
+#: ebsadmin/views/accounthardware.py:69
+#: ebsadmin/views/accountprepaysradiustraffic.py:30
+#: ebsadmin/views/accountprepaysradiustraffic.py:135
+#: ebsadmin/views/accountprepaystime.py:29
+#: ebsadmin/views/accountprepaystime.py:135
+#: ebsadmin/views/accountprepaystraffic.py:29
+#: ebsadmin/views/accountprepaystraffic.py:141
+#: ebsadmin/views/accountsreport.py:23
+#: ebsadmin/views/accountsuppagreement.py:76 ebsadmin/views/actionlog.py:25
+#: ebsadmin/views/activesessionreport.py:24 ebsadmin/views/addonservice.py:28
+#: ebsadmin/views/addonservice.py:105 ebsadmin/views/addonservicetariff.py:25
+#: ebsadmin/views/addonservicetariff.py:97 ebsadmin/views/address.py:27
+#: ebsadmin/views/authlog.py:22 ebsadmin/views/ballancehistoryreport.py:22
+#: ebsadmin/views/card.py:39 ebsadmin/views/card.py:208
+#: ebsadmin/views/card.py:286 ebsadmin/views/card.py:345
+#: ebsadmin/views/card.py:704 ebsadmin/views/charts.py:62
+#: ebsadmin/views/contracttemplate.py:27 ebsadmin/views/dealer.py:27
+#: ebsadmin/views/dealer.py:96 ebsadmin/views/dealer.py:119
+#: ebsadmin/views/dynamicfields.py:27 ebsadmin/views/dynamicfields.py:100
+#: ebsadmin/views/globalstat.py:27 ebsadmin/views/group.py:27
+#: ebsadmin/views/group.py:95 ebsadmin/views/groupstat.py:27
+#: ebsadmin/views/hardware.py:27 ebsadmin/views/hardware.py:95
+#: ebsadmin/views/hardwaretype.py:26 ebsadmin/views/hardwaretype.py:88
+#: ebsadmin/views/ipinusereport.py:24 ebsadmin/views/ippool.py:28
+#: ebsadmin/views/ippool.py:100 ebsadmin/views/manufacturer.py:26
+#: ebsadmin/views/manufacturer.py:98 ebsadmin/views/model.py:26
+#: ebsadmin/views/model.py:88 ebsadmin/views/nasses.py:29
+#: ebsadmin/views/nasses.py:114 ebsadmin/views/news.py:29
+#: ebsadmin/views/news.py:114 ebsadmin/views/notificationssettings.py:27
+#: ebsadmin/views/notificationssettings.py:97
+#: ebsadmin/views/onetimeservice.py:25 ebsadmin/views/operator_.py:62
+#: ebsadmin/views/payment.py:26 ebsadmin/views/payment.py:137
+#: ebsadmin/views/periodicalservice.py:25
+#: ebsadmin/views/periodicalservicelog.py:27
+#: ebsadmin/views/permissiongroup.py:27 ebsadmin/views/permissiongroup.py:95
+#: ebsadmin/views/radiusattr.py:28 ebsadmin/views/radiusattr.py:121
+#: ebsadmin/views/radiustraffic.py:25 ebsadmin/views/settlementperiod.py:31
+#: ebsadmin/views/settlementperiod.py:103 ebsadmin/views/shedulelog.py:26
+#: ebsadmin/views/sms.py:26 ebsadmin/views/subaccount.py:110
+#: ebsadmin/views/suppagreement.py:28 ebsadmin/views/suppagreement.py:115
+#: ebsadmin/views/switch.py:29 ebsadmin/views/switch.py:92
+#: ebsadmin/views/systemuser.py:29 ebsadmin/views/systemuser.py:124
+#: ebsadmin/views/tariff.py:33 ebsadmin/views/template.py:31
+#: ebsadmin/views/template.py:118 ebsadmin/views/timeaccess.py:72
+#: ebsadmin/views/timeaccess.py:140 ebsadmin/views/timeperiod.py:26
+#: ebsadmin/views/tpchangerule.py:27 ebsadmin/views/tpchangerule.py:146
+#: ebsadmin/views/trafficclass.py:30 ebsadmin/views/trafficclass.py:142
+#: ebsadmin/views/trafficclass.py:205 ebsadmin/views/trafficclass.py:274
+#: ebsadmin/views/trafficlimit.py:25 ebsadmin/views/trafficlimit.py:95
+#: ebsadmin/views/traffictransmit.py:34 ebsadmin/views/transactionreport.py:200
+#: ebsadmin/views/transactiontype.py:27 ebsadmin/views/transactiontype.py:101
+msgid "У вас нет прав на доступ в этот раздел."
+msgstr ""
+
+#: ebsadmin/views/access.py:83 ebsadmin/views/addonservicetariff.py:56
+#: ebsadmin/views/addonservicetariff.py:118
+#: ebsadmin/views/contracttemplate.py:57 ebsadmin/views/onetimeservice.py:52
+#: ebsadmin/views/onetimeservice.py:111 ebsadmin/views/periodicalservice.py:57
+#: ebsadmin/views/periodicalservice.py:132 ebsadmin/views/prepaidtraffic.py:24
+#: ebsadmin/views/prepaidtraffic.py:102 ebsadmin/views/radiustraffic.py:46
+#: ebsadmin/views/radiustraffic.py:109 ebsadmin/views/radiustraffic.py:197
+#: ebsadmin/views/radiustraffic.py:237 ebsadmin/views/speedlimit.py:25
+#: ebsadmin/views/speedlimit.py:84 ebsadmin/views/timeaccess.py:33
+#: ebsadmin/views/timeaccess.py:103 ebsadmin/views/timeaccess.py:154
+#: ebsadmin/views/timeaccess.py:213 ebsadmin/views/timespeed.py:24
+#: ebsadmin/views/timespeed.py:84 ebsadmin/views/trafficlimit.py:56
+#: ebsadmin/views/trafficlimit.py:116 ebsadmin/views/traffictransmit.py:50
+#: ebsadmin/views/traffictransmit.py:115 ebsadmin/views/traffictransmit.py:152
+#: ebsadmin/views/traffictransmit.py:194
+msgid "У вас нет прав на редактирование тарифного плана"
+msgstr ""
+
+#: ebsadmin/views/account.py:59
+msgid "У вас нет прав на изменение аккаунтов"
+msgstr ""
+
+#: ebsadmin/views/account.py:70
+msgid "Статус успешно изменён."
+msgstr ""
+
+#: ebsadmin/views/account.py:77
+msgid "Ошибка при изменении статуса."
+msgstr ""
+
+#: ebsadmin/views/account.py:98
+msgid "У вас нет прав на изменение тарифных планов у аккаунта"
+msgstr ""
+
+#: ebsadmin/views/account.py:107 ebsadmin/views/account.py:183
+msgid "У вас нет прав на создание тарифных планов у аккаунта"
+msgstr ""
+
+#: ebsadmin/views/account.py:119
+msgid ""
+"Нельзя создавать правило смены тарифного плана, если уже существует правило "
+"с большей датой."
+msgstr ""
+
+#: ebsadmin/views/account.py:241 ebsadmin/views/account.py:271
+#: ebsadmin/views/suspendedperiod.py:39
+msgid "У вас нет прав на создание периодов без списаний"
+msgstr ""
+
+#: ebsadmin/views/account.py:297
+msgid "У вас нет прав на удаление аккаунтов"
+msgstr ""
+
+#: ebsadmin/views/account.py:321
+msgid "У вас нет прав редактирование аккаунтов"
+msgstr ""
+
+#: ebsadmin/views/account.py:365 ebsadmin/views/accounthardware.py:39
+msgid "У вас нет прав на редактирование аккаунтов"
+msgstr ""
+
+#: ebsadmin/views/account.py:414 ebsadmin/views/subaccount.py:53
+msgid "У вас нет прав на создание аккаунтов"
+msgstr ""
+
+#: ebsadmin/views/account.py:598
+msgid "Аккаунт сохранён."
+msgstr ""
+
+#: ebsadmin/views/accountaddonservice.py:33
+msgid "У вас нет прав на редактирование привязок подключаемых услуг"
+msgstr ""
+
+#: ebsadmin/views/accountaddonservice.py:43
+msgid "У вас нет прав на создание привязок подключаемых услуг"
+msgstr ""
+
+#: ebsadmin/views/accountaddonservice.py:58
+msgid "Услуга добавлена."
+msgstr ""
+
+#: ebsadmin/views/accountaddonservice.py:66
+msgid "Услуга не добавлена."
+msgstr ""
+
+#: ebsadmin/views/accountaddonservice.py:77
+msgid "У вас нет прав на просмотр  подключаемых услуг"
+msgstr ""
+
+#: ebsadmin/views/accountaddonservice.py:114
+msgid "У вас нет прав на изменение подключаемых услуг аккаунта"
+msgstr ""
+
+#: ebsadmin/views/accountaddonservice.py:131
+#: ebsadmin/views/accountaddonservice.py:158
+msgid "AccountAddonService not found"
+msgstr ""
+
+#: ebsadmin/views/accountaddonservice.py:142
+msgid "У вас нет прав на удаление подключаемых услуг аккаунта"
+msgstr ""
+
+#: ebsadmin/views/accountgroup.py:56 ebsadmin/views/accountgroup.py:86
+msgid "Ошибка при сохранении группы."
+msgstr ""
+
+#: ebsadmin/views/accountgroup.py:65
+msgid "У вас нет прав на добавление групп абонентов"
+msgstr ""
+
+#: ebsadmin/views/accountgroup.py:78
+msgid "Группа успешно сохранена."
+msgstr ""
+
+#: ebsadmin/views/accountgroup.py:122
+msgid "У вас нет прав на удаление групп пользователей"
+msgstr ""
+
+#: ebsadmin/views/accountgroup.py:131
+#, python-format
+msgid "Указанная группа не найдена %s"
+msgstr ""
+
+#: ebsadmin/views/accountgroup.py:138
+msgid "Группа аккаунтов успешно удалена."
+msgstr ""
+
+#: ebsadmin/views/accountgroup.py:145
+msgid "Ошибка при удалении группы."
+msgstr ""
+
+#: ebsadmin/views/accountgroup.py:149
+msgid "AccountGroup not found"
+msgstr ""
+
+#: ebsadmin/views/accounthardware.py:52
+msgid "Оборудование успешно добавлено."
+msgstr ""
+
+#: ebsadmin/views/accounthardware.py:99
+msgid "У вас нет прав на удаление оборудования аккаунта"
+msgstr ""
+
+#: ebsadmin/views/accounthardware.py:114
+msgid "AccountHardware not found"
+msgstr ""
+
+#: ebsadmin/views/accounthardware.py:136
+#, python-format
+msgid "AccountHardware item with id=%s not found"
+msgstr ""
+
+#: ebsadmin/views/accounthardware.py:141 ebsadmin/views/address.py:309
+#, python-format
+msgid "Returned >1 items with id=%s"
+msgstr ""
+
+#: ebsadmin/views/accountprepaysradiustraffic.py:100
+msgid "У вас нет прав на редактирование предоплаченного RADIUS трафика"
+msgstr ""
+
+#: ebsadmin/views/accountprepaysradiustraffic.py:109
+msgid "У вас нет прав на добавление RADIUS предоплаченного трафика."
+msgstr ""
+
+#: ebsadmin/views/accountprepaysradiustraffic.py:160
+#: ebsadmin/views/accountprepaystraffic.py:163
+msgid "У вас нет прав на удаление предоплаченного NetFlow трафика"
+msgstr ""
+
+#: ebsadmin/views/accountprepaysradiustraffic.py:170
+#: ebsadmin/views/accountprepaystime.py:169
+#: ebsadmin/views/accountprepaystraffic.py:173
+#: ebsadmin/views/accountsuppagreement.py:110
+#: ebsadmin/views/prepaidtraffic.py:113 ebsadmin/views/suppagreement.py:145
+#: ebsadmin/views/tariff.py:194
+#, python-format
+msgid "Указанная запись не найдена %s"
+msgstr ""
+
+#: ebsadmin/views/accountprepaysradiustraffic.py:182
+msgid "AccountPrepaysRadiusTrafic not found"
+msgstr ""
+
+#: ebsadmin/views/accountprepaystime.py:100
+msgid "У вас нет прав на редактирование предоплаченного времени"
+msgstr ""
+
+#: ebsadmin/views/accountprepaystime.py:109
+msgid "У вас нет прав на добавление предоплаченного времени"
+msgstr ""
+
+#: ebsadmin/views/accountprepaystime.py:160
+msgid "У вас нет прав на удаление предоплаченного времени"
+msgstr ""
+
+#: ebsadmin/views/accountprepaystime.py:181
+msgid "AccountPrepaysTime not found"
+msgstr ""
+
+#: ebsadmin/views/accountprepaystraffic.py:104
+msgid "У вас нет прав на редактирование предоплаченного трафика"
+msgstr ""
+
+#: ebsadmin/views/accountprepaystraffic.py:113
+msgid "У вас нет прав на добавление предоплаченного трафика"
+msgstr ""
+
+#: ebsadmin/views/accountprepaystraffic.py:185
+msgid "AccountPrepaysTrafic not found"
+msgstr ""
+
+#: ebsadmin/views/accountsuppagreement.py:34
+msgid "У вас нет прав на редактирование дополнительных соглашений"
+msgstr ""
+
+#: ebsadmin/views/accountsuppagreement.py:44
+msgid "У вас нет прав на создание дополнительных соглашений"
+msgstr ""
+
+#: ebsadmin/views/accountsuppagreement.py:60
+msgid "Дополнительное соглашения сохранёно."
+msgstr ""
+
+#: ebsadmin/views/accountsuppagreement.py:66
+#: ebsadmin/views/addonservicetariff.py:84 ebsadmin/views/suppagreement.py:103
+msgid "Ошибка при сохранении."
+msgstr ""
+
+#: ebsadmin/views/accountsuppagreement.py:101
+#: ebsadmin/views/suppagreement.py:136
+msgid "У вас нет прав на удаление видов доп. соглащений"
+msgstr ""
+
+#: ebsadmin/views/accountsuppagreement.py:118
+#: ebsadmin/views/suppagreement.py:153
+msgid "Запись успешно удалена."
+msgstr ""
+
+#: ebsadmin/views/accountsuppagreement.py:126
+#: ebsadmin/views/suppagreement.py:161
+msgid "Ошибка при удалении записи."
+msgstr ""
+
+#: ebsadmin/views/accountsuppagreement.py:130
+#: ebsadmin/views/suppagreement.py:165
+msgid "SuppAgreement not found"
+msgstr ""
+
+#: ebsadmin/views/accounttariff.py:23
+msgid "У вас нет прав на удаление связки тарифа"
+msgstr ""
+
+#: ebsadmin/views/accounttariff.py:32
+#, python-format
+msgid "Указанный тарифный план не найден тарифный план %s"
+msgstr ""
+
+#: ebsadmin/views/accounttariff.py:38
+msgid "Невозможно удалить вступивший в силу тарифный план"
+msgstr ""
+
+#: ebsadmin/views/accounttariff.py:46
+msgid "Тарифный план применён."
+msgstr ""
+
+#: ebsadmin/views/accounttariff.py:53
+msgid "Ошибка при изменении тарифного плана."
+msgstr ""
+
+#: ebsadmin/views/accounttariff.py:57
+msgid "AccountTarif not found"
+msgstr ""
+
+#: ebsadmin/views/actions.py:23
+msgid "У вас нет прав на управление состоянием субаккаунтов"
+msgstr ""
+
+#: ebsadmin/views/actions.py:35 ebsadmin/views/actions.py:42
+#: ebsadmin/views/actions.py:103 ebsadmin/views/actions.py:107
+msgid "Ok"
+msgstr ""
+
+#: ebsadmin/views/actions.py:55
+msgid "Не указан или не найден указанный сервер доступа"
+msgstr ""
+
+#: ebsadmin/views/addonservice.py:65
+msgid "У вас нет прав на редактирование подключаемых услуг"
+msgstr ""
+
+#: ebsadmin/views/addonservice.py:72
+msgid "У вас нет прав на создание подключаемых услуг"
+msgstr ""
+
+#: ebsadmin/views/addonservice.py:87
+msgid "Подключаемая услуга сохранена."
+msgstr ""
+
+#: ebsadmin/views/addonservice.py:93
+msgid "Ошибка при сохранении подключаемой услуги."
+msgstr ""
+
+#: ebsadmin/views/addonservice.py:125
+msgid "У вас нет прав на удаление подключаемых услуг"
+msgstr ""
+
+#: ebsadmin/views/addonservice.py:134 ebsadmin/views/onetimeservice.py:122
+#: ebsadmin/views/radiustraffic.py:248 ebsadmin/views/timeaccess.py:224
+#: ebsadmin/views/traffictransmit.py:126
+#, python-format
+msgid "Указанная услуга не найдена %s"
+msgstr ""
+
+#: ebsadmin/views/addonservice.py:142
+msgid "Подключаемая услуга удалена."
+msgstr ""
+
+#: ebsadmin/views/addonservice.py:150
+msgid "Ошибка при удалении подключаемой услуги."
+msgstr ""
+
+#: ebsadmin/views/addonservice.py:154 ebsadmin/views/transactiontype.py:156
+msgid "TransactionType not found"
+msgstr ""
+
+#: ebsadmin/views/addonservicetariff.py:76
+msgid "Подключаемая услуга успешно добавлена в тарифный план."
+msgstr ""
+
+#: ebsadmin/views/addonservicetariff.py:129 ebsadmin/views/radiustraffic.py:208
+#: ebsadmin/views/speedlimit.py:95 ebsadmin/views/timeaccess.py:114
+#: ebsadmin/views/timespeed.py:95 ebsadmin/views/tpchangerule.py:178
+#: ebsadmin/views/trafficlimit.py:128 ebsadmin/views/traffictransmit.py:163
+#, python-format
+msgid "Указанное правило не найдено %s"
+msgstr ""
+
+#: ebsadmin/views/addonservicetariff.py:134
+msgid "Подключаемая услуга удалена из тарифного плана."
+msgstr ""
+
+#: ebsadmin/views/addonservicetariff.py:142
+msgid "При удалении подклчюаемой услуги из тарифного плана произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/addonservicetariff.py:147
+#: ebsadmin/views/prepaidtraffic.py:132
+msgid "AddonServiceTarif not found"
+msgstr ""
+
+#: ebsadmin/views/address.py:73
+msgid "У вас нет прав на изменение городов"
+msgstr ""
+
+#: ebsadmin/views/address.py:81
+msgid "У вас нет прав на добавление городов"
+msgstr ""
+
+#: ebsadmin/views/address.py:130
+msgid "У вас нет прав на изменение улиц"
+msgstr ""
+
+#: ebsadmin/views/address.py:138
+msgid "У вас нет прав на добавление улиц"
+msgstr ""
+
+#: ebsadmin/views/address.py:188
+msgid "У вас нет прав на изменение домов"
+msgstr ""
+
+#: ebsadmin/views/address.py:197
+msgid "У вас нет прав на добавление домов"
+msgstr ""
+
+#: ebsadmin/views/address.py:243
+msgid "У вас нет прав на удаление городов"
+msgstr ""
+
+#: ebsadmin/views/address.py:259
+msgid "У вас нет прав на удаление улиц"
+msgstr ""
+
+#: ebsadmin/views/address.py:275
+msgid "У вас нет прав на удаление домов"
+msgstr ""
+
+#: ebsadmin/views/address.py:304
+#, python-format
+msgid "City item with id=%s not found"
+msgstr ""
+
+#: ebsadmin/views/bonustransaction.py:29
+msgid "У вас нет прав на редактирование  проводок"
+msgstr ""
+
+#: ebsadmin/views/bonustransaction.py:37
+msgid "У вас нет прав на создание проводок"
+msgstr ""
+
+#: ebsadmin/views/card.py:176
+msgid "У вас нет прав на редактирование карт"
+msgstr ""
+
+#: ebsadmin/views/card.py:183
+msgid "У вас нет прав на создание карт"
+msgstr ""
+
+#: ebsadmin/views/card.py:241
+msgid "У вас нет прав на редактирование накладных на карты"
+msgstr ""
+
+#: ebsadmin/views/card.py:250
+msgid "У вас нет прав на создание накладных на карты"
+msgstr ""
+
+#: ebsadmin/views/card.py:403
+#, python-format
+msgid ""
+"Было сгенерировано только %s карт.\n"
+"Расширьте условия генерации для уменьшения количества дублирующихся логинов."
+msgstr ""
+
+#: ebsadmin/views/card.py:505
+msgid "У вас нет прав на изменение карт."
+msgstr ""
+
+#: ebsadmin/views/card.py:638
+msgid "У вас нет прав на удаление карточек"
+msgstr ""
+
+#: ebsadmin/views/card.py:647 ebsadmin/views/card.py:678
+#, python-format
+msgid "Указанная карта не найдена %s"
+msgstr ""
+
+#: ebsadmin/views/card.py:668
+msgid "У вас нет прав на редактирование карточек"
+msgstr ""
+
+#: ebsadmin/views/card.py:719
+msgid "Накладные на карты"
+msgstr ""
+
+#: ebsadmin/views/comment.py:28
+msgid "У вас нет прав на добавление/редактирование комментариев"
+msgstr ""
+
+#: ebsadmin/views/comment.py:92
+msgid "У вас нет прав на удаление комментариев"
+msgstr ""
+
+#: ebsadmin/views/comment.py:101
+#, python-format
+msgid "Указанный комментарий не найден %s"
+msgstr ""
+
+#: ebsadmin/views/comment.py:111
+msgid "Comment not found"
+msgstr ""
+
+#: ebsadmin/views/contracttemplate.py:66
+msgid "У вас нет прав на создание тарифного плана"
+msgstr ""
+
+#: ebsadmin/views/contracttemplate.py:79
+msgid "Шаблон номера договора успешно создан."
+msgstr ""
+
+#: ebsadmin/views/contracttemplate.py:85
+msgid "При сохранении шаблона номера договора возникли ошибки."
+msgstr ""
+
+#: ebsadmin/views/contracttemplate.py:98
+msgid "У вас нет прав на доступ на просмотр тарифных планов."
+msgstr ""
+
+#: ebsadmin/views/contracttemplate.py:120 ebsadmin/views/tariff.py:148
+#: ebsadmin/views/tariff.py:184
+msgid "У вас нет прав на удаление тарифных планов"
+msgstr ""
+
+#: ebsadmin/views/contracttemplate.py:129
+#, python-format
+msgid "Указанный шаблона номера договора не найден %s"
+msgstr ""
+
+#: ebsadmin/views/contracttemplate.py:135
+msgid "Шаблон номера договора успешно удалён."
+msgstr ""
+
+#: ebsadmin/views/contracttemplate.py:143
+msgid "При удалении шаблона номера договора возникли ошибки."
+msgstr ""
+
+#: ebsadmin/views/contracttemplate.py:147
+msgid "ContractTemplate not found"
+msgstr ""
+
+#: ebsadmin/views/credentials.py:40
+msgid "У вас нет на тестирование подключения"
+msgstr ""
+
+#: ebsadmin/views/dealer.py:56
+msgid "У вас нет прав на редактирование дилеров"
+msgstr ""
+
+#: ebsadmin/views/dealer.py:69
+msgid "У вас нет прав на создание дилеров"
+msgstr ""
+
+#: ebsadmin/views/dealer.py:135 ebsadmin/views/nasses.py:138
+msgid "У вас нет прав на удаление серверов доступа"
+msgstr ""
+
+#: ebsadmin/views/dealer.py:144 ebsadmin/views/nasses.py:147
+#, python-format
+msgid "Указанный сервер доступа найден %s"
+msgstr ""
+
+#: ebsadmin/views/dealer.py:154
+msgid "Nas not found"
+msgstr ""
+
+#: ebsadmin/views/document.py:53 ebsadmin/views/document.py:127
+#: ebsadmin/views/template.py:254
+msgid "У вас нет прав на рендеринг документов"
+msgstr ""
+
+#: ebsadmin/views/dynamicfields.py:58
+msgid "У вас нет прав на редактирование дополнительного поля"
+msgstr ""
+
+#: ebsadmin/views/dynamicfields.py:68
+msgid "У вас нет прав на создание дополнительного поля"
+msgstr ""
+
+#: ebsadmin/views/dynamicfields.py:81
+msgid "Дополнительное поле успешно сохранёно."
+msgstr ""
+
+#: ebsadmin/views/dynamicfields.py:89
+msgid "При сохранении поля возникли ошибки."
+msgstr ""
+
+#: ebsadmin/views/dynamicfields.py:122
+msgid "У вас нет прав на удаление дополнительных полей"
+msgstr ""
+
+#: ebsadmin/views/dynamicfields.py:131
+#, python-format
+msgid "Указанное поле не найдено %s"
+msgstr ""
+
+#: ebsadmin/views/dynamicfields.py:136
+msgid "Поле успешно удалёно."
+msgstr ""
+
+#: ebsadmin/views/dynamicfields.py:143
+msgid "При удалении поля возникли ошибки."
+msgstr ""
+
+#: ebsadmin/views/dynamicfields.py:147
+msgid "dynamic field not found"
+msgstr ""
+
+#: ebsadmin/views/getmacforip.py:18
+msgid "Недостаточно прав для выполнения операции"
+msgstr ""
+
+#: ebsadmin/views/getmacforip.py:25
+msgid "Сервер доступа не указан"
+msgstr ""
+
+#: ebsadmin/views/group.py:56
+msgid "У вас нет прав на редактирование групп трафика"
+msgstr ""
+
+#: ebsadmin/views/group.py:64
+msgid "У вас нет прав на создание групп трафика"
+msgstr ""
+
+#: ebsadmin/views/group.py:77
+msgid "Группа трафика успешно сохранена."
+msgstr ""
+
+#: ebsadmin/views/group.py:83
+msgid "При сохранении группы трафика возникли ошибки."
+msgstr ""
+
+#: ebsadmin/views/group.py:117
+msgid "У вас нет прав на удаление групп трафика"
+msgstr ""
+
+#: ebsadmin/views/group.py:126
+#, python-format
+msgid "Указанная группа трафика не найдена %s"
+msgstr ""
+
+#: ebsadmin/views/group.py:131
+msgid "Группа трафика успешно удалёна."
+msgstr ""
+
+#: ebsadmin/views/group.py:138
+msgid "При удалении группы трафика возникли ошибки."
+msgstr ""
+
+#: ebsadmin/views/group.py:142
+msgid "Group not found"
+msgstr ""
+
+#: ebsadmin/views/hardware.py:62
+msgid "У вас нет прав на редактирование оборудования"
+msgstr ""
+
+#: ebsadmin/views/hardware.py:69
+msgid "У вас нет прав на создание оборудования"
+msgstr ""
+
+#: ebsadmin/views/hardware.py:89 ebsadmin/views/hardware.py:111
+msgid "Параметры устройства"
+msgstr ""
+
+#: ebsadmin/views/hardware.py:121
+msgid "У вас нет прав на удаление оборудования"
+msgstr ""
+
+#: ebsadmin/views/hardware.py:130
+#, python-format
+msgid "Указанное оборудование не найдено %s"
+msgstr ""
+
+#: ebsadmin/views/hardware.py:140
+msgid "Hardware not found"
+msgstr ""
+
+#: ebsadmin/views/hardwaretype.py:54
+msgid "У вас нет прав на редактирование типов оборудования"
+msgstr ""
+
+#: ebsadmin/views/hardwaretype.py:63
+msgid "У вас нет прав на создание типов оборудования"
+msgstr ""
+
+#: ebsadmin/views/hardwaretype.py:111
+msgid "У вас нет прав на удаление типов оборудования пулов"
+msgstr ""
+
+#: ebsadmin/views/hardwaretype.py:120
+#, python-format
+msgid "Указанный тип оборудования не найден %s"
+msgstr ""
+
+#: ebsadmin/views/hardwaretype.py:130
+msgid "HardwareType not found"
+msgstr ""
+
+#: ebsadmin/views/ippool.py:42
+msgid "IP пул"
+msgstr ""
+
+#: ebsadmin/views/ippool.py:63
+msgid "У вас нет прав на редактирование IP пулов"
+msgstr ""
+
+#: ebsadmin/views/ippool.py:71
+msgid "У вас нет прав на создание IP пулов"
+msgstr ""
+
+#: ebsadmin/views/ippool.py:85
+msgid "IP пул сохранён."
+msgstr ""
+
+#: ebsadmin/views/ippool.py:90
+msgid "Ошибка при сохранении IP пула."
+msgstr ""
+
+#: ebsadmin/views/ippool.py:115
+msgid "Параметры IP пула"
+msgstr ""
+
+#: ebsadmin/views/ippool.py:125
+msgid "У вас нет прав на удаление IP пулов"
+msgstr ""
+
+#: ebsadmin/views/ippool.py:134
+#, python-format
+msgid "Указанный пул не найден %s"
+msgstr ""
+
+#: ebsadmin/views/ippool.py:141
+msgid "IP пул успешно удалён."
+msgstr ""
+
+#: ebsadmin/views/ippool.py:148
+msgid "Ошибка при удалении IP пула."
+msgstr ""
+
+#: ebsadmin/views/ippool.py:152
+msgid "IPPool not found"
+msgstr ""
+
+#: ebsadmin/views/login.py:28
+msgid "Access for your IP address forbidden"
+msgstr ""
+
+#: ebsadmin/views/login.py:34
+msgid "Login error. May be systemuser host syntax error"
+msgstr ""
+
+#: ebsadmin/views/login.py:43
+msgid "Login succeful"
+msgstr ""
+
+#: ebsadmin/views/login.py:48
+msgid "Login forbidden to this action"
+msgstr ""
+
+#: ebsadmin/views/login.py:53
+msgid "Login can`t be authenticated"
+msgstr ""
+
+#: ebsadmin/views/login.py:58
+msgid "Login not found"
+msgstr ""
+
+#: ebsadmin/views/logview.py:25
+msgid "У вас нет прав на просмотр лог-файлов"
+msgstr ""
+
+#: ebsadmin/views/logview.py:30
+msgid "У вас нет прав на получение списка лог-файлов"
+msgstr ""
+
+#: ebsadmin/views/manufacturer.py:56
+msgid "У вас нет прав на редактирование производителей оборудования"
+msgstr ""
+
+#: ebsadmin/views/manufacturer.py:65
+msgid "У вас нет прав на создание производителей оборудования"
+msgstr ""
+
+#: ebsadmin/views/manufacturer.py:79
+msgid "Производитель успешно сохранён."
+msgstr ""
+
+#: ebsadmin/views/manufacturer.py:87
+msgid "При сохранении производителя возникли ошибки."
+msgstr ""
+
+#: ebsadmin/views/manufacturer.py:119
+msgid "У вас нет прав на удаление производителей оборудования"
+msgstr ""
+
+#: ebsadmin/views/manufacturer.py:129
+#, python-format
+msgid "Указанный производитель оборудования найден %s"
+msgstr ""
+
+#: ebsadmin/views/manufacturer.py:135
+msgid "Производитель успешно удалён."
+msgstr ""
+
+#: ebsadmin/views/manufacturer.py:142
+msgid "При удалении производителя возникли ошибки."
+msgstr ""
+
+#: ebsadmin/views/manufacturer.py:146
+msgid "manufacturer not found"
+msgstr ""
+
+#: ebsadmin/views/model.py:54
+msgid "У вас нет прав на редактирование моделей оборудования"
+msgstr ""
+
+#: ebsadmin/views/model.py:63
+msgid "У вас нет прав на создание моделей оборудования"
+msgstr ""
+
+#: ebsadmin/views/model.py:111
+msgid "У вас нет прав на удаление моделей оборудования"
+msgstr ""
+
+#: ebsadmin/views/model.py:121
+#, python-format
+msgid "Указанная модель оборудования не найдена %s"
+msgstr ""
+
+#: ebsadmin/views/model.py:132
+msgid "Model not found"
+msgstr ""
+
+#: ebsadmin/views/nasses.py:57
+msgid "У вас нет прав на редактирование серверов доступа"
+msgstr ""
+
+#: ebsadmin/views/nasses.py:65
+msgid "У вас нет прав на создание серверов доступа"
+msgstr ""
+
+#: ebsadmin/views/nasses.py:99
+msgid "Сервер доступа успешно сохранён."
+msgstr ""
+
+#: ebsadmin/views/nasses.py:105
+msgid "При сохранении сервера доступа возникли ошибки."
+msgstr ""
+
+#: ebsadmin/views/nasses.py:152
+msgid "Сервер доступа успешно удалён."
+msgstr ""
+
+#: ebsadmin/views/nasses.py:159
+msgid "При удалении сервера доступа возникли ошибки."
+msgstr ""
+
+#: ebsadmin/views/nasses.py:173
+msgid "У вас нет прав на тестирование подключения"
+msgstr ""
+
+#: ebsadmin/views/news.py:42
+msgid "Компонент новостей"
+msgstr ""
+
+#: ebsadmin/views/news.py:59
+msgid "У вас нет прав на редактирование новости"
+msgstr ""
+
+#: ebsadmin/views/news.py:66
+msgid "У вас нет прав на создание новости"
+msgstr ""
+
+#: ebsadmin/views/news.py:155 ebsadmin/views/sms.py:94
+msgid "У вас нет прав на удаление новостей"
+msgstr ""
+
+#: ebsadmin/views/news.py:165
+#, python-format
+msgid "Указанная новость не найдена %s"
+msgstr ""
+
+#: ebsadmin/views/news.py:175
+msgid "News not found"
+msgstr ""
+
+#: ebsadmin/views/notificationssettings.py:58
+msgid "У вас нет прав на редактирование нотификаций"
+msgstr ""
+
+#: ebsadmin/views/notificationssettings.py:67
+msgid "У вас нет прав на создание нотификаций"
+msgstr ""
+
+#: ebsadmin/views/notificationssettings.py:90
+#: ebsadmin/views/permissiongroup.py:89 ebsadmin/views/permissiongroup.py:111
+msgid "Параметры группы доступа"
+msgstr ""
+
+#: ebsadmin/views/notificationssettings.py:116
+msgid "Параметры уведомлений"
+msgstr ""
+
+#: ebsadmin/views/notificationssettings.py:127
+#: ebsadmin/views/permissiongroup.py:122
+msgid "У вас нет прав на удаление групп доступа"
+msgstr ""
+
+#: ebsadmin/views/notificationssettings.py:136
+#, python-format
+msgid "Указанный способ уведомлений не найден %s"
+msgstr ""
+
+#: ebsadmin/views/notificationssettings.py:146
+msgid "Notificationssettings not found"
+msgstr ""
+
+#: ebsadmin/views/onetimeservice.py:70
+msgid "Разовая услуга сохранена."
+msgstr ""
+
+#: ebsadmin/views/onetimeservice.py:79
+msgid "При сохранении разовой  услуги произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/onetimeservice.py:127
+msgid "Разовая услуга удалёна."
+msgstr ""
+
+#: ebsadmin/views/onetimeservice.py:135
+msgid "При удалении разовой услуги произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/onetimeservice.py:139
+msgid "OneTimeService not found"
+msgstr ""
+
+#: ebsadmin/views/operator_.py:31
+msgid "У вас нет прав на редактирование данных о провайдере"
+msgstr ""
+
+#: ebsadmin/views/operator_.py:39
+msgid "У вас нет прав на создание данных о провайдере"
+msgstr ""
+
+#: ebsadmin/views/payment.py:104
+msgid "У вас нет прав на редактирование платежей"
+msgstr ""
+
+#: ebsadmin/views/payment.py:112 ebsadmin/views/transaction.py:40
+msgid "У вас нет прав на создание платежей"
+msgstr ""
+
+#: ebsadmin/views/payment.py:158
+msgid "У вас нет прав на удаление платежей"
+msgstr ""
+
+#: ebsadmin/views/payment.py:168
+#, python-format
+msgid "Указанный платёж не найден %s"
+msgstr ""
+
+#: ebsadmin/views/payment.py:178
+msgid "Payment not found"
+msgstr ""
+
+#: ebsadmin/views/periodicalservice.py:68
+msgid "У вас нет прав на редактирование периодических услуг"
+msgstr ""
+
+#: ebsadmin/views/periodicalservice.py:78
+msgid "У вас нет прав на добавление периодических услуг"
+msgstr ""
+
+#: ebsadmin/views/periodicalservice.py:91
+msgid "Периодическая услуга сохранена."
+msgstr ""
+
+#: ebsadmin/views/periodicalservice.py:100
+msgid "При сохранении периодической услуги произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/periodicalservice.py:143
+#, python-format
+msgid "Указанная периодическая услуга не найдена %s"
+msgstr ""
+
+#: ebsadmin/views/periodicalservice.py:149
+msgid "Периодическая услуга удалёна."
+msgstr ""
+
+#: ebsadmin/views/periodicalservice.py:157
+msgid "При удалении периодической услуги произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/periodicalservice.py:161
+msgid "PeriodicalService not found"
+msgstr ""
+
+#: ebsadmin/views/periodicalservicelog.py:83
+msgid "У вас нет прав на удаление истории списаний по период. услугам"
+msgstr ""
+
+#: ebsadmin/views/periodicalservicelog.py:93
+#, python-format
+msgid "Указанное списание не найдено %s"
+msgstr ""
+
+#: ebsadmin/views/periodicalservicelog.py:103
+msgid "PeriodicalServiceLog not found"
+msgstr ""
+
+#: ebsadmin/views/permissiongroup.py:58
+msgid "У вас нет прав на редактирование групп доступа"
+msgstr ""
+
+#: ebsadmin/views/permissiongroup.py:65
+msgid "У вас нет прав на создание групп доступа"
+msgstr ""
+
+#: ebsadmin/views/permissiongroup.py:131
+#, python-format
+msgid "Указанная группа доступа не найдена %s"
+msgstr ""
+
+#: ebsadmin/views/permissiongroup.py:141
+msgid "PermissionGroup not found"
+msgstr ""
+
+#: ebsadmin/views/ping.py:18
+msgid "У вас нет прав на просмотр данных аккаунта"
+msgstr ""
+
+#: ebsadmin/views/prepaidtraffic.py:35
+msgid ""
+"У вас нет прав на редактирование правил начисления предоплаченного трафика"
+msgstr ""
+
+#: ebsadmin/views/prepaidtraffic.py:44
+msgid "У вас нет прав на добавление правил начисления предоплаченного трафика"
+msgstr ""
+
+#: ebsadmin/views/prepaidtraffic.py:57
+msgid "Настройки предоплаченного трафика успешно сохранены."
+msgstr ""
+
+#: ebsadmin/views/prepaidtraffic.py:66
+msgid "При сохранении настроек предоплаченного трафика произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/prepaidtraffic.py:120
+msgid "Предоплаченный трафик удалён."
+msgstr ""
+
+#: ebsadmin/views/prepaidtraffic.py:128
+msgid "При удалении предоплаченного трафика произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/radiusattr.py:84
+msgid "У вас нет прав на редактирование радиус атрибутов"
+msgstr ""
+
+#: ebsadmin/views/radiusattr.py:92
+msgid "У вас нет прав на создание радиус атрибутов"
+msgstr ""
+
+#: ebsadmin/views/radiusattr.py:146
+msgid "У вас нет прав на удаление радиус атрибутов"
+msgstr ""
+
+#: ebsadmin/views/radiusattr.py:155
+#, python-format
+msgid "Указанный атрибут найден %s"
+msgstr ""
+
+#: ebsadmin/views/radiusattr.py:165
+msgid "RadiusAttrs not found"
+msgstr ""
+
+#: ebsadmin/views/radiustraffic.py:70
+msgid "Услуга RADIUS тарификации трафика успешно сохранена."
+msgstr ""
+
+#: ebsadmin/views/radiustraffic.py:77
+msgid "При сохранении услуги RADIUS тарификации трафика произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/radiustraffic.py:121
+msgid "У вас нет прав на редактирование правил тарификации RADIUS трафика"
+msgstr ""
+
+#: ebsadmin/views/radiustraffic.py:131
+msgid "У вас нет прав на добавление правил тарификации RADIUS трафика"
+msgstr ""
+
+#: ebsadmin/views/radiustraffic.py:145
+msgid "Правило RADIUS тарификации трафика успешно сохранены."
+msgstr ""
+
+#: ebsadmin/views/radiustraffic.py:154
+msgid "При сохранении настроек RADIUS тарификации трафика произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/radiustraffic.py:214
+msgid "Настройка RADIUS тарификации трафика удалена."
+msgstr ""
+
+#: ebsadmin/views/radiustraffic.py:222
+msgid "При удалении настройки RADIUS тарификации трафика произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/radiustraffic.py:227
+msgid "RadiusTrafficNode not found"
+msgstr ""
+
+#: ebsadmin/views/radiustraffic.py:254
+msgid "Услуга RADIUS тарификации трафика удалена."
+msgstr ""
+
+#: ebsadmin/views/radiustraffic.py:262
+msgid "При удалении RADIUS тарификации трафика произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/radiustraffic.py:266
+msgid "RadiusTraffic not found"
+msgstr ""
+
+#: ebsadmin/views/registrationrequest.py:27
+msgid "У вас нет прав на просмотр запросов на подключение."
+msgstr ""
+
+#: ebsadmin/views/registrationrequest.py:52
+msgid "У вас нет прав на удаление запросов на подключение"
+msgstr ""
+
+#: ebsadmin/views/registrationrequest.py:61
+#, python-format
+msgid "Указанный запрос на регистрацию не найден %s"
+msgstr ""
+
+#: ebsadmin/views/registrationrequest.py:68
+msgid "Запрос на регистрацию успешно удалён."
+msgstr ""
+
+#: ebsadmin/views/registrationrequest.py:76
+msgid "При удалении запроса на регистрацию возникли ошибки."
+msgstr ""
+
+#: ebsadmin/views/registrationrequest.py:80
+msgid "RegistrationRequest not found"
+msgstr ""
+
+#: ebsadmin/views/session.py:21 ebsadmin/views/session.py:63
+msgid "У вас нет прав на сброс сессии"
+msgstr ""
+
+#: ebsadmin/views/session.py:31 ebsadmin/views/session.py:73
+#, python-format
+msgid "Session item with id=%s not found"
+msgstr ""
+
+#: ebsadmin/views/session.py:48
+msgid "Сессия поставлена в очередь на сброс."
+msgstr ""
+
+#: ebsadmin/views/session.py:52 ebsadmin/views/session.py:105
+msgid "Данная функция временно не реализована"
+msgstr ""
+
+#: ebsadmin/views/session.py:100
+msgid "Сессия поставлена в очередь на сброс, IP адрес освобождён"
+msgstr ""
+
+#: ebsadmin/views/settlementperiod.py:64
+msgid "У вас нет прав на редактирование расчётных периодов"
+msgstr ""
+
+#: ebsadmin/views/settlementperiod.py:73
+msgid "У вас нет прав на создание расчётных периодов"
+msgstr ""
+
+#: ebsadmin/views/settlementperiod.py:88
+msgid "Расчётный период удачно создан."
+msgstr ""
+
+#: ebsadmin/views/settlementperiod.py:92
+msgid "Ошибка."
+msgstr ""
+
+#: ebsadmin/views/settlementperiod.py:128
+msgid "У вас нет прав на удаление расчётных периодов"
+msgstr ""
+
+#: ebsadmin/views/settlementperiod.py:137
+#, python-format
+msgid "Указанный расчётный период не найден %s"
+msgstr ""
+
+#: ebsadmin/views/settlementperiod.py:149
+msgid "SettlementPeriod not found"
+msgstr ""
+
+#: ebsadmin/views/sms.py:103
+#, python-format
+msgid "Указанное сообщение не найдено %s"
+msgstr ""
+
+#: ebsadmin/views/sms.py:113
+msgid "SMS not found"
+msgstr ""
+
+#: ebsadmin/views/sms.py:125 ebsadmin/views/sms.py:160
+msgid "У вас нет прав на создание новостей"
+msgstr ""
+
+#: ebsadmin/views/speedlimit.py:105
+msgid "SpeedLimit not found"
+msgstr ""
+
+#: ebsadmin/views/subaccount.py:37
+msgid "У вас нет прав на редактирование субаккаунтов"
+msgstr ""
+
+#: ebsadmin/views/subaccount.py:87
+msgid "Субаккаунт сохранён."
+msgstr ""
+
+#: ebsadmin/views/subaccount.py:133
+msgid "У вас нет прав на удаление субаккаунта"
+msgstr ""
+
+#: ebsadmin/views/subaccount.py:159
+msgid "Субаккаунт удалён."
+msgstr ""
+
+#: ebsadmin/views/subaccount.py:167
+msgid "SubAccount not found"
+msgstr ""
+
+#: ebsadmin/views/suppagreement.py:50
+msgid "Вид дополнительного соглашения"
+msgstr ""
+
+#: ebsadmin/views/suppagreement.py:72
+msgid "У вас нет прав на редактирование видов дополнительных соглашений"
+msgstr ""
+
+#: ebsadmin/views/suppagreement.py:81
+msgid "У вас нет прав на создание видов дополнительных соглашений"
+msgstr ""
+
+#: ebsadmin/views/suppagreement.py:97
+msgid "Вид дополнительного соглашения сохранён."
+msgstr ""
+
+#: ebsadmin/views/suspendedperiod.py:31
+msgid "У вас нет прав на редактирование периодов без списаний"
+msgstr ""
+
+#: ebsadmin/views/suspendedperiod.py:65
+msgid "У вас нет прав на доступ в этот раздел"
+msgstr ""
+
+#: ebsadmin/views/suspendedperiod.py:94
+msgid "У вас нет прав на удаление периода простоя"
+msgstr ""
+
+#: ebsadmin/views/suspendedperiod.py:103
+#, python-format
+msgid "Указанный период не найден %s"
+msgstr ""
+
+#: ebsadmin/views/suspendedperiod.py:115
+msgid "SuspendedPeriod not found"
+msgstr ""
+
+#: ebsadmin/views/switch.py:63 ebsadmin/views/switch.py:137
+msgid "У вас нет прав на редактирование коммутатора"
+msgstr ""
+
+#: ebsadmin/views/switch.py:70
+msgid "У вас нет прав на создание коммутатора"
+msgstr ""
+
+#: ebsadmin/views/switch.py:150 ebsadmin/views/switch.py:225
+#, python-format
+msgid "Указанный коммутатор не найден %s"
+msgstr ""
+
+#: ebsadmin/views/switch.py:206 ebsadmin/views/switch.py:235
+msgid "Switch not found"
+msgstr ""
+
+#: ebsadmin/views/switch.py:216
+msgid "У вас нет прав на удаление коммутатора"
+msgstr ""
+
+#: ebsadmin/views/switch.py:245
+msgid "У вас нет прав на получение статуса портов"
+msgstr ""
+
+#: ebsadmin/views/switch.py:264 ebsadmin/views/switch.py:287
+msgid "Невоззможно получить состояние портов"
+msgstr ""
+
+#: ebsadmin/views/switch.py:315
+msgid "У вас нет на установку статуса портов"
+msgstr ""
+
+#: ebsadmin/views/switch.py:334 ebsadmin/views/switch.py:366
+msgid "Невоззможно сохранить состояние портов"
+msgstr ""
+
+#: ebsadmin/views/systemuser.py:67
+msgid "У вас нет прав на редактирование системных пользователей"
+msgstr ""
+
+#: ebsadmin/views/systemuser.py:76
+msgid "У вас нет прав на создание системных пользователей"
+msgstr ""
+
+#: ebsadmin/views/systemuser.py:110
+msgid "Администратор успешно сохранён."
+msgstr ""
+
+#: ebsadmin/views/systemuser.py:115
+msgid "Ошибка при сохранении администратора."
+msgstr ""
+
+#: ebsadmin/views/systemuser.py:161
+msgid "У вас нет прав на удаление администраторов"
+msgstr ""
+
+#: ebsadmin/views/systemuser.py:170
+#, python-format
+msgid "Указанный администратор не найден %s"
+msgstr ""
+
+#: ebsadmin/views/systemuser.py:177
+msgid "Администратор успешно удалён."
+msgstr ""
+
+#: ebsadmin/views/systemuser.py:184
+msgid "Ошибка при удалении администратора."
+msgstr ""
+
+#: ebsadmin/views/systemuser.py:188
+msgid "systemuser not found"
+msgstr ""
+
+#: ebsadmin/views/tariff.py:81
+msgid "У вас нет прав на редактирование тарифных планов"
+msgstr ""
+
+#: ebsadmin/views/tariff.py:89
+msgid "У вас нет прав на создание тарифных планов"
+msgstr ""
+
+#: ebsadmin/views/tariff.py:104
+msgid "Тарифный план сохранён."
+msgstr ""
+
+#: ebsadmin/views/tariff.py:111
+msgid "Во время сохранения тарифного плана возникли ошибки."
+msgstr ""
+
+#: ebsadmin/views/tariff.py:158
+#, python-format
+msgid "Указанный тарифный план не найден %s"
+msgstr ""
+
+#: ebsadmin/views/tariff.py:163
+msgid "Тарифный план удалён."
+msgstr ""
+
+#: ebsadmin/views/tariff.py:170
+msgid "При удалении тарифного плана произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/tariff.py:174
+msgid "tariff not found"
+msgstr ""
+
+#: ebsadmin/views/tariff.py:200
+msgid "Запись успешно скрыта."
+msgstr ""
+
+#: ebsadmin/views/tariff.py:207
+msgid "Ошибка при сокрытии записи."
+msgstr ""
+
+#: ebsadmin/views/tariff.py:211
+msgid "Tariff not found"
+msgstr ""
+
+#: ebsadmin/views/template.py:57
+msgid "У вас нет прав на просмотр списка шаблонов"
+msgstr ""
+
+#: ebsadmin/views/template.py:87
+msgid "У вас нет прав на редактирование шаблонов документов"
+msgstr ""
+
+#: ebsadmin/views/template.py:95
+msgid "У вас нет прав на создание шаблонов документов"
+msgstr ""
+
+#: ebsadmin/views/template.py:138
+msgid "У вас нет прав на удаление шаблонов"
+msgstr ""
+
+#: ebsadmin/views/template.py:147
+#, python-format
+msgid "Указанный шаблон не найден %s"
+msgstr ""
+
+#: ebsadmin/views/template.py:159
+msgid "Template not found"
+msgstr ""
+
+#: ebsadmin/views/template.py:212
+msgid "У вас нет прав на изменение шаблона"
+msgstr ""
+
+#: ebsadmin/views/template.py:220
+msgid "У вас нет прав на добавление шаблона"
+msgstr ""
+
+#: ebsadmin/views/timeaccess.py:53
+msgid "Правило тарификации времени успешно сохранено."
+msgstr ""
+
+#: ebsadmin/views/timeaccess.py:62
+msgid "При сохранении правила тарификации времени произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/timeaccess.py:119
+msgid "Настройка тарификации времени удалена."
+msgstr ""
+
+#: ebsadmin/views/timeaccess.py:127
+msgid "При удалении настройки тарификации времени произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/timeaccess.py:131
+msgid "TimeAccessNode not found"
+msgstr ""
+
+#: ebsadmin/views/timeaccess.py:178
+msgid "Услуга RADIUS тарификации времени успешно сохранена."
+msgstr ""
+
+#: ebsadmin/views/timeaccess.py:184
+msgid "При сохранении услуги RADIUS тарификации времени произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/timeaccess.py:230
+msgid "Услуга RADIUS тарификации времени удалена."
+msgstr ""
+
+#: ebsadmin/views/timeaccess.py:238
+msgid "При удалении RADIUS тарификации времени произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/timeaccess.py:242
+msgid "TimeAccessService not found"
+msgstr ""
+
+#: ebsadmin/views/timeperiod.py:68
+msgid "У вас нет прав на изменение периодов"
+msgstr ""
+
+#: ebsadmin/views/timeperiod.py:76
+msgid "У вас нет прав на добавление периодов"
+msgstr ""
+
+#: ebsadmin/views/timeperiod.py:139
+msgid "У вас нет прав на редактирование подпериодов"
+msgstr ""
+
+#: ebsadmin/views/timeperiod.py:146
+msgid "У вас нет прав на добавление подпериодов"
+msgstr ""
+
+#: ebsadmin/views/timeperiod.py:215
+msgid "Object not found"
+msgstr ""
+
+#: ebsadmin/views/timeperiod.py:223
+msgid "У вас нет прав на удаление периодов"
+msgstr ""
+
+#: ebsadmin/views/timeperiod.py:240
+msgid "У вас нет прав на удаление подпериодов"
+msgstr ""
+
+#: ebsadmin/views/timespeed.py:43
+msgid "Настройки скорости успешно сохранены."
+msgstr ""
+
+#: ebsadmin/views/timespeed.py:52
+msgid "При сохранении параметров скорости произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/timespeed.py:100
+msgid "Настройка скорости удалёна."
+msgstr ""
+
+#: ebsadmin/views/timespeed.py:108
+msgid "При удалении настройки скорости произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/timespeed.py:112
+msgid "TimeSpeed not found"
+msgstr ""
+
+#: ebsadmin/views/tpchangerule.py:61 ebsadmin/views/tpchangerule.py:71
+msgid "У вас нет прав на редактирование правил смены тарифных планов"
+msgstr ""
+
+#: ebsadmin/views/tpchangerule.py:168
+msgid "У вас нет прав на удаление правил смены тарифных планов"
+msgstr ""
+
+#: ebsadmin/views/tpchangerule.py:188
+msgid "TPChangeRule not found"
+msgstr ""
+
+#: ebsadmin/views/trafficclass.py:68 ebsadmin/views/trafficclass.py:81
+#, python-format
+msgid "Неправильная сеть %s"
+msgstr ""
+
+#: ebsadmin/views/trafficclass.py:115
+msgid "У вас нет прав на изменение классов"
+msgstr ""
+
+#: ebsadmin/views/trafficclass.py:172
+msgid "У вас нет прав на редактирование классов трафика"
+msgstr ""
+
+#: ebsadmin/views/trafficclass.py:179
+msgid "У вас нет прав на создание классов трафика"
+msgstr ""
+
+#: ebsadmin/views/trafficclass.py:236
+msgid "У вас нет прав на изменение составляющих класса трафика"
+msgstr ""
+
+#: ebsadmin/views/trafficclass.py:245
+msgid "У вас нет прав на создание составляющих класса трафика"
+msgstr ""
+
+#: ebsadmin/views/trafficclass.py:303
+msgid "У вас нет прав на удаление направлений"
+msgstr ""
+
+#: ebsadmin/views/trafficclass.py:312
+#, python-format
+msgid "Указанное направление не найдено %s"
+msgstr ""
+
+#: ebsadmin/views/trafficclass.py:323
+msgid "TrafficNode not found"
+msgstr ""
+
+#: ebsadmin/views/trafficclass.py:334
+msgid "У вас нет прав на удаление классов трафика"
+msgstr ""
+
+#: ebsadmin/views/trafficclass.py:343
+#, python-format
+msgid "Указанный класс не найден %s"
+msgstr ""
+
+#: ebsadmin/views/trafficclass.py:355
+msgid "TrafficClass not found"
+msgstr ""
+
+#: ebsadmin/views/trafficlimit.py:74
+msgid "Лимит трафика успешно сохранён."
+msgstr ""
+
+#: ebsadmin/views/trafficlimit.py:83
+msgid "При сохранении лимита трафика возникли ошибки."
+msgstr ""
+
+#: ebsadmin/views/trafficlimit.py:133
+msgid "Лимит трафика удален."
+msgstr ""
+
+#: ebsadmin/views/trafficlimit.py:140
+msgid "При удалении лимита трафика произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/trafficlimit.py:144
+msgid "TrafficLimit not found"
+msgstr ""
+
+#: ebsadmin/views/traffictransmit.py:73
+msgid "Услуга тарификации трафика успешно сохранена."
+msgstr ""
+
+#: ebsadmin/views/traffictransmit.py:81
+msgid "При сохранении услуги тарификации трафика произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/traffictransmit.py:131
+msgid "Услуга NetFlow тарификации трафика удалена."
+msgstr ""
+
+#: ebsadmin/views/traffictransmit.py:138
+msgid "При удалении NetFlow тарификации трафика произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/traffictransmit.py:142
+msgid "TrafficTransmitService not found"
+msgstr ""
+
+#: ebsadmin/views/traffictransmit.py:169
+msgid "Настройка NetFlow тарификации трафика удалёна."
+msgstr ""
+
+#: ebsadmin/views/traffictransmit.py:177
+msgid "При удалении настройки NetFlow тарификации трафика произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/traffictransmit.py:182
+msgid "TrafficTransmitNodes not found"
+msgstr ""
+
+#: ebsadmin/views/traffictransmit.py:214
+msgid "Настройки NetFlow тарификации трафика успешно сохранены."
+msgstr ""
+
+#: ebsadmin/views/traffictransmit.py:223
+msgid "При сохранении настроек NetFlow тарификации трафика произошла ошибка."
+msgstr ""
+
+#: ebsadmin/views/transaction.py:33
+msgid "У вас нет прав на изменение платежей"
+msgstr ""
+
+#: ebsadmin/views/transaction.py:56
+msgid "Операция выполнена."
+msgstr ""
+
+#: ebsadmin/views/transaction.py:65
+msgid "Ошибка при выполнении операции."
+msgstr ""
+
+#: ebsadmin/views/transaction.py:76
+msgid "У вас нет прав на просмотр проводок"
+msgstr ""
+
+#: ebsadmin/views/transaction.py:107
+msgid "У вас нет прав на удаление проводок"
+msgstr ""
+
+#: ebsadmin/views/transaction.py:123
+#, python-format
+msgid "Указанные проводки не найдены %s"
+msgstr ""
+
+#: ebsadmin/views/transaction.py:132
+msgid "Transaction not found"
+msgstr ""
+
+#: ebsadmin/views/transactiontype.py:58
+msgid "У вас нет прав на редактирование типов проводок"
+msgstr ""
+
+#: ebsadmin/views/transactiontype.py:68
+msgid "У вас нет прав на создание типов проводок"
+msgstr ""
+
+#: ebsadmin/views/transactiontype.py:84
+msgid "Тип проводки успешно сохранён."
+msgstr ""
+
+#: ebsadmin/views/transactiontype.py:89
+msgid "Ошибка при сохранении типа проводки."
+msgstr ""
+
+#: ebsadmin/views/transactiontype.py:124
+msgid "У вас нет прав на удаление типов проводок"
+msgstr ""
+
+#: ebsadmin/views/transactiontype.py:133
+#, python-format
+msgid "Указанный тип не найден %s"
+msgstr ""
+
+#: ebsadmin/views/transactiontype.py:138
+msgid "Выбранный тип списания не может быть удалён"
+msgstr ""
+
+#: ebsadmin/views/transactiontype.py:145
+msgid "Тип проводки успешно удалён."
+msgstr ""
+
+#: ebsadmin/views/transactiontype.py:152
+msgid "Ошибка при удалении типа проводки."
+msgstr ""

@@ -1,0 +1,3855 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-09-07 01:39+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n"
+"%100>=11 && n%100<=14)? 2 : 3);\n"
+
+#: billservice/autocomplete_light_registry.py:54
+msgid "Логин, договор или ФИО аккаунта"
+msgstr ""
+
+#: billservice/autocomplete_light_registry.py:63
+#: billservice/autocomplete_light_registry.py:72
+msgid "Введите логин"
+msgstr ""
+
+#: billservice/forms/account.py:87 billservice/models/switch.py:135
+#: billservice/templates/accounts/index.html:158
+msgid "Имя пользователя"
+msgstr ""
+
+#: billservice/forms/account.py:94 billservice/forms/account.py:417
+#: billservice/forms/account.py:562 billservice/forms/auth.py:87
+#: billservice/forms/user.py:45 billservice/models/account.py:49
+#: billservice/models/account.py:630 billservice/models/user.py:78
+#: billservice/templates/accounts/index.html:159
+msgid "Пароль"
+msgstr ""
+
+#: billservice/forms/account.py:95 billservice/forms/account.py:418
+#: billservice/forms/account.py:563 billservice/forms/user.py:46
+msgid "Изменить пароль"
+msgstr ""
+
+#: billservice/forms/account.py:102 billservice/forms/account.py:676
+#: billservice/forms/search.py:51 billservice/models/account.py:58
+#: billservice/models/account.py:945 billservice/models/switch.py:42
+msgid "Город"
+msgstr ""
+
+#: billservice/forms/account.py:110 billservice/forms/account.py:679
+#: billservice/forms/account.py:683 billservice/forms/search.py:53
+#: billservice/forms/search.py:57 billservice/models/account.py:73
+#: billservice/models/account.py:961 billservice/models/switch.py:49
+msgid "Улица"
+msgstr ""
+
+#: billservice/forms/account.py:117 billservice/forms/account.py:687
+#: billservice/forms/account.py:691 billservice/forms/search.py:61
+#: billservice/forms/search.py:65 billservice/models/account.py:78
+#: billservice/models/account.py:977 billservice/models/switch.py:55
+msgid "Дом"
+msgstr ""
+
+#: billservice/forms/account.py:124 billservice/forms/account.py:126
+msgid "Номер договора"
+msgstr ""
+
+#: billservice/forms/account.py:134
+msgid "Юр.лицо"
+msgstr ""
+
+#: billservice/forms/account.py:140
+msgid "Отключить уведомления"
+msgstr ""
+
+#: billservice/forms/account.py:180
+msgid "Нельзя создать пользователя с именем существующего администратора."
+msgstr ""
+
+#: billservice/forms/account.py:201 billservice/forms/hardware.py:11
+#: billservice/forms/hardware.py:20 billservice/forms/hardware.py:29
+#: billservice/models/addon_service.py:11 billservice/models/agreement.py:11
+#: billservice/models/hardware.py:76 billservice/models/ip.py:13
+#: billservice/models/operator.py:9 billservice/models/pereodical_service.py:24
+#: billservice/models/period.py:15 billservice/models/permission.py:11
+#: billservice/models/permission.py:26 billservice/models/switch.py:30
+#: billservice/models/tariff.py:14 billservice/models/traffic.py:12
+#: billservice/models/traffic.py:190
+#: billservice/templates/accounts/addonservice.html:63
+#: billservice/templates/accounts/addonservice.html:102
+#: billservice/templates/accounts/index.html:191
+#: billservice/templates/accounts/index.html:277
+#: billservice/templates/accounts/traffic_limit.html:10
+msgid "Название"
+msgstr ""
+
+#: billservice/forms/account.py:221 billservice/models/account.py:390
+#: billservice/models/addon_service.py:13 billservice/models/agreement.py:13
+#: billservice/models/hardware.py:91 billservice/models/switch.py:59
+#: billservice/models/transaction.py:82 billservice/models/user.py:58
+#: billservice/templates/accounts/get_promise.html:83
+#: billservice/templates/accounts/statistics.html:145
+#: billservice/templates/accounts/transaction.html:22
+msgid "Комментарий"
+msgstr ""
+
+#: billservice/forms/account.py:292 billservice/forms/account.py:322
+#: billservice/forms/account.py:352 billservice/forms/account.py:733
+#: billservice/forms/ip.py:15 billservice/forms/misc.py:84
+#: billservice/forms/search.py:197 billservice/forms/search.py:299
+#: billservice/forms/search.py:323 billservice/forms/transaction.py:90
+msgid "С"
+msgstr ""
+
+#: billservice/forms/account.py:299 billservice/forms/account.py:329
+#: billservice/forms/account.py:359 billservice/forms/account.py:740
+#: billservice/forms/ip.py:22 billservice/forms/misc.py:91
+#: billservice/forms/search.py:204 billservice/forms/search.py:306
+#: billservice/forms/search.py:330 billservice/forms/transaction.py:97
+msgid "По"
+msgstr ""
+
+#: billservice/forms/account.py:306 billservice/forms/account.py:336
+#: billservice/forms/account.py:366 billservice/forms/news.py:14
+#: billservice/forms/search.py:218 billservice/forms/search.py:256
+#: billservice/forms/search.py:296 billservice/forms/search.py:316
+#: billservice/models/account.py:251
+msgid "Аккаунты"
+msgstr ""
+
+#: billservice/forms/account.py:310 billservice/forms/account.py:340
+#: billservice/forms/account.py:375 billservice/models/account.py:570
+#: billservice/templates/accounts/index.html:128
+msgid "Тарифный план"
+msgstr ""
+
+#: billservice/forms/account.py:314 billservice/forms/account.py:344
+#: billservice/forms/account.py:379
+msgid "Иначе будет показана информация и за прошлые периоды"
+msgstr ""
+
+#: billservice/forms/account.py:343 billservice/forms/account.py:378
+msgid "Только текущие значения"
+msgstr ""
+
+#: billservice/forms/account.py:369 billservice/forms/search.py:319
+#: billservice/models/traffic.py:220
+msgid "Группы трафика"
+msgstr ""
+
+#: billservice/forms/account.py:393 billservice/forms/search.py:210
+#: billservice/models/account.py:250 billservice/models/account.py:329
+#: billservice/models/account.py:608 billservice/models/agreement.py:44
+#: billservice/models/card.py:19 billservice/models/transaction.py:51
+msgid "Аккаунт"
+msgstr ""
+
+#: billservice/forms/account.py:423
+msgid "IPN скорость"
+msgstr ""
+
+#: billservice/forms/account.py:424 billservice/forms/account.py:432
+#: billservice/models/account.py:721 billservice/models/account.py:723
+msgid "Не менять указанные настройки скорости"
+msgstr ""
+
+#: billservice/forms/account.py:431
+msgid "VPN скорость"
+msgstr ""
+
+#: billservice/forms/account.py:447 billservice/forms/search.py:122
+msgid "Добавлен"
+msgstr ""
+
+#: billservice/forms/account.py:448 billservice/forms/search.py:87
+#: billservice/forms/search.py:123 billservice/models/account.py:89
+#: billservice/models/constants.py:11 billservice/models/constants.py:64
+#: billservice/models/radius.py:20 billservice/models/tariff.py:82
+msgid "Активен"
+msgstr ""
+
+#: billservice/forms/account.py:449
+msgid "Не менять состояние"
+msgstr ""
+
+#: billservice/forms/account.py:470
+msgid "Указанный логин субаккаунта используется в другом аккаунте"
+msgstr ""
+
+#: billservice/forms/account.py:482
+msgid "Указанный MAC-адрес используется в другом аккаунте"
+msgstr ""
+
+#: billservice/forms/account.py:494
+msgid "Указанный VPN IP адрес используется в другом аккаунте"
+msgstr ""
+
+#: billservice/forms/account.py:503 billservice/forms/account.py:587
+msgid "Выбранный VPN IP адрес не принадлежит указанному VPN пулу"
+msgstr ""
+
+#: billservice/forms/account.py:516
+msgid "Указанный IPN IP адрес используется в другом аккаунте"
+msgstr ""
+
+#: billservice/forms/account.py:526 billservice/forms/account.py:599
+msgid "Выбранный IPN IP адрес не принадлежит указанному IPN пулу"
+msgstr ""
+
+#: billservice/forms/account.py:539
+msgid "Указанный VPN IPv6 IP адрес используется в другом аккаунте"
+msgstr ""
+
+#: billservice/forms/account.py:548 billservice/forms/account.py:610
+msgid "Выбранный IPv6 VPN IP адрес не принадлежит указанному IPv6 IPN пулу"
+msgstr ""
+
+#: billservice/forms/account.py:660 billservice/forms/card.py:73
+#: billservice/forms/card.py:152 billservice/forms/search.py:358
+#: billservice/models/card.py:37 billservice/models/tariff.py:152
+msgid "Тариф"
+msgstr ""
+
+#: billservice/forms/account.py:662
+msgid "С даты"
+msgstr ""
+
+#: billservice/forms/account.py:670 billservice/forms/search.py:35
+msgid "Договор"
+msgstr ""
+
+#: billservice/forms/account.py:671 billservice/forms/search.py:45
+msgid "Имя аккаунта"
+msgstr ""
+
+#: billservice/forms/account.py:672 billservice/forms/search.py:47
+#: billservice/models/account.py:51 billservice/models/registration.py:9
+#: billservice/models/user.py:18 billservice/templates/accounts/index.html:132
+msgid "ФИО"
+msgstr ""
+
+#: billservice/forms/account.py:695 billservice/forms/search.py:76
+#: billservice/models/account.py:84
+msgid "Квартира"
+msgstr ""
+
+#: billservice/forms/account.py:699 billservice/forms/search.py:80
+msgid "Кв"
+msgstr ""
+
+#: billservice/forms/account.py:702 billservice/forms/search.py:129
+#: billservice/forms/search.py:220 billservice/models/dealer.py:21
+#: billservice/models/operator.py:23 billservice/models/organization.py:48
+#: billservice/models/registration.py:11
+msgid "Телефон"
+msgstr ""
+
+#: billservice/forms/auth.py:12
+msgid "Новый e-mail"
+msgstr ""
+
+#: billservice/forms/auth.py:15 billservice/forms/auth.py:22
+#: billservice/forms/auth.py:33 billservice/forms/auth.py:41
+#: billservice/forms/auth.py:49 billservice/forms/auth.py:60
+#: billservice/forms/auth.py:68 billservice/forms/card.py:208
+#: billservice/forms/card.py:216
+msgid "Обязательное поле!"
+msgstr ""
+
+#: billservice/forms/auth.py:19
+msgid "Повторите e-mail"
+msgstr ""
+
+#: billservice/forms/auth.py:29
+msgid "Старый пароль"
+msgstr ""
+
+#: billservice/forms/auth.py:37 billservice/forms/auth.py:56
+msgid "Новый пароль"
+msgstr ""
+
+#: billservice/forms/auth.py:45
+msgid "Повторите пароль"
+msgstr ""
+
+#: billservice/forms/auth.py:64
+msgid "Повторите"
+msgstr ""
+
+#: billservice/forms/auth.py:78
+msgid "Вы не ввели имя пользователя!"
+msgstr ""
+
+#: billservice/forms/auth.py:86 billservice/models/account.py:47
+#: billservice/models/account.py:628 billservice/models/card.py:14
+msgid "Логин"
+msgstr ""
+
+#: billservice/forms/card.py:23 billservice/forms/card.py:115
+#: billservice/forms/search.py:344 billservice/models/card.py:30
+msgid "Экспресс-оплаты"
+msgstr ""
+
+#: billservice/forms/card.py:24 billservice/forms/card.py:116
+#: billservice/forms/search.py:345 billservice/models/card.py:31
+msgid "Хотспот"
+msgstr ""
+
+#: billservice/forms/card.py:25 billservice/forms/card.py:117
+#: billservice/forms/search.py:346 billservice/models/card.py:32
+msgid "VPN доступ"
+msgstr ""
+
+#: billservice/forms/card.py:26 billservice/forms/card.py:118
+#: billservice/forms/search.py:347 billservice/models/card.py:33
+msgid "Телефония"
+msgstr ""
+
+#: billservice/forms/card.py:31 billservice/forms/card.py:123
+#: billservice/forms/search.py:352 billservice/models/card.py:11
+msgid "Серия"
+msgstr ""
+
+#: billservice/forms/card.py:37
+#: billservice/templates/accounts/account_prepays_traffic.html:14
+msgid "Количество"
+msgstr ""
+
+#: billservice/forms/card.py:67 billservice/forms/card.py:150
+#: billservice/forms/search.py:356 billservice/models/card.py:15
+msgid "Номинал"
+msgstr ""
+
+#: billservice/forms/card.py:76 billservice/forms/card.py:155
+#: billservice/forms/search.py:212 billservice/forms/search.py:361
+#: billservice/models/addon_service.py:93
+msgid "Сервер доступа"
+msgstr ""
+
+#: billservice/forms/card.py:80 billservice/forms/card.py:159
+#: billservice/forms/search.py:365 billservice/models/ip.py:36
+#: billservice/models/ip.py:61
+msgid "IP пул"
+msgstr ""
+
+#: billservice/forms/card.py:82 billservice/forms/card.py:162
+msgid "Активировать с"
+msgstr ""
+
+#: billservice/forms/card.py:89 billservice/forms/card.py:169
+msgid "Активировать по"
+msgstr ""
+
+#: billservice/forms/card.py:101
+msgid "Вы должны выбрать состав логина"
+msgstr ""
+
+#: billservice/forms/card.py:104
+msgid "Вы должны выбрать состав пина"
+msgstr ""
+
+#: billservice/forms/card.py:114
+msgid "Не менять"
+msgstr ""
+
+#: billservice/forms/card.py:129
+msgid "Изменить логин"
+msgstr ""
+
+#: billservice/forms/card.py:138
+msgid "Изменить пин"
+msgstr ""
+
+#: billservice/forms/card.py:148
+msgid "Изменить номинал"
+msgstr ""
+
+#: billservice/forms/card.py:181 billservice/models/card.py:58
+msgid "Карты"
+msgstr ""
+
+#: billservice/forms/card.py:187 billservice/forms/search.py:351
+#: billservice/models/dealer.py:53
+msgid "Дилер"
+msgstr ""
+
+#: billservice/forms/card.py:191
+msgid "Внесено предоплаты"
+msgstr ""
+
+#: billservice/forms/card.py:205
+msgid "Номер карты"
+msgstr ""
+
+#: billservice/forms/card.py:212
+msgid "ПИН"
+msgstr ""
+
+#: billservice/forms/document.py:19 billservice/forms/misc.py:36
+#: billservice/models/template.py:36 billservice/models/template.py:46
+msgid "Шаблон"
+msgstr ""
+
+#: billservice/forms/ip.py:31 billservice/models/card.py:42
+msgid "Пул"
+msgstr ""
+
+#: billservice/forms/ip.py:36
+msgid "Динамические"
+msgstr ""
+
+#: billservice/forms/ip.py:37
+msgid "Статические"
+msgstr ""
+
+#: billservice/forms/ip.py:38
+msgid "Любые"
+msgstr ""
+
+#: billservice/forms/misc.py:27 billservice/forms/search.py:225
+msgid "Оператор"
+msgstr ""
+
+#: billservice/forms/misc.py:45
+msgid "Сообщение"
+msgstr ""
+
+#: billservice/forms/misc.py:51
+msgid ""
+"Можно использовать {{account.ballance}}, {{account.fullname}}, {{account."
+"username}}, {{account.contract}}"
+msgstr ""
+
+#: billservice/forms/misc.py:56 billservice/forms/search.py:231
+msgid "Опубликовать"
+msgstr ""
+
+#: billservice/forms/misc.py:57
+msgid "Не указывайте, если сообщения должны быть отправлены сразу"
+msgstr ""
+
+#: billservice/forms/misc.py:74
+msgid "с даты"
+msgstr ""
+
+#: billservice/forms/misc.py:76
+msgid "по дату"
+msgstr ""
+
+#: billservice/forms/payment.py:11 billservice/models/account.py:612
+#: billservice/models/radius.py:60 billservice/models/radius.py:85
+#: billservice/models/transaction.py:70
+#: billservice/templates/accounts/addon_service_transaction.html:17
+#: billservice/templates/accounts/get_promise.html:16
+#: billservice/templates/accounts/get_promise.html:48
+#: billservice/templates/accounts/get_promise.html:81
+#: billservice/templates/accounts/make_payment.html:34
+#: billservice/templates/accounts/one_time_history.html:17
+#: billservice/templates/accounts/periodical_service_history.html:18
+#: billservice/templates/accounts/statistics.html:140
+#: billservice/templates/accounts/statistics.html:249
+#: billservice/templates/accounts/statistics.html:297
+#: billservice/templates/accounts/statistics.html:344
+#: billservice/templates/accounts/statistics.html:391
+#: billservice/templates/accounts/traffic_transaction.html:17
+#: billservice/templates/accounts/transaction.html:17
+msgid "Сумма"
+msgstr ""
+
+#: billservice/forms/payment.py:14
+msgid "Вы не указали размер платежа!"
+msgstr ""
+
+#: billservice/forms/period.py:48 billservice/forms/period.py:75
+#: billservice/models/period.py:16
+msgid "Начало периода"
+msgstr ""
+
+#: billservice/forms/period.py:82
+msgid "Конец периода"
+msgstr ""
+
+#: billservice/forms/permission.py:13 billservice/models/permission.py:30
+msgid "Права"
+msgstr ""
+
+#: billservice/forms/search.py:38 billservice/models/dealer.py:11
+msgid "Организация"
+msgstr ""
+
+#: billservice/forms/search.py:49 billservice/models/account.py:154
+#: billservice/models/dealer.py:17 billservice/models/operator.py:15
+msgid "Контактное лицо"
+msgstr ""
+
+#: billservice/forms/search.py:69 billservice/models/account.py:82
+msgid "Подъезд"
+msgstr ""
+
+#: billservice/forms/search.py:86
+msgid "--Любой--"
+msgstr ""
+
+#: billservice/forms/search.py:88 billservice/models/account.py:90
+msgid "Не активен, списывать периодические услуги"
+msgstr ""
+
+#: billservice/forms/search.py:89 billservice/models/account.py:91
+msgid "Не активен, не списывать периодические услуги"
+msgstr ""
+
+#: billservice/forms/search.py:90 billservice/models/account.py:92
+msgid "Пользовательская блокировка"
+msgstr ""
+
+#: billservice/forms/search.py:101 billservice/models/account.py:102
+#: billservice/models/account.py:610
+msgid "Баланс"
+msgstr ""
+
+#: billservice/forms/search.py:103 billservice/forms/search.py:111
+msgid "Используйте знаки >меньше и <больше"
+msgstr ""
+
+#: billservice/forms/search.py:109 billservice/models/account.py:106
+msgid "Кредит"
+msgstr ""
+
+#: billservice/forms/search.py:116
+msgid "VPN IP адрес"
+msgstr ""
+
+#: billservice/forms/search.py:117
+msgid "IPN IP адрес"
+msgstr ""
+
+#: billservice/forms/search.py:118 billservice/models/hardware.py:89
+#: billservice/models/switch.py:97
+msgid "MAC адрес"
+msgstr ""
+
+#: billservice/forms/search.py:124 billservice/forms/search.py:152
+#: billservice/forms/search.py:162
+msgid "Не важно"
+msgstr ""
+
+#: billservice/forms/search.py:130 billservice/models/account.py:121
+#: billservice/models/user.py:80
+msgid "№ паспорта"
+msgstr ""
+
+#: billservice/forms/search.py:132 billservice/models/account.py:146
+msgid "Этаж"
+msgstr ""
+
+#: billservice/forms/search.py:147
+msgid "Блокировка по балансу"
+msgstr ""
+
+#: billservice/forms/search.py:150 billservice/forms/search.py:160
+msgid "Да"
+msgstr ""
+
+#: billservice/forms/search.py:151 billservice/forms/search.py:161
+msgid "Нет"
+msgstr ""
+
+#: billservice/forms/search.py:157
+msgid "Блокировка по лимитам"
+msgstr ""
+
+#: billservice/forms/search.py:166
+msgid "Сервер доступа субаккаунта"
+msgstr ""
+
+#: billservice/forms/search.py:171
+msgid "В архиве"
+msgstr ""
+
+#: billservice/forms/search.py:176 billservice/models/account.py:160
+msgid "Менеджер"
+msgstr ""
+
+#: billservice/forms/search.py:180 billservice/models/account.py:148
+msgid "Направление от лифта"
+msgstr ""
+
+#: billservice/forms/search.py:181 billservice/forms/user.py:28
+#: billservice/models/account.py:96 billservice/models/user.py:63
+msgid "Создан"
+msgstr ""
+
+#: billservice/forms/search.py:184
+msgid "Доп. соглашение"
+msgstr ""
+
+#: billservice/forms/search.py:189 billservice/models/addon_service.py:164
+msgid "Подключаемая услуга"
+msgstr ""
+
+#: billservice/forms/search.py:232
+msgid "Когда должно быть отослано сообщение"
+msgstr ""
+
+#: billservice/forms/search.py:239
+msgid "Отправлено с"
+msgstr ""
+
+#: billservice/forms/search.py:246
+msgid "Отправлено по"
+msgstr ""
+
+#: billservice/forms/search.py:258
+msgid "Номер платежа"
+msgstr ""
+
+#: billservice/forms/search.py:260
+msgid "Создан с"
+msgstr ""
+
+#: billservice/forms/search.py:267
+msgid "Создан по"
+msgstr ""
+
+#: billservice/forms/search.py:274
+msgid "Оплачен с"
+msgstr ""
+
+#: billservice/forms/search.py:281
+msgid "Оплачен по"
+msgstr ""
+
+#: billservice/forms/search.py:366
+msgid "Проданы"
+msgstr ""
+
+#: billservice/forms/search.py:367
+msgid "Не проданные"
+msgstr ""
+
+#: billservice/forms/search.py:368
+msgid "Активированы"
+msgstr ""
+
+#: billservice/forms/search.py:370
+msgid "Активатор"
+msgstr ""
+
+#: billservice/forms/search.py:371
+msgid "Созданы"
+msgstr ""
+
+#: billservice/forms/switch.py:24
+msgid "Общее"
+msgstr ""
+
+#: billservice/forms/switch.py:31
+msgid "Данные техпаспорта"
+msgstr ""
+
+#: billservice/forms/switch.py:37
+msgid "Место установки"
+msgstr ""
+
+#: billservice/forms/switch.py:44 billservice/models/switch.py:103
+msgid "SNMP"
+msgstr ""
+
+#: billservice/forms/switch.py:50
+msgid "Управление портами"
+msgstr ""
+
+#: billservice/forms/switch.py:51
+msgid ""
+"Обратите внимание, что в текущей версии управление портами не реализовано"
+msgstr ""
+
+#: billservice/forms/switch.py:60
+msgid "Сетевая идентификация"
+msgstr ""
+
+#: billservice/forms/switch.py:66
+msgid "Option82"
+msgstr ""
+
+#: billservice/forms/switch.py:75
+msgid "Сохранить"
+msgstr ""
+
+#: billservice/forms/tariff.py:54
+msgid "Выберите тарифный план"
+msgstr ""
+
+#: billservice/forms/tariff.py:110
+msgid "Тарифные планы"
+msgstr ""
+
+#: billservice/forms/tariff.py:115 billservice/models/tariff.py:235
+msgid "Временно запретить"
+msgstr ""
+
+#: billservice/forms/tariff.py:116 billservice/models/tariff.py:236
+#: billservice/templates/accounts/change_tariff.html:67
+msgid "Стоимость перехода"
+msgstr ""
+
+#: billservice/forms/tariff.py:117 billservice/models/tariff.py:237
+#: billservice/templates/accounts/change_tariff.html:67
+msgid "Минимальный баланс"
+msgstr ""
+
+#: billservice/forms/tariff.py:119 billservice/models/tariff.py:239
+msgid "Со следующего расчётного периода"
+msgstr ""
+
+#: billservice/forms/tariff.py:122 billservice/models/addon_service.py:45
+#: billservice/models/addon_service.py:182 billservice/models/tariff.py:70
+#: billservice/models/tariff.py:245
+msgid "Расчётный период"
+msgstr ""
+
+#: billservice/forms/tariff.py:127
+msgid "Создать зеркальное правило"
+msgstr ""
+
+#: billservice/forms/transaction.py:45 billservice/forms/transaction.py:78
+msgid "Укажите сумму"
+msgstr ""
+
+#: billservice/forms/transaction.py:104 billservice/models/constants.py:130
+msgid "Администратор"
+msgstr ""
+
+#: billservice/forms/transaction.py:112 billservice/models/account.py:31
+msgid "Группа абонентов"
+msgstr ""
+
+#: billservice/forms/user.py:14
+msgid "Последний логин с IP"
+msgstr ""
+
+#: billservice/forms/user.py:21 billservice/models/user.py:53
+msgid "Последний логин"
+msgstr ""
+
+#: billservice/forms/user.py:35 billservice/models/permission.py:38
+#: billservice/models/user.py:113
+msgid "Группа доступа"
+msgstr ""
+
+#: billservice/forms/user.py:40 billservice/models/user.py:118
+msgid "Суперадминистратор"
+msgstr ""
+
+#: billservice/models/access.py:15
+msgid "Способ доступа"
+msgstr ""
+
+#: billservice/models/access.py:19
+msgid "Доступ разрешён"
+msgstr ""
+
+#: billservice/models/access.py:25
+msgid "Выполнять IPN действия"
+msgstr ""
+
+#: billservice/models/access.py:28 billservice/models/limit.py:31
+#: billservice/models/time.py:99
+msgid "MAX tx (kbps)"
+msgstr ""
+
+#: billservice/models/access.py:34 billservice/models/access.py:42
+#: billservice/models/access.py:54 billservice/models/access.py:74
+msgid "rx (kbps)"
+msgstr ""
+
+#: billservice/models/access.py:36 billservice/models/limit.py:35
+#: billservice/models/time.py:107
+msgid "Burst tx (kbps)"
+msgstr ""
+
+#: billservice/models/access.py:48 billservice/models/limit.py:39
+#: billservice/models/time.py:115
+msgid "Burst treshold tx (kbps)"
+msgstr ""
+
+#: billservice/models/access.py:56 billservice/models/time.py:123
+msgid "Burst time tx (s)"
+msgstr ""
+
+#: billservice/models/access.py:62
+msgid "rx (s)"
+msgstr ""
+
+#: billservice/models/access.py:68 billservice/models/limit.py:47
+#: billservice/models/time.py:131
+msgid "Min tx (kbps)"
+msgstr ""
+
+#: billservice/models/access.py:78 billservice/models/time.py:96
+#: billservice/templates/accounts/account_helpdesk.html:30
+msgid "Приоритет"
+msgstr ""
+
+#: billservice/models/access.py:80 billservice/models/account.py:784
+msgid "Одноверменных RADIUS сессий на субаккаунт"
+msgstr ""
+
+#: billservice/models/access.py:92 billservice/models/access.py:93
+#: billservice/models/tariff.py:19
+msgid "Параметры доступа"
+msgstr ""
+
+#: billservice/models/access.py:95
+msgid "Просмотр параметров доступа"
+msgstr ""
+
+#: billservice/models/account.py:32
+msgid "Группы абонентов"
+msgstr ""
+
+#: billservice/models/account.py:34 billservice/models/account.py:253
+#: billservice/models/account.py:368 billservice/models/account.py:403
+#: billservice/models/account.py:481 billservice/models/account.py:507
+#: billservice/models/account.py:542 billservice/models/account.py:602
+#: billservice/models/account.py:620 billservice/models/account.py:800
+#: billservice/models/account.py:948 billservice/models/account.py:964
+#: billservice/models/account.py:980 billservice/models/addon_service.py:167
+#: billservice/models/addon_service.py:208
+#: billservice/models/addon_service.py:240 billservice/models/card.py:84
+#: billservice/models/dealer.py:56 billservice/models/dealer.py:86
+#: billservice/models/hardware.py:22 billservice/models/hardware.py:40
+#: billservice/models/hardware.py:68 billservice/models/hardware.py:108
+#: billservice/models/ip.py:39 billservice/models/ip.py:82
+#: billservice/models/news.py:39 billservice/models/operator.py:44
+#: billservice/models/period.py:77 billservice/models/radius.py:48
+#: billservice/models/radius.py:102 billservice/models/radius.py:134
+#: billservice/models/switch.py:169 billservice/models/tariff.py:155
+#: billservice/models/tariff.py:260 billservice/models/template.py:19
+#: billservice/models/template.py:39 billservice/models/template.py:60
+#: billservice/models/time.py:79 billservice/models/time.py:152
+#: billservice/models/time.py:178 billservice/models/traffic.py:68
+#: billservice/models/traffic.py:97 billservice/models/traffic.py:133
+#: billservice/models/traffic.py:151 billservice/models/traffic.py:184
+#: billservice/models/traffic.py:222 billservice/models/transaction.py:39
+#: billservice/models/transaction.py:108
+msgid "Просмотр"
+msgstr ""
+
+#: billservice/models/account.py:53 billservice/models/dealer.py:33
+#: billservice/models/operator.py:35 billservice/models/user.py:16
+#: billservice/templates/accounts/index.html:137
+msgid "E-mail"
+msgstr ""
+
+#: billservice/models/account.py:55 billservice/models/registration.py:10
+#: billservice/models/user.py:35
+msgid "Адрес"
+msgstr ""
+
+#: billservice/models/account.py:64
+msgid "Индекс"
+msgstr ""
+
+#: billservice/models/account.py:67
+msgid "Район"
+msgstr ""
+
+#: billservice/models/account.py:80
+msgid "Корпус"
+msgstr ""
+
+#: billservice/models/account.py:86 billservice/models/user.py:69
+msgid "Статус"
+msgstr ""
+
+#: billservice/models/account.py:97
+msgid "Начало оказания услуг"
+msgstr ""
+
+#: billservice/models/account.py:104
+msgid "Бонусный баланс"
+msgstr ""
+
+#: billservice/models/account.py:111
+msgid "Разрешить пользоваться веб-кабинетом"
+msgstr ""
+
+#: billservice/models/account.py:116
+msgid "Разрешить активацию карт экспресс-оплаты"
+msgstr ""
+
+#: billservice/models/account.py:123
+msgid "Выдан"
+msgstr ""
+
+#: billservice/models/account.py:125
+msgid "Адрес регистрации"
+msgstr ""
+
+#: billservice/models/account.py:128 billservice/models/user.py:21
+msgid "Дом. телефон"
+msgstr ""
+
+#: billservice/models/account.py:134 billservice/models/user.py:28
+msgid "Моб. телефон"
+msgstr ""
+
+#: billservice/models/account.py:135
+msgid "В международном формате +71923453333"
+msgstr ""
+
+#: billservice/models/account.py:141
+msgid "Тел. контактного лица"
+msgstr ""
+
+#: billservice/models/account.py:156
+msgid "Кем выдан"
+msgstr ""
+
+#: billservice/models/account.py:157
+msgid "№ договора"
+msgstr ""
+
+#: billservice/models/account.py:166
+msgid "Код домофона"
+msgstr ""
+
+#: billservice/models/account.py:168
+msgid "Идент. номер"
+msgstr ""
+
+#: billservice/models/account.py:171
+msgid "День рождения"
+msgstr ""
+
+#: billservice/models/account.py:175
+msgid "Максимальный обещанный платёж"
+msgstr ""
+
+#: billservice/models/account.py:177
+msgid "Минимальный баланс для обещанного платежа"
+msgstr ""
+
+#: billservice/models/account.py:179
+msgid "Длительность обещанного платежа, дней"
+msgstr ""
+
+#: billservice/models/account.py:182 billservice/models/traffic.py:27
+msgid "Группа"
+msgstr ""
+
+#: billservice/models/account.py:188
+msgid "Отключить SMS/Email уведомления"
+msgstr ""
+
+#: billservice/models/account.py:254
+msgid "Получить тариф для аккаунта"
+msgstr ""
+
+#: billservice/models/account.py:255
+msgid "Список аккаунтов для кассира"
+msgstr ""
+
+#: billservice/models/account.py:310
+msgid "Не назначен"
+msgstr ""
+
+#: billservice/models/account.py:324 billservice/models/addon_service.py:174
+#: billservice/models/pereodical_service.py:146
+#: billservice/templates/accounts/addon_service_transaction.html:15
+#: billservice/templates/accounts/one_time_history.html:16
+#: billservice/templates/accounts/periodical_service_history.html:16
+#: billservice/templates/accounts/statistics.html:247
+#: billservice/templates/accounts/statistics.html:296
+#: billservice/templates/accounts/statistics.html:342
+msgid "Услуга"
+msgstr ""
+
+#: billservice/models/account.py:336 billservice/models/account.py:797
+#: billservice/models/account.py:798
+msgid "Субаккаунт"
+msgstr ""
+
+#: billservice/models/account.py:350
+msgid "Активирована"
+msgstr ""
+
+#: billservice/models/account.py:352
+msgid "Отключена"
+msgstr ""
+
+#: billservice/models/account.py:356
+msgid "Пауза до"
+msgstr ""
+
+#: billservice/models/account.py:358
+#: billservice/models/pereodical_service.py:154
+msgid "Последнее списание"
+msgstr ""
+
+#: billservice/models/account.py:365
+msgid "Подключённая услуга"
+msgstr ""
+
+#: billservice/models/account.py:366
+msgid "Подключённые услуги"
+msgstr ""
+
+#: billservice/models/account.py:383 billservice/models/hardware.py:105
+msgid "Устройство"
+msgstr ""
+
+#: billservice/models/account.py:386 billservice/models/ip.py:63
+msgid "Дата выдачи"
+msgstr ""
+
+#: billservice/models/account.py:388
+msgid "Дата возврата"
+msgstr ""
+
+#: billservice/models/account.py:400
+msgid "Устройство у абонента"
+msgstr ""
+
+#: billservice/models/account.py:401
+msgid "Устройства у абонентов"
+msgstr ""
+
+#: billservice/models/account.py:417
+msgid "Статическая скорость"
+msgstr ""
+
+#: billservice/models/account.py:418
+msgid ""
+"Пока опция установлена, биллинг не будет менять для этого клиента скорость"
+msgstr ""
+
+#: billservice/models/account.py:432
+msgid "Скорость IPN клиента"
+msgstr ""
+
+#: billservice/models/account.py:433
+msgid "Скорости IPN клиентов"
+msgstr ""
+
+#: billservice/models/account.py:478
+msgid "Предоплаченый radius трафик "
+msgstr ""
+
+#: billservice/models/account.py:479
+msgid "Предоплаченный radius трафик"
+msgstr ""
+
+#: billservice/models/account.py:504
+msgid "Предоплаченное время пользователя"
+msgstr ""
+
+#: billservice/models/account.py:505
+msgid "Предоплаченное время пользователей"
+msgstr ""
+
+#: billservice/models/account.py:521
+#: billservice/templates/accounts/index.html:224
+#: billservice/templates/accounts/index.html:242
+msgid "Остаток"
+msgstr ""
+
+#: billservice/models/account.py:523
+msgid "Начислен"
+msgstr ""
+
+#: billservice/models/account.py:524
+msgid "Текущий"
+msgstr ""
+
+#: billservice/models/account.py:525
+msgid "Сброшен"
+msgstr ""
+
+#: billservice/models/account.py:539
+msgid "Предоплаченый трафик"
+msgstr ""
+
+#: billservice/models/account.py:540 billservice/models/traffic.py:181
+#: billservice/models/traffic.py:182
+#: billservice/templates/accounts/index.html:252
+msgid "Предоплаченный трафик"
+msgstr ""
+
+#: billservice/models/account.py:555
+msgid "Пользователь"
+msgstr ""
+
+#: billservice/models/account.py:562
+msgid "Предыдущий тарифный план"
+msgstr ""
+
+#: billservice/models/account.py:575
+msgid "C даты"
+msgstr ""
+
+#: billservice/models/account.py:599 billservice/models/account.py:600
+#: billservice/models/pereodical_service.py:151
+msgid "Тариф аккаунта"
+msgstr ""
+
+#: billservice/models/account.py:617 billservice/models/account.py:618
+msgid "История изменения баланса"
+msgstr ""
+
+#: billservice/models/account.py:639
+msgid "Добавлен на NAS"
+msgstr ""
+
+#: billservice/models/account.py:641
+msgid "Включен на NAS"
+msgstr ""
+
+#: billservice/models/account.py:643
+msgid "Не менять IPN статус"
+msgstr ""
+
+#: billservice/models/account.py:647
+msgid "Поставлен в очередь на изменение статуса"
+msgstr ""
+
+#: billservice/models/account.py:657
+msgid "Разрешать получать IP адреса по DHCP"
+msgstr ""
+
+#: billservice/models/account.py:662
+msgid "Разрешать получать IP адреса по DHCP при нулевом балансе"
+msgstr ""
+
+#: billservice/models/account.py:669
+msgid "Разрешать получать IP адреса по DHCP при отрицатеьлном балансе"
+msgstr ""
+
+#: billservice/models/account.py:675
+msgid ""
+"Разрешать получать IP адреса по DHCP при наличии блокировок по лимитам или "
+"балансу"
+msgstr ""
+
+#: billservice/models/account.py:681
+msgid "Разрешать RADIUS авторизацию при нулевом балансе"
+msgstr ""
+
+#: billservice/models/account.py:686
+msgid "Разрешать RADIUS авторизацию при отрицательном балансе"
+msgstr ""
+
+#: billservice/models/account.py:691
+msgid ""
+"Разрешать RADIUS авторизацию при наличии блокировок по лимитам или балансу"
+msgstr ""
+
+#: billservice/models/account.py:696
+msgid "Разрешать IPN авторизацию при нулевом балансе"
+msgstr ""
+
+#: billservice/models/account.py:701
+msgid "Разрешать IPN авторизацию при отрицательном балансе"
+msgstr ""
+
+#: billservice/models/account.py:706
+msgid "Разрешать IPN авторизацию при наличии блокировок по лимитам или балансу"
+msgstr ""
+
+#: billservice/models/account.py:712
+msgid "Привязать PPTP/L2TP авторизацию к IPN IP"
+msgstr ""
+
+#: billservice/models/account.py:717
+msgid "Привязать PPPOE авторизацию к IPN MAC"
+msgstr ""
+
+#: billservice/models/account.py:727
+msgid ""
+"Разрешить самостоятельную активацию подключаемых услуг на этот субаккаунт"
+msgstr ""
+
+#: billservice/models/account.py:756
+msgid "Разрешить самостоятельно обновлять MAC адрес через веб-кабинет"
+msgstr ""
+
+#: billservice/models/account.py:801
+msgid "Получение mac адреса по IP"
+msgstr ""
+
+#: billservice/models/account.py:946
+msgid "Города"
+msgstr ""
+
+#: billservice/models/account.py:962
+msgid "Улицы"
+msgstr ""
+
+#: billservice/models/account.py:978
+msgid "Дома"
+msgstr ""
+
+#: billservice/models/addon_service.py:17
+msgid "Разешить активацию"
+msgstr ""
+
+#: billservice/models/addon_service.py:18
+msgid "Разрешить активацию при нулевом балансе и блокировках"
+msgstr ""
+
+#: billservice/models/addon_service.py:21
+#: billservice/templates/accounts/addon_service_transaction.html:16
+#: billservice/templates/accounts/periodical_service_history.html:19
+#: billservice/templates/accounts/statistics.html:250
+#: billservice/templates/accounts/statistics.html:343
+msgid "Тип услуги"
+msgstr ""
+
+#: billservice/models/addon_service.py:24
+#: billservice/models/one_time_service.py:38
+msgid "Разовая услуга"
+msgstr ""
+
+#: billservice/models/addon_service.py:25
+#: billservice/models/pereodical_service.py:92
+msgid "Периодическая услуга"
+msgstr ""
+
+#: billservice/models/addon_service.py:29
+#: billservice/models/pereodical_service.py:39
+msgid "Способ списания"
+msgstr ""
+
+#: billservice/models/addon_service.py:32
+msgid "В начале расчётного периода"
+msgstr ""
+
+#: billservice/models/addon_service.py:33
+msgid "В конце расчётного периода"
+msgstr ""
+
+#: billservice/models/addon_service.py:34
+msgid "На протяжении расчётного периода"
+msgstr ""
+
+#: billservice/models/addon_service.py:38
+#: billservice/models/pereodical_service.py:46
+msgid "Кол-во списаний в сутки"
+msgstr ""
+
+#: billservice/models/addon_service.py:46
+msgid "Период, в течении которого будет списываться стоимость услуги"
+msgstr ""
+
+#: billservice/models/addon_service.py:55
+msgid "Время активации"
+msgstr ""
+
+#: billservice/models/addon_service.py:56
+msgid "Время, когда услуга будет активирована"
+msgstr ""
+
+#: billservice/models/addon_service.py:61
+msgid "Стоимость услуги"
+msgstr ""
+
+#: billservice/models/addon_service.py:68
+msgid "Разрешить отключение"
+msgstr ""
+
+#: billservice/models/addon_service.py:69
+msgid "Разрешить самостоятельное отключение услуги"
+msgstr ""
+
+#: billservice/models/addon_service.py:74
+msgid "Штрафуемый период"
+msgstr ""
+
+#: billservice/models/addon_service.py:75
+msgid "Списывать сумму штрафа при досрочном отключении услуги пользователем"
+msgstr ""
+
+#: billservice/models/addon_service.py:83
+msgid "Сумма штрафа"
+msgstr ""
+
+#: billservice/models/addon_service.py:90
+msgid "Выполнить действие"
+msgstr ""
+
+#: billservice/models/addon_service.py:94
+msgid "Сервер доступа, на котором будут производиться действия"
+msgstr ""
+
+#: billservice/models/addon_service.py:101
+msgid "Действие для активации услуги"
+msgstr ""
+
+#: billservice/models/addon_service.py:106
+msgid "Действие для отключения услуги"
+msgstr ""
+
+#: billservice/models/addon_service.py:111
+msgid "Отключать услугу при бловировке аккаунта"
+msgstr ""
+
+#: billservice/models/addon_service.py:112
+msgid "Отключать услугу при достижении нулевого баланса или блокировках"
+msgstr ""
+
+#: billservice/models/addon_service.py:118 billservice/models/traffic.py:43
+#: billservice/models/traffic.py:48
+msgid "Изменить скорость"
+msgstr ""
+
+#: billservice/models/addon_service.py:119
+msgid "Изменить параметры скорости при активации аккаунта"
+msgstr ""
+
+#: billservice/models/addon_service.py:124 billservice/models/limit.py:10
+msgid "Способ изменения скорости"
+msgstr ""
+
+#: billservice/models/addon_service.py:127 billservice/models/limit.py:13
+msgid "Добавить к текущей"
+msgstr ""
+
+#: billservice/models/addon_service.py:128 billservice/models/limit.py:14
+msgid "Абсолютное значение"
+msgstr ""
+
+#: billservice/models/addon_service.py:134
+msgid "Единицы скорости"
+msgstr ""
+
+#: billservice/models/addon_service.py:165
+msgid "Подключаемые услуги"
+msgstr ""
+
+#: billservice/models/addon_service.py:176
+msgid "Активаций за расчётный период"
+msgstr ""
+
+#: billservice/models/addon_service.py:188
+msgid "Тип активации"
+msgstr ""
+
+#: billservice/models/addon_service.py:191
+msgid "На аккаунт"
+msgstr ""
+
+#: billservice/models/addon_service.py:192
+msgid "На субаккаунт"
+msgstr ""
+
+#: billservice/models/addon_service.py:205
+msgid "Разрешённая подключаемая услуга"
+msgstr ""
+
+#: billservice/models/addon_service.py:206
+msgid "Разрешённые подключаемые услуги"
+msgstr ""
+
+#: billservice/models/addon_service.py:222
+msgid "Тип операции"
+msgstr ""
+
+#: billservice/models/addon_service.py:227
+#: billservice/models/one_time_service.py:51 billservice/models/report.py:16
+#: billservice/models/time.py:163 billservice/models/traffic.py:82
+msgid "Предыдущий баланс"
+msgstr ""
+
+#: billservice/models/addon_service.py:237
+msgid "Списание по подключаемой услуге"
+msgstr ""
+
+#: billservice/models/addon_service.py:238
+msgid "Списания по подключаемым услугам"
+msgstr ""
+
+#: billservice/models/agreement.py:15
+msgid "Текст шаблона"
+msgstr ""
+
+#: billservice/models/agreement.py:17
+msgid "Длительность в днях"
+msgstr ""
+
+#: billservice/models/agreement.py:19
+msgid "Запретить смену тарифного плана"
+msgstr ""
+
+#: billservice/models/agreement.py:29
+msgid "Вид доп. соглашения"
+msgstr ""
+
+#: billservice/models/agreement.py:30
+msgid "Виды доп. соглашения"
+msgstr ""
+
+#: billservice/models/agreement.py:39 billservice/models/agreement.py:61
+msgid "Дополнительное соглашение"
+msgstr ""
+
+#: billservice/models/agreement.py:46
+msgid "Номер"
+msgstr ""
+
+#: billservice/models/agreement.py:51
+msgid "Связанное оборудование"
+msgstr ""
+
+#: billservice/models/agreement.py:54
+msgid "Создано"
+msgstr ""
+
+#: billservice/models/agreement.py:55
+msgid "Закрыто"
+msgstr ""
+
+#: billservice/models/agreement.py:62
+msgid "Дополнительные соглашения"
+msgstr ""
+
+#: billservice/models/bank.py:8
+msgid "Название банка"
+msgstr ""
+
+#: billservice/models/bank.py:10
+msgid "Код банка"
+msgstr ""
+
+#: billservice/models/bank.py:15
+msgid "Расчётный счёт"
+msgstr ""
+
+#: billservice/models/bank.py:21
+msgid "Валюта расчётов"
+msgstr ""
+
+#: billservice/models/bank.py:29 billservice/models/organization.py:61
+msgid "Банк"
+msgstr ""
+
+#: billservice/models/bank.py:30
+msgid "Банки"
+msgstr ""
+
+#: billservice/models/bank.py:32
+msgid "Просмотр банков"
+msgstr ""
+
+#: billservice/models/card.py:12
+msgid "Пин"
+msgstr ""
+
+#: billservice/models/card.py:17
+msgid "Актив-на"
+msgstr ""
+
+#: billservice/models/card.py:21
+msgid "Актив-ть с"
+msgstr ""
+
+#: billservice/models/card.py:23
+msgid "по"
+msgstr ""
+
+#: billservice/models/card.py:25
+msgid "Неактивна"
+msgstr ""
+
+#: billservice/models/card.py:26 billservice/models/card.py:77
+msgid "Создана"
+msgstr ""
+
+#: billservice/models/card.py:28 billservice/models/ip.py:16
+#: billservice/models/traffic.py:204 billservice/models/transaction.py:58
+msgid "Тип"
+msgstr ""
+
+#: billservice/models/card.py:46
+msgid "Продана"
+msgstr ""
+
+#: billservice/models/card.py:57
+msgid "Карта"
+msgstr ""
+
+#: billservice/models/card.py:60
+msgid "Просмотр карт"
+msgstr ""
+
+#: billservice/models/card.py:67
+msgid "Сумма к оплате"
+msgstr ""
+
+#: billservice/models/card.py:69
+msgid "Отсрочка платежа, дн."
+msgstr ""
+
+#: billservice/models/card.py:71
+msgid "Сидка, %"
+msgstr ""
+
+#: billservice/models/card.py:73
+msgid "Сумма скидки"
+msgstr ""
+
+#: billservice/models/card.py:75 billservice/models/dealer.py:35
+msgid "% предоплаты"
+msgstr ""
+
+#: billservice/models/card.py:81
+msgid "Накладная на карты"
+msgstr ""
+
+#: billservice/models/card.py:82
+msgid "накладные на карты"
+msgstr ""
+
+#: billservice/models/constants.py:12
+msgid "Неактивен, не списывать периодические услуги"
+msgstr ""
+
+#: billservice/models/constants.py:14
+msgid "Неактивен, списывать периодические услуги"
+msgstr ""
+
+#: billservice/models/constants.py:37
+msgid "Не повторять"
+msgstr ""
+
+#: billservice/models/constants.py:38
+#: billservice/templates/accounts/groupstat.html:20
+#: billservice/templates/accounts/statistics.html:436
+msgid "День"
+msgstr ""
+
+#: billservice/models/constants.py:39
+msgid "Неделя"
+msgstr ""
+
+#: billservice/models/constants.py:40
+#: billservice/templates/accounts/groupstat.html:19
+#: billservice/templates/accounts/statistics.html:435
+msgid "Месяц"
+msgstr ""
+
+#: billservice/models/constants.py:41
+#: billservice/templates/accounts/groupstat.html:18
+#: billservice/templates/accounts/statistics.html:434
+msgid "Год"
+msgstr ""
+
+#: billservice/models/constants.py:45
+msgid "В начале периода"
+msgstr ""
+
+#: billservice/models/constants.py:46
+msgid "В конце периода"
+msgstr ""
+
+#: billservice/models/constants.py:47
+msgid "В течении периода"
+msgstr ""
+
+#: billservice/models/constants.py:65
+msgid "Неактивен"
+msgstr ""
+
+#: billservice/models/constants.py:69
+msgid "Наибольший"
+msgstr ""
+
+#: billservice/models/constants.py:70
+msgid "Сумма всех"
+msgstr ""
+
+#: billservice/models/constants.py:74
+msgid "С начала расчётного периода"
+msgstr ""
+
+#: billservice/models/constants.py:75
+msgid "С начала интервала агрегации"
+msgstr ""
+
+#: billservice/models/constants.py:79
+msgid "NetFlow"
+msgstr ""
+
+#: billservice/models/constants.py:80
+msgid "RADIUS Accounting"
+msgstr ""
+
+#: billservice/models/constants.py:84
+msgid "1"
+msgstr ""
+
+#: billservice/models/constants.py:85
+msgid "2"
+msgstr ""
+
+#: billservice/models/constants.py:86
+msgid "3"
+msgstr ""
+
+#: billservice/models/constants.py:87
+msgid "4"
+msgstr ""
+
+#: billservice/models/constants.py:88
+msgid "5"
+msgstr ""
+
+#: billservice/models/constants.py:89
+msgid "6"
+msgstr ""
+
+#: billservice/models/constants.py:90
+msgid "7"
+msgstr ""
+
+#: billservice/models/constants.py:91
+msgid "8"
+msgstr ""
+
+#: billservice/models/constants.py:95
+msgid "Входящий на абонента"
+msgstr ""
+
+#: billservice/models/constants.py:96
+msgid "Исходящий от абонента"
+msgstr ""
+
+#: billservice/models/constants.py:97
+msgid "Межабонентский"
+msgstr ""
+
+#: billservice/models/constants.py:131
+msgid "Кассир"
+msgstr ""
+
+#: billservice/models/dealer.py:13 billservice/models/operator.py:11
+#: billservice/models/organization.py:41 billservice/models/user.py:98
+msgid "УНП"
+msgstr ""
+
+#: billservice/models/dealer.py:15 billservice/models/operator.py:13
+#: billservice/models/organization.py:23
+msgid "ОКПО"
+msgstr ""
+
+#: billservice/models/dealer.py:19 billservice/models/operator.py:21
+msgid "Директор"
+msgstr ""
+
+#: billservice/models/dealer.py:23 billservice/models/operator.py:25
+#: billservice/models/organization.py:54
+msgid "Факс"
+msgstr ""
+
+#: billservice/models/dealer.py:28 billservice/models/operator.py:27
+msgid "Почтовый адрес"
+msgstr ""
+
+#: billservice/models/dealer.py:31 billservice/models/operator.py:33
+#: billservice/models/organization.py:18
+msgid "Юр. адрес"
+msgstr ""
+
+#: billservice/models/dealer.py:37
+msgid "Отсрочка платежа"
+msgstr ""
+
+#: billservice/models/dealer.py:39
+msgid "Скидка"
+msgstr ""
+
+#: billservice/models/dealer.py:54
+msgid "Дилеры"
+msgstr ""
+
+#: billservice/models/dealer.py:83
+msgid "Платёж дилера"
+msgstr ""
+
+#: billservice/models/dealer.py:84
+msgid "Платежи дилера"
+msgstr ""
+
+#: billservice/models/hardware.py:19 billservice/models/hardware.py:53
+msgid "Тип оборудования"
+msgstr ""
+
+#: billservice/models/hardware.py:20
+msgid "Типы оборудования"
+msgstr ""
+
+#: billservice/models/hardware.py:37 billservice/models/hardware.py:48
+#: billservice/models/switch.py:12
+msgid "Производитель"
+msgstr ""
+
+#: billservice/models/hardware.py:38
+msgid "Производители"
+msgstr ""
+
+#: billservice/models/hardware.py:45 billservice/models/hardware.py:74
+#: billservice/models/switch.py:21
+msgid "Модель"
+msgstr ""
+
+#: billservice/models/hardware.py:65 billservice/models/hardware.py:66
+msgid "Модель оборудования"
+msgstr ""
+
+#: billservice/models/hardware.py:81 billservice/models/switch.py:36
+msgid "Серийный номер"
+msgstr ""
+
+#: billservice/models/hardware.py:86 billservice/models/ip.py:62
+#: billservice/models/switch.py:93
+msgid "IP адрес"
+msgstr ""
+
+#: billservice/models/hardware.py:106
+msgid "Устройства"
+msgstr ""
+
+#: billservice/models/ip.py:18
+msgid "IPv4 VPN"
+msgstr ""
+
+#: billservice/models/ip.py:19
+msgid "IPv4 IPN"
+msgstr ""
+
+#: billservice/models/ip.py:20
+msgid "IPv6 VPN"
+msgstr ""
+
+#: billservice/models/ip.py:21
+msgid "IPv6 IPN"
+msgstr ""
+
+#: billservice/models/ip.py:24
+msgid "C IP"
+msgstr ""
+
+#: billservice/models/ip.py:25
+msgid "По IP"
+msgstr ""
+
+#: billservice/models/ip.py:28
+msgid "Следующий пул"
+msgstr ""
+
+#: billservice/models/ip.py:37
+msgid "IP пулы"
+msgstr ""
+
+#: billservice/models/ip.py:65
+msgid "Дата освобождения"
+msgstr ""
+
+#: billservice/models/ip.py:67
+msgid "Выдан динамически"
+msgstr ""
+
+#: billservice/models/ip.py:69
+msgid "Подтверждён"
+msgstr ""
+
+#: billservice/models/ip.py:73
+msgid "Последнее обновление"
+msgstr ""
+
+#: billservice/models/ip.py:74
+msgid "Для динамической выдачи"
+msgstr ""
+
+#: billservice/models/ip.py:79
+msgid "Занятый IP адрес"
+msgstr ""
+
+#: billservice/models/ip.py:80
+msgid "Занятые IP адреса"
+msgstr ""
+
+#: billservice/models/limit.py:20
+msgid "Единицы"
+msgstr ""
+
+#: billservice/models/limit.py:33 billservice/models/limit.py:37
+#: billservice/models/limit.py:41 billservice/models/limit.py:45
+#: billservice/models/time.py:105 billservice/models/time.py:113
+#: billservice/models/time.py:121 billservice/models/time.py:129
+msgid "rx"
+msgstr ""
+
+#: billservice/models/limit.py:43
+msgid "Burst time tx (kbps)"
+msgstr ""
+
+#: billservice/models/limit.py:48 billservice/models/time.py:137
+msgid "tx"
+msgstr ""
+
+#: billservice/models/log.py:26 billservice/models/log.py:27
+msgid "История периодических операций"
+msgstr ""
+
+#: billservice/models/news.py:9
+msgid "Заголовок новости"
+msgstr ""
+
+#: billservice/models/news.py:11
+msgid "Актуальна до"
+msgstr ""
+
+#: billservice/models/news.py:12
+msgid "Не указывайте ничего, если новость должна отображаться всегда"
+msgstr ""
+
+#: billservice/models/news.py:18
+msgid "Публичная"
+msgstr ""
+
+#: billservice/models/news.py:19
+msgid "Отображать в публичной части веб-кабинета"
+msgstr ""
+
+#: billservice/models/news.py:23
+msgid "Приватная"
+msgstr ""
+
+#: billservice/models/news.py:24
+msgid "Отображать в приватной части веб-кабинета"
+msgstr ""
+
+#: billservice/models/news.py:28
+msgid "Показать через агент"
+msgstr ""
+
+#: billservice/models/news.py:29
+msgid "Актуальна с"
+msgstr ""
+
+#: billservice/models/news.py:36
+msgid "Новость"
+msgstr ""
+
+#: billservice/models/news.py:37
+msgid "Новости"
+msgstr ""
+
+#: billservice/models/one_time_service.py:16
+msgid "Название разовой услуги"
+msgstr ""
+
+#: billservice/models/one_time_service.py:21
+msgid "Стоимость разовой услуги"
+msgstr ""
+
+#: billservice/models/one_time_service.py:39
+msgid "Разовые услуги"
+msgstr ""
+
+#: billservice/models/one_time_service.py:41
+#: billservice/models/one_time_service.py:67
+msgid "Просмотр услуг"
+msgstr ""
+
+#: billservice/models/one_time_service.py:64
+msgid "Списание по разовым услугам"
+msgstr ""
+
+#: billservice/models/one_time_service.py:65
+msgid "Списания по разовым услугам"
+msgstr ""
+
+#: billservice/models/operator.py:41 billservice/models/operator.py:42
+msgid "Информация о провайдере"
+msgstr ""
+
+#: billservice/models/organization.py:15
+msgid "Название организации"
+msgstr ""
+
+#: billservice/models/organization.py:29
+msgid "КПП"
+msgstr ""
+
+#: billservice/models/organization.py:35
+msgid "Корреспонденский счёт"
+msgstr ""
+
+#: billservice/models/organization.py:69
+msgid "Просмотр организации"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:16
+msgid "При любом балансе"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:17
+msgid "Меньше"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:18
+msgid "Меньше или равно"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:19
+msgid "Равно"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:20
+msgid "Больше или равно"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:21
+msgid "Больше"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:27 billservice/models/traffic.py:15
+msgid "Период"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:32
+#: billservice/templates/accounts/addonservice.html:66
+msgid "Стоимость"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:52
+msgid "Условие списания"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:57
+msgid "Сумма для условия"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:64
+msgid "Пропорциональное списание"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:65
+msgid ""
+"Рассчитать сумму списания, пропорционально моменту срабатывания условия по "
+"баллансу в расчётном периоде."
+msgstr ""
+
+#: billservice/models/pereodical_service.py:71
+#: billservice/templates/accounts/addonservice.html:81
+#: billservice/templates/accounts/addonservice.html:107
+msgid "Отключить"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:73
+msgid "Активировать"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:74
+msgid ""
+"Не указывайте, если списания должны начаться с начала расчётного периода"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:93
+msgid "Периодические услуги"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:95
+msgid "Просмотр периодических услуг"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:126
+msgid "Реальная дата списания"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:136
+#: billservice/models/pereodical_service.py:137
+msgid "История по пер. услугам"
+msgstr ""
+
+#: billservice/models/pereodical_service.py:139
+msgid "Просмотр списаний"
+msgstr ""
+
+#: billservice/models/period.py:21
+msgid "Период действия в секундах"
+msgstr ""
+
+#: billservice/models/period.py:29
+msgid "Длина промежутка"
+msgstr ""
+
+#: billservice/models/period.py:32
+msgid "Начинать при активации"
+msgstr ""
+
+#: billservice/models/period.py:53
+msgid "Расчетный период"
+msgstr ""
+
+#: billservice/models/period.py:54
+msgid "Расчетные периоды"
+msgstr ""
+
+#: billservice/models/period.py:56
+msgid "Просмотр расчётных периодов"
+msgstr ""
+
+#: billservice/models/period.py:63
+msgid "Дата начала"
+msgstr ""
+
+#: billservice/models/period.py:65
+msgid "Дата конца"
+msgstr ""
+
+#: billservice/models/period.py:67
+msgid "Активировано аккаунтом"
+msgstr ""
+
+#: billservice/models/period.py:74
+msgid "Период без списаний"
+msgstr ""
+
+#: billservice/models/period.py:75
+msgid "Периоды без списаний"
+msgstr ""
+
+#: billservice/models/period.py:83
+msgid "Название группы временных периодов"
+msgstr ""
+
+#: billservice/models/period.py:99
+msgid "Временной период"
+msgstr ""
+
+#: billservice/models/period.py:100
+msgid "Временные периоды"
+msgstr ""
+
+#: billservice/models/period.py:102
+msgid "Просмотр временных периодов"
+msgstr ""
+
+#: billservice/models/period.py:112
+msgid "Период времени"
+msgstr ""
+
+#: billservice/models/period.py:117
+msgid "Название подпериода"
+msgstr ""
+
+#: billservice/models/period.py:122
+msgid "Дата и время начала"
+msgstr ""
+
+#: billservice/models/period.py:127
+msgid "Длительность в секундах"
+msgstr ""
+
+#: billservice/models/period.py:134
+msgid "Повторять через"
+msgstr ""
+
+#: billservice/models/period.py:144
+msgid "Нода временного периода"
+msgstr ""
+
+#: billservice/models/period.py:145
+msgid "Ноды временных периодов"
+msgstr ""
+
+#: billservice/models/period.py:147
+msgid "Просмотр нод временных периодов"
+msgstr ""
+
+#: billservice/models/permission.py:12
+msgid "Приложение"
+msgstr ""
+
+#: billservice/models/permission.py:14
+msgid "Внутреннее имя"
+msgstr ""
+
+#: billservice/models/permission.py:21
+msgid "Право доступа"
+msgstr ""
+
+#: billservice/models/permission.py:22
+msgid "Права доступа"
+msgstr ""
+
+#: billservice/models/permission.py:28
+msgid "Роль"
+msgstr ""
+
+#: billservice/models/permission.py:39
+msgid "Группы доступа"
+msgstr ""
+
+#: billservice/models/radius.py:19
+msgid "Всегда"
+msgstr ""
+
+#: billservice/models/radius.py:21
+msgid "Не активен"
+msgstr ""
+
+#: billservice/models/radius.py:24
+msgid "Статус аккаунта"
+msgstr ""
+
+#: billservice/models/radius.py:25
+msgid "Добавлять атрибут в Access Accept, если срабатывает условие"
+msgstr ""
+
+#: billservice/models/radius.py:30
+msgid "Radius attribute name"
+msgstr ""
+
+#: billservice/models/radius.py:31
+msgid "Radius attribute name like Service-Type"
+msgstr ""
+
+#: billservice/models/radius.py:35
+msgid "Value"
+msgstr ""
+
+#: billservice/models/radius.py:36
+msgid "Here you can use variables like $account_id, $tariff_id, ..."
+msgstr ""
+
+#: billservice/models/radius.py:45
+msgid "Custom RADIUS атрибут"
+msgstr ""
+
+#: billservice/models/radius.py:46
+msgid "Custom RADIUS атрибуты"
+msgstr ""
+
+#: billservice/models/radius.py:54 billservice/models/traffic.py:195
+#: billservice/templates/accounts/groupstat.html:17
+#: billservice/templates/accounts/index.html:223
+#: billservice/templates/accounts/statistics.html:433
+msgid "Направление"
+msgstr ""
+
+#: billservice/models/radius.py:58 billservice/models/radius.py:83
+#: billservice/models/traffic.py:197
+#: billservice/templates/accounts/account_prepays_traffic.html:13
+msgid "Входящий"
+msgstr ""
+
+#: billservice/models/radius.py:59 billservice/models/radius.py:84
+#: billservice/models/traffic.py:198
+#: billservice/templates/accounts/account_prepays_traffic.html:12
+msgid "Исходящий"
+msgstr ""
+
+#: billservice/models/radius.py:61 billservice/models/radius.py:86
+msgid "Максимум"
+msgstr ""
+
+#: billservice/models/radius.py:65
+msgid "Единица тарификации, кб."
+msgstr ""
+
+#: billservice/models/radius.py:70
+msgid "Округление"
+msgstr ""
+
+#: billservice/models/radius.py:74 billservice/models/time.py:26
+msgid "Не округлять"
+msgstr ""
+
+#: billservice/models/radius.py:75 billservice/models/time.py:27
+msgid "В большую сторону"
+msgstr ""
+
+#: billservice/models/radius.py:81
+msgid "Предоплаченное направление"
+msgstr ""
+
+#: billservice/models/radius.py:90
+msgid "Объём, мб."
+msgstr ""
+
+#: billservice/models/radius.py:92 billservice/models/traffic.py:139
+msgid "Сбрасывать предоплаченный трафик"
+msgstr ""
+
+#: billservice/models/radius.py:99
+msgid "Услуга тарификации RADIUS трафика"
+msgstr ""
+
+#: billservice/models/radius.py:100
+msgid "Услуги тарификации RADIUS трафика"
+msgstr ""
+
+#: billservice/models/radius.py:113
+#: billservice/templates/accounts/groupstat.html:21
+#: billservice/templates/accounts/statistics.html:437
+msgid "Объём"
+msgstr ""
+
+#: billservice/models/radius.py:114
+msgid "Объём, с которого действует указаная цена"
+msgstr ""
+
+#: billservice/models/radius.py:119
+msgid "Период тарификации"
+msgstr ""
+
+#: billservice/models/radius.py:122
+msgid "Цена"
+msgstr ""
+
+#: billservice/models/radius.py:123
+msgid "Цена за единицу тарификации"
+msgstr ""
+
+#: billservice/models/radius.py:131 billservice/models/radius.py:132
+msgid "Настройка тарификации RADIUS трафика"
+msgstr ""
+
+#: billservice/models/registration.py:12
+msgid "Email"
+msgstr ""
+
+#: billservice/models/registration.py:13 billservice/models/transaction.py:83
+#: billservice/templates/accounts/account_helpdesk.html:28
+#: billservice/templates/accounts/addon_service_transaction.html:19
+#: billservice/templates/accounts/get_promise.html:80
+#: billservice/templates/accounts/netflowstream_info.html:16
+#: billservice/templates/accounts/one_time_history.html:18
+#: billservice/templates/accounts/periodical_service_history.html:17
+#: billservice/templates/accounts/statistics.html:139
+#: billservice/templates/accounts/statistics.html:248
+#: billservice/templates/accounts/statistics.html:298
+#: billservice/templates/accounts/statistics.html:345
+#: billservice/templates/accounts/statistics.html:390
+#: billservice/templates/accounts/traffic_transaction.html:16
+#: billservice/templates/accounts/transaction.html:16
+msgid "Дата"
+msgstr ""
+
+#: billservice/models/registration.py:20
+msgid "Заявка на подключение"
+msgstr ""
+
+#: billservice/models/registration.py:21
+msgid "Заявки на подключение"
+msgstr ""
+
+#: billservice/models/report.py:30 billservice/models/transaction.py:63
+msgid "Бонус"
+msgstr ""
+
+#: billservice/models/switch.py:57
+msgid "Место размещения"
+msgstr ""
+
+#: billservice/models/switch.py:61
+msgid "Количество портов"
+msgstr ""
+
+#: billservice/models/switch.py:63
+msgid "Битые порты"
+msgstr ""
+
+#: billservice/models/switch.py:65
+msgid "Аплинк-порты"
+msgstr ""
+
+#: billservice/models/switch.py:67
+msgid "Порты с грозозащитой"
+msgstr ""
+
+#: billservice/models/switch.py:69
+msgid "Порты с мониторингом"
+msgstr ""
+
+#: billservice/models/switch.py:71
+msgid "Отключенные порты"
+msgstr ""
+
+#: billservice/models/switch.py:73
+msgid "Поддержка SNMP"
+msgstr ""
+
+#: billservice/models/switch.py:80
+msgid "Версия SNMP"
+msgstr ""
+
+#: billservice/models/switch.py:86
+msgid "SNMP компьюнити"
+msgstr ""
+
+#: billservice/models/switch.py:99
+msgid "Метод SNMP управления"
+msgstr ""
+
+#: billservice/models/switch.py:101
+msgid "Не управлять"
+msgstr ""
+
+#: billservice/models/switch.py:102
+msgid "SSH"
+msgstr ""
+
+#: billservice/models/switch.py:104
+msgid "Telnet"
+msgstr ""
+
+#: billservice/models/switch.py:105
+msgid "localhost"
+msgstr ""
+
+#: billservice/models/switch.py:110
+msgid "Опция 82"
+msgstr ""
+
+#: billservice/models/switch.py:112
+msgid "Тип авторизации по Option82"
+msgstr ""
+
+#: billservice/models/switch.py:115
+msgid "Порт"
+msgstr ""
+
+#: billservice/models/switch.py:116
+msgid "Порт+MAC"
+msgstr ""
+
+#: billservice/models/switch.py:117
+msgid "MAC"
+msgstr ""
+
+#: billservice/models/switch.py:123
+msgid "RADIUS secret"
+msgstr ""
+
+#: billservice/models/switch.py:129
+msgid "RADIUS identify"
+msgstr ""
+
+#: billservice/models/switch.py:141
+msgid "Пароль пользователя"
+msgstr ""
+
+#: billservice/models/switch.py:147
+msgid "Команда включения порта"
+msgstr ""
+
+#: billservice/models/switch.py:149
+msgid "Команда отключения порта"
+msgstr ""
+
+#: billservice/models/switch.py:151
+msgid "Шаблон option82"
+msgstr ""
+
+#: billservice/models/switch.py:160
+msgid "remote_id"
+msgstr ""
+
+#: billservice/models/switch.py:166
+msgid "Коммутатор"
+msgstr ""
+
+#: billservice/models/switch.py:167
+msgid "Коммутаторы"
+msgstr ""
+
+#: billservice/models/tariff.py:16
+msgid "Описание тарифного плана"
+msgstr ""
+
+#: billservice/models/tariff.py:26 billservice/models/template.py:57
+msgid "Шаблон номера договора"
+msgstr ""
+
+#: billservice/models/tariff.py:33 billservice/models/time.py:38
+#: billservice/models/time.py:39
+msgid "Доступ с учётом времени"
+msgstr ""
+
+#: billservice/models/tariff.py:40 billservice/models/traffic.py:148
+#: billservice/models/traffic.py:149
+msgid "Доступ с учётом трафика"
+msgstr ""
+
+#: billservice/models/tariff.py:47
+msgid "RADIUS тарификация трафика"
+msgstr ""
+
+#: billservice/models/tariff.py:53
+msgid "Стоимость пакета"
+msgstr ""
+
+#: billservice/models/tariff.py:55
+msgid ""
+"Стоимость активации тарифного плана. Целесообразно указать с расчётным "
+"периодом. Если не указана - предоплаченный трафик и время не учитываются"
+msgstr ""
+
+#: billservice/models/tariff.py:60
+msgid "Производить доснятие"
+msgstr ""
+
+#: billservice/models/tariff.py:63
+msgid ""
+"Производить доснятие суммы до стоимости тарифного плана в конце расчётного "
+"периода"
+msgstr ""
+
+#: billservice/models/tariff.py:74
+msgid "Производить снятие денег  при нулевом баллансе"
+msgstr ""
+
+#: billservice/models/tariff.py:75
+msgid ""
+"Производить ли списывание денег по периодическим услугам при достижении "
+"нулевого балланса или исчерпании кредита?"
+msgstr ""
+
+#: billservice/models/tariff.py:83
+msgid "Удален"
+msgstr ""
+
+#: billservice/models/tariff.py:85
+msgid "Оплата экспресс картами"
+msgstr ""
+
+#: billservice/models/tariff.py:87
+msgid "Требовать наличия стоимости пакета"
+msgstr ""
+
+#: billservice/models/tariff.py:92
+msgid "Разрешить пользовательскую блокировку"
+msgstr ""
+
+#: billservice/models/tariff.py:97
+msgid "Стоимость блокировки"
+msgstr ""
+
+#: billservice/models/tariff.py:104
+msgid "MAX длительность блокировки"
+msgstr ""
+
+#: billservice/models/tariff.py:106
+msgid "Минимальный баланс для блокировки"
+msgstr ""
+
+#: billservice/models/tariff.py:113
+msgid "Разрешить услугу перевода баланса"
+msgstr ""
+
+#: billservice/models/tariff.py:119
+msgid "VPN IP пул"
+msgstr ""
+
+#: billservice/models/tariff.py:127
+msgid "Гостевой VPN IP пул"
+msgstr ""
+
+#: billservice/models/tariff.py:153
+msgid "Тарифы"
+msgstr ""
+
+#: billservice/models/tariff.py:176
+msgid "Уведомления при пополнении баланса"
+msgstr ""
+
+#: billservice/models/tariff.py:179
+msgid "Шаблон уведомления о платеже"
+msgstr ""
+
+#: billservice/models/tariff.py:181
+msgid ""
+"Можно использовать переменные account, transaction. Для рендеринга "
+"используоется Django Template Engine."
+msgstr ""
+
+#: billservice/models/tariff.py:187
+msgid "Уведомления о недостатке баланса"
+msgstr ""
+
+#: billservice/models/tariff.py:190
+msgid "Граница баланса"
+msgstr ""
+
+#: billservice/models/tariff.py:191
+msgid "Граница, с которой слать уведомления  о недостатке баланса"
+msgstr ""
+
+#: billservice/models/tariff.py:196
+msgid "Периодичность между уведомлениями о балансе"
+msgstr ""
+
+#: billservice/models/tariff.py:197
+msgid "В днях"
+msgstr ""
+
+#: billservice/models/tariff.py:201
+msgid "Количество уведомлений о балансе"
+msgstr ""
+
+#: billservice/models/tariff.py:202
+msgid ""
+"Не слать более уведомлений о балансе при исчерпании указанного количества"
+msgstr ""
+
+#: billservice/models/tariff.py:207
+msgid "Шаблон уведомления о недостатке денег"
+msgstr ""
+
+#: billservice/models/tariff.py:208
+msgid ""
+"Можно использовать переменные account. Для рендеринга используется Django "
+"Template Engine."
+msgstr ""
+
+#: billservice/models/tariff.py:226
+msgid "С тарифного плана"
+msgstr ""
+
+#: billservice/models/tariff.py:231
+msgid "На тарифный план"
+msgstr ""
+
+#: billservice/models/tariff.py:257
+msgid "Правило смены тарифов"
+msgstr ""
+
+#: billservice/models/tariff.py:258
+msgid "Правила смены тарифов"
+msgstr ""
+
+#: billservice/models/template.py:9
+msgid "Название типа шаблона"
+msgstr ""
+
+#: billservice/models/template.py:16
+msgid "Тип шаблона"
+msgstr ""
+
+#: billservice/models/template.py:17
+msgid "Типы шаблонов"
+msgstr ""
+
+#: billservice/models/template.py:37
+msgid "Шаблоны"
+msgstr ""
+
+#: billservice/models/template.py:47
+#, python-format
+msgid ""
+"%(contract_num)i - номер заключаемого договора этого типа\n"
+"%(account_id)i - идентификатор аккаунта\n"
+"%(day)i,%(month)i,%(year)i,%(hour)i,%(minute)i,%(second)i - дата подключения "
+"на тариф\n"
+msgstr ""
+
+#: billservice/models/template.py:58
+msgid "Шаблоны номеров договоров"
+msgstr ""
+
+#: billservice/models/time.py:13 billservice/templates/accounts/index.html:247
+msgid "Предоплаченное время"
+msgstr ""
+
+#: billservice/models/time.py:15
+msgid "Сбрасывать  предоплаченное время"
+msgstr ""
+
+#: billservice/models/time.py:20
+msgid "Тарифицировать по, c."
+msgstr ""
+
+#: billservice/models/time.py:22
+msgid "Округлять"
+msgstr ""
+
+#: billservice/models/time.py:41
+msgid "Просмотр услуг доступа по времени"
+msgstr ""
+
+#: billservice/models/time.py:59
+msgid "Промежуток"
+msgstr ""
+
+#: billservice/models/time.py:63
+msgid "Стоимость за минуту"
+msgstr ""
+
+#: billservice/models/time.py:76
+msgid "Период доступа"
+msgstr ""
+
+#: billservice/models/time.py:77
+msgid "Периоды доступа"
+msgstr ""
+
+#: billservice/models/time.py:149
+msgid "Настройка скорости"
+msgstr ""
+
+#: billservice/models/time.py:150
+msgid "Настройки скорости"
+msgstr ""
+
+#: billservice/models/time.py:175
+msgid "Списание за время"
+msgstr ""
+
+#: billservice/models/time.py:176
+msgid "Списания за время"
+msgstr ""
+
+#: billservice/models/traffic.py:19
+msgid ""
+"Если период не указан-берётся период тарифного плана. Если установлен "
+"автостарт-началом периода будет считаться день привязки тарифного плана "
+"пользователю. Если не установлен-старт берётся из расчётного периода"
+msgstr ""
+
+#: billservice/models/traffic.py:24 billservice/models/traffic.py:166
+msgid "Размер в байтах"
+msgstr ""
+
+#: billservice/models/traffic.py:33
+msgid "За длинну расчётного периода"
+msgstr ""
+
+#: billservice/models/traffic.py:34
+msgid ""
+"Если флаг установлен-то количество трафика считается за последние N секунд, "
+"указанные в расчётном периоде"
+msgstr ""
+
+#: billservice/models/traffic.py:38
+msgid "Действие"
+msgstr ""
+
+#: billservice/models/traffic.py:42
+msgid "Заблокировать пользователя"
+msgstr ""
+
+#: billservice/models/traffic.py:65
+msgid "Лимит трафика"
+msgstr ""
+
+#: billservice/models/traffic.py:66
+msgid "Лимиты трафика"
+msgstr ""
+
+#: billservice/models/traffic.py:94
+msgid "Списание за трафик"
+msgstr ""
+
+#: billservice/models/traffic.py:95
+msgid "Списания за трафик"
+msgstr ""
+
+#: billservice/models/traffic.py:104 billservice/models/traffic.py:161
+msgid "Услуга доступа по трафику"
+msgstr ""
+
+#: billservice/models/traffic.py:110
+msgid "Промежуток времени"
+msgstr ""
+
+#: billservice/models/traffic.py:116 billservice/models/traffic.py:219
+msgid "Группа трафика"
+msgstr ""
+
+#: billservice/models/traffic.py:120
+msgid "Цена за мб."
+msgstr ""
+
+#: billservice/models/traffic.py:130
+msgid "Цена за направление"
+msgstr ""
+
+#: billservice/models/traffic.py:131
+msgid "Цены за направления трафика"
+msgstr ""
+
+#: billservice/models/traffic.py:192
+msgid "Классы трафика"
+msgstr ""
+
+#: billservice/models/traffic.py:199
+msgid "Вх.+Исх."
+msgstr ""
+
+#: billservice/models/traffic.py:206
+msgid "Сумма классов"
+msgstr ""
+
+#: billservice/models/traffic.py:207
+msgid "Максимальный класс"
+msgstr ""
+
+#: billservice/models/transaction.py:16
+msgid "Может быть удалён"
+msgstr ""
+
+#: billservice/models/transaction.py:19
+msgid "Разрешено выполнять"
+msgstr ""
+
+#: billservice/models/transaction.py:23
+msgid "Является бонусной"
+msgstr ""
+
+#: billservice/models/transaction.py:36
+msgid "Тип проводки"
+msgstr ""
+
+#: billservice/models/transaction.py:37
+msgid "Типы проводок"
+msgstr ""
+
+#: billservice/models/transaction.py:48
+msgid "Платёжный документ"
+msgstr ""
+
+#: billservice/models/transaction.py:85
+msgid "Закрыть ОП"
+msgstr ""
+
+#: billservice/models/transaction.py:87
+msgid "ОП истек"
+msgstr ""
+
+#: billservice/models/transaction.py:92
+msgid "Выполнил"
+msgstr ""
+
+#: billservice/models/transaction.py:105
+msgid "Проводка"
+msgstr ""
+
+#: billservice/models/transaction.py:106
+msgid "Проводки"
+msgstr ""
+
+#: billservice/models/user.py:29
+msgid "В международном формате +71231231212"
+msgstr ""
+
+#: billservice/models/user.py:41
+msgid "Должность"
+msgstr ""
+
+#: billservice/models/user.py:47
+msgid "Последний IP"
+msgstr ""
+
+#: billservice/models/user.py:71
+msgid "Разрешённые IP"
+msgstr ""
+
+#: billservice/models/user.py:86
+msgid "Паспорт выдан"
+msgstr ""
+
+#: billservice/models/user.py:92
+msgid "Личный номер"
+msgstr ""
+
+#: billservice/models/user.py:104
+msgid "ICQ/Skype"
+msgstr ""
+
+#: billservice/models/user.py:168
+msgid "Пользователь системы"
+msgstr ""
+
+#: billservice/models/user.py:169
+msgid "Пользователи системы"
+msgstr ""
+
+#: billservice/models/user.py:171
+msgid "Просмотр администраторов"
+msgstr ""
+
+#: billservice/models/user.py:172
+msgid "Получение любой модели методом get_model"
+msgstr ""
+
+#: billservice/models/user.py:173
+msgid "Установка IPN статуса на сервере доступаl"
+msgstr ""
+
+#: billservice/models/user.py:174
+msgid "Серверный рендеринг документов"
+msgstr ""
+
+#: billservice/models/user.py:175
+msgid "Тестирование данных для сервера доступа"
+msgstr ""
+
+#: billservice/models/user.py:176
+msgid "Получение статуса портов коммутатора"
+msgstr ""
+
+#: billservice/models/user.py:177
+msgid "Установка статуса портов коммутатора"
+msgstr ""
+
+#: billservice/models/user.py:178
+msgid "Список лог-файлов биллинга"
+msgstr ""
+
+#: billservice/models/user.py:179
+msgid "Просмотр лог-файлов биллинга"
+msgstr ""
+
+#: billservice/models/user.py:180
+msgid "Удаление проводок"
+msgstr ""
+
+#: billservice/models/user.py:181
+msgid "Метод sp_info"
+msgstr ""
+
+#: billservice/models/user.py:182
+msgid "Просмотр груп доступа"
+msgstr ""
+
+#: billservice/models/user.py:183
+msgid "Выполнение любого sql запроса"
+msgstr ""
+
+#: billservice/models/utils.py:13
+msgid ""
+"Некорректный формат номера. Используйте международный формат +71923453333"
+msgstr ""
+
+#: billservice/templates/accounts/_obsolete/card_acvation.html:23
+msgid "Активация карточек"
+msgstr ""
+
+#: billservice/templates/accounts/_obsolete/succeful.html:12
+msgid "На главную"
+msgstr ""
+
+#: billservice/templates/accounts/account_helpdesk.html:20
+msgid "ТЕХПОДДЕРЖКА"
+msgstr ""
+
+#: billservice/templates/accounts/account_helpdesk.html:27
+msgid "Заголовок"
+msgstr ""
+
+#: billservice/templates/accounts/account_helpdesk.html:29
+msgid "Исполнитель"
+msgstr ""
+
+#: billservice/templates/accounts/account_prepays_traffic.html:11
+msgid "Тип трафика"
+msgstr ""
+
+#: billservice/templates/accounts/addon_service_transaction.html:9
+msgid "СПИСАНИЯ ЗА ПОДКЛЮЧАЕМЫЕ УСЛУГИ"
+msgstr ""
+
+#: billservice/templates/accounts/addon_service_transaction.html:18
+msgid "Тип списания"
+msgstr ""
+
+#: billservice/templates/accounts/addon_service_transaction.html:32
+#: billservice/templates/accounts/periodical_service_history.html:31
+#: billservice/templates/accounts/traffic_transaction.html:27
+msgid "Всего на странице:"
+msgstr ""
+
+#: billservice/templates/accounts/addon_service_transaction.html:32
+#: billservice/templates/accounts/groupstat.html:38
+#: billservice/templates/accounts/periodical_service_history.html:31
+#: billservice/templates/accounts/traffic_transaction.html:27
+msgid "Всего:"
+msgstr ""
+
+#: billservice/templates/accounts/addon_service_transaction.html:43
+#: billservice/templates/accounts/groupstat.html:48
+#: billservice/templates/accounts/periodical_service_history.html:42
+#: billservice/templates/accounts/traffic_transaction.html:38
+#: billservice/templates/accounts/transaction.html:48
+msgid "Данных нет"
+msgstr ""
+
+#: billservice/templates/accounts/addon_service_transaction.html:49
+#: billservice/templates/accounts/groupstat.html:54
+#: billservice/templates/accounts/one_time_history.html:46
+#: billservice/templates/accounts/periodical_service_history.html:48
+#: billservice/templates/accounts/traffic_limit.html:27
+#: billservice/templates/accounts/traffic_transaction.html:44
+#: billservice/templates/accounts/transaction.html:54
+msgid "Биллинговая информация"
+msgstr ""
+
+#: billservice/templates/accounts/addonservice.html:56
+#: billservice/templates/accounts/statistics.html:335
+msgid "ПОДКЛЮЧАЕМЫЕ УСЛУГИ"
+msgstr ""
+
+#: billservice/templates/accounts/addonservice.html:64
+#: billservice/templates/accounts/addonservice.html:103
+#: billservice/templates/accounts/change_tariff.html:67
+#: billservice/templates/accounts/statistics.html:143
+#: billservice/templates/accounts/transaction.html:20
+msgid "Описание"
+msgstr ""
+
+#: billservice/templates/accounts/addonservice.html:65
+msgid "Период действия (расчётный периода)"
+msgstr ""
+
+#: billservice/templates/accounts/addonservice.html:67
+msgid "Можно активировать"
+msgstr ""
+
+#: billservice/templates/accounts/addonservice.html:68
+msgid "Плата за досрочное отключение"
+msgstr ""
+
+#: billservice/templates/accounts/addonservice.html:69
+msgid "Минимальный период"
+msgstr ""
+
+#: billservice/templates/accounts/addonservice.html:70
+msgid "Подключить/Отключить"
+msgstr ""
+
+#: billservice/templates/accounts/addonservice.html:81
+msgid "Подключить"
+msgstr ""
+
+#: billservice/templates/accounts/addonservice.html:95
+msgid "ПОДКЛЮЧЕННЫЕ УСЛУГИ"
+msgstr ""
+
+#: billservice/templates/accounts/addonservice.html:104
+msgid "Cтоимость"
+msgstr ""
+
+#: billservice/templates/accounts/addonservice.html:105
+msgid "Когда подключена"
+msgstr ""
+
+#: billservice/templates/accounts/addonservice.html:106
+msgid "Дополнительно"
+msgstr ""
+
+#: billservice/templates/accounts/addonservice.html:127
+#: billservice/templates/accounts/traffic_limit.html:21
+msgid "На данный момент информации нет"
+msgstr ""
+
+#: billservice/templates/accounts/card_form.html:53
+msgid "АКТИВАЦИЯ КАРТОЧЕК"
+msgstr ""
+
+#: billservice/templates/accounts/card_form.html:76
+msgid "Для активации карточек необходимо выполнить следующие действия:"
+msgstr ""
+
+#: billservice/templates/accounts/card_form.html:78
+msgid ""
+"Ввести номер карты и пин, которые указаны на Вашей карточке, либо, если поле "
+"«номер карты» отсутствует, только пин;"
+msgstr ""
+
+#: billservice/templates/accounts/card_form.html:79
+msgid "Нажать кнопку «Активировать»."
+msgstr ""
+
+#: billservice/templates/accounts/card_form.html:81
+msgid ""
+"Если карточка еще не была активирована, Ваш баланс пополнится автоматически "
+"на указанную сумму."
+msgstr ""
+
+#: billservice/templates/accounts/change_password.html:77
+msgid "СМЕНА УЧЁТНЫХ ДАННЫХ"
+msgstr ""
+
+#: billservice/templates/accounts/change_tariff.html:51
+msgid ""
+"<span>Внимание!</span> При смене тарифного плана активированные подключаемые "
+"услуги, работа которых не предусмотрена на выбранном тарифном плане, будут "
+"отключены!<br />\n"
+"Обратите внимание на условия досрочного отключения подключенных услуг и "
+"свяжитесь с провайдером."
+msgstr ""
+
+#: billservice/templates/accounts/change_tariff.html:60
+msgid "СМЕНА ТАРИФА"
+msgstr ""
+
+#: billservice/templates/accounts/change_tariff.html:67
+msgid "Название тарифа"
+msgstr ""
+
+#: billservice/templates/accounts/change_tariff.html:67
+msgid "Время перехода"
+msgstr ""
+
+#: billservice/templates/accounts/get_promise.html:19
+msgid "макс "
+msgstr ""
+
+#: billservice/templates/accounts/get_promise.html:24
+msgid "Логин адресата"
+msgstr ""
+
+#: billservice/templates/accounts/get_promise.html:44
+msgid "Обещанный платёж(пополнить баланс в долг)"
+msgstr ""
+
+#: billservice/templates/accounts/get_promise.html:51
+msgid "макс"
+msgstr ""
+
+#: billservice/templates/accounts/get_promise.html:56
+msgid "Погасить до:"
+msgstr ""
+
+#: billservice/templates/accounts/get_promise.html:59
+msgid ""
+"(в указанное время сумма обещанного платежа будет списана с вашего баланса)"
+msgstr ""
+
+#: billservice/templates/accounts/get_promise.html:64
+msgid "Взять"
+msgstr ""
+
+#: billservice/templates/accounts/get_promise.html:74
+msgid "ИСТОРИЯ ОБЕЩАННЫХ ПЛАТЕЖЕЙ"
+msgstr ""
+
+#: billservice/templates/accounts/get_promise.html:82
+msgid "Взята до"
+msgstr ""
+
+#: billservice/templates/accounts/get_promise.html:84
+msgid "Платёж закрыт"
+msgstr ""
+
+#: billservice/templates/accounts/get_promise.html:108
+#: billservice/templates/accounts/services_info.html:10
+#: billservice/templates/accounts/services_info.html:48
+msgid "ИСТОРИЯ ПОДКЛЮЧАЕМЫХ УСЛУГ"
+msgstr ""
+
+#: billservice/templates/accounts/groupstat.html:10
+#: billservice/templates/accounts/statistics.html:426
+msgid "Объём трафика"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:64
+msgid "СТАТУС АККАУНТА"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:74
+msgid "Включена пользовательская блокировка"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:76
+msgid "Ваша учётная запись заблокирована"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:83
+msgid "Недостаточно средств на балансе"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:90
+msgid "Вы превысили лимит трафика"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:98
+msgid "Баланс :"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:99
+msgid "Размер кредита :"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:100
+msgid "Номер договора :"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:101
+msgid "Блокировка учётной записи"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:108
+msgid "НОВОСТИ ПРОВАЙДЕРА"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:121
+msgid "МОИ ДАННЫЕ"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:130
+msgid "Следующий тарифный план"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:134
+msgid "Ваш Адрес"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:140
+msgid "Дата подключения"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:149
+msgid "ВАШИ СУБАККАУНТЫ"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:160
+msgid "VPN IP"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:161
+msgid "IPN IP"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:162
+msgid "MAC-адрес"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:182
+msgid "ОСТАТКИ ТРАФИКА ПО ЛИМИТАМ"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:192
+#: billservice/templates/accounts/statistics.html:193
+#: billservice/templates/accounts/traffic_limit.html:11
+#: billservice/templates/accounts/vpn_session.html:16
+msgid "Начало"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:193
+#: billservice/templates/accounts/statistics.html:194
+#: billservice/templates/accounts/traffic_limit.html:12
+#: billservice/templates/accounts/vpn_session.html:17
+msgid "Окончание"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:194
+#: billservice/templates/accounts/traffic_limit.html:13
+msgid "Потреблено"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:195
+#: billservice/templates/accounts/traffic_limit.html:14
+msgid "Лимит"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:214
+msgid "ПРЕДОПЛАЧЕННЫЕ ЕДИНИЦЫ"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:241
+msgid "Предоплаченное значение"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:243
+msgid "Время начисления"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:248
+msgid " сек"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:269
+msgid "ВАШИ ТАРИФНЫЕ ПЛАНЫ"
+msgstr ""
+
+#: billservice/templates/accounts/index.html:278
+msgid "Начало действия"
+msgstr ""
+
+#: billservice/templates/accounts/make_payment.html:13
+msgid "Выберите способ платежа"
+msgstr ""
+
+#: billservice/templates/accounts/make_payment.html:16
+msgid "Способ"
+msgstr ""
+
+#: billservice/templates/accounts/make_payment.html:30
+msgid "Пополнить баланс с помощью WebMoney"
+msgstr ""
+
+#: billservice/templates/accounts/make_payment.html:54
+msgid "Оплата услуг"
+msgstr ""
+
+#: billservice/templates/accounts/netflowstream_info.html:10
+msgid "СЕТЕВАЯ СТАТИСТИКА"
+msgstr ""
+
+#: billservice/templates/accounts/netflowstream_info.html:17
+msgid "IP источника"
+msgstr ""
+
+#: billservice/templates/accounts/netflowstream_info.html:18
+msgid "Порт источника"
+msgstr ""
+
+#: billservice/templates/accounts/netflowstream_info.html:19
+msgid "IP получателя"
+msgstr ""
+
+#: billservice/templates/accounts/netflowstream_info.html:20
+msgid "Порт получателя"
+msgstr ""
+
+#: billservice/templates/accounts/netflowstream_info.html:21
+msgid "Протокол"
+msgstr ""
+
+#: billservice/templates/accounts/netflowstream_info.html:22
+msgid "Передано"
+msgstr ""
+
+#: billservice/templates/accounts/netflowstream_info.html:42
+#: billservice/templates/accounts/services_info.html:42
+msgid "Данных нет!"
+msgstr ""
+
+#: billservice/templates/accounts/netflowstream_info.html:48
+msgid "Статистика по трафику"
+msgstr ""
+
+#: billservice/templates/accounts/one_time_history.html:10
+msgid "СПИСАНИЯ РАЗОВАХ УСЛУГ"
+msgstr ""
+
+#: billservice/templates/accounts/one_time_history.html:29
+msgid "Всего на странице"
+msgstr ""
+
+#: billservice/templates/accounts/one_time_history.html:29
+msgid "Всего"
+msgstr ""
+
+#: billservice/templates/accounts/payment_failure.html:8
+msgid "Платёж отменён."
+msgstr ""
+
+#: billservice/templates/accounts/payment_success.html:8
+msgid "Платёж выполнен. Ожидайте зачисления средств в ближайшее время."
+msgstr ""
+
+#: billservice/templates/accounts/periodical_service_history.html:10
+msgid "СПИСАНИЕ ПЕРИОДИЧЕСКИХ УСЛУГ"
+msgstr ""
+
+#: billservice/templates/accounts/popup_userblock.html:47
+msgid "Пользовательская блокировка аккаунта"
+msgstr ""
+
+#: billservice/templates/accounts/popup_userblock.html:53
+msgid "Выша учётная запись"
+msgstr ""
+
+#: billservice/templates/accounts/popup_userblock.html:53
+msgid "не"
+msgstr ""
+
+#: billservice/templates/accounts/popup_userblock.html:53
+msgid "заблокирована"
+msgstr ""
+
+#: billservice/templates/accounts/popup_userblock.html:55
+msgid "Максимальный срок блокировки составляет"
+msgstr ""
+
+#: billservice/templates/accounts/popup_userblock.html:55
+msgid "дней"
+msgstr ""
+
+#: billservice/templates/accounts/popup_userblock.html:56
+msgid "Стоимость блокировки составляет "
+msgstr ""
+
+#: billservice/templates/accounts/popup_userblock.html:58
+msgid "Пользовательская блокировка на вашем тарифном плане недоступна"
+msgstr ""
+
+#: billservice/templates/accounts/popup_userblock.html:69
+msgid "Включить блокировку"
+msgstr ""
+
+#: billservice/templates/accounts/popup_userblock.html:71
+msgid "Отключить блокировку"
+msgstr ""
+
+#: billservice/templates/accounts/services_info.html:16
+msgid "Название услуги"
+msgstr ""
+
+#: billservice/templates/accounts/services_info.html:17
+msgid "Дата подключения услуги"
+msgstr ""
+
+#: billservice/templates/accounts/services_info.html:18
+msgid "Дата отключения услуги"
+msgstr ""
+
+#: billservice/templates/accounts/services_info.html:19
+msgid "Списано средств за услугу"
+msgstr ""
+
+#: billservice/templates/accounts/services_info.html:31
+#: billservice/templates/accounts/transaction.html:37
+msgid "Всего на странице:<br>Всего:"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:120
+#: billservice/templates/accounts/statistics.html:174
+#: billservice/templates/accounts/statistics.html:228
+#: billservice/templates/accounts/statistics.html:277
+#: billservice/templates/accounts/statistics.html:323
+#: billservice/templates/accounts/statistics.html:371
+#: billservice/templates/accounts/statistics.html:414
+msgid "с даты:"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:123
+#: billservice/templates/accounts/statistics.html:177
+#: billservice/templates/accounts/statistics.html:231
+#: billservice/templates/accounts/statistics.html:280
+#: billservice/templates/accounts/statistics.html:326
+#: billservice/templates/accounts/statistics.html:374
+#: billservice/templates/accounts/statistics.html:417
+msgid "по дату:"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:129
+#: billservice/templates/accounts/statistics.html:183
+#: billservice/templates/accounts/statistics.html:237
+#: billservice/templates/accounts/statistics.html:286
+#: billservice/templates/accounts/statistics.html:332
+#: billservice/templates/accounts/statistics.html:380
+#: billservice/templates/accounts/statistics.html:423
+msgid "Фильтровать"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:130
+#: billservice/templates/accounts/statistics.html:184
+#: billservice/templates/accounts/statistics.html:238
+#: billservice/templates/accounts/statistics.html:287
+#: billservice/templates/accounts/statistics.html:333
+#: billservice/templates/accounts/statistics.html:381
+#: billservice/templates/accounts/statistics.html:424
+msgid "Архив"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:132
+msgid "ИСТОРИЯ ПОПОЛНЕНИЙ"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:141
+#: billservice/templates/accounts/transaction.html:18
+msgid "Обещанный платеж"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:142
+#: billservice/templates/accounts/transaction.html:19
+msgid "Погасить до"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:144
+#: billservice/templates/accounts/transaction.html:21
+msgid "Документ"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:151
+msgid "да"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:151
+msgid "нет"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:186
+msgid "СЕССИИ"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:195
+msgid "IP-адрес"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:196
+#: billservice/templates/accounts/vpn_session.html:19
+msgid "Передано / Принято / Всего"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:197
+#: billservice/templates/accounts/vpn_session.html:20
+msgid "Время"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:240
+msgid "ПЕРИОДИЧЕСКИЕ УСЛУГИ"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:289
+msgid "РАЗОВЫЕ УСЛУГИ"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:383
+#: billservice/templates/accounts/traffic_transaction.html:10
+msgid "СПИСАНИЯ ЗА ТРАФИК"
+msgstr ""
+
+#: billservice/templates/accounts/statistics.html:460
+msgid "Информации нет"
+msgstr ""
+
+#: billservice/templates/accounts/subaccount_change_password.html:47
+msgid "СМЕНА ПАРОЛЯ СУБАККАУНТА"
+msgstr ""
+
+#: billservice/templates/accounts/tags/show_last_news.html:3
+msgid " Новости "
+msgstr ""
+
+#: billservice/templates/accounts/transaction.html:10
+msgid "ИНФОРМАЦИЯ О РУЧНЫХ ОПЕРАЦИЯХ С БАЛАНСОМ"
+msgstr ""
+
+#: billservice/templates/accounts/vpn_session.html:10
+msgid "СТАТИСТИКА ПОДКЛЮЧЕНИЙ"
+msgstr ""
+
+#: billservice/templates/accounts/vpn_session.html:18
+msgid "IP Адрес"
+msgstr ""
+
+#: billservice/templates/accounts/vpn_session.html:44
+msgid "Данных на данный момент нет"
+msgstr ""
+
+#: billservice/templates/accounts/vpn_session.html:50
+msgid "Статистика по сессиям"
+msgstr ""
+
+#: billservice/templates/billservice/payment_select.html:6
+#: billservice/templates/billservice/transaction_detail.html:6
+msgid "Укажите параметры платежа:"
+msgstr ""
+
+#: billservice/templates/lib/tags/form_fields/_obsolete/search_widget_block.html:19
+msgid "not more"
+msgstr ""
+
+#: billservice/templates/lib/tags/form_fields/_obsolete/search_widget_block.html:19
+msgid "m"
+msgstr ""
+
+#: billservice/views/account.py:51
+msgid "Ok"
+msgstr ""
+
+#: billservice/views/account.py:58 billservice/views/auth.py:164
+#: billservice/views/auth.py:168
+msgid "User not found"
+msgstr ""
+
+#: billservice/views/account.py:101
+msgid "Невозможно заблокировать учётную записть"
+msgstr ""
+
+#: billservice/views/account.py:109
+msgid "Аккаунт успешно активирован"
+msgstr ""
+
+#: billservice/views/account.py:118
+#, python-format
+msgid ""
+"Аккаунт не может быть заблокирован. </br>Минимальный остаток на балансе "
+"должен составлять %s."
+msgstr ""
+
+#: billservice/views/account.py:137
+msgid "Аккаунт успешно заблокирован"
+msgstr ""
+
+#: billservice/views/account.py:140
+msgid "Блокировка аккаунта запрещена"
+msgstr ""
+
+#: billservice/views/account.py:143
+msgid ""
+"Блокировка аккаунта невозможна. Обратитесь в службу поддержки провайдера."
+msgstr ""
+
+#: billservice/views/auth.py:35
+msgid "У вас нет прав на вход в веб-кабинет"
+msgstr ""
+
+#: billservice/views/auth.py:50
+msgid "Access for your ip is forbidden"
+msgstr ""
+
+#: billservice/views/auth.py:57
+msgid "Error in access rule for your account"
+msgstr ""
+
+#: billservice/views/auth.py:85 billservice/views/auth.py:93
+#: billservice/views/credentials.py:108 billservice/views/credentials.py:140
+msgid "Проверьте введенные данные"
+msgstr ""
+
+#: billservice/views/auth.py:123
+msgid "Ваша заявка успешно подана. Ожидайте пока с вами свяжется наш менеджер."
+msgstr ""
+
+#: billservice/views/auth.py:126
+msgid "Ошибка регистрации"
+msgstr ""
+
+#: billservice/views/auth.py:157
+msgid "Login succeful"
+msgstr ""
+
+#: billservice/views/card.py:26
+msgid "Вам не доступна услуга активации карт экспресс оплаты."
+msgstr ""
+
+#: billservice/views/card.py:39
+msgid "Ошибка активации. Карта не найдена."
+msgstr ""
+
+#: billservice/views/card.py:41
+msgid "Ошибка активации. Карта не была продана."
+msgstr ""
+
+#: billservice/views/card.py:44
+msgid "Ошибка активации. Карта была активирована раньше."
+msgstr ""
+
+#: billservice/views/card.py:47
+msgid "Ошибка активации. Срок действия карты истёк."
+msgstr ""
+
+#: billservice/views/card.py:49
+msgid "Карта успешно активирована."
+msgstr ""
+
+#: billservice/views/card.py:52
+msgid "Ошибка активации карты."
+msgstr ""
+
+#: billservice/views/card.py:60
+msgid "Проверьте заполнение формы"
+msgstr ""
+
+#: billservice/views/card.py:65
+msgid "Ошибка активации карточки"
+msgstr ""
+
+#: billservice/views/credentials.py:47 billservice/views/credentials.py:51
+msgid "Обнаружена попытка взлома."
+msgstr ""
+
+#: billservice/views/credentials.py:60 billservice/views/credentials.py:95
+msgid "Пароль успешно изменен"
+msgstr ""
+
+#: billservice/views/credentials.py:64
+msgid "Пароли не совпадают"
+msgstr ""
+
+#: billservice/views/credentials.py:68 billservice/views/credentials.py:103
+msgid "Возникла ошибка. Обратитесь к администратору."
+msgstr ""
+
+#: billservice/views/credentials.py:73
+msgid "Одно из полей не заполнено"
+msgstr ""
+
+#: billservice/views/credentials.py:77 billservice/views/credentials.py:112
+msgid "Не предвиденная ошибка"
+msgstr ""
+
+#: billservice/views/credentials.py:99
+msgid "Проверьте пароль. "
+msgstr ""
+
+#: billservice/views/credentials.py:130
+msgid "E-mail успешно изменен"
+msgstr ""
+
+#: billservice/views/credentials.py:135
+msgid "Введённые e-mail не совпадают"
+msgstr ""
+
+#: billservice/views/news.py:14
+msgid "Невозможно удалить новость, попробуйте позже"
+msgstr ""
+
+#: billservice/views/news.py:27
+msgid "Новость успешно удалена"
+msgstr ""
+
+#: billservice/views/payment.py:45
+msgid "Вам не назначен тарифный план"
+msgstr ""
+
+#: billservice/views/payment.py:79
+msgid "У вас есть незакрытые обещанные платежи"
+msgstr ""
+
+#: billservice/views/payment.py:102
+#, python-format
+msgid ""
+"Ваш баланс меньше разрешённого для взятия обещанного платежа. Минимальный "
+"баланс: %(MIN_BALLANCE)s %(CURRENCY)s"
+msgstr ""
+
+#: billservice/views/payment.py:140
+#, python-format
+msgid ""
+"Вы уже воспользовались услугой обещанного платежа %(LAST_PROMISE_DATE)s. "
+"Услуга обещанного платежа станет доступна %(REACTIVATION_DATE)s"
+msgstr ""
+
+#: billservice/views/payment.py:166
+msgid "Проверьте введённые в поля данные"
+msgstr ""
+
+#: billservice/views/payment.py:187
+msgid "Вы превысили максимальный размер обещанного платежа"
+msgstr ""
+
+#: billservice/views/payment.py:206
+msgid "Сумма обещанного платежа должна быть положительной"
+msgstr ""
+
+#: billservice/views/payment.py:235
+msgid ""
+"Обещанный платёж выполнен успешно. Обращаем ваше внимание на то, что "
+"повторно воспользоваться услугой обещанного платежа вы сможете после "
+"единоразового погашения всей суммы платежа или истечения даты созданного "
+"платежа."
+msgstr ""
+
+#: billservice/views/payment.py:255
+msgid "Вам запрещено пользоваться сервисом перевода баланса."
+msgstr ""
+
+#: billservice/views/payment.py:273
+msgid "Абонент с указанным логином не найден"
+msgstr ""
+
+#: billservice/views/payment.py:286
+msgid "Логин абонента, которому вы хотите перевести средства, не указан."
+msgstr ""
+
+#: billservice/views/payment.py:301
+msgid ""
+"Указанная сумма не является числом. Разрешено вводить цифры 0-9 и точку, как "
+"разделитель разрядов."
+msgstr ""
+
+#: billservice/views/payment.py:315
+msgid "Указанная сумма слишком велика."
+msgstr ""
+
+#: billservice/views/payment.py:332
+#, python-format
+msgid "Перевод средств на аккаунт %s"
+msgstr ""
+
+#: billservice/views/payment.py:341
+#, python-format
+msgid "Перевод средств с аккаунта %s"
+msgstr ""
+
+#: billservice/views/payment.py:349
+msgid "Перевод средств успешно выполнен."
+msgstr ""
+
+#: billservice/views/payment.py:378 billservice/views/payment.py:471
+msgid "Неправильный вызов функции"
+msgstr ""
+
+#: billservice/views/payment.py:384
+msgid "Ошибка в заполнении полей"
+msgstr ""
+
+#: billservice/views/payment.py:394
+msgid "Для автоматического зачисления необходимо указать пароль"
+msgstr ""
+
+#: billservice/views/payment.py:399
+#, python-format
+msgid "Минимальная сумма платежа %s"
+msgstr ""
+
+#: billservice/views/payment.py:413
+#, python-format
+msgid "Пополнение счёта %s"
+msgstr ""
+
+#: billservice/views/payment.py:421
+#, python-format
+msgid "Произошла ошибка выставления счёта. %s"
+msgstr ""
+
+#: billservice/views/payment.py:430
+msgid "Счёт удачно создан. Пройдите по ссылке для его оплаты."
+msgstr ""
+
+#: billservice/views/payment.py:439
+msgid "Платёж успешно выполнен."
+msgstr ""
+
+#: billservice/views/payment.py:460
+msgid "Сумма<1 или неправильный формат телефонного номера."
+msgstr ""
+
+#: billservice/views/payment.py:483
+msgid "Не указан телефон или пароль"
+msgstr ""
+
+#: billservice/views/service.py:115
+msgid "Вы не можете подключить данную услугу"
+msgstr ""
+
+#: billservice/views/service.py:120
+msgid "Услуга подключена"
+msgstr ""
+
+#: billservice/views/service.py:124 billservice/views/service.py:169
+msgid "Указанный пользователь не найден"
+msgstr ""
+
+#: billservice/views/service.py:128 billservice/views/service.py:173
+msgid "Указанныя подключаемая услуга не найдена"
+msgstr ""
+
+#: billservice/views/service.py:132
+msgid "Активация выбранной услуги в данный момент не доступна"
+msgstr ""
+
+#: billservice/views/service.py:136
+msgid "У вас уже подключенны изменяющие скорость услуги"
+msgstr ""
+
+#: billservice/views/service.py:140
+msgid ""
+"Услуга не может быть подключена. Проверьте Ваш баланс или обратитесь в "
+"службу поддержки"
+msgstr ""
+
+#: billservice/views/service.py:145
+msgid "На вашем тарифном плане активация выбранной услуги невозможна"
+msgstr ""
+
+#: billservice/views/service.py:150
+msgid ""
+"Превышенно допустимое количество активаций. Обратитесь в службу поддержки"
+msgstr ""
+
+#: billservice/views/service.py:155
+msgid "Указанная услуга уже подключена и не может быть активирована дважды."
+msgstr ""
+
+#: billservice/views/service.py:160
+msgid "Услугу не возможно подключить"
+msgstr ""
+
+#: billservice/views/service.py:165
+msgid "Услуга отключена"
+msgstr ""
+
+#: billservice/views/service.py:177
+msgid "Вы не можите отключить выбранную услугу"
+msgstr ""
+
+#: billservice/views/service.py:181
+msgid "Даннная услуга не может быть отключена. Обратитесь в службу поддержки"
+msgstr ""
+
+#: billservice/views/service.py:186
+msgid "Услугу не возможно отключить"
+msgstr ""
+
+#: billservice/views/service.py:190
+msgid "Невозможно совершить действие"
+msgstr ""
+
+#: billservice/views/tariff.py:111
+#, python-format
+msgid ""
+"Вы не можете перейти на выбранный тариф. Для перехода вам необходимо "
+"отработать на старом тарифе ещё не менее %s дней"
+msgstr ""
+
+#: billservice/views/tariff.py:129
+msgid "Вы не можете перейти на выбранный тарифный план."
+msgstr ""
+
+#: billservice/views/tariff.py:135
+msgid ""
+"Вы не можете перейти на выбранный тарифный план. Ваш баланс меньше "
+"разрешённого для такого перехода."
+msgstr ""
+
+#: billservice/views/tariff.py:167
+#, python-format
+msgid ""
+"Вы успешно сменили тариф, тарифный план будет изменён в следующем расчётном "
+"периоде c %(TP)s.<br> За переход на данный тарифный план с пользователя "
+"будет взыскано %(SUMM)s средств."
+msgstr ""
+
+#: billservice/views/tariff.py:176
+#, python-format
+msgid ""
+"Вы успешно сменили тариф. <br> За переход на данный тарифный план с "
+"пользователя будет взыскано %s средств."
+msgstr ""
+
+#: billservice/views/tariff.py:182
+msgid "Системная ошибка."
+msgstr ""
+
+#: billservice/views/tariff.py:186
+msgid "Попытка взлома"
+msgstr ""

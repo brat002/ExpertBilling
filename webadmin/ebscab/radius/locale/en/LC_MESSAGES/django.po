@@ -1,0 +1,188 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-09-07 01:39+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: radius/forms.py:14
+msgid "Сервер доступа субаккаунта"
+msgstr ""
+
+#: radius/forms.py:20
+msgid "Город"
+msgstr ""
+
+#: radius/forms.py:21
+msgid "Улица"
+msgstr ""
+
+#: radius/forms.py:22
+msgid "Дом"
+msgstr ""
+
+#: radius/forms.py:24
+msgid "С даты"
+msgstr ""
+
+#: radius/forms.py:31
+msgid "По дату"
+msgstr ""
+
+#: radius/forms.py:38
+msgid "Только активные"
+msgstr ""
+
+#: radius/models.py:18
+msgid "Авторизация разрешена"
+msgstr ""
+
+#: radius/models.py:19
+msgid "Аккаунт неактивен"
+msgstr ""
+
+#: radius/models.py:20
+msgid "Вторая сессия на указанном сервере доступа"
+msgstr ""
+
+#: radius/models.py:21
+msgid "Неверный пароль"
+msgstr ""
+
+#: radius/models.py:23
+#, python-format
+msgid ""
+"Способ доступа %s не совпадает с разрешённым в параметрах тарифнго плана."
+msgstr ""
+
+#: radius/models.py:25
+msgid "Субаккаунт с таким логином не найден"
+msgstr ""
+
+#: radius/models.py:26
+msgid "Аккаунт для субаккаунта не найден"
+msgstr ""
+
+#: radius/models.py:27
+msgid "В данный момент запрещено устанавливать соединение"
+msgstr ""
+
+#: radius/models.py:28 radius/models.py:32
+msgid "Запрещено подключаться к данному серверу доступа"
+msgstr ""
+
+#: radius/models.py:30
+msgid "Для 802.1x авторизации должен быть указан коммутатор"
+msgstr ""
+
+#: radius/models.py:34
+msgid "Соединение установлено с запрещённого IPN IP"
+msgstr ""
+
+#: radius/models.py:36
+msgid "Соединение установлено с запрещённого IPN MAC"
+msgstr ""
+
+#: radius/models.py:38
+msgid "Запрещена VPN авторизация с нулевым балансом"
+msgstr ""
+
+#: radius/models.py:41
+msgid "Активна"
+msgstr ""
+
+#: radius/models.py:42
+msgid "Не сброшена"
+msgstr ""
+
+#: radius/models.py:43
+msgid "Cброшена"
+msgstr ""
+
+#: radius/models.py:54
+msgid "Аккаунт"
+msgstr ""
+
+#: radius/models.py:55
+msgid "Субаккаунт"
+msgstr ""
+
+#: radius/models.py:58
+msgid "ID"
+msgstr ""
+
+#: radius/models.py:64
+msgid "Последнее обновление"
+msgstr ""
+
+#: radius/models.py:68
+msgid "Начало"
+msgstr ""
+
+#: radius/models.py:71
+msgid "Конец"
+msgstr ""
+
+#: radius/models.py:79
+msgid "IP"
+msgstr ""
+
+#: radius/models.py:82
+msgid "Nas ID"
+msgstr ""
+
+#: radius/models.py:84
+msgid "NAS"
+msgstr ""
+
+#: radius/models.py:87
+msgid "Время"
+msgstr ""
+
+#: radius/models.py:90
+msgid "Протокол"
+msgstr ""
+
+#: radius/models.py:93
+msgid "IN"
+msgstr ""
+
+#: radius/models.py:96
+msgid "OUT"
+msgstr ""
+
+#: radius/models.py:103
+msgid "Статус"
+msgstr ""
+
+#: radius/models.py:107
+msgid "Причина разрыва"
+msgstr ""
+
+#: radius/models.py:123
+msgid "RADIUS сессия"
+msgstr ""
+
+#: radius/models.py:124
+msgid "RADIUS сессии"
+msgstr ""
+
+#: radius/models.py:126
+msgid "Просмотр"
+msgstr ""
+
+#: radius/models.py:153
+msgid "RADIUS авторизации"
+msgstr ""
