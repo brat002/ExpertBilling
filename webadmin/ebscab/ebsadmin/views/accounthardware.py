@@ -10,10 +10,10 @@ from django.utils.translation import ugettext_lazy as _
 from billservice.forms import AccountHardwareForm
 from billservice.utils import systemuser_required
 from billservice.models import Account, AccountHardware
-from ebscab.lib.decorators import ajax_request, render_to
+from ebscab.utils.decorators import ajax_request, render_to
 from object_log.models import LogItem
 
-from ebscab.utils import instance_dict
+from ebscab.utils.misc import instance_dict
 
 
 log = LogItem.objects.log_action

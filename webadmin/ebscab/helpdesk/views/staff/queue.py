@@ -3,7 +3,7 @@
 from django.shortcuts import render
 
 from billservice.utils import systemuser_required
-from ebscab.lib.decorators import render_to
+from ebscab.utils.decorators import render_to
 
 from helpdesk.forms import TicketTypeForm
 from helpdesk.lib import staff_member_required

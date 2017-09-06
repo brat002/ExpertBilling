@@ -3,7 +3,7 @@
 from django.db.models import Sum
 
 from billservice.utils import systemuser_required
-from ebscab.lib.decorators import render_to, ajax_request
+from ebscab.utils.decorators import render_to, ajax_request
 from object_log.models import LogItem
 from radius.models import RadiusStat
 

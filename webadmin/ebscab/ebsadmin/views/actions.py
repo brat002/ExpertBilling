@@ -2,11 +2,11 @@
 
 from billservice.utils import systemuser_required
 from billservice.models import SubAccount
-from ebscab.lib.decorators import ajax_request
+from ebscab.utils.decorators import ajax_request
 from object_log.models import LogItem
 from tasks import cred
 
-from ebscab.utils import instance_dict
+from ebscab.utils.misc import instance_dict
 
 
 log = LogItem.objects.log_action

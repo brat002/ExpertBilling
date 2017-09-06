@@ -83,8 +83,8 @@ TEMPLATES = [
                 'django.template.context_processors.media',
                 'django.template.context_processors.static',
                 'django.contrib.messages.context_processors.messages',
-                'ebscab.lib.context_processors.default_current_view_name',
-                'ebscab.lib.context_processors.project_settings'
+                'ebscab.context_processors.default_current_view_name',
+                'ebscab.context_processors.project_settings'
             ]
         }
     }

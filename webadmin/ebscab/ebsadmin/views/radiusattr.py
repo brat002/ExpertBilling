@@ -10,7 +10,7 @@ from billservice.utils import systemuser_required
 from billservice.models import RadiusAttrs, Tariff
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
-from ebscab.lib.decorators import render_to, ajax_request
+from ebscab.utils.decorators import render_to, ajax_request
 from nas.models import Nas
 from object_log.models import LogItem
 

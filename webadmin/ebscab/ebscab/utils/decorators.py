@@ -4,10 +4,10 @@ from functools import wraps, WRAPPER_ASSIGNMENTS
 
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
-from ebscab.lib.http import JsonResponse
+from ebscab.utils.http import JsonResponse
 
 
 def available_attrs(fn):
@@ -84,9 +84,9 @@ def login_required(function=None, redirect_field_name=REDIRECT_FIELD_NAME):
 def render_xml(func):
     """Decorated function must return a valid xml document in unicode"""
     def wrapper(request, *args, **kwargs):
-        xml = func(request, *args, **kwargs)
+        resp = func(request, *args, **kwargs)
         return HttpResponse(
-            response,
+            resp,
             content_type="text/xml",
             contenttype="text/xml;charset=utf-8")
     return wrapper

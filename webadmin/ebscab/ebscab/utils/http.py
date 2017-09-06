@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# $Id: http.py 1395 2008-08-22 09:24:49Z dmitry $
 
 import json
 from datetime import datetime
@@ -7,8 +6,6 @@ from decimal import Decimal
 
 import ipaddr
 from django.http import HttpResponse
-from django.shortcuts import render
-from django.template.loader import get_template
 
 
 class MyJSONEncoder(json.JSONEncoder):
@@ -36,10 +33,6 @@ class MyJSONEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
-def render_response(request, tmpl, output):
-    return render(request, tmpl, output)
-
-
 class JsonResponse(HttpResponse):
     """
     HttpResponse descendant, which return response with ``application/json`` mimetype.
@@ -47,7 +40,5 @@ class JsonResponse(HttpResponse):
 
     def __init__(self, data):
         super(JsonResponse, self).__init__(
-            content=json.dumps(data,
-                               ensure_ascii=False,
-                               cls=MyJSONEncoder),
+            content=json.dumps(data, ensure_ascii=False, cls=MyJSONEncoder),
             content_type='application/json')

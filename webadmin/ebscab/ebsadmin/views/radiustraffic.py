@@ -8,7 +8,7 @@ from billservice.forms import RadiusTrafficForm, RadiusTrafficNodeForm
 from billservice.utils import systemuser_required
 from billservice.models import RadiusTraffic, RadiusTrafficNode, Tariff
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
-from ebscab.lib.decorators import ajax_request, render_to
+from ebscab.utils.decorators import ajax_request, render_to
 from object_log.models import LogItem
 
 from ebsadmin.tables import RadiusTrafficNodeTable

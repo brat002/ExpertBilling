@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
-from ebscab.lib.decorators import render_to, ajax_request
+from ebscab.utils.decorators import render_to, ajax_request
 from object_log.models import LogItem
 from billservice.forms import (
     AccountPrepaysTimeForm,

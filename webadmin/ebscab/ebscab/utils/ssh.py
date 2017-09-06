@@ -26,24 +26,8 @@ def command_string_parser(command_string='', command_dict={}):
     return command_string
 
 
-class PseudoLogger(object):
-
-    def _pass(self, *args, **kwargs):
-        pass
-
-    def __getattr__(self, *args, **kwargs):
-        return self._pass
-
-
-def install_logger(lgr):
-    global logger
-    logger = lgr
-    paramiko.util.get_logger = lambda name: logger
-
-
 def ssh_client(host, username, password, command):
     global SSH_BACKEND
-    global logger
 
     if SSH_BACKEND == None:
         ssh = paramiko.SSHClient()

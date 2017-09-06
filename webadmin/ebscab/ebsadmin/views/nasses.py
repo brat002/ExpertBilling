@@ -8,8 +8,8 @@ from django.utils.translation import ugettext_lazy as _
 from billservice.utils import systemuser_required
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
-from ebscab.lib.decorators import render_to, ajax_request
-from ebscab.lib.ssh_paramiko import ssh_client
+from ebscab.utils.decorators import render_to, ajax_request
+from ebscab.utils.ssh import ssh_client
 from nas.forms import NasForm
 from nas.models import actions
 from nas.models import Nas

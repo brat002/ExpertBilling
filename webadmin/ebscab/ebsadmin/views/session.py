@@ -5,11 +5,11 @@ import datetime
 from django.utils.translation import ugettext as _
 
 from billservice.utils import systemuser_required
-from ebscab.lib.decorators import ajax_request
+from ebscab.utils.decorators import ajax_request
 from radius.models import ActiveSession
 from tasks import cred, rosClient, rosExecute, PoD
 
-from ebscab.utils import instance_dict
+from ebscab.utils.misc import instance_dict
 
 
 @ajax_request

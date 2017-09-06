@@ -4,7 +4,7 @@ import IPy
 from django.utils.translation import ugettext as _
 
 from billservice.utils import systemuser_required
-from ebscab.lib.decorators import ajax_request
+from ebscab.utils.decorators import ajax_request
 from nas.models import Nas
 from tasks import rosClient, rosExecute
 

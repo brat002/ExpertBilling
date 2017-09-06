@@ -7,7 +7,7 @@ from django.db import connection
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
-from ebscab.lib.decorators import render_to, ajax_request
+from ebscab.utils.decorators import render_to, ajax_request
 
 from billservice.forms import ChangeTariffForm
 from billservice.models import (

@@ -8,7 +8,7 @@ from django.utils.translation import ugettext as _
 
 from billservice.forms import LoginForm
 from billservice.models import SystemUser
-from ebscab.lib.decorators import ajax_request
+from ebscab.utils.decorators import ajax_request
 
 
 @ajax_request

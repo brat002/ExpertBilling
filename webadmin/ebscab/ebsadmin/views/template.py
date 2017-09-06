@@ -13,10 +13,10 @@ from billservice.utils import systemuser_required
 from billservice.models import Account, Organization, Template, Transaction
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
-from ebscab.lib.decorators import ajax_request, render_to
+from ebscab.utils.decorators import ajax_request, render_to
 from object_log.models import LogItem
 
-from ebscab.utils import instance_dict
+from ebscab.utils.misc import instance_dict
 from ebsadmin.tables import TemplateTable
 
 

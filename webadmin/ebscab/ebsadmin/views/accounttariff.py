@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from billservice.utils import systemuser_required
 from billservice.models import AccountTarif
-from ebscab.lib.decorators import ajax_request
+from ebscab.utils.decorators import ajax_request
 from object_log.models import LogItem
 
 

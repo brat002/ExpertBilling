@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 
-from ebscab.lib.decorators import render_to
+from ebscab.utils.decorators import render_to
 
 from billservice.models import (
     AccountPrepaysRadiusTrafic,

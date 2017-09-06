@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 
 from billservice.utils import systemuser_required
-from ebscab.lib.decorators import render_to
+from ebscab.utils.decorators import render_to
 from object_log.models import LogItem
 
 from ebsadmin.forms import LogViewer

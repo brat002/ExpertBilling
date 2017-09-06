@@ -6,7 +6,7 @@ from decimal import Decimal
 from django import forms
 
 from billservice.models import Account
-from ebscab.lib.decorators import render_xml
+from ebscab.utils.decorators import render_xml
 
 from gateways import pegas
 

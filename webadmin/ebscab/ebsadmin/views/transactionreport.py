@@ -23,7 +23,7 @@ from billservice.models import (
 )
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
-from ebscab.lib.decorators import ajax_request, render_to
+from ebscab.utils.decorators import ajax_request, render_to
 
 from ebsadmin.constants import TRANSACTION_MODELS
 from ebsadmin.tables import (

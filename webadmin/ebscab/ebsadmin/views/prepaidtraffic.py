@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from billservice.forms import PrepaidTrafficForm
 from billservice.utils import systemuser_required
 from billservice.models import PrepaidTraffic, Tariff
-from ebscab.lib.decorators import ajax_request, render_to
+from ebscab.utils.decorators import ajax_request, render_to
 from object_log.models import LogItem
 
 
