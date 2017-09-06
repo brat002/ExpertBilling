@@ -12,7 +12,7 @@ from billservice.models import Account, City, Street, House
 from ebscab.lib.decorators import render_to, ajax_request
 from object_log.models import LogItem
 
-from ebsadmin.lib import instance_dict
+from ebscab.utils import instance_dict
 
 
 log = LogItem.objects.log_action

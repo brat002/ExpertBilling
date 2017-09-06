@@ -13,8 +13,8 @@ from django_tables2_reports.utils import create_report_http_response
 from ebscab.lib.decorators import ajax_request, render_to
 from object_log.models import LogItem
 
-from ebsadmin.management import subaccount_ipn_delete
 from ebsadmin.tables import AccountAddonServiceTable
+from ebsadmin.views.utils import subaccount_ipn_delete
 
 
 log = LogItem.objects.log_action

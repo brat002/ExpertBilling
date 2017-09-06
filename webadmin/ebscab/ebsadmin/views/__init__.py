@@ -142,7 +142,7 @@ from ebsadmin.views.onetimeservice import (
     onetimeservice_delete,
     onetimeservice_edit
 )
-from ebsadmin.views.operator import operator_edit
+from ebsadmin.views.operator_ import operator_edit
 from ebsadmin.views.payment import payment, payment_delete, payment_edit
 from ebsadmin.views.periodicalservice import (
     periodicalservice,

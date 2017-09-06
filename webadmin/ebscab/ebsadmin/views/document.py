@@ -18,7 +18,7 @@ from billservice.models import (
 from ebscab.lib.decorators import ajax_request
 from object_log.models import LogItem
 
-from ebsadmin.lib import instance_dict
+from ebscab.utils import instance_dict
 
 
 log = LogItem.objects.log_action

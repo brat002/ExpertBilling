@@ -6,7 +6,10 @@ from billservice.utils import systemuser_required
 from ebscab.lib.decorators import ajax_request
 from ebscab.lib.ssh_paramiko import ssh_client
 
-from ebsadmin.randgen import GenUsername as nameGen, GenPasswd as GenPasswd2
+from ebsadmin.utils.credentials import (
+    GenPasswd as GenPasswd2,
+    GenUsername as nameGen
+)
 
 
 @ajax_request

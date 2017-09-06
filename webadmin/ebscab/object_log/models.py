@@ -13,7 +13,7 @@ from django.db import models, transaction
 from django.db.utils import DatabaseError
 from django.template.loader import get_template
 
-from ebsadmin.lib import instance_dict
+from ebscab.utils import instance_dict
 
 
 def default(obj):

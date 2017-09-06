@@ -9,7 +9,7 @@ from ebscab.lib.decorators import ajax_request
 from radius.models import ActiveSession
 from tasks import cred, rosClient, rosExecute, PoD
 
-from ebsadmin.lib import instance_dict
+from ebscab.utils import instance_dict
 
 
 @ajax_request

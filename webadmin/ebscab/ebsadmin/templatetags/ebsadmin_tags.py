@@ -10,10 +10,10 @@ from django.utils.encoding import force_unicode
 from django_tables2.config import RequestConfig
 
 from ebsadmin.forms import chartdata
-from ebsadmin.lib import digg_paginator
 from ebsadmin.models import Comment
 from ebsadmin.reportsystem.reports import rep
 from ebsadmin.tables import CommentTable
+from ebsadmin.utils.paginator import digg_paginator
 
 
 register = template.Library()

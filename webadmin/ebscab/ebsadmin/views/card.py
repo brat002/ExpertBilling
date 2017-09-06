@@ -24,8 +24,8 @@ from django_tables2_reports.utils import create_report_http_response
 from ebscab.lib.decorators import render_to, ajax_request
 from object_log.models import LogItem
 
-from ebsadmin.randgen import GenPasswd2
 from ebsadmin.tables import CardTable, SaleCardTable, SaleCardsTable
+from ebsadmin.utils.credentials import GenPasswd2
 
 
 log = LogItem.objects.log_action

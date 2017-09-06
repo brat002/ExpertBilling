@@ -13,7 +13,7 @@ from billservice.models import Account, AccountHardware
 from ebscab.lib.decorators import ajax_request, render_to
 from object_log.models import LogItem
 
-from ebsadmin.lib import instance_dict
+from ebscab.utils import instance_dict
 
 
 log = LogItem.objects.log_action
