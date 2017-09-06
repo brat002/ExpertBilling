@@ -39,7 +39,8 @@ class TotalTransactionReport(models.Model):
     promise_expired = models.BooleanField(default=False)
 
     def get_remove_url(self):
-        return "%s?type=%s&id=%s" % (reverse('totaltransaction_delete'), (self.table, self.id))
+        return "%s?type=%s&id=%s" % (reverse('totaltransaction_delete'),
+                                     (self.table, self.id))
 
     class Meta:
         managed = False
