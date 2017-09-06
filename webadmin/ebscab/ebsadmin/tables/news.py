@@ -12,7 +12,7 @@ from ebsadmin.tables.base import EbsadminTableReport
 
 class NewsTable(EbsadminTableReport):
     id = LinkColumn('news_edit', get_params={'id': A('pk')})
-    d = showconfirmcolumn(message='Удалить новость?')
+    d = showconfirmcolumn(message=_(u'Удалить новость?'))
     created = FormatDateTimeColumn(verbose_name=_(u'Активна с'))
     age = FormatDateTimeColumn(verbose_name=_(u'Активна по'))
 

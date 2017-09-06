@@ -41,7 +41,7 @@ def settlementperiod(request):
     if table_to_report:
         return create_report_http_response(table_to_report, request)
     return {
-        "table": table
+        'table': table
     }
 
 
@@ -146,5 +146,5 @@ def settlementperiod_delete(request):
     else:
         return {
             "status": False,
-            "message": "SettlementPeriod not found"
+            "message": _(u'SettlementPeriod not found')
         }

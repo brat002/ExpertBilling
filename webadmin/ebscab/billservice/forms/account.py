@@ -680,7 +680,7 @@ class CashierAccountForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={
             'class': 'input-large',
-            'placeholder': u'Улица'
+            'placeholder': _(u'Улица')
         })
     )
     house = forms.CharField(
@@ -688,7 +688,7 @@ class CashierAccountForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={
             'class': 'input-medium',
-            'placeholder': u'Дом'
+            'placeholder': _(u'Дом')
         })
     )
     room = forms.CharField(
@@ -696,7 +696,7 @@ class CashierAccountForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={
             'class': 'input-medium',
-            'placeholder': u'Кв'
+            'placeholder': _(u'Кв')
         })
     )
     phone = forms.CharField(label=_(u"Телефон"), required=False)

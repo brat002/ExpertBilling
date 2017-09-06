@@ -48,14 +48,14 @@ def get_ballance(request):
             "status": 1,
             "ballance_float": float(request.user.account.ballance),
             "ballance": "%.2f" % request.user.account.ballance,
-            "message": "Ok",
+            "message": _(u'Ok'),
             'news': news_arr
         }
     except:
         return {
             "status": 0,
             "ballance": -1,
-            "message": "User not found"
+            "message": _(u'User not found')
         }
 
 

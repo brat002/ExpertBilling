@@ -136,5 +136,5 @@ def onetimeservice_delete(request):
             extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "OneTimeService not found"
+            "message": _(u'OneTimeService not found')
         }

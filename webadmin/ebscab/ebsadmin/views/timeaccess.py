@@ -128,7 +128,7 @@ def timeaccessnode_delete(request):
             extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "TimeAccessNode not found"
+            "message": _(u'TimeAccessNode not found')
         }
 
 
@@ -239,5 +239,5 @@ def timeaccessservice_delete(request):
             extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "TimeAccessService not found"
+            "message": _(u'TimeAccessService not found')
         }

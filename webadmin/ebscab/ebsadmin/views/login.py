@@ -31,8 +31,8 @@ def simple_login(request):
                     except Exception, e:
                         return {
                             "status": False,
-                            "message": _("Login error. May be systemuser "
-                                         "host syntax error")
+                            "message": _(u"Login error. May be systemuser "
+                                         u"host syntax error")
                         }
                 log_in(request, user)
                 user.account.last_login = datetime.datetime.now()
@@ -40,20 +40,20 @@ def simple_login(request):
                 user.account.save()
                 return {
                     "status": True,
-                    "message": _("Login succeful")
+                    "message": _(u"Login succeful")
                 }
             else:
                 return {
                     "status": False,
-                    "message": _("Login forbidden to this action")
+                    "message": _(u"Login forbidden to this action")
                 }
         except Exception, e:
             return {
                 "status": False,
-                "message": _("Login can`t be authenticated")
+                "message": _(u"Login can`t be authenticated")
             }
 
     return {
         "status": False,
-        "message": "Login not found"
+        "message": _(u'Login not found')
     }

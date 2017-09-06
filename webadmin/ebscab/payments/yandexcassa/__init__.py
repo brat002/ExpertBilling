@@ -109,7 +109,7 @@ class PaymentProcessor(PaymentProcessorBase):
                 'performedDatetime': form.cleaned_data['orderCreatedDatetime'],
                 'invoiceId': form.cleaned_data.get('invoiceId'),
                 'shopId': form.cleaned_data.get('shopId'),
-                'message': u'Ошибка разбора параметров',
+                'message': _(u'Ошибка разбора параметров'),
                 'techMessage': unicode(form.form.errors.items)
             })
 
@@ -119,7 +119,7 @@ class PaymentProcessor(PaymentProcessorBase):
                 'performedDatetime': form.cleaned_data['orderCreatedDatetime'],
                 'invoiceId': form.cleaned_data.get('invoiceId'),
                 'shopId': form.cleaned_data.get('shopId'),
-                'message': u'Ошибка авторизации',
+                'message': _(u'Ошибка авторизации'),
                 'techMessage': unicode(form.form.errors.items)
             })
 
@@ -132,7 +132,7 @@ class PaymentProcessor(PaymentProcessorBase):
                 'performedDatetime': form.cleaned_data['orderCreatedDatetime'],
                 'invoiceId': form.cleaned_data.get('invoiceId'),
                 'shopId': form.cleaned_data.get('shopId'),
-                'message': u'Абонент с указанным username не найден',
+                'message': _(u'Абонент с указанным username не найден'),
                 'techMessage': unicode(form.form.errors.items)
             })
 
@@ -144,7 +144,7 @@ class PaymentProcessor(PaymentProcessorBase):
                 'performedDatetime': form.cleaned_data['orderCreatedDatetime'],
                 'invoiceId': form.cleaned_data.get('invoiceId'),
                 'shopId': form.cleaned_data.get('shopId'),
-                'message': u'Указанный платёж не найден',
+                'message': _(u'Указанный платёж не найден'),
                 'techMessage': unicode(form.form.errors.items)
             })
 
@@ -164,7 +164,7 @@ class PaymentProcessor(PaymentProcessorBase):
                 'performedDatetime': form.cleaned_data['performedDatetime'],
                 'invoiceId': form.cleaned_data.get('invoiceId'),
                 'shopId': form.cleaned_data.get('shopId'),
-                'message': u'Ошибка разбора параметров',
+                'message': _(u'Ошибка разбора параметров'),
                 'techMessage': unicode(form.form.errors.items)
             })
 
@@ -174,7 +174,7 @@ class PaymentProcessor(PaymentProcessorBase):
                 'performedDatetime': form.cleaned_data['performedDatetime'],
                 'invoiceId': form.cleaned_data.get('invoiceId'),
                 'shopId': form.cleaned_data.get('shopId'),
-                'message': u'Ошибка авторизации',
+                'message': _(u'Ошибка авторизации'),
                 'techMessage': unicode(form.form.errors.items)
             })
 
@@ -187,7 +187,7 @@ class PaymentProcessor(PaymentProcessorBase):
                 'performedDatetime': form.cleaned_data['performedDatetime'],
                 'invoiceId': form.cleaned_data.get('invoiceId'),
                 'shopId': form.cleaned_data.get('shopId'),
-                'message': u'Абонент с указанным username не найден',
+                'message': _(u'Абонент с указанным username не найден'),
                 'techMessage': unicode(form.form.errors.items)
             })
 
@@ -199,7 +199,7 @@ class PaymentProcessor(PaymentProcessorBase):
                 'performedDatetime': form.cleaned_data['performedDatetime'],
                 'invoiceId': form.cleaned_data.get('invoiceId'),
                 'shopId': form.cleaned_data.get('shopId'),
-                'message': u'Указанный платёж не найден',
+                'message': _(u'Указанный платёж не найден'),
                 'techMessage': unicode(form.form.errors.items)
             })
 

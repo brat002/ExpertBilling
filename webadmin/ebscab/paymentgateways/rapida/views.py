@@ -5,6 +5,7 @@ import decimal
 import time
 
 from django.http import HttpResponse
+from django.utils.translation import ugettext_lazy as _
 
 from billservice.models import Account, Transaction
 
@@ -38,41 +39,42 @@ def payment(request):
 
     if not (contract or amount or action not in ['check', 'pay']):
         response = response_check % (
-            txn_id, 300, u"Ошибка передачи параметров")
+            txn_id, 300, _(u"Ошибка передачи параметров"))
         return HttpResponse(response)
 
     try:
         amount = decimal.Decimal(amount)
     except:
         response = response_check % (
-            txn_id, 300, u"Введённая сумма не является числом")
+            txn_id, 300, _(u"Введённая сумма не является числом"))
         return HttpResponse(response)
 
     if amount <= 0:
         response = response_check % (
-            txn_id, 241, u"Введённая сумма слишком мала")
+            txn_id, 241, _(u"Введённая сумма слишком мала"))
 
         return HttpResponse(response)
 
     try:
         account = Account.objects.get(contract=contract)
     except Exception, e:
-        response = response_check % (txn_id, 5, u"Договор не найден")
+        response = response_check % (txn_id, 5, _(u"Договор не найден"))
         return HttpResponse(response)
 
     if action == 'check':
-        response = response_check % (txn_id, 0, u"Договор найден")
+        response = response_check % (txn_id, 0, _(u"Договор найден"))
         return HttpResponse(response)
 
     if action == 'pay':
         if not date:
-            response = response_check % (txn_id, 300, u"Дата не указана")
+            response = response_check % (txn_id, 300, _(u"Дата не указана"))
             return HttpResponse(response)
         try:
             payment_date = datetime.datetime(
                 *time.strptime(date, "%Y%m%d%H%M%S")[0:5])
         except Exception, e:
-            response = response_check % (txn_id, 300, u"Неверный формат даты")
+            response = response_check % (
+                txn_id, 300, _(u"Неверный формат даты"))
             return HttpResponse(response)
 
         try:
@@ -87,9 +89,9 @@ def payment(request):
             )
 
             response = response_pay % (
-                txn_id, model.id, 0, u"Оплата произведена успешно.")
+                txn_id, model.id, 0, _(u"Оплата произведена успешно."))
             return HttpResponse(response)
         except Exception, e:
             response = response_check % (
-                txn_id, 300, u"Ошибка выполнения платежа")
+                txn_id, 300, _(u"Ошибка выполнения платежа"))
             return HttpResponse(response)

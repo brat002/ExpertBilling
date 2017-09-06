@@ -72,7 +72,7 @@ def payment(request):
                 return create_report_http_response(table_to_report, request)
 
             return {
-                "table": table,
+                'table': table,
                 'form': form,
                 'resultTab': True
             }
@@ -175,5 +175,5 @@ def payment_delete(request):
     else:
         return {
             "status": False,
-            "message": "Payment not found"
+            "message": _(u'Payment not found')
         }

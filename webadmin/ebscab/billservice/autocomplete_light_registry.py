@@ -2,6 +2,7 @@
 
 from autocomplete_light import shortcuts as autocomplete_light
 from django.contrib.auth.models import User
+from django.utils.translation import ugettext_lazy as _
 
 from models import Account, SystemUser
 
@@ -50,7 +51,7 @@ autocomplete_light.register(
     AccountAutocomplete,
     autocomplete_js_attributes={
         'minimum_characters': 0,
-        'placeholder': u'Логин, договор или ФИО аккаунта',
+        'placeholder': _(u'Логин, договор или ФИО аккаунта')
     }
 )
 
@@ -59,7 +60,7 @@ autocomplete_light.register(
     UserAutocomplete,
     autocomplete_js_attributes={
         'minimum_characters': 0,
-        'placeholder': u'Введите логин',
+        'placeholder': _(u'Введите логин')
     }
 )
 
@@ -68,6 +69,6 @@ autocomplete_light.register(
     SystemUserAutocomplete,
     autocomplete_js_attributes={
         'minimum_characters': 0,
-        'placeholder': u'Введите логин',
+        'placeholder': _(u'Введите логин')
     }
 )

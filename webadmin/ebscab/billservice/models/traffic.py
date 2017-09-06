@@ -79,7 +79,7 @@ class TrafficTransaction(models.Model):
         'billservice.Account', on_delete=models.CASCADE)
     summ = models.FloatField()
     prev_balance = models.DecimalField(
-        verbose_name=(u'Предыдущий баланс'),
+        verbose_name=_(u'Предыдущий баланс'),
         decimal_places=5,
         max_digits=20,
         blank=True,

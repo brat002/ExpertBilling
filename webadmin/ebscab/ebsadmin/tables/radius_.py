@@ -22,8 +22,8 @@ class NasTable(EbsadminTableReport):
     name = LinkColumn(
         'nas_edit', verbose_name=_(u"Имя"), get_params={'id': A('pk')})
     radiusattrs = TemplateColumn(
-        (u"<a href='{% url 'radiusattr' %}?nas={{record.id}}' "
-         u"class='btn btn-mini btn-primary'>Изменить</a>"),
+        _(u"<a href='{% url 'radiusattr' %}?nas={{record.id}}' "
+          u"class='btn btn-mini btn-primary'>Изменить</a>"),
         verbose_name=_(u'RADIUS атрибуты'),
         orderable=False
     )
@@ -86,7 +86,7 @@ class ActiveSessionTable(EbsadminTableReport):
          u"{{record.account__house|default:''}}-"
          u"{{record.account__room|default:''}}"),
         orderable=False,
-        verbose_name=u'Адрес'
+        verbose_name=_(u'Адрес')
     )
     framed_ip_address = Column(
         verbose_name=_(u'IP'), empty_values=())

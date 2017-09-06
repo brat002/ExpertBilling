@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from django import forms
+from django.utils.translation import ugettext_lazy as _
 
 from getpaid.models import Order
 
 
 class AdditionalFieldsForm(forms.Form):
     phone = forms.CharField(
-        required=True, label=u'Номер телефона в формате +7XXXXXXXXXX')
-    summ = forms.FloatField(label=u'Сумма')
+        required=True, label=_(u'Номер телефона в формате +7XXXXXXXXXX'))
+    summ = forms.FloatField(label=_(u'Сумма'))
     order = forms.ModelChoiceField(
         widget=forms.widgets.HiddenInput,
         required=False,

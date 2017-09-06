@@ -108,5 +108,5 @@ def comment_delete(request):
     else:
         return {
             "status": False,
-            "message": "Comment not found"
+            "message": _(u'Comment not found')
         }

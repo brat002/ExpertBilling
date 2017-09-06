@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from django.utils.translation import ugettext_lazy as _
+
 from django_tables2.columns import Column, LinkColumn, TemplateColumn
 from django_tables2.utils import A
 
@@ -31,7 +33,7 @@ class='btn btn-mini btn-danger show-confirm'>
         verbose_name='Действия',
         orderable=False
     )
-    object = Column(verbose_name=u'Объект')
+    object = Column(verbose_name=_(u'Объект'))
 
     class Meta(EbsadminTableReport.Meta):
         model = Comment

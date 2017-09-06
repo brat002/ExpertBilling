@@ -143,5 +143,5 @@ def manufacturer_delete(request):
                        extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "manufacturer not found"
+            "message": _(u'manufacturer not found')
         }

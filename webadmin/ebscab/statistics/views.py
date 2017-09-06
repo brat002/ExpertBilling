@@ -6,6 +6,7 @@ import logging
 import os
 
 from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 
 from billservice.models import Account, SubAccount
 from ebscab.utils.decorators import render_to
@@ -20,10 +21,10 @@ RRDDB_PATH = '/opt/ebs/stats/'
 GRAPH_PATH = '/opt/ebs/web/ebscab/media/'
 IMAGE_PATH = settings.MEDIA_ROOT + '/statistics/'
 GRAPH_INTERVALS = (
-    (u'Сутки', '-1day'),
-    (u'Неделя', '-1week'),
-    (u'Месяц', '-1month'),
-    (u'Год', '-1year')
+    (_(u'Сутки'), '-1day'),
+    (_(u'Неделя'), '-1week'),
+    (_(u'Месяц'), '-1month'),
+    (_(u'Год'), '-1year')
 )
 
 # TODO: Переделать генерацию в соответствии со статьёй
@@ -321,13 +322,13 @@ def subaccounts_filter_stat(request):
     items = request.GET.get('items', '').split(',')
     periods = []
     if request.GET.get('day', '') == 'True':
-        periods.append((u'Сутки', '-1day'),)
+        periods.append((_(u'Сутки'), '-1day'),)
     if request.GET.get('week', '') == 'True':
-        periods.append((u'Неделя', '-1week'))
+        periods.append((_(u'Неделя'), '-1week'))
     if request.GET.get('month', '') == 'True':
-        periods.append((u'Месяц', '-1month'))
+        periods.append((_(u'Месяц'), '-1month'))
     if request.GET.get('year', '') == 'True':
-        periods.append((u'Год', '-1year'))
+        periods.append((_(u'Год'), '-1year'))
 
     accounts = Account.objects.filter(id__in=items)
     filenames = []
@@ -400,13 +401,13 @@ def nasses_filter_stat(request):
 
     periods = []
     if request.GET.get('day', '') == 'True':
-        periods.append((u'Сутки', '-1day'),)
+        periods.append((_(u'Сутки'), '-1day'),)
     if request.GET.get('week', '') == 'True':
-        periods.append((u'Неделя', '-1week'))
+        periods.append((_(u'Неделя'), '-1week'))
     if request.GET.get('month', '') == 'True':
-        periods.append((u'Месяц', '-1month'))
+        periods.append((_(u'Месяц'), '-1month'))
     if request.GET.get('year', '') == 'True':
-        periods.append((u'Год', '-1year'))
+        periods.append((_(u'Год'), '-1year'))
     nasses = Nas.objects.filter(id__in=items)
     filenames = []
 

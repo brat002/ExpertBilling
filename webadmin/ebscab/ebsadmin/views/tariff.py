@@ -171,7 +171,7 @@ def tariff_delete(request):
                        extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "tariff not found"
+            "message": _(u'tariff not found')
         }
 
 
@@ -208,5 +208,5 @@ def tariff_hide(request):
                        extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "Tariff not found"
+            "message": _(u'Tariff not found')
         }

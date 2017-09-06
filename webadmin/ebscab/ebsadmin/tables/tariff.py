@@ -45,8 +45,8 @@ class='btn btn-mini'>{{record.accounts_count}} \
     )
     delete = showconfirmcolumn(
         href='{{record.get_hide_url}}',
-        message='Скрыть?',
-        verbose_name='Скрыть',
+        message=_(u'Скрыть?'),
+        verbose_name=_(u'Скрыть'),
         icon_type='icon-ban-circle'
     )
 

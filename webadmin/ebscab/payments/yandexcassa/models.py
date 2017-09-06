@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from django.utils.translation import ugettext_lazy as _
+
 
 def build_models(payment_class):
     """
@@ -15,8 +17,8 @@ class PAYMENT_TYPE:
     MC = 'mc'
 
     CHOICES = (
-        (PC, u'Яндекс.Деньги'),
-        (AC, u'Банковская карта'),
-        (GP, u'По коду через терминал'),
-        (MC, u'со счета мобильного телефона')
+        (PC, _(u'Яндекс.Деньги')),
+        (AC, _(u'Банковская карта')),
+        (GP, _(u'По коду через терминал')),
+        (MC, _(u'со счета мобильного телефона'))
     )

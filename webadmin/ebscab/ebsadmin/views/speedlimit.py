@@ -102,5 +102,5 @@ def speedlimit_delete(request):
     else:
         return {
             "status": False,
-            "message": "SpeedLimit not found"
+            "message": _(u'SpeedLimit not found')
         }

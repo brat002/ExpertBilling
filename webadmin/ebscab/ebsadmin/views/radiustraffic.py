@@ -224,7 +224,7 @@ def radiustrafficnode_delete(request):
             extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "RadiusTrafficNode not found"
+            "message": _(u'RadiusTrafficNode not found')
         }
 
 
@@ -263,5 +263,5 @@ def radiustrafficservice_delete(request):
             extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "RadiusTraffic not found"
+            "message": _(u'RadiusTraffic not found')
         }

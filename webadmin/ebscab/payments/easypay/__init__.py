@@ -82,7 +82,7 @@ class PaymentProcessor(PaymentProcessorBase):
 
         if len(allowed_ip) != 0 and ip not in allowed_ip:
             dt = datetime.datetime.now()
-            return PaymentProcessor.error(body, u'Unknown IP')
+            return PaymentProcessor.error(body, _(u'Unknown IP'))
         return 'OK'
 
     def get_gateway_url(self, request, payment):
@@ -106,7 +106,7 @@ class PaymentProcessor(PaymentProcessorBase):
     def check_service_id(body, service_id):
         if service_id != int(PaymentProcessor
                              .get_backend_setting('SERVICE_ID')):
-            return PaymentProcessor.error(body, u'Неизвестный Service ID')
+            return PaymentProcessor.error(body, _(u'Неизвестный Service ID'))
 
     @staticmethod
     def check(request, body):
@@ -114,7 +114,7 @@ class PaymentProcessor(PaymentProcessorBase):
         try:
             account = Account.objects.get(contract=acc)
         except Account.DoesNotExist, ex:
-            return PaymentProcessor.error(body, u'Аккаунт не найден')
+            return PaymentProcessor.error(body, _(u'Аккаунт не найден'))
 
         service_id = body.request.check.serviceId
         res = PaymentProcessor.check_service_id(body, service_id)
@@ -123,7 +123,7 @@ class PaymentProcessor(PaymentProcessorBase):
         dt = datetime.datetime.now()
         ret = SUCCESS_CHECK_TEMPLATE % {
             'STATUS': TransactionStatus.OK,
-            'STATUS_DETAIL': u'Аккаунт найден',
+            'STATUS_DETAIL': _(u'Аккаунт найден'),
             'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
             'FULLNAME': account.fullname,
             'SIGN': ''
@@ -132,7 +132,7 @@ class PaymentProcessor(PaymentProcessorBase):
         SIGN = PaymentProcessor.compute_sig(ret)
         ret = SUCCESS_CHECK_TEMPLATE % {
             'STATUS': TransactionStatus.OK,
-            'STATUS_DETAIL': u'Аккаунт найден',
+            'STATUS_DETAIL': _(u'Аккаунт найден'),
             'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
             'FULLNAME': account.fullname,
             'SIGN': SIGN
@@ -153,7 +153,7 @@ class PaymentProcessor(PaymentProcessorBase):
         try:
             account = Account.objects.get(contract=acc)
         except Account.DoesNotExist, ex:
-            return PaymentProcessor.error(body, u'Аккаунт не найден')
+            return PaymentProcessor.error(body, _(u'Аккаунт не найден'))
 
         if amount > 0:
             payment = Payment.create(account,
@@ -164,7 +164,7 @@ class PaymentProcessor(PaymentProcessorBase):
         dt = datetime.datetime.now()
         ret = SUCCESS_PAY_TEMPLATE % {
             'STATUS': TransactionStatus.OK,
-            'STATUS_DETAIL': u'Платёж создан. Требуется подтверждение',
+            'STATUS_DETAIL': _(u'Платёж создан. Требуется подтверждение'),
             'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
             'PAYMENT_ID': payment.id,
             'SIGN': ''
@@ -173,7 +173,7 @@ class PaymentProcessor(PaymentProcessorBase):
         SIGN = PaymentProcessor.compute_sig(ret)
         ret = SUCCESS_PAY_TEMPLATE % {
             'STATUS': TransactionStatus.OK,
-            'STATUS_DETAIL': u'Платёж создан. Требуется подтверждение',
+            'STATUS_DETAIL': _(u'Платёж создан. Требуется подтверждение'),
             'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
             'PAYMENT_ID': payment.id,
             'SIGN': SIGN
@@ -190,7 +190,7 @@ class PaymentProcessor(PaymentProcessorBase):
         try:
             payment = Payment.objects.get(id=paymentid)
         except Payment.DoesNotExist, ex:
-            return PaymentProcessor.error(body, u'Платёж не найден')
+            return PaymentProcessor.error(body, _(u'Платёж не найден'))
 
         dt = datetime.datetime.now()
         payment.paid_on = dt
@@ -200,7 +200,7 @@ class PaymentProcessor(PaymentProcessorBase):
 
         ret = SUCCESS_CONFIRM_TEMPLATE % {
             'STATUS': TransactionStatus.OK,
-            'STATUS_DETAIL': u'Платёж подтверждён',
+            'STATUS_DETAIL': _(u'Платёж подтверждён'),
             'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
             'ORDER_DATE': dt.strftime('%Y-%m-%dT%H:%M:%S'),
             'SIGN': ''
@@ -208,7 +208,7 @@ class PaymentProcessor(PaymentProcessorBase):
         SIGN = PaymentProcessor.compute_sig(ret)
         ret = SUCCESS_CONFIRM_TEMPLATE % {
             'STATUS': TransactionStatus.OK,
-            'STATUS_DETAIL': u'Платёж подтверждён',
+            'STATUS_DETAIL': _(u'Платёж подтверждён'),
             'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
             'ORDER_DATE': dt.strftime('%Y-%m-%dT%H:%M:%S'),
             'SIGN': SIGN
@@ -224,7 +224,7 @@ class PaymentProcessor(PaymentProcessorBase):
         try:
             payment = Payment.objects.get(id=paymentid)
         except Payment.DoesNotExist, ex:
-            return PaymentProcessor.error(body, u'Платёж не найден')
+            return PaymentProcessor.error(body, _(u'Платёж не найден'))
 
         payment.change_status('canceled')
         payment.save()
@@ -232,7 +232,7 @@ class PaymentProcessor(PaymentProcessorBase):
         dt = datetime.datetime.now()
         ret = SUCCESS_CANCEL_TEMPLATE % {
             'STATUS': TransactionStatus.OK,
-            'STATUS_DETAIL': u'Платёж отменён',
+            'STATUS_DETAIL': _(u'Платёж отменён'),
             'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
             'CANCEL_DATE': dt.strftime('%Y-%m-%dT%H:%M:%S'),
             'SIGN': ''
@@ -240,7 +240,7 @@ class PaymentProcessor(PaymentProcessorBase):
         SIGN = PaymentProcessor.compute_sig(ret)
         ret = SUCCESS_CANCEL_TEMPLATE % {
             'STATUS': TransactionStatus.OK,
-            'STATUS_DETAIL': u'Платёж отменён',
+            'STATUS_DETAIL': _(u'Платёж отменён'),
             'DATETIME': dt.strftime('%Y-%m-%dT%H:%M:%S'),
             'CANCEL_DATE': dt.strftime('%Y-%m-%dT%H:%M:%S'),
             'SIGN': SIGN

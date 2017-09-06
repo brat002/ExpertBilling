@@ -178,5 +178,5 @@ def accountprepaystime_delete(request):
     else:
         return {
             "status": False,
-            "message": "AccountPrepaysTime not found"
+            "message": _(u'AccountPrepaysTime not found')
         }

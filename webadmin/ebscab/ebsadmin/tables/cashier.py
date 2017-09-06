@@ -20,7 +20,7 @@ from ebsadmin.tables.base import EbsadminTableReport
 class CashierReportTable(EbsadminTableReport):
     summ = FormatFloatColumn(verbose_name=_(u'Сумма'))
     fullname = Column(
-        verbose_name=u'ФИО', accessor=A('account.fullname'))
+        verbose_name=_(u'ФИО'), accessor=A('account.fullname'))
     address = TemplateColumn(
         (u"{{record.account.street|default:''}} "
          u"{{record.account.house|default:''}}-"

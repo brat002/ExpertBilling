@@ -129,5 +129,5 @@ def model_delete(request):
     else:
         return {
             "status": False,
-            "message": "Model not found"
+            "message": _(u'Model not found')
         }

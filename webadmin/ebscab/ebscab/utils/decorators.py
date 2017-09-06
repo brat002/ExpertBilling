@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.utils.translation import ugettext_lazy as _
 
 from ebscab.utils.http import JsonResponse
 
@@ -38,7 +39,7 @@ def ajax_request(func):
             response = {
                 'error': {
                     'type': 403,
-                    'message': 'Accepts only POST request'
+                    'message': _(u'Accepts only POST request')
                 }
             }
         if isinstance(response, dict):
@@ -87,6 +88,6 @@ def render_xml(func):
         resp = func(request, *args, **kwargs)
         return HttpResponse(
             resp,
-            content_type="text/xml",
-            contenttype="text/xml;charset=utf-8")
+            content_type='text/xml',
+            contenttype='text/xml;charset=utf-8')
     return wrapper

@@ -129,5 +129,5 @@ def prepaidtraffic_delete(request):
             extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "AddonServiceTarif not found"
+            "message": _(u'AddonServiceTarif not found')
         }

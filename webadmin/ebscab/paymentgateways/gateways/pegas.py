@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-# $Id$
 
 """
 This module provides interface to Pegas (http://pegaspay.com.ua) payment system
 """
+
+from django.utils.translation import ugettext_lazy as _
 
 
 AUTH_FIELDS = ('id', 'username', '')
@@ -24,22 +25,22 @@ ERROR_CANCEL_UNAVAILABLE = 251
 ERROR_UNDEFINED = 300
 
 ERROR_CODES = (  # int code, unicode message, boolean is_fatal
-    (ERROR_OK, u'ОК', False),
-    (ERROR_TIME, u'Временная ошибка. Повторите запрос позже', False),
-    (ERROR_ID_FAILED, u'Неверный формат идентификатора абонента', True),
+    (ERROR_OK, _(u'ОК'), False),
+    (ERROR_TIME, _(u'Временная ошибка. Повторите запрос позже'), False),
+    (ERROR_ID_FAILED, _(u'Неверный формат идентификатора абонента'), True),
     (ERROR_ID_NONEXIST,
-     u'Идентификатор абонента не найден (Ошиблись номером)',
+     _(u'Идентификатор абонента не найден (Ошиблись номером)'),
      True),
-    (ERROR_PAY_DEPRECATED, u'Прием платежа запрещен провайдером', True),
+    (ERROR_PAY_DEPRECATED, _(u'Прием платежа запрещен провайдером'), True),
     (ERROR_PAY_UNAVAILABLE,
-     u'Прием платежа запрещен по техническим причинам',
+     _(u'Прием платежа запрещен по техническим причинам'),
      True),
-    (ERROR_ACCOUNT_NOTACTIVE, u'Счет абонента не активен', True),
-    (ERROR_SUM_SMALL, u'Сумма слишком мала', True),
-    (ERROR_SUM_BIG, u'Сумма слишком велика', True),
-    (ERROR_ACCOUNT_STATE, u'Невозможно проверить состояние счета', True),
-    (ERROR_CANCEL_UNAVAILABLE, u'Отмена платежа невозможна', True),
-    (ERROR_UNDEFINED, u'Другая ошибка провайдера', True)
+    (ERROR_ACCOUNT_NOTACTIVE, _(u'Счет абонента не активен'), True),
+    (ERROR_SUM_SMALL, _(u'Сумма слишком мала'), True),
+    (ERROR_SUM_BIG, _(u'Сумма слишком велика'), True),
+    (ERROR_ACCOUNT_STATE, _(u'Невозможно проверить состояние счета'), True),
+    (ERROR_CANCEL_UNAVAILABLE, _(u'Отмена платежа невозможна'), True),
+    (ERROR_UNDEFINED, _(u'Другая ошибка провайдера'), True)
 )
 
 PAYMENT_ID_NAME = 'txn_id'

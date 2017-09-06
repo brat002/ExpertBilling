@@ -146,5 +146,5 @@ def accountgroup_delete(request):
                        extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "AccountGroup not found"
+            "message": _(u'AccountGroup not found')
         }

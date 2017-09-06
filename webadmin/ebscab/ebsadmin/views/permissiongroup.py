@@ -138,5 +138,5 @@ def permissiongroup_delete(request):
     else:
         return {
             "status": False,
-            "message": "PermissionGroup not found"
+            "message": _(u'PermissionGroup not found')
         }

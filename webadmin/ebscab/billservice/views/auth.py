@@ -47,14 +47,14 @@ def login(request):
                         if not (IPy.IP(request.META.get("REMOTE_ADDR")) in
                                 IPy.IP(user.account.host)):
                             return {
-                                'message': _('Access for your ip is forbidden'),
+                                'message': _(u'Access for your ip is forbidden'),
                                 'login_form': login_form,
                                 'register_form': RegisterForm(prefix='register'),
                             }
 
                     except Exception, e:
                         return {
-                            'message': _('Error in access rule for your account'),
+                            'message': _(u'Error in access rule for your account'),
                             'login_form': login_form,
                             'register_form': RegisterForm(prefix='register')
                         }
@@ -154,18 +154,18 @@ def simple_login(request):
                 "status": 1,
                 "fullname": user.account.fullname,
                 "tariff_name": user.account.get_account_tariff().name,
-                "message": "Login succeful"
+                "message": _(u'Login succeful')
             }
         except:
             return {
                 "status": 0,
                 "fullname": '',
                 'tariff_name': '',
-                "message": "User not found"
+                "message": _(u'User not found')
             }
     return {
         "status": 0,
-        "message": "User not found"
+        "message": _(u'User not found')
     }
 
 

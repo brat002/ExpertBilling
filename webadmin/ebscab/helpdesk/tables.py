@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext_lazy as _
 
 from django_tables2 import columns
 from django_tables2_reports.tables import TableReport
@@ -17,12 +18,12 @@ class FormatUrlColumn(columns.Column):
 class TicketTable(TableReport):
     ticket = columns.TemplateColumn(
         "<a href='{{record.get_absolute_url}}'>{{record.ticket}}</a>",
-        verbose_name='Заявка'
+        verbose_name=_(u'Заявка')
     )
     title = columns.TemplateColumn(
         "<a href='{{record.get_absolute_url}}' data='{{record.id}}' "
         "class='title-tooltip'>{{record.title}}</a>",
-        verbose_name='Тема'
+        verbose_name=_(u'Тема')
     )
     d = columns.TemplateColumn(
         "<a href='{{record.get_remove_url}}' class='show-confirm'>"
@@ -52,12 +53,12 @@ class TicketTable(TableReport):
 class UnpagedTicketTable(TableReport):
     ticket = columns.TemplateColumn(
         "<a href='{{record.get_absolute_url}}'>{{record.ticket}}</a>",
-        verbose_name='Заявка'
+        verbose_name=_(u'Заявка')
     )
     title = columns.TemplateColumn(
         "<a href='{{record.get_absolute_url}}' data='{{record.id}}' "
         "class='title-tooltip'>{{record.title}}</a>",
-        verbose_name='Тема'
+        verbose_name=_(u'Тема')
     )
     d = columns.TemplateColumn(
         "<a href='{{record.get_remove_url}}' class='show-confirm'>"
@@ -87,12 +88,12 @@ class UnpagedTicketTable(TableReport):
 class UnassignedTicketTable(TableReport):
     ticket = columns.TemplateColumn(
         "<a href='{{record.get_absolute_url}}'>{{record.ticket}}</a>",
-        verbose_name='Заявка'
+        verbose_name=_(u'Заявка')
     )
     title = columns.TemplateColumn(
         "<a href='{{record.get_absolute_url}}' data='{{record.id}}' "
         "class='title-tooltip'>{{record.title}}</a>",
-        verbose_name='Тема'
+        verbose_name=_(u'Тема')
     )
     action = columns.TemplateColumn(
         '''\

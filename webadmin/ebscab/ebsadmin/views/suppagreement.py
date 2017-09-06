@@ -162,5 +162,5 @@ def suppagreement_delete(request):
             extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "SuppAgreement not found"
+            "message": _(u'SuppAgreement not found')
         }

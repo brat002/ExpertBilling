@@ -51,7 +51,7 @@ class PaymentProcessor(PaymentProcessorBase):
 
         if len(allowed_ip) != 0 and ip not in allowed_ip:
             dt = datetime.datetime.now()
-            return PaymentProcessor.error(body, u'Unknown IP')
+            return PaymentProcessor.error(body, _(u'Unknown IP'))
         return 'OK'
 
     @staticmethod
@@ -62,7 +62,7 @@ class PaymentProcessor(PaymentProcessorBase):
         if login != body.commandcall.login.text or \
                 password != body.commandcall.password.text:
             dt = datetime.datetime.now()
-            return PaymentProcessor.error(body, 300, 'Incorrect credentials')
+            return PaymentProcessor.error(body, 300, _(u'Incorrect credentials'))
         return 'OK'
 
     def get_gateway_url(self, request, payment):
@@ -84,7 +84,7 @@ class PaymentProcessor(PaymentProcessorBase):
         try:
             account = Account.objects.get(contract=acc)
         except Account.DoesNotExist, ex:
-            return PaymentProcessor.error(body, 5, u'Аккаунт не найден')
+            return PaymentProcessor.error(body, 5, _(u'Аккаунт не найден'))
 
         ret = ERROR_TEMPLATE % {
             'TRANSACTION_ID': body.commandcall.transactionid.text,
@@ -106,7 +106,7 @@ class PaymentProcessor(PaymentProcessorBase):
         try:
             account = Account.objects.get(contract=acc)
         except Account.DoesNotExist, ex:
-            return PaymentProcessor.error(body, 5, u'Аккаунт не найден')
+            return PaymentProcessor.error(body, 5, _(u'Аккаунт не найден'))
 
         if amount > 0:
             payment = Payment.create(

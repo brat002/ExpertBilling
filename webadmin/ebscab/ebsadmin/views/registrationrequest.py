@@ -77,5 +77,5 @@ def registrationrequest_delete(request):
             extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "RegistrationRequest not found"
+            "message": _(u'RegistrationRequest not found')
         }

@@ -2,12 +2,13 @@
 
 from django import forms
 from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 
 
 class QiwiPaymentRequestForm(forms.Form):
-    phone = forms.CharField(label=u"Номер телефона в QIWI")
+    phone = forms.CharField(label=_(u"Номер телефона в QIWI"))
     password = forms.CharField(
-        label=u"Пароль в QIWI", required=False, widget=forms.PasswordInput)
+        label=_(u"Пароль в QIWI"), required=False, widget=forms.PasswordInput)
     summ = forms.DecimalField(
-        max_digits=7, decimal_places=2, label=u'%s' % settings.CURRENCY)
+        max_digits=7, decimal_places=2, label=_(u'%s' % settings.CURRENCY))
     autoaccept = forms.BooleanField(required=False)

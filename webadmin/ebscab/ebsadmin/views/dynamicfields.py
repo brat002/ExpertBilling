@@ -144,5 +144,5 @@ def dynamicschemafield_delete(request):
                        extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "dynamic field not found"
+            "message": _(u'dynamic field not found')
         }

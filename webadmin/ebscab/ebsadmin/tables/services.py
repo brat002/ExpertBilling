@@ -119,8 +119,8 @@ class AccountAddonServiceTable(EbsadminTable):
     deactivated = FormatDateTimeColumn()
     deactivate = showconfirmcolumn(
         href='{{record.get_deactivate_url}}',
-        message='Отключить подклюачемую услугу?',
-        verbose_name='Отключить',
+        message=_(u'Отключить подклюачемую услугу?'),
+        verbose_name=_(u'Отключить'),
         icon_type='icon-ban-circle')
     d = showconfirmcolumn()
 

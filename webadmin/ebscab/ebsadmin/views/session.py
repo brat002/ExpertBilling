@@ -28,7 +28,7 @@ def session_reset(request):
         if not session:
             return {
                 'status': False,
-                'message': 'Session item with id=%s not found' % (id,)
+                'message': _(u'Session item with id=%s not found' % (id,))
             }
 
         n = session.nas_int
@@ -70,7 +70,7 @@ def session_hardreset(request):
         if not session:
             return {
                 'status': False,
-                'message': 'Session item with id=%s not found' % (id, )
+                'message': _(u'Session item with id=%s not found' % (id, ))
             }
 
         n = session.nas_int

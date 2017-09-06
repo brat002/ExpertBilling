@@ -160,26 +160,26 @@ class PaymentProcessor(PaymentProcessorBase):
             if PaymentProcessor.compute_sig(request.POST) != \
                     data['WMI_SIGNATURE']:
                 return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=%s' % \
-                    urllib.quote_plus(u'Неверная цифровая подпись')
+                    urllib.quote_plus(_(u'Неверная цифровая подпись'))
             try:
                 payment = Payment.objects.get(id=data['WMI_PAYMENT_NO'])
             except:
                 return ((u'WMI_RESULT=RETRY&WMI_DESCRIPTION=%s' %
-                         urllib.quote_plus(u'Платёж c ID %s не найден' %
-                                           data['WMI_PAYMENT_NO']))
+                         urllib.quote_plus(_(u'Платёж c ID %s не найден' %
+                                             data['WMI_PAYMENT_NO'])))
                         .encode('utf-8'))
         else:
             print form._errors
             return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=%s' % \
                 urllib.quote_plus(
-                    u'Не все поля заполнены или заполнены неверно')
+                    _(u'Не все поля заполнены или заполнены неверно'))
         payment.external_id = data['WMI_ORDER_ID']
 
         if data['WMI_ORDER_STATE'] == 'Accepted':
             payment.on_success(amount=data['WMI_PAYMENT_AMOUNT'])
             payment.save()
             return 'WMI_RESULT=OK&WMI_DESCRIPTION=%s' % \
-                urllib.quote_plus(u'Order successfully processed')
+                urllib.quote_plus(_(u'Order successfully processed'))
         else:
             return u'WMI_RESULT=RETRY&WMI_DESCRIPTION=%s' % \
-                urllib.quote_plus(u'Ошибка обработки платежа')
+                urllib.quote_plus(_(u'Ошибка обработки платежа'))

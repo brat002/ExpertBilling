@@ -143,5 +143,5 @@ def notificationssettings_delete(request):
     else:
         return {
             "status": False,
-            "message": "Notificationssettings not found"
+            "message": _(u'Notificationssettings not found')
         }

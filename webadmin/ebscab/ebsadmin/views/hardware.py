@@ -137,5 +137,5 @@ def hardware_delete(request):
     else:
         return {
             "status": False,
-            "message": "Hardware not found"
+            "message": _(u'Hardware not found')
         }

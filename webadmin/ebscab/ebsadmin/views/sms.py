@@ -68,7 +68,7 @@ def sms(request):
                 return create_report_http_response(table_to_report, request)
 
             return {
-                "table": table,
+                'table': table,
                 'form': form,
                 'resultTab': True
             }
@@ -110,7 +110,7 @@ def sms_delete(request):
     else:
         return {
             "status": False,
-            "message": "SMS not found"
+            "message": _(u'SMS not found')
         }
 
 

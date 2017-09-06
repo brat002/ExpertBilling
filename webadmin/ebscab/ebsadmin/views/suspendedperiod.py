@@ -112,5 +112,5 @@ def suspendedperiod_delete(request):
     else:
         return {
             'status': False,
-            'message': 'SuspendedPeriod not found'
+            'message': _(u'SuspendedPeriod not found')
         }

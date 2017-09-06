@@ -144,5 +144,5 @@ def contracttemplate_delete(request):
             extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "ContractTemplate not found"
+            "message": _(u'ContractTemplate not found')
         }

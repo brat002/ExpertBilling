@@ -185,5 +185,5 @@ def tpchangerule_delete(request):
     else:
         return {
             "status": False,
-            "message": "TPChangeRule not found"
+            "message": _(u'TPChangeRule not found')
         }

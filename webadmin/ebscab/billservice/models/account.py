@@ -617,7 +617,7 @@ class BalanceHistory(models.Model):
         verbose_name = _(u"История изменения баланса")
         verbose_name_plural = _(u"История изменения баланса")
         permissions = (
-            ("balancehistory_view", "Просмотр"),
+            ("balancehistory_view", _(u"Просмотр")),
         )
 
 
@@ -683,9 +683,8 @@ class SubAccount(models.Model):
     allow_vpn_with_minus = models.BooleanField(
         blank=True,
         default=False,
-        # TODO: fix typo
         verbose_name=_(u"Разрешать RADIUS авторизацию при отрицательном "
-                       u"балансе балансе"))
+                       u"балансе"))
     allow_vpn_with_block = models.BooleanField(
         blank=True,
         default=False,

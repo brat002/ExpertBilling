@@ -151,5 +151,5 @@ def dealer_delete(request):
     else:
         return {
             "status": False,
-            "message": "Nas not found"
+            "message": _(u'Nas not found')
         }

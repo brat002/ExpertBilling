@@ -127,7 +127,7 @@ class TrafficLimitTable(EbsadminTableReport):
         modal_title=_(u'Лимит трафика'),
         modal_id='periodicalservice-modal'
     )
-    d = showconfirmcolumn(message='Удалить лимит трафика?')
+    d = showconfirmcolumn(message=_(u'Удалить лимит трафика?'))
     speedlimit = TemplateColumn(
         '''\
 <a href='{% url 'tariff_speedlimit_edit' %}?trafficlimit_id={{record.id}}' \
@@ -139,7 +139,7 @@ class='show-speedlimit-confirm' data-clickmessage='Удалить? Если в �
 трафика указано действие Изменить скорость - вы обязаны указать параметры \
 изменения скорости.'>
 <i class='icon-remove'></i></a>{% else %}Указать{% endif %}</a>''',
-        verbose_name='Изменить скорость',
+        verbose_name=_(u'Изменить скорость'),
         orderable=False
     )
 
