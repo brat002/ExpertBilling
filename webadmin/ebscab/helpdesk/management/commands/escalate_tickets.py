@@ -24,7 +24,7 @@ from helpdesk.models import (
     Ticket,
     TicketChange
 )
-from helpdesk.lib import send_templated_mail
+from helpdesk.utils import send_templated_mail
 
 
 class Command(BaseCommand):

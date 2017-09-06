@@ -11,7 +11,7 @@ from django.template import engines
 from django.utils.translation import ugettext as _
 
 from helpdesk.forms import PublicTicketForm
-from helpdesk.lib import (
+from helpdesk.utils import (
     send_templated_mail,
     safe_template_context,
     text_is_spam

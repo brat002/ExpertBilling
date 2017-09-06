@@ -15,9 +15,18 @@ from django.db.models import Q
 
 from billservice.models import SystemUser, Account
 
-from helpdesk.lib import send_templated_mail
-from helpdesk.models import Ticket, Queue, FollowUp, Attachment, IgnoreEmail, TicketCC, PreSetReply, SavedSearch
+from helpdesk.models import (
+    Attachment,
+    FollowUp,
+    IgnoreEmail,
+    PreSetReply,
+    Queue,
+    SavedSearch,
+    Ticket,
+    TicketCC
+)
 from helpdesk.settings import HAS_TAG_SUPPORT
+from helpdesk.utils import send_templated_mail
 
 
 class TicketTypeForm(forms.Form):

@@ -24,7 +24,7 @@ from ebscab.utils.decorators import ajax_request, render_to
 from object_log.models import LogItem
 
 from helpdesk.forms import AssignToForm, EditTicketForm, FilterForm, TicketForm
-from helpdesk.lib import (
+from helpdesk.utils import (
     apply_query,
     b64decode,
     b64encode,
