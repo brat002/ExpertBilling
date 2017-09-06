@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 from billservice.models import Account
 
 from getpaid import signals
-from getpaid.abstract_mixin import AbstractMixin
+from getpaid.mixins import AbstractMixin
 from getpaid.utils import import_backend_modules, get_backend_settings
 
 

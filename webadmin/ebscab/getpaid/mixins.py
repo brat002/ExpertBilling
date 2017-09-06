@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-# This work by Patryk Zawadzki is licensed under a Creative Commons
-# Attribution-NonCommercial-ShareAlike 2.5 Poland.
-#
-# taken from:
-# http://room-303.com/blog/2010/04/27/django-abstrakcji-ciag-dalszy/
-# http://gist.github.com/584106
 
 
 class AbstractMixin(object):
+    """
+    This work by Patryk Zawadzki is licensed under a Creative Commons
+    Attribution-NonCommercial-ShareAlike 2.5 Poland.
+
+    taken from:
+    http://room-303.com/blog/2010/04/27/django-abstrakcji-ciag-dalszy/
+    http://gist.github.com/584106
+    """
     _classcache = {}
 
     @classmethod
