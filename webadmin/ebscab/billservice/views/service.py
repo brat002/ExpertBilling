@@ -102,9 +102,8 @@ def addon_service(request):
 @login_required
 def service_action(request, action, id):
     """
-    TODO: fix typo
-    в случее set id являеться идентификатором добавляемой услуги
-    в случее del id являеться идентификатором accountaddon_service
+    в случае set id являеться идентификатором добавляемой услуги
+    в случае del id являеться идентификатором accountaddon_service
     """
     user = request.user.account
 
