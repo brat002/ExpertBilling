@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 from helpdesk.forms import PublicTicketForm
 from helpdesk.models import Queue, Ticket
 from helpdesk.views.staff import update_ticket
-from ebscab.lib.decorators import render_to, login_required
+from ebscab.utils.decorators import render_to, login_required
 
 
 PublicTicketForm.base_fields['title'].widget.attrs = {'size': 80}

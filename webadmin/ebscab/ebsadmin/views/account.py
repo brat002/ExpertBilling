@@ -20,7 +20,7 @@ from billservice.forms import (
     SubAccountPartialForm,
     SuspendedPeriodBatchForm
 )
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import (
     Account,
     AccountAddonService,
@@ -32,7 +32,7 @@ from billservice.models import (
     SuspendedPeriod,
 )
 from django_tables2.config import RequestConfig as DTRequestConfig
-from ebscab.lib.decorators import ajax_request, render_to
+from ebscab.utils.decorators import ajax_request, render_to
 from helpdesk.models import Ticket
 from object_log.models import LogItem
 

@@ -9,7 +9,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from dynamicmodel.models import DynamicModel
-from ebscab.lib.fields import IPNetworkField, EncryptedTextField
+from ebscab.fields import IPNetworkField, EncryptedTextField
 from nas.models import Nas
 
 from billservice.models.constants import ACCOUNT_STATUS, STATUS_CLASS

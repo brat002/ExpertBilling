@@ -3,7 +3,7 @@
 from django.contrib.auth.decorators import login_required
 from django.utils.translation import ugettext_lazy as _
 
-from ebscab.lib.decorators import ajax_request
+from ebscab.utils.decorators import ajax_request
 
 from billservice.models import AccountViewedNews
 

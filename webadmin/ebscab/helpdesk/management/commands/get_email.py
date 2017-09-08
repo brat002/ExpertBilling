@@ -25,7 +25,7 @@ from django.core.management.base import BaseCommand
 from django.db.models import Q
 from django.utils.translation import ugettext as _
 
-from helpdesk.lib import send_templated_mail
+from helpdesk.utils import send_templated_mail
 from helpdesk.models import Queue, Ticket, FollowUp, Attachment, IgnoreEmail
 
 

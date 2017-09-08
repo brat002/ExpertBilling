@@ -6,29 +6,9 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models.signals import class_prepared
 from django.utils.translation import ugettext_lazy as _
 
 from billservice.models import SystemUser
-
-
-class TableSettings(models.Model):
-    user = models.ForeignKey(User)
-    name = models.CharField(max_length=128)
-    value = JSONField()
-    per_page = models.IntegerField()
-
-
-def longer_username(sender, *args, **kwargs):
-    # You can't just do `if sender == django.contrib.auth.models.User`
-    # because you would have to import the model
-    # You have to test using __name__ and __module__
-    if sender.__name__ == "User" and sender.__module__ == \
-            "django.contrib.auth.models":
-        sender._meta.get_field("username").max_length = 256
-        sender._meta.get_field("first_name").max_length = 256
-        sender._meta.get_field("last_name").max_length = 256
-        sender._meta.get_field("email").max_length = 256
 
 
 class Comment(models.Model):
@@ -70,4 +50,9 @@ class Comment(models.Model):
     class Meta:
         ordering = ('-created', )
 
-class_prepared.connect(longer_username)
+
+class TableSettings(models.Model):
+    user = models.ForeignKey(User)
+    name = models.CharField(max_length=128)
+    value = JSONField()
+    per_page = models.IntegerField()

@@ -5,8 +5,8 @@ import subprocess
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 
-from billservice.helpers import systemuser_required
-from ebscab.lib.decorators import render_to
+from billservice.utils import systemuser_required
+from ebscab.utils.decorators import render_to
 
 
 @systemuser_required

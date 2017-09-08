@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 
 from helpdesk.forms import EmailIgnoreForm
-from helpdesk.lib import superuser_required
+from helpdesk.utils import superuser_required
 from helpdesk.models import IgnoreEmail
 
 

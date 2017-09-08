@@ -10,7 +10,7 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 
-from ebscab.lib.decorators import ajax_request, render_to
+from ebscab.utils.decorators import ajax_request, render_to
 from getpaid.forms import SelectPaymentMethodForm
 from paymentgateways.qiwi.forms import QiwiPaymentRequestForm
 from paymentgateways.qiwi.models import Invoice as QiwiInvoice

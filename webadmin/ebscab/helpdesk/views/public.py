@@ -11,7 +11,7 @@ from django.template import engines
 from django.utils.translation import ugettext as _
 
 from helpdesk.forms import PublicTicketForm
-from helpdesk.lib import (
+from helpdesk.utils import (
     send_templated_mail,
     safe_template_context,
     text_is_spam
@@ -24,7 +24,7 @@ from helpdesk.models import (
     TicketChange
 )
 from helpdesk.settings import HAS_TAG_SUPPORT
-from ebscab.lib.decorators import render_to, login_required
+from ebscab.utils.decorators import render_to, login_required
 
 
 @login_required

@@ -23,7 +23,7 @@ from django.http import HttpResponse
 from django.template import loader
 
 from helpdesk.forms import TicketForm
-from helpdesk.lib import send_templated_mail
+from helpdesk.utils import send_templated_mail
 from helpdesk.models import Ticket, Queue, FollowUp
 
 

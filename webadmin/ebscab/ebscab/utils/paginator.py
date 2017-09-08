@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#$Id: paginator.py 159 2008-07-02 11:53:51Z dmitry $
 
 from django.core.paginator import Paginator
 

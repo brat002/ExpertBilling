@@ -2,8 +2,8 @@
 
 from django.contrib.auth.decorators import login_required
 
-from ebscab.lib.decorators import render_to
-from ebscab.lib.paginator import SimplePaginator
+from ebscab.utils.decorators import render_to
+from ebscab.utils.paginator import SimplePaginator
 
 from billservice.models import Transaction
 from billservice.views.utils import addon_queryset

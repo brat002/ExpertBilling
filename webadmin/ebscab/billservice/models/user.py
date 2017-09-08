@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
-from ebscab.lib.fields import EncryptedTextField
+from ebscab.fields import EncryptedTextField
 
 from billservice.models.utils import validate_phone
 

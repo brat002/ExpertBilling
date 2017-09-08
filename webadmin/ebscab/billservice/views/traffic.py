@@ -3,8 +3,8 @@
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 
-from ebscab.lib.decorators import render_to
-from ebscab.lib.paginator import SimplePaginator
+from ebscab.utils.decorators import render_to
+from ebscab.utils.paginator import SimplePaginator
 
 from billservice.models import TrafficLimit, TrafficTransaction
 from billservice.views.utils import addon_queryset

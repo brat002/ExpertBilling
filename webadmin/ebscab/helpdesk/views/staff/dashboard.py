@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
 
-from helpdesk.lib import query_to_dict, staff_member_required
+from helpdesk.utils import query_to_dict, staff_member_required
 from helpdesk.models import Ticket
 from helpdesk.tables import UnassignedTicketTable, UnpagedTicketTable
 

@@ -4,7 +4,7 @@ from django.db import connection
 from django.shortcuts import render
 from django.utils.translation import ugettext as _
 
-from helpdesk.lib import (
+from helpdesk.utils import (
     bar_chart,
     line_chart,
     query_to_dict,

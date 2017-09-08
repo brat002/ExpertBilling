@@ -5,6 +5,7 @@
 
 import random
 import re
+import string
 
 from django.conf import settings
 
@@ -189,9 +190,6 @@ def nameGen():
         nameStr = reNonTerminal.sub(subStr, nameStr, 1)
         matchNonTerminal = reNonTerminal.search(nameStr)
     return nameStr.lower()
-
-#from whrandom import choice
-import string
 
 
 def GenPasswd():

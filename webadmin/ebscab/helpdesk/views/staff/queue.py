@@ -2,11 +2,11 @@
 
 from django.shortcuts import render
 
-from billservice.helpers import systemuser_required
-from ebscab.lib.decorators import render_to
+from billservice.utils import systemuser_required
+from ebscab.utils.decorators import render_to
 
 from helpdesk.forms import TicketTypeForm
-from helpdesk.lib import staff_member_required
+from helpdesk.utils import staff_member_required
 from helpdesk.models import Queue
 
 

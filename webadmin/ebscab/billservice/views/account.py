@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import connection
 from django.utils.translation import ugettext_lazy as _
 
-from ebscab.lib.decorators import ajax_request, render_to
+from ebscab.utils.decorators import ajax_request, render_to
 
 from billservice.models import (
     AccountPrepaysTrafic,

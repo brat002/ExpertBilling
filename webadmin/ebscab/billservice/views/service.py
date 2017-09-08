@@ -7,8 +7,8 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
 from ebsadmin.cardlib import add_addonservice, del_addonservice
-from ebscab.lib.decorators import render_to
-from ebscab.lib.paginator import SimplePaginator
+from ebscab.utils.decorators import render_to
+from ebscab.utils.paginator import SimplePaginator
 
 from billservice.models import (
     AccountAddonService,
@@ -17,7 +17,7 @@ from billservice.models import (
     AddonServiceTransaction,
     PeriodicalServiceHistory
 )
-from billservice.utility import settlement_period_info
+from billservice.utils import settlement_period_info
 from billservice.views.utils import addon_queryset
 
 

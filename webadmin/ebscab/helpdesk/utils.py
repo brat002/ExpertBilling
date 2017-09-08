@@ -5,18 +5,14 @@ Jutda Helpdesk - A Django powered ticket tracker for small enterprise.
 
 (c) Copyright 2008 Jutda. All Rights Reserved. See LICENSE for details.
 
-lib.py - Common functions (eg multipart e-mail)
+utils.py - Common functions (eg multipart e-mail)
 """
 
 import os
-try:
-    from base64 import urlsafe_b64encode as b64encode
-except ImportError:
-    from base64 import encodestring as b64encode
-try:
-    from base64 import urlsafe_b64decode as b64decode
-except ImportError:
-    from base64 import decodestring as b64decode
+from base64 import (  # keep it
+    urlsafe_b64encode as b64encode,
+    urlsafe_b64decode as b64decode
+)
 
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
@@ -24,15 +20,11 @@ from django.contrib.sites.models import Site
 from django.core.mail import EmailMultiAlternatives
 from django.template import engines
 
-try:
-    from helpdesk.akismet import Akismet
-    AKISMET_EXIST = True
-except:
-    AKISMET_EXIST = False
+from helpdesk.akismet import Akismet
 
 
-chart_colours = ('80C65A', '990066', 'FF9900', '3399CC', 'BBCCED', '3399CC',
-                 'FFCC33')
+CHART_COLOURS = ('80C65A', '990066', 'FF9900', '3399CC',
+                 'BBCCED', '3399CC', 'FFCC33')
 
 
 def send_templated_mail(template_name, email_context, recipients, sender=None,
@@ -187,7 +179,7 @@ def line_chart(data):
         chart_url += '0,%s' % max
         first = False
     chart_url += '&chdl=%s' % '|'.join(row_headings)  # Display legend/labels
-    chart_url += '&chco=%s' % ','.join(chart_colours)  # Default colour set
+    chart_url += '&chco=%s' % ','.join(CHART_COLOURS)  # Default colour set
     chart_url += '&chxt=x,y'  # Turn on axis labels
     # Axis Label Text
     chart_url += '&chxl=0:|%s|1:|0|%s' % ('|'.join(column_headings), max)
@@ -227,7 +219,7 @@ def bar_chart(data):
 
     chart_url += '&chds=0,%s' % max
     chart_url += '&chdl=%s' % '|'.join(row_headings)  # Display legend/labels
-    chart_url += '&chco=%s' % ','.join(chart_colours)  # Default colour set
+    chart_url += '&chco=%s' % ','.join(CHART_COLOURS)  # Default colour set
     chart_url += '&chxt=x,y'  # Turn on axis labels
     # Axis Label Text
     chart_url += '&chxl=0:|%s|1:|0|%s' % ('|'.join(column_headings), max)
@@ -356,9 +348,6 @@ def text_is_spam(text, request):
     # This will return 'True' is the given text is deemed to be spam, or
     # False if it is not spam. If it cannot be checked for some reason, we
     # assume it isn't spam.
-
-    if not AKISMET_EXIST:
-        return False
 
     ak = Akismet(
         blog_url='http://%s/' % Site.objects.get(pk=settings.SITE_ID).domain,

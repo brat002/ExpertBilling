@@ -5,10 +5,10 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
 from billservice.forms import OneTimeServiceForm
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import OneTimeService, Tariff
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
-from ebscab.lib.decorators import render_to, ajax_request
+from ebscab.utils.decorators import render_to, ajax_request
 from object_log.models import LogItem
 
 from ebsadmin.tables import OneTimeServiceTable

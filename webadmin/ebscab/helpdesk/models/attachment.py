@@ -3,7 +3,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from helpdesk.lib import attachment_path
+from helpdesk.utils import attachment_path
 
 
 class Attachment(models.Model):

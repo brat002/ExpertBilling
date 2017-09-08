@@ -8,7 +8,7 @@ from billservice.models import (
     Transaction,
     TransactionType
 )
-from ebscab.lib.decorators import render_to
+from ebscab.utils.decorators import render_to
 
 from cassa.forms import PayForm
 

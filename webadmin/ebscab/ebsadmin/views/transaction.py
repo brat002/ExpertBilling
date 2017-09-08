@@ -6,9 +6,9 @@ from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 
 from billservice.forms import TransactionModelForm
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import Account, AccountTarif, TransactionType
-from ebscab.lib.decorators import ajax_request, render_to
+from ebscab.utils.decorators import ajax_request, render_to
 from object_log.models import LogItem
 
 from ebsadmin.constants import MODEL_BY_TABLE

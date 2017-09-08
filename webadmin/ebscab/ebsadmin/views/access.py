@@ -6,10 +6,10 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
 from billservice.forms import AccessParametersForm
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import Tariff, TimeSpeed
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
-from ebscab.lib.decorators import render_to
+from ebscab.utils.decorators import render_to
 from object_log.models import LogItem
 
 from ebsadmin.tables import TimeSpeedTable

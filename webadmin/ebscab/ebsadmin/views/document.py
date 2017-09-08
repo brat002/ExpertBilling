@@ -7,7 +7,7 @@ from django.utils.translation import ugettext as _
 from mako.template import Template as mako_template
 
 from billservice.forms import DocumentModelForm, DocumentRenderForm
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import (
     Account,
     Document,
@@ -15,10 +15,10 @@ from billservice.models import (
     Template,
     Transaction
 )
-from ebscab.lib.decorators import ajax_request
+from ebscab.utils.decorators import ajax_request
 from object_log.models import LogItem
 
-from ebsadmin.lib import instance_dict
+from ebscab.utils.misc import instance_dict
 
 
 log = LogItem.objects.log_action

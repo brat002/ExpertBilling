@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 
 from helpdesk.forms import TicketCCForm
-from helpdesk.lib import staff_member_required
+from helpdesk.utils import staff_member_required
 from helpdesk.models import Ticket, TicketCC
 
 

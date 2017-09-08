@@ -2,7 +2,7 @@
 
 from django.http import Http404, HttpResponse
 
-from helpdesk.lib import staff_member_required
+from helpdesk.utils import staff_member_required
 from helpdesk.models import PreSetReply
 
 

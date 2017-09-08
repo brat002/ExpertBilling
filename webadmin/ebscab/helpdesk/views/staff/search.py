@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 
-from helpdesk.lib import staff_member_required
+from helpdesk.utils import staff_member_required
 from helpdesk.models import SavedSearch
 
 

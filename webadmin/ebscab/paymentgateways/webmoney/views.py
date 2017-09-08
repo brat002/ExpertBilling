@@ -19,8 +19,9 @@ try:
 except ImportError:
     from django.contrib.csrf.middleware import csrf_exempt
 
-from ebscab.lib.decorators import render_to
+from ebscab.utils.decorators import render_to
 
+# TODO: fix imports
 import settings
 from forms import *
 from models import Payment

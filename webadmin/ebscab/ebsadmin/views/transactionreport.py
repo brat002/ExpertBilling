@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 
 import billservice.models as bsmodels
 from billservice.forms import TransactionReportForm
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import (
     AddonServiceTransaction,
     PeriodicalServiceHistory,
@@ -23,10 +23,9 @@ from billservice.models import (
 )
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
-from ebscab.lib.decorators import ajax_request, render_to
+from ebscab.utils.decorators import ajax_request, render_to
 
 from ebsadmin.constants import TRANSACTION_MODELS
-from ebsadmin.lib import DBWrap, ExtDirectStore, gettransactiontypes
 from ebsadmin.tables import (
     AddonServiceTransactionReportTable,
     PeriodicalServiceTransactionReportTable,
@@ -34,6 +33,7 @@ from ebsadmin.tables import (
     TrafficTransactionReportTable,
     TransactionReportTable
 )
+from ebsadmin.views.utils import DBWrap, ExtDirectStore, gettransactiontypes
 
 
 dsn = 'host=%s port=%s dbname=%s user=%s password=%s' % (

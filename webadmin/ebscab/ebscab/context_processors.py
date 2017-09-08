@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# $Id$
 
 from django.conf import settings
 

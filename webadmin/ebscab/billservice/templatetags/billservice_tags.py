@@ -21,7 +21,7 @@ from billservice.models import (
     Transaction,
     TransactionType
 )
-from billservice.utility import settlement_period_info
+from billservice.utils import settlement_period_info
 
 
 register = template.Library()

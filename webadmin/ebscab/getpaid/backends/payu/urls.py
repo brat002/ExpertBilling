@@ -3,7 +3,7 @@
 from django.conf.urls import url
 from django.views.decorators.csrf import csrf_exempt
 
-from getpaid.backends.payu.views import OnlineView, SuccessView, FailureView
+from getpaid.backends.payu.views import FailureView, OnlineView, SuccessView
 
 
 urlpatterns = [

@@ -3,16 +3,16 @@
 from django.core.urlresolvers import reverse
 
 
+def get_reverse_conf(view_name, *args, **kwargs):
+    return ReversrConf(view_name, args, kwargs)
+
+
 class ReversrConf(object):
 
     def __init__(self, view_name, args, kwargs):
         self.view_name = view_name
         self.args = args
         self.kwargs = kwargs
-
-
-def get_reverse_conf(view_name, *args, **kwargs):
-    return ReversrConf(view_name, args, kwargs)
 
 
 class Menu(object):

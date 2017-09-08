@@ -16,15 +16,15 @@ from django.shortcuts import get_object_or_404, render
 from django.template import engines
 from django.utils.translation import ugettext as _
 
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import Account
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from django_tables2_reports.utils import create_report_http_response
-from ebscab.lib.decorators import ajax_request, render_to
+from ebscab.utils.decorators import ajax_request, render_to
 from object_log.models import LogItem
 
 from helpdesk.forms import AssignToForm, EditTicketForm, FilterForm, TicketForm
-from helpdesk.lib import (
+from helpdesk.utils import (
     apply_query,
     b64decode,
     b64encode,

@@ -5,9 +5,9 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
 from billservice.forms import TrafficLimitForm
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import Tariff, TrafficLimit
-from ebscab.lib.decorators import ajax_request, render_to
+from ebscab.utils.decorators import ajax_request, render_to
 from django_tables2_reports.config import RequestConfigReport as RequestConfig
 from object_log.models import LogItem
 

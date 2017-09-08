@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-# $Id: account_menu.py 182 2010-08-03 20:59:49Z dmitry $
 
 from django import template
 from django.conf import settings
 
 from helpdesk.settings import PERSONAL_AREA_MENU
-from ebscab.lib.menu import Menu
+from ebscab.utils.menu import Menu
 
 
 register = template.Library()

@@ -6,9 +6,9 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
 from billservice.forms import AccountSuppAgreementForm
-from billservice.helpers import systemuser_required
+from billservice.utils import systemuser_required
 from billservice.models import AccountSuppAgreement, Account, AccountHardware
-from ebscab.lib.decorators import render_to, ajax_request
+from ebscab.utils.decorators import render_to, ajax_request
 from object_log.models import LogItem
 
 

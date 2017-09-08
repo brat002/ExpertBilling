@@ -2,11 +2,11 @@
 
 from django.db import connection
 
-from billservice.helpers import systemuser_required
-from ebscab.lib.decorators import ajax_request
+from billservice.utils import systemuser_required
+from ebscab.utils.decorators import ajax_request
 from object_log.models import LogItem
 
-from ebsadmin.lib import dictfetchall
+from ebsadmin.views.utils import dictfetchall
 
 
 log = LogItem.objects.log_action

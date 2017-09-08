@@ -4,12 +4,12 @@ import datetime
 
 from django.utils.translation import ugettext as _
 
-from billservice.helpers import systemuser_required
-from ebscab.lib.decorators import ajax_request
+from billservice.utils import systemuser_required
+from ebscab.utils.decorators import ajax_request
 from radius.models import ActiveSession
 from tasks import cred, rosClient, rosExecute, PoD
 
-from ebsadmin.lib import instance_dict
+from ebscab.utils.misc import instance_dict
 
 
 @ajax_request
