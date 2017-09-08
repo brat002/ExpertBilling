@@ -578,18 +578,18 @@ def switchports_report(request, slug):
 
 
 rep = {
-    'blabla': (render_report, u'Отчёт по сумме платежей за период'),
+    'blabla': (render_report, _(u'Отчёт по сумме платежей за период')),
     'accountaddonservicereport': (
         accountaddonservicereport,
-        u'Отчёт по подключенным подключаемым услугам'),
+        _(u'Отчёт по подключенным подключаемым услугам')),
     'cashierdailyreport': (
         cashierdailyreport,
-        u'Отчёт по платежам за период'),
+        _(u'Отчёт по платежам за период')),
     'totaltransactionreport': (
         totaltransactionreport,
-        u'Отчёт по сумме списаний за период'),
-    'accountperiodreport': (accountperiodreport, u'Отчёт за период'),
+        _(u'Отчёт по сумме списаний за период')),
+    'accountperiodreport': (accountperiodreport, _(u'Отчёт за период')),
     'switchports_report': (
         switchports_report,
-        u'Занятые порты на коммутаторах')
+        _(u'Занятые порты на коммутаторах'))
 }

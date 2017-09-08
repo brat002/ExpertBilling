@@ -172,5 +172,5 @@ def news_delete(request):
     else:
         return {
             "status": False,
-            "message": "News not found"
+            "message": _(u'News not found')
         }

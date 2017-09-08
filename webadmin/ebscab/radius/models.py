@@ -15,27 +15,27 @@ SERVICE_TYPES = (
 )
 
 LOG_ITEM_TYPES = (
-    ("AHTH_OK", u"Авторизация разрешена"),
-    ("AUTH_ACCOUNT_DISABLED", u"Аккаунт неактивен"),
-    ("AUTH_RADIUS_ONLY_ONE", u"Вторая сессия на указанном сервере доступа"),
-    ("AUTH_BAD_PASSWORD", u"Неверный пароль"),
+    ("AHTH_OK", _(u"Авторизация разрешена")),
+    ("AUTH_ACCOUNT_DISABLED", _(u"Аккаунт неактивен")),
+    ("AUTH_RADIUS_ONLY_ONE", _(u"Вторая сессия на указанном сервере доступа")),
+    ("AUTH_BAD_PASSWORD", _(u"Неверный пароль")),
     ("AUTH_WRONG_ACCESS_TYPE",
-     u"Способ доступа %s не совпадает с разрешённым в параметрах "
-     u"тарифнго плана."),
-    ("AUTH_SUBACC_NOT_FOUND", u"Субаккаунт с таким логином не найден"),
-    ("AUTH_ACC_FOR_SUBACC_NOT_FOUND", u"Аккаунт для субаккаунта не найден"),
-    ("AUTH_BAD_TIME", u"В данный момент запрещено устанавливать соединение"),
-    ("AUTH_BAD_NAS", u"Запрещено подключаться к данному серверу доступа"),
+     _(u"Способ доступа %s не совпадает с разрешённым в параметрах "
+       u"тарифнго плана.")),
+    ("AUTH_SUBACC_NOT_FOUND", _(u"Субаккаунт с таким логином не найден")),
+    ("AUTH_ACC_FOR_SUBACC_NOT_FOUND", _(u"Аккаунт для субаккаунта не найден")),
+    ("AUTH_BAD_TIME", _(u"В данный момент запрещено устанавливать соединение")),
+    ("AUTH_BAD_NAS", _(u"Запрещено подключаться к данному серверу доступа")),
     ("AUTH_8021x_NAS",
-     u"Для 802.1x авторизации должен быть указан коммутатор"),
+     _(u"Для 802.1x авторизации должен быть указан коммутатор")),
     ("AUTH_NAS_NOT_FOUND",
-     u"Запрещено подключаться к данному серверу доступа"),
+     _(u"Запрещено подключаться к данному серверу доступа")),
     ("AUTH_VPN_IPN_IP_LINK_ERROR",
-     u"Соединение установлено с запрещённого IPN IP"),
+     _(u"Соединение установлено с запрещённого IPN IP")),
     ("AUTH_PPPOE_IPN_MAC_LINK_ERROR",
-     u"Соединение установлено с запрещённого IPN MAC"),
+     _(u"Соединение установлено с запрещённого IPN MAC")),
     ("AUTH_VPN_BALLANCE_ERROR",
-     u"Запрещена VPN авторизация с нулевым балансом")
+     _(u"Запрещена VPN авторизация с нулевым балансом"))
 )
 SESSION_STATUS = (
     (u"ACTIVE", _(u"Активна")),
@@ -46,7 +46,7 @@ SESSION_STATUS = (
 STATUS_CLASS = {
     "ACTIVE": '',
     "NACK": 'error',
-            "ACK": ''
+    "ACK": ''
 }
 
 
@@ -55,7 +55,7 @@ class ActiveSession(models.Model):
     subaccount = models.ForeignKey(SubAccount, verbose_name=_(u'Субаккаунт'))
     # Атрибут радиуса Acct-Session-Id
     sessionid = models.CharField(
-        max_length=255, blank=True, verbose_name=u'ID')
+        max_length=255, blank=True, verbose_name=_(u'ID'))
     # Время последнего обновления
     interrim_update = models.DateTimeField(
         auto_now_add=True,
@@ -76,12 +76,12 @@ class ActiveSession(models.Model):
     called_id = models.CharField(
         max_length=255, blank=True, verbose_name=u'Called ID')
     framed_ip_address = models.CharField(
-        max_length=255, blank=True, default='', verbose_name=u'IP')
+        max_length=255, blank=True, default='', verbose_name=_(u'IP'))
     # Атрибут радиуса NAS-IP-Address
     nas_id = models.CharField(
-        max_length=255, blank=True, verbose_name=u'Nas ID')
+        max_length=255, blank=True, verbose_name=_(u'Nas ID'))
     nas_int = models.ForeignKey(
-        Nas, blank=True, null=True, verbose_name=u'NAS')
+        Nas, blank=True, null=True, verbose_name=_(u'NAS'))
     # Атрибут радиуса Acct-Session-Time
     session_time = models.IntegerField(
         default=0, null=True, blank=True, verbose_name=_(u'Время'))
@@ -89,9 +89,11 @@ class ActiveSession(models.Model):
     framed_protocol = models.CharField(
         max_length=32, choices=SERVICE_TYPES, verbose_name=_(u'Протокол'))
     # Атрибут радиуса Acct-Input-Octets
-    bytes_in = models.IntegerField(null=True, blank=True, verbose_name=u'IN')
+    bytes_in = models.IntegerField(
+        null=True, blank=True, verbose_name=_(u'IN'))
     # Атрибут радиуса Acct-Output-Octets
-    bytes_out = models.IntegerField(null=True, blank=True, verbose_name=u'OUT')
+    bytes_out = models.IntegerField(
+        null=True, blank=True, verbose_name=_(u'OUT'))
     # Выставляется в случае, если был произведён платёж
     session_status = models.CharField(
         max_length=32,

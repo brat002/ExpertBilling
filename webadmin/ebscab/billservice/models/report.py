@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from django.db import models
 from django.core.urlresolvers import reverse
+from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
 
 class TotalTransactionReport(models.Model):
@@ -12,7 +13,7 @@ class TotalTransactionReport(models.Model):
         'billservice.Tariff', blank=True, null=True, on_delete=models.CASCADE)
     summ = models.DecimalField(decimal_places=10, max_digits=30)
     prev_balance = models.DecimalField(
-        verbose_name=(u'Предыдущий баланс'),
+        verbose_name=_(u'Предыдущий баланс'),
         decimal_places=5,
         max_digits=20,
         blank=True,
@@ -26,7 +27,7 @@ class TotalTransactionReport(models.Model):
         on_delete=models.CASCADE
     )
     is_bonus = models.BooleanField(
-        blank=True, default=False, verbose_name=u'Бонус')
+        blank=True, default=False, verbose_name=_(u'Бонус'))
     systemuser = models.ForeignKey(
         'billservice.SystemUser',
         blank=True,
@@ -39,7 +40,9 @@ class TotalTransactionReport(models.Model):
     promise_expired = models.BooleanField(default=False)
 
     def get_remove_url(self):
-        return "%s?type=%s&id=%s" % (reverse('totaltransaction_delete'), (self.table, self.id))
+        # FIXME: not enough arguments
+        return "%s?type=%s&id=%s" % (reverse('totaltransaction_delete'),
+                                     (self.table, self.id))
 
     class Meta:
         managed = False

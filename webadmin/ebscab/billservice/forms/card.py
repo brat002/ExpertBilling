@@ -28,13 +28,13 @@ class CardGenerationForm(forms.Form):
         widget=forms.HiddenInput
     )
     series = forms.CharField(
-        label=u"Серия",
+        label=_(u"Серия"),
         widget=forms.widgets.Input(attrs={
             'class': 'input-small'
         })
     )
     count = forms.IntegerField(
-        label=u"Количество",
+        label=_(u"Количество"),
         widget=forms.widgets.Input(attrs={
             'class': 'input-small'
         })
@@ -77,7 +77,7 @@ class CardGenerationForm(forms.Form):
         required=False
     )
     ippool = forms.ModelChoiceField(
-        queryset=IPPool.objects.all(), label=u"IP пул", required=False)
+        queryset=IPPool.objects.all(), label=_(u"IP пул"), required=False)
     date_start = forms.DateTimeField(
         label=_(u'Активировать с'),
         required=True,

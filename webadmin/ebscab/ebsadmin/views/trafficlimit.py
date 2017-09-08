@@ -141,5 +141,5 @@ def trafficlimit_delete(request):
                        extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "TrafficLimit not found"
+            "message": _(u'TrafficLimit not found')
         }

@@ -164,5 +164,5 @@ def subaccount_delete(request):
     else:
         return {
             'status': False,
-            'message': 'SubAccount not found'
+            'message': _(u'SubAccount not found')
         }

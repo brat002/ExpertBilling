@@ -162,5 +162,5 @@ def radiusattr_delete(request):
     else:
         return {
             "status": False,
-            "message": "RadiusAttrs not found"
+            "message": _(u'RadiusAttrs not found')
         }

@@ -139,7 +139,7 @@ class Ticket(models.Model):
     source = models.CharField(
         choices=source_types,
         max_length=32,
-        verbose_name=u'Источник',
+        verbose_name=_(u'Источник'),
         blank=False,
         default='helpdesk'
     )

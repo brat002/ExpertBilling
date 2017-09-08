@@ -44,11 +44,11 @@ class ContractTemplate(models.Model):
     template = models.CharField(
         max_length=128,
         verbose_name=_(u'Шаблон'),
-        help_text=u'''\
+        help_text=_(u'''\
 %(contract_num)i - номер заключаемого договора этого типа
 %(account_id)i - идентификатор аккаунта
 %(day)i,%(month)i,%(year)i,%(hour)i,%(minute)i,%(second)i - дата подключения на тариф
-'''
+''')
     )
     counter = models.IntegerField()
 

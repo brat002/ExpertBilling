@@ -51,7 +51,7 @@ class PaymentProcessor(PaymentProcessorBase):
          'MrchLogin': PaymentProcessor.get_backend_setting(
             'MERCHANT_LOGIN', ''),
             'OutSum': "%.2f" % amount,
-            'Desc': u'Оплата за интернет',
+            'Desc': _(u'Оплата за интернет'),
             'InvId': payment.id
         }
         data['SignatureValue'] = PaymentProcessor.compute_sig(data)
@@ -92,10 +92,10 @@ class PaymentProcessor(PaymentProcessorBase):
                     signature = self.cleaned_data['SignatureValue'].upper()
                     if signature != PaymentProcessor.check_sig(self.cleaned_data):
                         raise forms.ValidationError(
-                            u'Ошибка в контрольной сумме')
+                            _(u'Ошибка в контрольной сумме'))
                 except KeyError:
                     raise forms.ValidationError(
-                        u'Пришли не все необходимые параметры')
+                        _(u'Пришли не все необходимые параметры'))
 
                 return self.cleaned_data
 

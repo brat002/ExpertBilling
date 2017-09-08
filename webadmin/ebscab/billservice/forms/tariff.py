@@ -51,7 +51,7 @@ class ChangeTariffForm(forms.Form):
                     ballance_min__lte=user.ballance,
                     from_tariff=account_tariff.tarif
                 )],
-                label=u"Выберите тарифный план",
+                label=_(u"Выберите тарифный план"),
                 widget=forms.Select(attrs={
                     'size': 1,
                     'onchange': 'set_cost()'}

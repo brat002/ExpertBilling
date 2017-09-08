@@ -50,7 +50,7 @@ def documentrender(request):
     if not request.user.account.has_perm('billservice.documentrender'):
         return {
             'status': False,
-            'message': u'У вас нет прав на рендеринг документов'
+            'message': _(u'У вас нет прав на рендеринг документов')
         }
 
     form = DocumentRenderForm(request.POST)
@@ -77,7 +77,7 @@ def documentrender(request):
         except Exception, e:
             data = u"Error %s" % str(e)
 
-        res = data.encode("utf-8", 'replace')
+        res = data.encode('utf-8', 'replace')
 
     return HttpResponse(res)
 

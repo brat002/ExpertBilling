@@ -2,6 +2,8 @@
 
 import datetime
 
+from django.utils.translation import ugettext_lazy as _
+
 from billservice.models import (
     Account,
     SystemUser,
@@ -31,8 +33,8 @@ def index(request):
             except:
                 return {
                     'form': form,
-                    'message': (u'Пользователя с таким логином и паролем '
-                                u'не существует')
+                    'message': _(u'Пользователя с таким логином и паролем '
+                                 u'не существует')
                 }
 
             try:
@@ -40,8 +42,8 @@ def index(request):
             except:
                 return {
                     'form': form,
-                    'message': (u'Пользователя с таким логином и паролем '
-                                u'не существует')
+                    'message': _(u'Пользователя с таким логином и паролем '
+                                 u'не существует')
                 }
 
             t = Transaction()
@@ -57,8 +59,8 @@ def index(request):
             t.save()
             account = Account.objects.get(username=account_username)
 
-            message = (u'Платёж успешно выполнен. '
-                       u'Новый баланс пользователя %s') % account.ballance
+            message = _(u'Платёж успешно выполнен. '
+                        u'Новый баланс пользователя %s') % account.ballance
 
     else:
         form = PayForm()

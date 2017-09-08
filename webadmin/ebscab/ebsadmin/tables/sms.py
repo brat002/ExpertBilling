@@ -13,7 +13,7 @@ from ebsadmin.tables.base import EbsadminTableReport
 class MessageTable(EbsadminTableReport):
     account = LinkColumn(
         'account_edit',
-        verbose_name=u'Аккаунт',
+        verbose_name=_(u'Аккаунт'),
         get_params={
             'id': A('account.id')
         }

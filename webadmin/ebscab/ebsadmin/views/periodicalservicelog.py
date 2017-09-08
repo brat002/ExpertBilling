@@ -100,5 +100,5 @@ def periodicalservicelog_delete(request):
     else:
         return {
             "status": False,
-            "message": "PeriodicalServiceLog not found"
+            "message": _(u'PeriodicalServiceLog not found')
         }

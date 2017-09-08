@@ -80,9 +80,9 @@ chartdata = {
     },
     'balancehistory': {
         'name': _(u'Динамика изменения баланса '),
-        'yname': u'Баланс',
+        'yname': _(u'Баланс'),
         'tabs': ['accountsTab'],
-        'yaxis': _(u"Баланс"),
+        'yaxis': _(u'Баланс'),
         "type": "line"
     },
 }
@@ -150,7 +150,7 @@ class ReportForm(forms.Form):
 
 
 class LogViewer(forms.Form):
-    log = forms.ChoiceField(choices=(), label=u'Лог')
+    log = forms.ChoiceField(choices=(), label=_(u'Лог'))
     lines = forms.IntegerField(
         label=_(u'Количество последних строк'), initial=100)
     full = forms.BooleanField(required=False)
@@ -158,10 +158,10 @@ class LogViewer(forms.Form):
 
 class TrafficNodesUploadForm(forms.Form):
     traffic_class = forms.ModelChoiceField(
-        queryset=TrafficClass.objects.all(), label=u'Класс трафика')
+        queryset=TrafficClass.objects.all(), label=_(u'Класс трафика'))
     networks = forms.CharField(
         required=True,
-        label=u'Наши сети (построчно)',
+        label=_(u'Наши сети (построчно)'),
         widget=forms.widgets.Textarea,
         help_text=_(u'Перечислите ваши сети построчно. Последняя строка '
                     u'не должна быть пустой.')

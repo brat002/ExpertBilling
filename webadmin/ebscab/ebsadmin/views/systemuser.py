@@ -185,5 +185,5 @@ def systemuser_delete(request):
                        extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "systemuser not found"
+            "message": _(u'systemuser not found')
         }

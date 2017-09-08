@@ -2,6 +2,7 @@
 
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+from django.utils.translation import ugettext_lazy as _
 
 from billservice.forms import (
     AccountPrepaysRadiusTraficForm,
@@ -26,7 +27,7 @@ def accountprepaysradiustraffic(request):
     if not request.user.account.has_perm(
             'billservice.view_accountprepaysradiustraffic'):
         messages.error(request,
-                       u'У вас нет прав на доступ в этот раздел.',
+                       _(u'У вас нет прав на доступ в этот раздел.'),
                        extra_tags='alert-danger')
         return HttpResponseRedirect('/ebsadmin/')
 
@@ -96,8 +97,8 @@ def accountprepaysradiustraffic_edit(request):
             if not (request.user.account.has_perm(
                     'billservice.change_accountprepaysradiustraffic')):
                 messages.error(request,
-                               (u'У вас нет прав на редактирование '
-                                u'предоплаченного RADIUS трафика'),
+                               _(u'У вас нет прав на редактирование '
+                                 u'предоплаченного RADIUS трафика'),
                                extra_tags='alert-danger')
                 return HttpResponseRedirect(request.path)
         else:
@@ -105,8 +106,8 @@ def accountprepaysradiustraffic_edit(request):
         if not (request.user.account.has_perm(
                 'billservice.add_accountprepaysradiustraffic')):
             messages.error(request,
-                           (u'У вас нет прав на добавление RADIUS '
-                            u'предоплаченного трафика.'),
+                           _(u'У вас нет прав на добавление RADIUS '
+                             u'предоплаченного трафика.'),
                            extra_tags='alert-danger')
             return HttpResponseRedirect(request.path)
 
@@ -131,7 +132,7 @@ def accountprepaysradiustraffic_edit(request):
         id = request.GET.get("id")
         if not (request.user.account.has_perm('billservice.view_accountprepaysradiustraffic')):
             messages.error(request,
-                           u'У вас нет прав на доступ в этот раздел.',
+                           _(u'У вас нет прав на доступ в этот раздел.'),
                            extra_tags='alert-danger')
             return {
                 'status': False
@@ -156,8 +157,8 @@ def accountprepaysradiustraffic_delete(request):
             'billservice.delete_accountprepaysradiustrafic')):
         return {
             'status': False,
-            'message': (u'У вас нет прав на удаление предоплаченного NetFlow '
-                        u'трафика')
+            'message': _(u'У вас нет прав на удаление предоплаченного NetFlow '
+                         u'трафика')
         }
     id = int(request.POST.get('id', 0)) or int(request.GET.get('id', 0))
     if id:
@@ -166,7 +167,7 @@ def accountprepaysradiustraffic_delete(request):
         except Exception, e:
             return {
                 "status": False,
-                "message": u"Указанная запись не найдена %s" % str(e)
+                "message": _(u"Указанная запись не найдена %s" % str(e))
             }
 
         log('DELETE', request.user, item)
@@ -178,5 +179,5 @@ def accountprepaysradiustraffic_delete(request):
     else:
         return {
             "status": False,
-            "message": "AccountPrepaysRadiusTrafic not found"
+            "message": _(u'AccountPrepaysRadiusTrafic not found')
         }

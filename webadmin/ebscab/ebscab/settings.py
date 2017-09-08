@@ -4,6 +4,7 @@ import logging
 import os
 import sys
 
+from django.utils.translation import ugettext_lazy as _
 from tzlocal import get_localzone
 
 
@@ -39,6 +40,11 @@ CACHES = {
 }
 
 TIME_ZONE = get_localzone().zone
+
+LANGUAGES = [
+    ('ru', _('Русский')),
+    ('en', _('Английский'))
+]
 
 LANGUAGE_CODE = 'ru-RU'
 
@@ -91,11 +97,11 @@ TEMPLATES = [
 ]
 
 MIDDLEWARE_CLASSES = (
-    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'ebsadmin.middleware.Version'
@@ -103,10 +109,9 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'ebscab.urls'
 
-LOCALE_PATHS = (
-    os.path.abspath('locale'),
-)
-
+LOCALE_PATHS = [
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'locale'))
+]
 
 INSTALLED_APPS = (
     'django.contrib.auth',

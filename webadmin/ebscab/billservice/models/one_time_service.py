@@ -48,7 +48,7 @@ class OneTimeServiceHistory(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     summ = models.IntegerField()
     prev_balance = models.DecimalField(
-        verbose_name=(u'Предыдущий баланс'),
+        verbose_name=_(u'Предыдущий баланс'),
         decimal_places=5,
         max_digits=20,
         blank=True,

@@ -212,7 +212,7 @@ def timeperiod_delete(request):
     if not id:
         return {
             "status": False,
-            "message": "Object not found"
+            "message": _(u'Object not found')
         }
 
     if prefix == 'TP':

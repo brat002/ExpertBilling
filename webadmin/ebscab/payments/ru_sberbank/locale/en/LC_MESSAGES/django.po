@@ -1,0 +1,90 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-09-07 01:39+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: payments/ru_sberbank/__init__.py:58
+msgid "Успешное выполнение операции"
+msgstr ""
+
+#: payments/ru_sberbank/__init__.py:59
+msgid "Платеж уже был проведен"
+msgstr ""
+
+#: payments/ru_sberbank/__init__.py:60
+msgid "Запрос выполнен с неразрешенного адреса"
+msgstr ""
+
+#: payments/ru_sberbank/__init__.py:61
+msgid "Указаны не все необходимые параметры "
+msgstr ""
+
+#: payments/ru_sberbank/__init__.py:62
+msgid "Неверный формат параметров"
+msgstr ""
+
+#: payments/ru_sberbank/__init__.py:63
+msgid "Неверная цифровая подпись"
+msgstr ""
+
+#: payments/ru_sberbank/__init__.py:64
+msgid "Указанный номер счета отсутствует"
+msgstr ""
+
+#: payments/ru_sberbank/__init__.py:65
+msgid "Запрещены платежи на указанный номер счета"
+msgstr ""
+
+#: payments/ru_sberbank/__init__.py:66
+msgid "Запрещены платежи для указанной услуги"
+msgstr ""
+
+#: payments/ru_sberbank/__init__.py:67
+msgid "Запрещены платежи для указанного агента"
+msgstr ""
+
+#: payments/ru_sberbank/__init__.py:68
+msgid "Неверные параметры платежа. В тэге err_text конкретное описание причины"
+msgstr ""
+
+#: payments/ru_sberbank/__init__.py:70
+msgid "Был другой платеж с указанным номером"
+msgstr ""
+
+#: payments/ru_sberbank/__init__.py:71
+msgid "Временная техническая ошибка"
+msgstr ""
+
+#: payments/ru_sberbank/__init__.py:72
+msgid "Прочие ошибки Оператора. В тэге err_text указывается описание причины"
+msgstr ""
+
+#: payments/ru_sberbank/__init__.py:80
+msgid "sberbank backend"
+msgstr ""
+
+#: payments/ru_sberbank/forms.py:13
+msgid "authorization"
+msgstr ""
+
+#: payments/ru_sberbank/forms.py:15
+msgid "yes"
+msgstr ""
+
+#: payments/ru_sberbank/forms.py:16
+msgid "no"
+msgstr ""

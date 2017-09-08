@@ -123,7 +123,10 @@ def nas_edit(request):
         else:
             form = NasForm(initial=actions.get(nas_type, {}))
 
-    return {'form': form, 'item': item}
+    return {
+        'form': form,
+        'item': item
+    }
 
 
 @ajax_request

@@ -71,9 +71,9 @@ class SendSmsForm(forms.Form):
 
 class StatististicForm(forms.Form):
     date_from = forms.DateField(
-        label=u'с даты', input_formats=('%d/%m/%Y',), required=False)
+        label=_(u'с даты'), input_formats=('%d/%m/%Y',), required=False)
     date_to = forms.DateField(
-        label=u'по дату', input_formats=('%d/%m/%Y',), required=False)
+        label=_(u'по дату'), input_formats=('%d/%m/%Y',), required=False)
 
 
 class ActionLogFilterForm(forms.Form):

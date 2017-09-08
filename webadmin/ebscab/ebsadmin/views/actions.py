@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from django.utils.translation import ugettext_lazy as _
+
 from billservice.utils import systemuser_required
 from billservice.models import SubAccount
 from ebscab.utils.decorators import ajax_request
@@ -18,7 +20,7 @@ def actions_set(request):
     if not (request.user.account.has_perm('billservice.actions_set')):
         return {
             'status': False,
-            'message': u'У вас нет прав на управление состоянием субаккаунтов'
+            'message': _(u'У вас нет прав на управление состоянием субаккаунтов')
         }
 
     subaccount = request.POST.get('subaccount_id')
@@ -30,14 +32,14 @@ def actions_set(request):
             sa.save()
             return {
                 'status': True,
-                'message': 'Ok'
+                'message': _(u'Ok')
             }
         if action == 'ipn_enable':
             sa.ipn_sleep = True
             sa.save()
             return {
                 'status': True,
-                'message': 'Ok'
+                'message': _(u'Ok')
             }
 
         subacc = instance_dict(SubAccount.objects.get(id=subaccount))
@@ -50,7 +52,7 @@ def actions_set(request):
         except Exception, e:
             return {
                 'status': False,
-                'message': u'Не указан или не найден указанный сервер доступа'
+                'message': _(u'Не указан или не найден указанный сервер доступа')
             }
 
         if action == 'disable':
@@ -98,9 +100,9 @@ def actions_set(request):
 
         return {
             'status': sended,
-            'message': 'Ok'
+            'message': _(u'Ok')
         }
     return {
         'status': False,
-        'message': 'Ok'
+        'message': _(u'Ok')
     }

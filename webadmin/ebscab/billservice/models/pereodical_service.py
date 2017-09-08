@@ -123,7 +123,7 @@ class PeriodicalServiceHistory(models.Model):
         on_delete=models.SET_NULL
     )
     real_created = models.DateTimeField(
-        verbose_name=u'Реальная дата списания', auto_now_add=True)
+        verbose_name=_(u'Реальная дата списания'), auto_now_add=True)
 
     def __unicode__(self):
         return u"%s" % (self.service)

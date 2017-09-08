@@ -54,5 +54,5 @@ def accounttariff_delete(request):
                        extra_tags='alert-danger')
         return {
             'status': False,
-            'message': "AccountTarif not found"
+            'message': _(u'AccountTarif not found')
         }

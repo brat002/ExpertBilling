@@ -61,8 +61,6 @@ class NewPaymentView(FormView):
         return super(NewPaymentView, self).post(request, *args, **kwargs)
 
     def form_valid(self, form):
-        from getpaid.models import Payment
-
         payment = Payment.create(
             self.request.user.account,
             form.cleaned_data['order'],

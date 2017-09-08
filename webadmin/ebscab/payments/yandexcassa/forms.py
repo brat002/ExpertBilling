@@ -2,6 +2,7 @@
 
 from django import forms
 from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 
 from .models import PAYMENT_TYPE
 
@@ -13,17 +14,17 @@ def get_backend_param(param, default=None):
 
 class PaymentFillForm(forms.Form):
     paymentType = forms.CharField(
-        label='Способ оплаты',
+        label=_(u'Способ оплаты'),
         widget=forms.Select(
             choices=PAYMENT_TYPE.CHOICES),
         min_length=2, max_length=2,
         initial=PAYMENT_TYPE.PC
     )
-    summ = forms.FloatField(label=u'Сумма')
+    summ = forms.FloatField(label=_(u'Сумма'))
 
-    cps_email = forms.EmailField(label=u'Email', required=False)
+    cps_email = forms.EmailField(label=_(u'Email'), required=False)
     cps_phone = forms.CharField(
-        label=u'Телефон',
+        label=_(u'Телефон'),
         max_length=15,
         required=False
     )
@@ -65,8 +66,8 @@ class BasePaymentForm(forms.Form):
         BAD_SHOP_ID = 1
 
     error_messages = {
-        ERROR_MESSAGE_CODES.BAD_SCID: u'scid не совпадает с YANDEX_MONEY_SCID',
-        ERROR_MESSAGE_CODES.BAD_SHOP_ID: u'scid не совпадает с YANDEX_MONEY_SHOP_ID'
+        ERROR_MESSAGE_CODES.BAD_SCID: _(u'scid не совпадает с YANDEX_MONEY_SCID'),
+        ERROR_MESSAGE_CODES.BAD_SHOP_ID: _(u'scid не совпадает с YANDEX_MONEY_SHOP_ID')
     }
 
     class ACTION:
@@ -74,8 +75,8 @@ class BasePaymentForm(forms.Form):
         CPAYMENT = 'paymentAviso'
 
         CHOICES = (
-            (CHECK, 'Проверка заказа'),
-            (CPAYMENT, 'Уведомления о переводе')
+            (CHECK, _(u'Проверка заказа')),
+            (CPAYMENT, _(u'Уведомления о переводе'))
         )
 
     shopId = forms.IntegerField(
@@ -83,7 +84,7 @@ class BasePaymentForm(forms.Form):
     scid = forms.IntegerField(initial=get_backend_param('YANDEX_MONEY_SCID'))
     customerNumber = forms.CharField(min_length=1, max_length=64)
     paymentType = forms.CharField(
-        label='Способ оплаты',
+        label=_(u'Способ оплаты'),
         widget=forms.Select(
             choices=PAYMENT_TYPE.CHOICES),
         min_length=2, max_length=2,
@@ -116,11 +117,11 @@ class PaymentForm(BasePaymentForm):
     def get_display_field_names(self):
         return ['paymentType', 'cps_email', 'cps_phone', 'sum']
 
-    sum = forms.FloatField(label=u'Сумма')
+    sum = forms.FloatField(label=_(u'Сумма'))
 
-    cps_email = forms.EmailField(label=u'Email', required=False)
+    cps_email = forms.EmailField(label=_(u'Email'), required=False)
     cps_phone = forms.CharField(
-        label=u'Телефон', max_length=15, required=False)
+        label=_(u'Телефон'), max_length=15, required=False)
 
     def __init__(self, *args, **kwargs):
 

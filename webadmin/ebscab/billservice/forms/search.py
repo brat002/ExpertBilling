@@ -54,7 +54,7 @@ class SearchAccountForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={
             'class': 'input-large',
-            'placeholder': u'Улица'
+            'placeholder': _(u'Улица')
         })
     )
     house = forms.CharField(
@@ -62,7 +62,7 @@ class SearchAccountForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={
             'class': 'input-medium',
-            'placeholder': u'Дом'
+            'placeholder': _(u'Дом')
         })
     )
     house_bulk = forms.CharField(
@@ -77,7 +77,7 @@ class SearchAccountForm(forms.Form):
         required=False,
         widget=forms.TextInput(attrs={
             'class': 'input-medium',
-            'placeholder': u'Кв'
+            'placeholder': _(u'Кв')
         })
     )
     status = forms.ChoiceField(
@@ -100,7 +100,7 @@ class SearchAccountForm(forms.Form):
     ballance = FloatConditionField(
         label=_(u"Баланс"),
         required=False,
-        help_text=u"Используйте знаки >меньше и <больше",
+        help_text=_(u"Используйте знаки >меньше и <больше"),
         widget=forms.TextInput(attrs={
             'class': 'input-small'
         })
@@ -108,7 +108,7 @@ class SearchAccountForm(forms.Form):
     credit = FloatConditionField(
         label=_(u"Кредит"),
         required=False,
-        help_text=u"Используйте знаки >меньше и <больше",
+        help_text=_(u"Используйте знаки >меньше и <больше"),
         widget=forms.TextInput(attrs={
             'class': 'input-small'
         })
@@ -340,7 +340,7 @@ class CardSearchForm(forms.Form):
     card_type = forms.ChoiceField(
         required=False,
         choices=(
-            ('', u"", ),
+            ('', u""),
             (0, _(u"Экспресс-оплаты")),
             (1, _(u'Хотспот')),
             (2, _(u'VPN доступ')),

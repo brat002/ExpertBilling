@@ -128,7 +128,7 @@ def accountaddonservice_deactivate(request):
     else:
         return {
             'status': False,
-            'message': 'AccountAddonService not found'
+            'message': _(u'AccountAddonService not found')
         }
 
 
@@ -155,5 +155,5 @@ def accountaddonservice_delete(request):
     else:
         return {
             'status': False,
-            'message': "AccountAddonService not found"
+            'message': _(u'AccountAddonService not found')
         }

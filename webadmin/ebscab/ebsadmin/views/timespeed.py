@@ -109,5 +109,5 @@ def timespeed_delete(request):
             extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "TimeSpeed not found"
+            "message": _(u'TimeSpeed not found')
         }

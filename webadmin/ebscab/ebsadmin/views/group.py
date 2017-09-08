@@ -37,7 +37,7 @@ def group(request):
         return create_report_http_response(table_to_report, request)
 
     return {
-        "table": table
+        'table': table
     }
 
 
@@ -139,5 +139,5 @@ def group_delete(request):
                        extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "Group not found"
+            "message": _(u'Group not found')
         }

@@ -329,7 +329,7 @@ approved, tarif_id, summ, created, promise)
 VALUES(%s, %s, %s, 'MONEY_TRANSFER_TO', True, get_tarif(%s), %s, now(), \
 False)""" , (user.id,
              to_user.id,
-             u'Перевод средств на аккаунт %s' % to_user.username,
+             _(u'Перевод средств на аккаунт %s' % to_user.username),
              user.id,
              -1 * sum))
             cursor.execute(u"""\
@@ -338,7 +338,7 @@ approved, tarif_id, summ, created, promise)
 VALUES(%s, %s, %s, 'MONEY_TRANSFER_FROM', True, get_tarif(%s), %s, now(), \
 False)""" , (to_user.id,
              user.id,
-             u'Перевод средств с аккаунта %s' % user.username,
+             _(u'Перевод средств с аккаунта %s' % user.username),
              to_user.id,
              sum))
             cursor.connection.commit()

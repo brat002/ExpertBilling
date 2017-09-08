@@ -139,7 +139,7 @@ def traffictransmitservice_delete(request):
                        extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "TrafficTransmitService not found"
+            "message": _(u'TrafficTransmitService not found')
         }
 
 
@@ -179,7 +179,7 @@ def traffictransmitnode_delete(request):
             extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "TrafficTransmitNodes not found"
+            "message": _(u'TrafficTransmitNodes not found')
         }
 
 

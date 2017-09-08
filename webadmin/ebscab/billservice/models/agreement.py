@@ -9,12 +9,12 @@ from django.utils.translation import ugettext_lazy as _
 
 class SuppAgreement(models.Model):
     name = models.CharField(max_length=128, verbose_name=_(u"Название"))
-    description = models.TextField(verbose_name=_(
-        u'Комментарий'), blank=True, default='')
-    body = models.TextField(verbose_name=_(
-        u'Текст шаблона'), blank=True, default='')
-    length = models.IntegerField(verbose_name=_(
-        u"Длительность в днях"), blank=True, null=True)
+    description = models.TextField(
+        verbose_name=_(u'Комментарий'), blank=True, default='')
+    body = models.TextField(
+        verbose_name=_(u'Текст шаблона'), blank=True, default='')
+    length = models.IntegerField(
+        verbose_name=_(u"Длительность в днях"), blank=True, null=True)
     disable_tarff_change = models.BooleanField(
         verbose_name=_(u"Запретить смену тарифного плана"),
         blank=True,

@@ -1,0 +1,138 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-09-07 01:39+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: nas/models.py:45
+msgid "Любой"
+msgstr ""
+
+#: nas/models.py:320
+msgid "RADIUS имя"
+msgstr ""
+
+#: nas/models.py:322
+msgid "Имя"
+msgstr ""
+
+#: nas/models.py:324
+msgid "IP адрес"
+msgstr ""
+
+#: nas/models.py:326
+msgid "Секретная фраза"
+msgstr ""
+
+#: nas/models.py:327
+msgid "Смотрите вывод команды /radius print"
+msgstr ""
+
+#: nas/models.py:330
+msgid "Имя пользователя"
+msgstr ""
+
+#: nas/models.py:336
+msgid "Пароль"
+msgstr ""
+
+#: nas/models.py:342
+msgid "Версия SNMP"
+msgstr ""
+
+#: nas/models.py:349
+msgid "Действие при создании пользователя"
+msgstr ""
+
+#: nas/models.py:355
+msgid "Действие при разрешении работы пользователя"
+msgstr ""
+
+#: nas/models.py:361
+msgid "Действие при запрещении работы пользователя"
+msgstr ""
+
+#: nas/models.py:367
+msgid "Действие при удалении пользователя"
+msgstr ""
+
+#: nas/models.py:399
+msgid "Сервер доступа"
+msgstr ""
+
+#: nas/models.py:400
+msgid "Сервера доступа"
+msgstr ""
+
+#: nas/models.py:402 nas/models.py:449 nas/models.py:498
+msgid "Просмотр"
+msgstr ""
+
+#: nas/models.py:418
+msgid "Навзание класса"
+msgstr ""
+
+#: nas/models.py:420
+msgid "Вес класа в цепочке классов"
+msgstr ""
+
+#: nas/models.py:422
+msgid "Хранить сырую статистику по классу"
+msgstr ""
+
+#: nas/models.py:423
+msgid "Хранить NetFlow статистику в текстовом виде"
+msgstr ""
+
+#: nas/models.py:428
+msgid "Пометить и продолжить"
+msgstr ""
+
+#: nas/models.py:445
+msgid "Класс трафика"
+msgstr ""
+
+#: nas/models.py:446
+msgid "Классы трафика"
+msgstr ""
+
+#: nas/models.py:461
+msgid "Название"
+msgstr ""
+
+#: nas/models.py:465
+msgid "Наша сеть"
+msgstr ""
+
+#: nas/models.py:470
+msgid "Удалённая сеть"
+msgstr ""
+
+#: nas/models.py:472
+msgid "Dst port"
+msgstr ""
+
+#: nas/models.py:475
+msgid "next Hop"
+msgstr ""
+
+#: nas/models.py:495
+msgid "Направление трафика"
+msgstr ""
+
+#: nas/models.py:496
+msgid "Направления трафика"
+msgstr ""

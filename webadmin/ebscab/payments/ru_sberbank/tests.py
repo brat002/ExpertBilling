@@ -3,8 +3,8 @@
 import datetime
 
 from BeautifulSoup import BeautifulSoup
-from django.test import TestCase
 from django.core.urlresolvers import reverse
+from django.test import TestCase
 from django.test.client import Client
 
 from billservice.models import Account, Transaction, TransactionType

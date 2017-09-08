@@ -182,5 +182,5 @@ def accountprepaystraffic_delete(request):
     else:
         return {
             "status": False,
-            "message": "AccountPrepaysTrafic not found"
+            "message": _(u'AccountPrepaysTrafic not found')
         }

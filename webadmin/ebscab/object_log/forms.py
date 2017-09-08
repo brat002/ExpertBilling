@@ -3,20 +3,21 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
+from django.utils.translation import ugettext_lazy as _
 
 from billservice.models import SystemUser
 from object_log.models import LogAction
 
 
 class LogItemFilterForm(forms.Form):
-    id = forms.IntegerField(label=u'ID объекта', required=False)
+    id = forms.IntegerField(label=_(u'ID объекта'), required=False)
     ct = forms.ModelChoiceField(
-        label=u'Тип объекта',
+        label=_(u'Тип объекта'),
         queryset=ContentType.objects.all(),
         required=False
     )
     action = forms.ModelMultipleChoiceField(
-        queryset=LogAction.objects.all(), label=u'Действие', required=False)
+        queryset=LogAction.objects.all(), label=_(u'Действие'), required=False)
     user = forms.ModelMultipleChoiceField(
         queryset=User.objects.filter(
             username__in=[
@@ -24,18 +25,18 @@ class LogItemFilterForm(forms.Form):
                 for x in SystemUser.objects.all().values('username')
             ]
         ),
-        label=u'Администратор',
+        label=_(u'Администратор'),
         required=False
     )
     start_date = forms.DateTimeField(
-        label=u'С даты',
+        label=_(u'С даты'),
         required=False,
         widget=forms.widgets.DateTimeInput(attrs={
             'class': 'datepicker'
         })
     )
     end_date = forms.DateTimeField(
-        label=u'По дату',
+        label=_(u'По дату'),
         required=False,
         widget=forms.widgets.DateTimeInput(attrs={
             'class': 'datepicker'

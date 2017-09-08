@@ -151,5 +151,5 @@ def addonservice_delete(request):
             extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "TransactionType not found"
+            "message": _(u'TransactionType not found')
         }

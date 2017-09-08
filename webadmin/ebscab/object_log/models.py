@@ -12,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models, transaction
 from django.db.utils import DatabaseError
 from django.template.loader import get_template
+from django.utils.translation import ugettext_lazy as _
 
 from ebscab.utils.misc import instance_dict
 
@@ -177,22 +178,23 @@ class LogItem(models.Model):
     """
     action = models.ForeignKey(
         LogAction,
-        verbose_name=u'Действие',
+        verbose_name=_(u'Действие'),
         related_name="entries",
         on_delete=models.CASCADE
     )
     #action = models.CharField(max_length=128)
-    timestamp = models.DateTimeField(verbose_name=u'Дата', auto_now_add=True)
+    timestamp = models.DateTimeField(
+        verbose_name=_(u'Дата'), auto_now_add=True)
     user = models.ForeignKey(
         User,
-        verbose_name=u'Пользователь',
+        verbose_name=_(u'Пользователь'),
         related_name='log_items',
         on_delete=models.CASCADE
     )
 
     object_type1 = models.ForeignKey(
         ContentType,
-        verbose_name=u'Тип объекта',
+        verbose_name=_(u'Тип объекта'),
         related_name='log_items1',
         null=True,
         on_delete=models.CASCADE
@@ -200,8 +202,9 @@ class LogItem(models.Model):
     object_id1 = models.PositiveIntegerField(null=True)
     object1 = GenericForeignKey("object_type1", "object_id1")
 
-    serialized_data = models.TextField(null=True, verbose_name=u'Дамп')
-    changed_data = models.TextField(null=True, verbose_name=u'Изменённые поля')
+    serialized_data = models.TextField(null=True, verbose_name=_(u'Дамп'))
+    changed_data = models.TextField(
+        null=True, verbose_name=_(u'Изменённые поля'))
 
     objects = LogItemManager()
     _data = None

@@ -158,5 +158,5 @@ def periodicalservice_delete(request):
             extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "PeriodicalService not found"
+            "message": _(u'PeriodicalService not found')
         }

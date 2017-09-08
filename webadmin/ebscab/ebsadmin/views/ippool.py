@@ -149,5 +149,5 @@ def ippool_delete(request):
                        extra_tags='alert-danger')
         return {
             "status": False,
-            "message": "IPPool not found"
+            "message": _(u'IPPool not found')
         }

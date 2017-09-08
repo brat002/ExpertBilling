@@ -301,12 +301,12 @@ def cities(request):
         if not items:
             return {
                 'status': False,
-                'message': 'City item with id=%s not found' % id
+                'message': _(u'City item with id=%s not found' % id)
             }
         if len(items) > 1:
             return {
                 'status': False,
-                'message': 'Returned >1 items with id=%s' % id
+                'message': _(u'Returned >1 items with id=%s' % id)
             }
 
     else:
@@ -364,7 +364,7 @@ def streets(request):
             })
 
     return {
-        "records": res,
+        'records': res,
         'status': True,
         'totalCount': len(items)
     }
@@ -408,7 +408,7 @@ def houses(request):
         res.append(instance_dict(item, fields=fields))
 
     return {
-        "records": res,
+        'records': res,
         'status': True,
         'totalCount': len(res)
     }

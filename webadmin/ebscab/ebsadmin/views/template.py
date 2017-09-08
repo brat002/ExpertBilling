@@ -156,7 +156,7 @@ def template_delete(request):
     else:
         return {
             'status': False,
-            'message': 'Template not found'
+            'message': _(u'Template not found')
         }
 
 

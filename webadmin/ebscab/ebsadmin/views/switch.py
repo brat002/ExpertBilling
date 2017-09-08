@@ -203,7 +203,7 @@ def switch_port_status(request):
     else:
         return {
             "status": False,
-            "message": "Switch not found"
+            "message": _(u'Switch not found')
         }
 
 
@@ -232,7 +232,7 @@ def switch_delete(request):
     else:
         return {
             "status": False,
-            "message": "Switch not found"
+            "message": _(u'Switch not found')
         }
 
 

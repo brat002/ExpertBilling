@@ -42,7 +42,7 @@ SERVICE_LIST = (
 
 
 PROTOCOLS = (
-    (0, u'Любой'),
+    (0, _(u'Любой')),
     (37, 'ddp'),
     (98, 'encap'),
     (3, 'ggp'),
@@ -442,11 +442,11 @@ class TrafficClass(models.Model):
         super(TrafficClass, self).save()
 
     class Meta:
-        verbose_name = u"Класс трафика"
-        verbose_name_plural = u"Классы трафика"
+        verbose_name = _(u"Класс трафика")
+        verbose_name_plural = _(u"Классы трафика")
         ordering = ['weight']
         permissions = (
-            ("trafficclass_view", u"Просмотр"),
+            ("trafficclass_view", _(u"Просмотр")),
         )
 
     def get_remove_url(self):
@@ -469,10 +469,10 @@ class TrafficNode(models.Model):
     dst_ip = IPNetworkField(
         verbose_name=_(u'Удалённая сеть'), blank=True, default='0.0.0.0/0')
     dst_port = models.IntegerField(
-        verbose_name=u'Dst port', blank=True, default=0)
+        verbose_name=_(u'Dst port'), blank=True, default=0)
 
     next_hop = models.GenericIPAddressField(
-        verbose_name=u'next Hop',
+        verbose_name=_(u'next Hop'),
         blank=True,
         null=True,
         default='0.0.0.0'

@@ -22,8 +22,8 @@ class CardTable(EbsadminTableReport):
     start_date = FormatDateTimeColumn()
     end_date = FormatDateTimeColumn()
     created = FormatDateTimeColumn()
-    salecard = FormatDateTimeColumn(verbose_name=_(
-        u'Продана'), accessor=A('salecard.created'))
+    salecard = FormatDateTimeColumn(
+        verbose_name=_(u'Продана'), accessor=A('salecard.created'))
     activated = FormatDateTimeColumn()
     activated_by = FormatBlankColumn()
     tarif = FormatBlankColumn()

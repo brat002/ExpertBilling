@@ -10,8 +10,8 @@ class SpeedLimit(models.Model):
         verbose_name=_(u"Способ изменения скорости"),
         max_length=32,
         choices=(
-            ("add", "Добавить к текущей"),
-            ("abs", "Абсолютное значение")
+            ("add", _(u"Добавить к текущей")),
+            ("abs", _(u"Абсолютное значение"))
         ),
         blank=True,
         null=True

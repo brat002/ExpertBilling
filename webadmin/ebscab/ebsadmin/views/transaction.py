@@ -129,5 +129,5 @@ def totaltransaction_delete(request):
     else:
         return {
             'status': False,
-            'message': 'Transaction not found'
+            'message': _(u'Transaction not found')
         }

@@ -43,16 +43,16 @@ class PaymentFactory(models.Model, AbstractMixin):
     ORDER_MODEL = None
 
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    amount = models.DecimalField(_("amount"), decimal_places=4, max_digits=20)
-    currency = models.CharField(_("currency"), max_length=3)
+    amount = models.DecimalField(_('amount'), decimal_places=4, max_digits=20)
+    currency = models.CharField(_('currency'), max_length=3)
     status = models.CharField(
-        _("status"),
+        _('status'),
         max_length=20,
         choices=PAYMENT_STATUS_CHOICES,
         default='new',
         db_index=True
     )
-    backend = models.CharField(_("backend"), max_length=50)
+    backend = models.CharField(_('backend'), max_length=50)
     created_on = models.DateTimeField(
         _("created on"), auto_now_add=True, db_index=True)
     paid_on = models.DateTimeField(

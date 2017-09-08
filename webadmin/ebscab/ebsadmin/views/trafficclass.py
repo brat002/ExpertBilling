@@ -65,7 +65,7 @@ def trafficclass_upload(request):
                     IP(line)
                 except Exception, e:
                     messages.error(request,
-                                   u'Неправильная сеть %s' % line,
+                                   _(u'Неправильная сеть %s' % line),
                                    extra_tags='alert-danger')
                     continue
 
@@ -78,7 +78,7 @@ def trafficclass_upload(request):
                         IP(network)
                     except Exception, e:
                         messages.error(request,
-                                       u'Неправильная сеть %s' % network,
+                                       _(u'Неправильная сеть %s' % network),
                                        extra_tags='alert-danger')
                         continue
                     bulk.append(TrafficNode(traffic_class=traffic_class,
@@ -234,7 +234,7 @@ def trafficnode(request):
                 messages.error(
                     request,
                     _(u'У вас нет прав на изменение составляющих '
-                        u'класса трафика'),
+                      u'класса трафика'),
                     extra_tags='alert-danger')
                 return {}
         else:
@@ -243,7 +243,7 @@ def trafficnode(request):
                 messages.error(
                     request,
                     _(u'У вас нет прав на создание составляющих '
-                        u'класса трафика'),
+                      u'класса трафика'),
                     extra_tags='alert-danger')
                 return {}
 
@@ -320,7 +320,7 @@ def trafficnode_delete(request):
     else:
         return {
             "status": False,
-            "message": "TrafficNode not found"
+            "message": _(u'TrafficNode not found')
         }
 
 
@@ -352,5 +352,5 @@ def trafficclass_delete(request):
     else:
         return {
             "status": False,
-            "message": "TrafficClass not found"
+            "message": _(u'TrafficClass not found')
         }

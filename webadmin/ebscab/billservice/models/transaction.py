@@ -16,11 +16,11 @@ class TransactionType(models.Model):
         verbose_name=_(u'Может быть удалён'), blank=True, default=True)
     allowed_systemusers = models.ManyToManyField(
         'billservice.SystemUser',
-        verbose_name=u'Разрешено выполнять',
+        verbose_name=_(u'Разрешено выполнять'),
         blank=True
     )
     is_bonus = models.BooleanField(
-        verbose_name=u'Является бонусной', blank=True, default=False)
+        verbose_name=_(u'Является бонусной'), blank=True, default=False)
 
     def __unicode__(self):
         return u"%s" % (self.name,)
@@ -60,7 +60,7 @@ class Transaction(models.Model):
     )
 
     is_bonus = models.BooleanField(
-        default=False, blank=True, verbose_name=u'Бонус')
+        default=False, blank=True, verbose_name=_(u'Бонус'))
     approved = models.BooleanField(default=True)
     tarif = models.ForeignKey(
         'billservice.Tariff', blank=True, null=True, on_delete=models.SET_NULL)

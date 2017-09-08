@@ -595,7 +595,7 @@ def accountedit(request):
             else:
                 log('CREATE', request.user, model)
             messages.success(
-                request, u'Аккаунт сохранён.', extra_tags='alert-success')
+                request, _(u'Аккаунт сохранён.'), extra_tags='alert-success')
             return HttpResponseRedirect(
                 "%s?id=%s" % (reverse("account_edit"), model.id))
         else:

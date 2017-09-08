@@ -111,7 +111,7 @@ def accounthardware_delete(request):
     else:
         return {
             'status': False,
-            'message': 'AccountHardware not found'
+            'message': _(u'AccountHardware not found')
         }
 
 
@@ -133,12 +133,12 @@ def accounthardware2(request):
         if not items:
             return {
                 'status': False,
-                'message': 'AccountHardware item with id=%s not found' % id
+                'message': _(u'AccountHardware item with id=%s not found' % id)
             }
         if len(items) > 1:
             return {
                 'status': False,
-                'message': 'Returned >1 items with id=%s' % id
+                'message': _(u'Returned >1 items with id=%s' % id)
             }
     elif account_id:
         items = AccountHardware.objects.filter(account__id=account_id)

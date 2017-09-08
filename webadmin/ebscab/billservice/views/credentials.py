@@ -23,7 +23,8 @@ def password_form(request):
 def subaccount_password_form(request, subaccount_id):
     subaccount = SubAccount.objects.get(id=subaccount_id)
     return {
-        'form': SimplePasswordForm(), "subaccount": subaccount,
+        'form': SimplePasswordForm(),
+        'subaccount': subaccount
     }
 
 

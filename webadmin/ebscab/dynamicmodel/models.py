@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.validators import RegexValidator
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 
 from .fields import JSONField
 
@@ -294,14 +295,14 @@ class DynamicSchemaFieldManager(models.Manager):
 
 class DynamicSchemaField(models.Model):
     FIELD_TYPES = [
-        ('IntegerField', u'Целое число'),
-        ('FloatField', u'Дробное число'),
-        ('DecimalField', u'Дробное число с повышенной точностью'),
-        ('CharField', u'Строка текста'),
-        ('TextField', u'Многострочный текст'),
-        ('DateField', u'Дата'),
-        ('DateTimeField', u'Дата и время'),
-        ('EmailField', 'Email'),
+        ('IntegerField', _(u'Целое число')),
+        ('FloatField', _(u'Дробное число')),
+        ('DecimalField', _(u'Дробное число с повышенной точностью')),
+        ('CharField', _(u'Строка текста')),
+        ('TextField', _(u'Многострочный текст')),
+        ('DateField', _(u'Дата')),
+        ('DateTimeField', _(u'Дата и время')),
+        ('EmailField', _(u'Email')),
     ]
 
     class Meta:
@@ -312,13 +313,13 @@ class DynamicSchemaField(models.Model):
 
     schema = models.ForeignKey(
         DynamicSchema,
-        verbose_name=u'Класс объекта',
+        verbose_name=_(u'Класс объекта'),
         related_name='fields',
         on_delete=models.CASCADE
     )
     name = models.CharField(
         max_length=100,
-        verbose_name=u'Имя поля',
+        verbose_name=_(u'Имя поля'),
         validators=[
             RegexValidator(r'^[\w]+$',
                            message=("Имя может содержать только латинские "
@@ -326,15 +327,16 @@ class DynamicSchemaField(models.Model):
         ]
     )
     verbose_name = models.CharField(
-        max_length=100, verbose_name=u'Заголовок поля', null=True, blank=True)
+        max_length=100, verbose_name=_(u'Заголовок поля'), null=True, blank=True)
     field_type = models.CharField(
         max_length=100,
-        verbose_name=u'Тип значения',
-        help_text=(u'Не меняйте тип значения. Это может привести к '
-                   u'ошибкам в работе системы.'),
+        verbose_name=_(u'Тип значения'),
+        help_text=_(u'Не меняйте тип значения. Это может привести к '
+                    u'ошибкам в работе системы.'),
         choices=FIELD_TYPES
     )
-    required = models.BooleanField(verbose_name=u'Обязательное', default=True)
+    required = models.BooleanField(
+        verbose_name=_(u'Обязательное'), default=True)
 
     def save(self, *args, **kwargs):
         self.clean()

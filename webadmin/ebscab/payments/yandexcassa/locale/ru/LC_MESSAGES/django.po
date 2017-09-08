@@ -1,0 +1,89 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-09-07 01:39+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n"
+"%100>=11 && n%100<=14)? 2 : 3);\n"
+
+#: payments/yandexcassa/__init__.py:30
+msgid "YandexCassa"
+msgstr ""
+
+#: payments/yandexcassa/__init__.py:112 payments/yandexcassa/__init__.py:167
+msgid "Ошибка разбора параметров"
+msgstr ""
+
+#: payments/yandexcassa/__init__.py:122 payments/yandexcassa/__init__.py:177
+msgid "Ошибка авторизации"
+msgstr ""
+
+#: payments/yandexcassa/__init__.py:135 payments/yandexcassa/__init__.py:190
+msgid "Абонент с указанным username не найден"
+msgstr ""
+
+#: payments/yandexcassa/__init__.py:147 payments/yandexcassa/__init__.py:202
+msgid "Указанный платёж не найден"
+msgstr ""
+
+#: payments/yandexcassa/forms.py:17 payments/yandexcassa/forms.py:87
+msgid "Способ оплаты"
+msgstr ""
+
+#: payments/yandexcassa/forms.py:23 payments/yandexcassa/forms.py:120
+msgid "Сумма"
+msgstr ""
+
+#: payments/yandexcassa/forms.py:25 payments/yandexcassa/forms.py:122
+msgid "Email"
+msgstr ""
+
+#: payments/yandexcassa/forms.py:27 payments/yandexcassa/forms.py:124
+msgid "Телефон"
+msgstr ""
+
+#: payments/yandexcassa/forms.py:69
+msgid "scid не совпадает с YANDEX_MONEY_SCID"
+msgstr ""
+
+#: payments/yandexcassa/forms.py:70
+msgid "scid не совпадает с YANDEX_MONEY_SHOP_ID"
+msgstr ""
+
+#: payments/yandexcassa/forms.py:78
+msgid "Проверка заказа"
+msgstr ""
+
+#: payments/yandexcassa/forms.py:79
+msgid "Уведомления о переводе"
+msgstr ""
+
+#: payments/yandexcassa/models.py:20
+msgid "Яндекс.Деньги"
+msgstr ""
+
+#: payments/yandexcassa/models.py:21
+msgid "Банковская карта"
+msgstr ""
+
+#: payments/yandexcassa/models.py:22
+msgid "По коду через терминал"
+msgstr ""
+
+#: payments/yandexcassa/models.py:23
+msgid "со счета мобильного телефона"
+msgstr ""

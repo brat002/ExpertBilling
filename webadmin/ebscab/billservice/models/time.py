@@ -11,10 +11,13 @@ class TimeAccessService(models.Model):
     """
     prepaid_time = models.IntegerField(
         verbose_name=_(u'Предоплаченное время'), default=0, blank=True)
-    reset_time = models.BooleanField(verbose_name=_(
-        u'Сбрасывать  предоплаченное время'), blank=True, default=False)
-    tarification_step = models.IntegerField(verbose_name=_(
-        u"Тарифицировать по, c."), blank=True, default=60)
+    reset_time = models.BooleanField(
+        verbose_name=_(u'Сбрасывать  предоплаченное время'),
+        blank=True,
+        default=False
+    )
+    tarification_step = models.IntegerField(
+        verbose_name=_(u"Тарифицировать по, c."), blank=True, default=60)
     rounding = models.IntegerField(
         verbose_name=_(u"Округлять"),
         default=0,
@@ -157,7 +160,7 @@ class TimeTransaction(models.Model):
         'billservice.Account', on_delete=models.CASCADE)
     summ = models.FloatField()
     prev_balance = models.DecimalField(
-        verbose_name=(u'Предыдущий баланс'),
+        verbose_name=_(u'Предыдущий баланс'),
         decimal_places=5,
         max_digits=20,
         blank=True,

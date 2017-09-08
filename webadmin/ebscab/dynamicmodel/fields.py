@@ -63,7 +63,7 @@ class JSONFormField(Field):
             try:
                 json.loads(value)
             except ValueError:
-                raise FormValidationError(_("Enter valid JSON"))
+                raise FormValidationError(_(u'Enter valid JSON'))
         return value
 
 
@@ -109,7 +109,7 @@ class JSONFieldBase(object):
 
         field = super(JSONFieldBase, self).formfield(**kwargs)
         if not field.help_text:
-            field.help_text = "Enter valid JSON"
+            field.help_text = _(u'Enter valid JSON')
 
         return field
 
