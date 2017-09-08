@@ -4,6 +4,9 @@ from django import forms
 from django.core.exceptions import FieldError
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
+from django.utils.html import escape
+
+from billservice.inputs import HiddenPasswordInput, PasswordTextInput
 
 
 class SplitDateTimeWidget(forms.widgets.MultiWidget):
@@ -60,3 +63,52 @@ class CheckboxSelectMultipleWithSelectAll(forms.CheckboxSelectMultiple):
             self._all_selected = False
 
         return original
+
+
+class CustomPasswordWidget(forms.widgets.MultiWidget):
+
+    def __init__(self, attrs=None, ):
+        widgets = (PasswordTextInput(attrs=attrs),
+                   HiddenPasswordInput(attrs=attrs))
+        super(CustomPasswordWidget, self).__init__(widgets, attrs)
+
+    def value_from_datadict(self, data, files, name):
+        values = [widget.value_from_datadict(data, files, name + '_%s' % i)
+                  for i, widget in enumerate(self.widgets)]
+        value = values[0] or values[1]
+        return value
+
+    def decompress(self, value):
+        if value:
+            return [None, value]
+        return [None, None]
+
+    def format_output(self, rendered_widgets):
+        rendered_widgets.insert(-1, '')
+        return u''.join(rendered_widgets)
+
+
+class ModelLinkWidget(forms.widgets.HiddenInput):
+
+    def render(self, name, value, attrs=None):
+        return super(ModelLinkWidget, self).render(name, value, attrs) + \
+            mark_safe('''
+<a id="objectselect1" href="#" class='dialog11'>%s</a>
+<div id="dialog11" title="Basic dialog" class='hidden'>
+    <p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the 'x' icon.</p>
+</div>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#objectselect1").click(function() {
+            $( "#dialog11" ).dialog({
+                modal: false,
+                position: {
+                    my: "center",
+                    at: "center",
+                    of: window
+                }
+            });
+        });
+    });
+</script>
+''' % ( escape(unicode(value))))

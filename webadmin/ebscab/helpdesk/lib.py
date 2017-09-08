@@ -19,10 +19,10 @@ except ImportError:
     from base64 import decodestring as b64decode
 
 from django.conf import settings
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib.sites.models import Site
 from django.core.mail import EmailMultiAlternatives
 from django.template import engines
-from django.contrib.sites.models import Site
-
 
 try:
     from helpdesk.akismet import Akismet
@@ -385,3 +385,23 @@ def text_is_spam(text, request):
         return ak.comment_check(text, data=ak_data)
 
     return False
+
+
+def attachment_path(instance, filename):
+    """
+    Provide a file path that will help prevent files being overwritten, by
+    putting attachments in a folder off attachments for ticket/followup_id/.
+    """
+    os.umask(0)
+    path = 'uploads/helpdesk/attachments/%s/%s' % (
+        instance.followup.ticket.ticket_for_url, instance.followup.id)
+    att_path = os.path.join(settings.MEDIA_ROOT, path)
+    if not os.path.exists(att_path):
+        os.makedirs(att_path, 0777)
+    return os.path.join(path, filename)
+
+
+staff_member_required = user_passes_test(
+    lambda u: u.is_authenticated() and u.is_active and u.is_staff)
+superuser_required = user_passes_test(
+    lambda u: u.is_authenticated() and u.is_active and u.is_superuser)
