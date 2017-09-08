@@ -2,7 +2,7 @@
 
 from django.conf.urls import url
 
-from views import PayView, SuccessView, FailureView
+from payments.robokassa.views import PayView, SuccessView, FailureView
 
 
 urlpatterns = [

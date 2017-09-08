@@ -5,7 +5,7 @@ import logging
 from django.http import HttpResponse
 from django.views.generic.base import TemplateView, View
 
-from . import PaymentProcessor
+from payments.robokassa.backend import PaymentProcessor
 
 
 logger = logging.getLogger('payments.robokassa')
@@ -25,7 +25,7 @@ class PayView(View):
 
 
 class SuccessView(TemplateView):
-    template_name = "accounts/payment_success.html"
+    template_name = 'accounts/payment_success.html'
 
     def get_context_data(self, **kwargs):
         return {}
@@ -38,7 +38,7 @@ class SuccessView(TemplateView):
 
 
 class FailureView(TemplateView):
-    template_name = "accounts/payment_failure.html"
+    template_name = 'accounts/payment_failure.html'
 
     def get(self, request, **kwargs):
         return self.render_to_response({})

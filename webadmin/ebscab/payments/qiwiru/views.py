@@ -6,7 +6,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.views.generic.base import View
 
-from payments.qiwiru import PaymentProcessor
+from payments.qiwiru.backend import PaymentProcessor
 
 
 logger = logging.getLogger('payments.qiwiru')
@@ -25,11 +25,10 @@ class PayView(View):
 
             status = PaymentProcessor.postback(request)
         except KeyError, e:
-            print e
             logger.warning('Got malformed GET request: %s' % str(e))
             return HttpResponse('MALFORMED')
 
-        return HttpResponse(status, content_type="text/xml")
+        return HttpResponse(status, content_type='text/xml')
 
     def get(self, request, *args, **kwargs):
         status = PaymentProcessor.error(0, 300)
@@ -48,7 +47,6 @@ class PayView(View):
                 status = PaymentProcessor.error(0, 300)
 
         except KeyError, e:
-            print e
             logger.warning('Got malformed GET request: %s' % str(request.POST))
             return HttpResponse(status)
 

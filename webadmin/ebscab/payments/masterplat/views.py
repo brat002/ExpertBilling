@@ -5,7 +5,7 @@ import logging
 from django.http import HttpResponse
 from django.views.generic.base import View
 
-from payments.masterplat import PaymentProcessor
+from payments.masterplat.backend import PaymentProcessor
 
 
 logger = logging.getLogger('payments.easypay')

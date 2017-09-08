@@ -2,6 +2,7 @@
 
 import sys
 from datetime import datetime
+from importlib import import_module
 
 from django.apps import apps
 from django.core.urlresolvers import reverse
@@ -81,6 +82,7 @@ class PaymentFactory(models.Model, AbstractMixin):
         """Builds Payment object based on given Order instance
         """
 
+        # HACK: define in register_to_payment()
         payment = Payment()
         payment.account = account
         payment.order = order
@@ -93,6 +95,7 @@ class PaymentFactory(models.Model, AbstractMixin):
 
         signals.new_payment_query.send(
             sender=None, order=order, payment=payment)
+
         if payment.currency is None or payment.amount is None:
             raise NotImplementedError(
                 'Please provide a listener for '
@@ -102,9 +105,9 @@ class PaymentFactory(models.Model, AbstractMixin):
         return payment
 
     def get_processor(self):
+        backend_module_name = '{}.backend'.format(self.backend)
         try:
-            __import__(self.backend)
-            module = sys.modules[self.backend]
+            module = import_module(backend_module_name)
             return module.PaymentProcessor
         except (ImportError, AttributeError):
             raise ValueError(
