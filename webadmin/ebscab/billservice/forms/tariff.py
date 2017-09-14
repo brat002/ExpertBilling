@@ -42,21 +42,18 @@ class ChangeTariffForm(forms.Form):
                        ballance_min__lte=user.ballance,
                        from_tariff=account_tariff.tarif
                    )]
-        self.base_fields.insert(
-            5,
-            'tariff_id',
-            forms.ChoiceField(
-                choices=[('', '----')] + [(x.id, x.to_tariff.name)
-                                          for x in TPChangeRule.objects.filter(
+        self.base_fields['tariff_id'] = forms.ChoiceField(
+            choices=[('', '----')] + [
+                (x.id, x.to_tariff.name) for x in TPChangeRule.objects.filter(
                     ballance_min__lte=user.ballance,
                     from_tariff=account_tariff.tarif
-                )],
-                label=_(u"Выберите тарифный план"),
-                widget=forms.Select(attrs={
-                    'size': 1,
-                    'onchange': 'set_cost()'}
                 )
-            )
+            ],
+            label=_(u"Выберите тарифный план"),
+            widget=forms.Select(attrs={
+                'size': 1,
+                'onchange': 'set_cost()'
+            })
         )
 
         if kwargs.has_key('with_date') and kwargs['with_date'] == True:
