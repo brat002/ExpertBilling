@@ -5,7 +5,9 @@ from datetime import datetime
 from decimal import Decimal
 
 import ipaddr
-from django.http import HttpResponse
+from django.http import JsonResponse as DjangoJsonResponse
+from django.utils.encoding import force_text
+from django.utils.functional import Promise
 
 
 class MyJSONEncoder(json.JSONEncoder):
@@ -30,15 +32,20 @@ class MyJSONEncoder(json.JSONEncoder):
             if type(obj) == ipaddr.IPv4Network or \
                     type(obj) == ipaddr.IPAddress:
                 return str(obj)
+            elif isinstance(obj, Promise):
+                return force_text(obj)
             return json.JSONEncoder.default(self, obj)
 
 
-class JsonResponse(HttpResponse):
+class JsonResponse(DjangoJsonResponse):
     """
     HttpResponse descendant, which return response with ``application/json`` mimetype.
     """
 
     def __init__(self, data):
         super(JsonResponse, self).__init__(
-            content=json.dumps(data, ensure_ascii=False, cls=MyJSONEncoder),
-            content_type='application/json')
+            data,
+            encoder=MyJSONEncoder,
+            json_dumps_params={
+                'ensure_ascii': False
+            })
