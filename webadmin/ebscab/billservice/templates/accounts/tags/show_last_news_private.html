@@ -2,7 +2,7 @@
 	<div class="last-news">
 		{% for article in news %}
 			<div id="news{{article.id}}">
-				<a class="news-delete f-right" href="javascript:return 0;" onclick="delete_news({{article.id}})"></a>
+				<a class="news-delete f-right"  onclick="delete_news({{article.id}})"></a>
 				<div class="f-left margin-right">
 		            <p class="date">{{ article.news.created|date:"d.m.Y  H:i" }}</p>
 					<p class="body">{{ article.news.body|safe  }}</p>
