@@ -5,10 +5,11 @@
 {% load ebsadmin_tags %}
 {% load custom_filters %}
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block extra_head %}
   <script src="/media/inputmask/jquery.inputmask.js" type="text/javascript"></script>
-  <script src="{{STATIC_URL}}js/accounts_edit.js" type="text/javascript"></script>
+  <script src="{% static "js/accounts_edit.js" %}" type="text/javascript"></script>
   {% include "ebsadmin/include_js/account_edit.html" %}
 {% endblock %}
 
@@ -21,7 +22,7 @@
       <li>
         <a href='{% url 'account_list' %}?data=data'>
           {% blocktrans %}Все аккаунты{% endblocktrans %}
-        </a> / <a href="{% url 'account_edit' %}?id={{account.id}}">{{account.username}}</a> 
+        </a> / <a href="{% url 'account_edit' %}?id={{account.id}}">{{account.username}}</a>
       </li>
     </ul>
     <div>
@@ -87,9 +88,9 @@
                 </a>
                 <ul class="dropdown-menu">
                   <li>
-                    <a href="{% url 'sendsms' %}?accounts={{account.id}}" 
-                        class="general-modal-dialog" 
-                        data-dlgbodyid="server-notice" 
+                    <a href="{% url 'sendsms' %}?accounts={{account.id}}"
+                        class="general-modal-dialog"
+                        data-dlgbodyid="server-notice"
                         data-dlgtitle="{% trans 'Отправить SMS' %}">
                       {% blocktrans %}Отправить SMS{% endblocktrans %}
                     </a>
@@ -150,9 +151,9 @@
                   <div class="controls ">
                     <div class="input-append">
                       {{ form.contract }}
-                      <a href="{% url 'templateselect' %}?account_id={{account.id}}&type=1&type=2" 
-                        class="btn btn-info btn-mini add-on general-modal-dialog" 
-                        data-dlgbodyid="templateselect-modal" 
+                      <a href="{% url 'templateselect' %}?account_id={{account.id}}&type=1&type=2"
+                        class="btn btn-info btn-mini add-on general-modal-dialog"
+                        data-dlgbodyid="templateselect-modal"
                         data-dlgtitle="{% trans 'Выберите шаблон документа' %}">
                       <i class="icon-print icon-white"></i>
                     </a>
@@ -976,9 +977,9 @@
               <legend>{% blocktrans %}Подключаемые услуги{% endblocktrans %}</legend>
 
               {% if accountaddonservice_table %}{% render_table accountaddonservice_table %}{% endif %}
-              <a href="{% url 'accountaddonservice' %}?account_id={{account.id}}" 
-                  class="btn btn-success align-right general-modal-dialog" 
-                  data-dlgbodyid="accountaddonservicer-modal" 
+              <a href="{% url 'accountaddonservice' %}?account_id={{account.id}}"
+                  class="btn btn-success align-right general-modal-dialog"
+                  data-dlgbodyid="accountaddonservicer-modal"
                   data-dlgtitle="{% trans 'Прикрепить подключаемую услугу' %}">
                 Добавить
               </a>
@@ -1062,7 +1063,7 @@
                 <span class="help-inline">{% for error in org_form.unp.errors %}{{ error }}<br/> {% endfor %}</span>
                 {% endif %}
                 {% if org_form.unp.help_text%}
-                <p class="help-block">                            
+                <p class="help-block">
                   {{ org_form.unp.help_text|safe }}
                 </p>
                 {% endif %}
@@ -1204,8 +1205,8 @@
             {% if accounthardware_table %}{% render_table accounthardware_table %}{% endif %}
 
             <a href="{% url 'accounthardware' %}?account_id={{account.id}}"
-                class="btn btn-success align-right general-modal-dialog" 
-                data-dlgbodyid="accounthardware-modal" 
+                class="btn btn-success align-right general-modal-dialog"
+                data-dlgbodyid="accounthardware-modal"
                 data-dlgtitle="{% trans 'Прикрепить оборудование' %}">
               {% blocktrans %}Добавить{% endblocktrans %}
             </a>
@@ -1215,8 +1216,8 @@
             <legend>{% blocktrans %}Периоды без списаний{% endblocktrans %}</legend>
             {% if suspendedperiod_table %}{% render_table suspendedperiod_table  %}{% endif %}
             <a href="{% url 'suspendedperiod' %}?account_id={{account.id}}"
-                class="btn btn-success align-right general-modal-dialog" 
-                data-dlgbodyid="server-notice" 
+                class="btn btn-success align-right general-modal-dialog"
+                data-dlgbodyid="server-notice"
                 data-dlgtitle="{% trans 'Добавить период без списаний услуг' %}">
               {% blocktrans %}Добавить{% endblocktrans %}
             </a>
@@ -1262,7 +1263,7 @@
                 </label>
               </div>
             </div>
-            
+
             <div class="control-group">
               <label class="control-label" for="input-max">{{form.promise_summ.label}}</label>
               <div class="controls">
@@ -1331,9 +1332,9 @@
           </strong>
           <li>
             <div class="btn-group">
-              <a href="/ebsadmin/accounttariff/edit/?account_id={{account.id}}" 
-                  class="btn btn-large btn-info general-modal-dialog" 
-                  data-dlgbodyid="server-notice" 
+              <a href="/ebsadmin/accounttariff/edit/?account_id={{account.id}}"
+                  class="btn btn-large btn-info general-modal-dialog"
+                  data-dlgbodyid="server-notice"
                   data-dlgtitle="{% trans 'Изменение тарифного плана' %}">
                 <i class="icon-pencil icon-white"></i>{% blocktrans %}Изменить{% endblocktrans %}
               </a>
@@ -1341,7 +1342,7 @@
           </li>
         </ul>
       </div>
-      
+
       {% if accountsupp %}
       <div class="well sidebar-nav">
         <ul class="nav nav-list">
@@ -1356,22 +1357,22 @@
         </ul>
       </div>
       {% endif %}
- 
+
       <div class="well sidebar-nav">
         <ul class="nav nav-list">
           <li class="nav-header">{% blocktrans %}Итоговый баланс{% endblocktrans %}</li>
           <li><strong><h3>{{account.ballance|floatformat:2}} {{currency}}</h3></strong></li>
           <li>
             <strong>
-              {% blocktrans %}Обещанные платежи:{% endblocktrans %} 
+              {% blocktrans %}Обещанные платежи:{% endblocktrans %}
               <a href="{% url 'transactionreport2' %}?account={{account.id}}&tree=PROMISE_PAYMENT">{{account.get_last_promises_count}}</a>
             </strong>
           </li>
-          <li>                                    
+          <li>
             <div class="btn-group">
-              <a href="{% url 'transaction_edit' %}?account_id={{account.id}}" 
-                  class="btn btn-success general-modal-dialog" 
-                  data-dlgbodyid="server-notice" 
+              <a href="{% url 'transaction_edit' %}?account_id={{account.id}}"
+                  class="btn btn-success general-modal-dialog"
+                  data-dlgbodyid="server-notice"
                   data-dlgtitle="{% trans 'Внести платеж' %}">
                 <i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}
               </a>
@@ -1381,12 +1382,12 @@
           <li><strong><h3>{{account.bonus_ballance|floatformat:2}} {{currency}}</h3></strong></li>
           <li>
             <div class="btn-group">
-              <a href="{% url 'bonus_transaction_edit' %}?account_id={{account.id}}" 
-                  class="btn btn-success general-modal-dialog" 
-                  data-dlgbodyid="server-notice" 
+              <a href="{% url 'bonus_transaction_edit' %}?account_id={{account.id}}"
+                  class="btn btn-success general-modal-dialog"
+                  data-dlgbodyid="server-notice"
                   data-dlgtitle="{% trans 'Внести бонусный платёж' %}">
                 <i class="icon-plus icon-white "></i>{% blocktrans %}Пополнить{% endblocktrans %}
-              </a>              
+              </a>
             </div>
           </li>
           <li class="divider"></li>
