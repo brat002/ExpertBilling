@@ -606,7 +606,7 @@ urlpatterns += [
         name='tariff_timespeed_delete'),
     url(r'^tariff/periodicalservice/$',
         views.periodicalservice,
-        name='periodicalservice'),
+        name='tariff_periodicalservice'),
     url(r'^tariff/periodicalservice/delete/$',
         views.periodicalservice_delete,
         name='periodicalservice_delete'),
