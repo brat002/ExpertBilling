@@ -979,7 +979,7 @@ class Migration(migrations.Migration):
                 ('speed_units', models.CharField(blank=True, choices=[(b'Kbps', b'Kbps'), (b'Mbps', b'Mbps'), (b'%', b'%')], max_length=32, null=True, verbose_name='\u0415\u0434\u0438\u043d\u0438\u0446\u044b')),
                 ('max_tx', models.IntegerField(blank=True, default=0, verbose_name='MAX tx (kbps)')),
                 ('max_rx', models.IntegerField(blank=True, default=0, verbose_name='rx')),
-                ('t_tx', models.IntegerField(blank=True, default=0, verbose_name='Burst tx (kbps)')),
+                ('burst_tx', models.IntegerField(blank=True, default=0, verbose_name='Burst tx (kbps)')),
                 ('burst_rx', models.IntegerField(blank=True, default=0, verbose_name='rx')),
                 ('burst_treshold_tx', models.IntegerField(blank=True, default=0, verbose_name='Burst treshold tx (kbps)')),
                 ('burst_treshold_rx', models.IntegerField(blank=True, default=0, verbose_name='rx')),
