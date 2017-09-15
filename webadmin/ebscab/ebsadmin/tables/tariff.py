@@ -131,12 +131,7 @@ class NotificationsSettingsTable(TableReport):
         'notificationssettings_edit', get_params={'id': A('pk')})
     name = LinkColumn(
         'notificationssettings_edit', get_params={'id': A('pk')})
-    d = TemplateColumn(
-        "<a href='{{record.get_remove_url}}' "
-        "class='show-confirm'><i class='icon-remove'></i></a>",
-        verbose_name=' ',
-        orderable=False
-    )
+    d = showconfirmcolumn()
 
     def __init__(self, *args, **argv):
         super(NotificationsSettingsTable, self).__init__(*args, **argv)
