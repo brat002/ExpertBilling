@@ -23,6 +23,11 @@ class TimeSpeedForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(TimeSpeedForm, self).__init__(*args, **kwargs)
         self.fields['access_parameters'].widget = forms.widgets.HiddenInput()
+        for field in ('max_tx', 'max_rx', 'burst_tx', 'burst_rx',
+                      'burst_treshold_tx', 'burst_treshold_rx',
+                      'burst_time_tx', 'burst_time_rx', 'min_tx',
+                      'min_rx', 'priority'):
+            self.fields[field].required = True
 
     class Meta:
         model = TimeSpeed

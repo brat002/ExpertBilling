@@ -26,6 +26,12 @@ class AddonServiceForm(forms.ModelForm):
         self.fields['comment'].widget.attrs['class'] = 'input-xlarge span6'
         self.fields['comment'].widget.attrs['rows'] = 3
 
+        for field in ('max_tx', 'max_rx', 'burst_tx', 'burst_rx',
+                      'burst_treshold_tx', 'burst_treshold_rx',
+                      'burst_time_tx', 'burst_time_rx', 'min_tx',
+                      'min_rx', 'priority'):
+            self.fields[field].required = True
+
     class Meta:
         model = AddonService
         fields = '__all__'

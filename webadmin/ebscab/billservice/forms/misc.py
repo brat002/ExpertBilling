@@ -97,6 +97,14 @@ class ActionLogFilterForm(forms.Form):
 
 class SpeedLimitForm(forms.ModelForm):
 
+    def __init__(self, *args, **kwargs):
+        super(SpeedLimitForm, self).__init__(*args, **kwargs)
+        for field in ('max_tx', 'max_rx', 'burst_tx', 'burst_rx',
+                      'burst_treshold_tx', 'burst_treshold_rx',
+                      'burst_time_tx', 'burst_time_rx', 'min_tx',
+                      'min_rx', 'priority'):
+            self.fields[field].required = True
+
     class Meta:
         model = SpeedLimit
         fields = '__all__'
