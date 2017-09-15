@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import json
 from datetime import datetime
 from decimal import Decimal
 
 import ipaddr
+from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse as DjangoJsonResponse
-from django.utils.encoding import force_text
-from django.utils.functional import Promise
 
 
-class MyJSONEncoder(json.JSONEncoder):
+class MyJSONEncoder(DjangoJSONEncoder):
     """JSON encoder which understands decimals."""
 
     def default(self, obj):
@@ -32,9 +30,7 @@ class MyJSONEncoder(json.JSONEncoder):
             if type(obj) == ipaddr.IPv4Network or \
                     type(obj) == ipaddr.IPAddress:
                 return str(obj)
-            elif isinstance(obj, Promise):
-                return force_text(obj)
-            return json.JSONEncoder.default(self, obj)
+            return super(MyJSONEncoder, self).default(obj)
 
 
 class JsonResponse(DjangoJsonResponse):
