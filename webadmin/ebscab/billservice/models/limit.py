@@ -32,8 +32,7 @@ class SpeedLimit(models.Model):
         verbose_name=_(u"MAX tx (kbps)"), default=0, blank=True)
     max_rx = models.IntegerField(
         verbose_name=_(u"rx"), default=0, blank=True)
-    # FIXME: change field name to 'burst_tx'
-    t_tx = models.IntegerField(
+    burst_tx = models.IntegerField(
         verbose_name=_(u"Burst tx (kbps)"), default=0, blank=True)
     burst_rx = models.IntegerField(
         verbose_name=_(u"rx"), blank=True, default=0)
