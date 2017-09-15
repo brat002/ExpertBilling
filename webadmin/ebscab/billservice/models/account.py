@@ -786,6 +786,40 @@ class SubAccount(models.Model):
         default=0
     )
 
+    speed_units = models.CharField(
+        verbose_name=_(u'Единицы измерения скорости'),
+        max_length=32,
+        choices=(
+            ('Kbps', 'Kbps'),
+            ('Mbps', 'Mbps'),
+            ('%', '%')
+        ),
+        blank=True,
+        null=True
+    )
+    priority = models.IntegerField(
+        verbose_name=_(u'Приоритет'), blank=True, default=8)
+    max_tx_int = models.IntegerField(
+        verbose_name=_(u'Max Tx'), blank=True, default=0)
+    max_rx_int = models.IntegerField(
+        verbose_name=_(u'Max Rx'), blank=True, default=0)
+    burst_tx_int = models.IntegerField(
+        verbose_name=_(u'Burst Tx'), blank=True, default=0)
+    burst_rx_int = models.IntegerField(
+        verbose_name=_(u'Burst Rx'), blank=True, default=0)
+    burst_treshold_tx_int = models.IntegerField(
+        verbose_name=_(u'Burst treshold Tx'), blank=True, default=0)
+    burst_treshold_rx_int = models.IntegerField(
+        verbose_name=_(u'Burst treshold Rx'), blank=True, default=0)
+    burst_time_tx_int = models.IntegerField(
+        verbose_name=_(u'Burst time Tx (s)'), blank=True, default=0)
+    burst_time_rx_int = models.IntegerField(
+        verbose_name=_(u'Burst time Rx (s)'), blank=True, default=0)
+    min_tx_int = models.IntegerField(
+        verbose_name=_(u'Min Tx'), blank=True, default=0)
+    min_rx_int = models.IntegerField(
+        verbose_name=_(u'Min Rx'), blank=True, default=0)
+
     def __unicode__(self):
         return u"%s" % self.username
 

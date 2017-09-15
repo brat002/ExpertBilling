@@ -24,58 +24,41 @@ class AccessParameters(models.Model):
     ipn_for_vpn = models.BooleanField(
         verbose_name=_(u'Выполнять IPN действия'), blank=True, default=False)
 
-    max_tx = models.CharField(
-        verbose_name=_(u"MAX tx (kbps)"),
-        max_length=64,
+    speed_units = models.CharField(
+        verbose_name=_(u'Единицы измерения скорости'),
+        max_length=32,
+        choices=(
+            ('Kbps', 'Kbps'),
+            ('Mbps', 'Mbps'),
+            ('%', '%')
+        ),
         blank=True,
-        default=""
+        null=True
     )
-    max_rx = models.CharField(
-        verbose_name=_(u"rx (kbps)"), max_length=64, blank=True, default="")
-    burst_tx = models.CharField(
-        verbose_name=_(u"Burst tx (kbps)"),
-        max_length=64,
-        blank=True,
-        default=""
-    )
-    burst_rx = models.CharField(
-        verbose_name=_(u"rx (kbps)"),
-        max_length=64,
-        blank=True,
-        default=""
-    )
-    burst_treshold_tx = models.CharField(
-        verbose_name=_(u"Burst treshold tx (kbps)"),
-        max_length=64,
-        blank=True,
-        default=""
-    )
-    burst_treshold_rx = models.CharField(
-        verbose_name=_(u"rx (kbps)"), max_length=64, blank=True, default="")
-    burst_time_tx = models.CharField(
-        verbose_name=_(u"Burst time tx (s)"),
-        max_length=64,
-        blank=True,
-        default=""
-    )
-    burst_time_rx = models.CharField(
-        verbose_name=_(u"rx (s)"),
-        max_length=64,
-        blank=True,
-        default=""
-    )
-    min_tx = models.CharField(
-        verbose_name=_(u"Min tx (kbps)"),
-        max_length=64,
-        blank=True,
-        default=""
-    )
-    min_rx = models.CharField(
-        verbose_name=_(u"rx (kbps)"), max_length=64, blank=True, default="")
 
-    # от 1 до 8
+    max_tx = models.IntegerField(
+        verbose_name=_(u'Max Tx'), blank=True, default=0)
+    max_rx = models.IntegerField(
+        verbose_name=_(u'Max Rx'), blank=True, default=0)
+    burst_tx = models.IntegerField(
+        verbose_name=_(u'Burst Tx'), blank=True, default=0)
+    burst_rx = models.IntegerField(
+        verbose_name=_(u'Burst Rx'), blank=True, default=0)
+    burst_treshold_tx = models.IntegerField(
+        verbose_name=_(u'Burst treshold Tx'), blank=True, default=0)
+    burst_treshold_rx = models.IntegerField(
+        verbose_name=_(u'Burst treshold Rx'), blank=True, default=0)
+    burst_time_tx = models.IntegerField(
+        verbose_name=_(u'Burst time Tx (s)'), blank=True, default=0)
+    burst_time_rx = models.IntegerField(
+        verbose_name=_(u'Burst time Rx (s)'), blank=True, default=0)
+    min_tx = models.IntegerField(
+        verbose_name=_(u'Min Tx'), blank=True, default=0)
+    min_rx = models.IntegerField(
+        verbose_name=_(u'Min Rx'), blank=True, default=0)
     priority = models.IntegerField(
-        verbose_name=_(u"Приоритет"), blank=True, default=8)
+        verbose_name=_(u'Приоритет'), blank=True, default=8)
+
     sessionscount = models.IntegerField(
         verbose_name=_(u"Одноверменных RADIUS сессий на субаккаунт"),
         blank=True,

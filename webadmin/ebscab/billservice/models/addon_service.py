@@ -131,16 +131,17 @@ class AddonService(models.Model):
         null=True
     )
     speed_units = models.CharField(
-        verbose_name=_(u"Единицы скорости"),
+        verbose_name=_(u'Единицы измерения скорости'),
         max_length=32,
         choices=(
-            ("Kbps", "Kbps"),
-            ("Mbps", "Mbps"),
-            ("%", "%")
+            ('Kbps', 'Kbps'),
+            ('Mbps', 'Mbps'),
+            ('%', '%')
         ),
         blank=True,
         null=True
     )
+
     max_tx = models.IntegerField(blank=True, default=0)
     max_rx = models.IntegerField(blank=True, default=0)
     burst_tx = models.IntegerField(blank=True, default=0)
@@ -151,7 +152,8 @@ class AddonService(models.Model):
     burst_time_rx = models.IntegerField(blank=True, default=0)
     min_tx = models.IntegerField(blank=True, default=0)
     min_rx = models.IntegerField(blank=True, default=0)
-    priority = models.IntegerField(blank=True, default=0)
+    priority = models.IntegerField(
+        verbose_name=_(u'Приоритет'), blank=True, default=0)
 
     def __unicode__(self):
         return u"%s" % self.name

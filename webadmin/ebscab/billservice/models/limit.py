@@ -17,20 +17,22 @@ class SpeedLimit(models.Model):
         null=True
     )
     speed_units = models.CharField(
-        verbose_name=_(u"Единицы"),
+        verbose_name=_(u'Единицы измерения скорости'),
         max_length=32,
         choices=(
-            ("Kbps", "Kbps"),
-            ("Mbps", "Mbps"),
-            ("%", "%")
+            ('Kbps', 'Kbps'),
+            ('Mbps', 'Mbps'),
+            ('%', '%')
         ),
         blank=True,
         null=True
     )
+
     max_tx = models.IntegerField(
         verbose_name=_(u"MAX tx (kbps)"), default=0, blank=True)
     max_rx = models.IntegerField(
         verbose_name=_(u"rx"), default=0, blank=True)
+    # FIXME: change field name to 'burst_tx'
     t_tx = models.IntegerField(
         verbose_name=_(u"Burst tx (kbps)"), default=0, blank=True)
     burst_rx = models.IntegerField(
@@ -46,7 +48,8 @@ class SpeedLimit(models.Model):
     min_tx = models.IntegerField(
         verbose_name=_(u"Min tx (kbps)"), default=0, blank=True)
     min_rx = models.IntegerField(verbose_name=_(u"tx"), default=0, blank=True)
-    priority = models.IntegerField(default=0, blank=True)
+    priority = models.IntegerField(
+        verbose_name=_(u'Приоритет'), blank=True, default=0)
 
     def __unicode__(self):
         return "%s/%s %s/%s %s/%s %s/%s %s/%s %s" % (self.max_tx,
