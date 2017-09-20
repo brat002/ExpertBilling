@@ -99,7 +99,6 @@ def subaccountedit(request):
                            extra_tags='alert-danger')
             return HttpResponseRedirect('/ebsadmin/')
         if subaccount:
-
             form = SubAccountForm(instance=subaccount)
         else:
             form = SubAccountForm(initial={'account': account, })
