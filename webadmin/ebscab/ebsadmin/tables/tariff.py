@@ -159,6 +159,8 @@ class TimeSpeedTable(EbsadminTableReport):
         fields = (
             'id',
             'time',
+            'speed_units',
+            'priority',
             'max_tx',
             'max_rx',
             'burst_tx',
@@ -168,8 +170,7 @@ class TimeSpeedTable(EbsadminTableReport):
             'burst_time_tx',
             'burst_time_rx',
             'min_tx',
-            'min_rx',
-            'priority'
+            'min_rx'
         )
 
 

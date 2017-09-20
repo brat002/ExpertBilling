@@ -11,18 +11,50 @@
 			{{form.access_parameters}}
 			<fieldset>
 				<div class="control-group">
+					<div class="control-row">
+						<label class="control-label">{{form.time.label}}</label>
+						<div class="controls">
+							{{ form.time }}
+							{% if form.time.errors %}
+							<span class="help-inline">{% for error in form.time.errors %}{{ error }}<br/> {% endfor %}</span>
+							{% endif %}
+							{% if form.time.help_text%}
+							<p class="help-block">
+								{{ form.time.help_text|safe }}
+							</p>
+							{% endif %}
+						</div>
+					</div>
+				</div>
 
-					<label class="control-label">{{form.time.label}}</label>
-					<div class="controls">
-						{{ form.time }}
-						{% if form.time.errors %}
-						<span class="help-inline">{% for error in form.time.errors %}{{ error }}<br/> {% endfor %}</span>
-						{% endif %}
-						{% if form.time.help_text%}
-						<p class="help-block">
-							{{ form.time.help_text|safe }}
-						</p>
-						{% endif %}
+				<div class="control-group">
+					<div class="control-row">
+						<label class="control-label">{{form.speed_units.label}}</label>
+						<div class="controls">
+							{{ form.speed_units }}
+							{% if form.speed_units.errors %}
+							<span class="help-inline">{% for error in form.speed_units.errors %}{{ error }}<br/> {% endfor %}</span>
+							{% endif %}
+							{% if form.speed_units.help_text%}
+							<p class="help-block">
+								{{ form.speed_units.help_text|safe }}
+							</p>
+							{% endif %}
+						</div>
+					</div>
+					<div class="control-row">
+						<label class="control-label">{{form.priority.label}}</label>
+						<div class="controls">
+							{{ form.priority }}
+							{% if form.priority.errors %}
+							<span class="help-inline">{% for error in form.priority.errors %}{{ error }}<br/> {% endfor %}</span>
+							{% endif %}
+							{% if form.priority.help_text%}
+							<p class="help-block">
+								{{ form.priority.help_text|safe }}
+							</p>
+							{% endif %}
+						</div>
 					</div>
 				</div>
 
@@ -183,21 +215,6 @@
 							</p>
 							{% endif %}
 						</div>
-					</div>
-				</div>
-
-				<div class="control-group">
-				 <label class="control-label">{{form.priority.label}}</label>
-					<div class="controls">
-						{{ form.priority }}
-						{% if form.priority.errors %}
-						<span class="help-inline">{% for error in form.priority.errors %}{{ error }}<br/> {% endfor %}</span>
-						{% endif %}
-						{% if form.priority.help_text%}
-						<p class="help-block">
-							{{ form.priority.help_text|safe }}
-						</p>
-						{% endif %}
 					</div>
 				</div>
 			</fieldset>
