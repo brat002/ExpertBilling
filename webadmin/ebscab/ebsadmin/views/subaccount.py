@@ -101,7 +101,7 @@ def subaccountedit(request):
         if subaccount:
             form = SubAccountForm(instance=subaccount)
         else:
-            form = SubAccountForm(initial={'account': account, })
+            form = SubAccountForm(initial={'account': account})
         return {
             'subaccount': subaccount,
             'account': account,
