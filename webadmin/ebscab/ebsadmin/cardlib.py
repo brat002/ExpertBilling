@@ -266,8 +266,8 @@ def del_addonservice(account_id, account_service_id):
             ast.service = service
             ast.service_type = service.service_type
             ast.created = now
-            if account.get_accounttarif():
-                ast.accounttarif = account.get_accounttarif()
+            if account.get_accounttariff():
+                ast.accounttarif = account.get_accounttariff()
             ast.accountaddonservice = accountservice
             ast.save()
 

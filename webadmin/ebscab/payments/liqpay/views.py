@@ -5,7 +5,7 @@ import logging
 from django.http import HttpResponse
 from django.views.generic.base import View
 
-from payments.liqpay import PaymentProcessor
+from payments.liqpay.backend import PaymentProcessor
 
 
 logger = logging.getLogger('payments.liqpay')

@@ -5,7 +5,7 @@ import logging
 from django.http import HttpResponse
 from django.views.generic.base import View
 
-from payments.privat24 import PaymentProcessor
+from payments.privat24.backend import PaymentProcessor
 
 
 logger = logging.getLogger('payments.privat24')

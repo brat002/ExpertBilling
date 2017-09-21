@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from django.views.generic.base import View
 from django.conf import settings
 
-from payments.platezhkaua import PaymentProcessor
+from payments.platezhkaua.backend import PaymentProcessor
 
 
 logger = logging.getLogger('payments.platezhkaua')

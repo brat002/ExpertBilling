@@ -2,7 +2,7 @@
 
 from django.conf.urls import url
 
-from views import PayView, FailureView, CheckView
+from payments.yandexcassa.views import PayView, FailureView, CheckView
 
 
 urlpatterns = [

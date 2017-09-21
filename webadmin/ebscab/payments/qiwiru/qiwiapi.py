@@ -7,48 +7,31 @@ import urllib2
 from django.utils.translation import ugettext_lazy as _
 
 from paymentgateways.qiwi.models import Invoice
-from xml_helper import xml2obj
+from paymentgateways.qiwi.utils import xml2obj
 
 
-HOST = "http://ishop.qiwi.ru/xml"
-term_id = 0
-term_password = ''
-lifetime = 48  # В часах
+HOST = 'http://ishop.qiwi.ru/xml'
+TERM_ID = 0
+TERM_PASSWORD = ''
+LIFETIME = 48  # в часах
 ALARM_SMS = 0
 ALARM_CALL = 0
-proxy_host = ''
-proxy_port = 8080
-proxy_username = ''
-proxy_password = ''
+PROXY_HOST = ''
+PROXY_PORT = 8080
+PROXY_USERNAME = ''
+PROXY_PASSWORD = ''
 
-params = u"""\
+GET_BALANCE_TEMPLATE = u'''\
 <?xml version="1.0" encoding="utf-8"?>
 <request>
     <protocol-version>4.00</protocol-version>
-    <request-type>30</request-type>
-    <extra name="password">df[vehrf2007</extra>
-    <terminal-id>11468</terminal-id>
-    <extra name="comment"></extra>
-    <extra name="to-account">1234567890</extra>
-    <extra name="amount">100.00</extra>
-    <extra name="txn-id">123</extra>
-    <extra name="ALARM_SMS">0</extra>
-    <extra name="ACCEPT_CALL">0</extra>
-    <extra name="ltime">60</extra>
+    <request-type>3</request-type>
+    <extra name="password">%s</extra>
+    <terminal-id>%s</terminal-id>
 </request>
-"""
+'''
 
-params = {
-    'get_balance': u"""\
-<?xml version="1.0" encoding="utf-8"?>
-<request>
-<protocol-version>4.00</protocol-version>
-<request-type>3</request-type>
-<extra name="password">%s</extra>
-<terminal-id>%s</terminal-id>
-</request>
-""",
-    'create_invoice': u"""\
+CREATE_INVOICE_TEMPLATE = u'''\
 <?xml version="1.0" encoding="utf-8"?>
 <request>
     <protocol-version>4.00</protocol-version>
@@ -64,8 +47,9 @@ params = {
     <extra name="comment">%%s</extra>
     <extra name="create-agt">1</extra>
 </request>
-""" % (term_password, term_id, ALARM_SMS, ALARM_CALL,),
-    'get_invoices_status': u"""\
+''' % (TERM_PASSWORD, TERM_ID, ALARM_SMS, ALARM_CALL)
+
+GET_INVOICE_STATUS_TEMPLATE = u'''\
 <?xml version="1.0" encoding="utf-8"?>
 <request>
     <protocol-version>4.00</protocol-version>
@@ -73,11 +57,12 @@ params = {
     <extra name="password">%s</extra>
     <terminal-id>%s</terminal-id>
     <bills-list>
-    %%s
+        %%s
     </bills-list>
 </request>
-""" % (term_password, term_id),
-    'get_invoices': u"""\
+''' % (TERM_PASSWORD, TERM_ID)
+
+GET_INVOICES_TEMPLATE = u'''\
 <?xml version="1.0" encoding="utf-8"?>
 <request>
     <protocol-version>4.00</protocol-version>
@@ -88,8 +73,9 @@ params = {
     <extra name="from">%s 00:00:00</extra>
     <extra name="to">%s 23:59:59</extra>
 </request>
-""",
-    'accept_payment': u"""\
+'''
+
+ACCEPT_PAYMENT_TEMPLATE = u'''\
 <?xml version="1.0" encoding="utf-8"?>
 <request>
     <protocol-version>4.00</protocol-version>
@@ -100,10 +86,9 @@ params = {
     <extra name="bill-id">%s</extra>
     <extra name="trm-txn-id"></extra>
 </request>
-"""
-}
+'''
 
-result_codes = {
+RESULT_CODES = {
     '-1': _(u'Произошла ошибка. Проверьте номер телефона и пароль'),
     '-2': _(u'Произошла ошибка. Счёт не может быть подтверждён. Возможно '
             u'у вас недостаточно средств или включено подтверждение действий '
@@ -126,7 +111,7 @@ result_codes = {
     '1000': _(u'Ошибка выполнения запроса.')
 }
 
-payment_codes = {
+PAYMENT_CODES = {
     '18': _(u'Undefined'),
     '50': _(u'Выставлен'),
     '52': _(u'Проводится'),
@@ -141,18 +126,18 @@ payment_codes = {
 
 
 def make_request(xml):
-    if proxy_host:
-        if proxy_username:
+    if PROXY_HOST:
+        if PROXY_USERNAME:
             proxy = urllib2.ProxyHandler({
-                'http': 'http://%s:%s@%s:%s' % (proxy_username,
-                                                proxy_password,
-                                                proxy_host,
-                                                proxy_port)
+                'http': 'http://%s:%s@%s:%s' % (PROXY_USERNAME,
+                                                PROXY_PASSWORD,
+                                                PROXY_HOST,
+                                                PROXY_PORT)
             })
         else:
             proxy = urllib2.ProxyHandler({
-                'http': 'http://%s:%s' % (proxy_host,
-                                          proxy_port)
+                'http': 'http://%s:%s' % (PROXY_HOST,
+                                          PROXY_PORT)
             })
         auth = urllib2.HTTPBasicAuthHandler()
         opener = urllib2.build_opener(proxy, auth, urllib2.HTTPHandler)
@@ -163,26 +148,26 @@ def make_request(xml):
         return response.read()
     except Exception, e:
         print e
-    return """<response><result-code fatal="true">1000</result-code>"""
+    return '<response><result-code fatal="true">1000</result-code>'
 
 
 def status_code(obj):
     if obj.result_code.data == '0':
-        return int(obj.result_code.data), result_codes[obj.result_code.data]
-    return int(obj.result_code.data), result_codes[obj.result_code.data]
+        return int(obj.result_code.data), RESULT_CODES[obj.result_code.data]
+    return int(obj.result_code.data), RESULT_CODES[obj.result_code.data]
 
 
 def payment_code(obj):
     if obj.status == '50':
-        return int(obj.status), payment_codes[obj.status]
-    return int(obj.status), payment_codes[obj.status]
+        return int(obj.status), PAYMENT_CODES[obj.status]
+    return int(obj.status), PAYMENT_CODES[obj.status]
 
 
 def get_balance(phone=None, password=None):
     if not (phone and password):
-        xml = make_request(params['get_balance'] % (term_password, term_id))
+        xml = make_request(GET_BALANCE_TEMPLATE % (TERM_PASSWORD, TERM_ID))
     if phone and password:
-        xml = make_request(params['get_balance'] % (password, phone))
+        xml = make_request(GET_BALANCE_TEMPLATE % (password, phone))
     if not xml:
         return None
     o = xml2obj(xml)
@@ -194,8 +179,9 @@ def get_balance(phone=None, password=None):
         return 0, status[1]
 
 
-def create_invoice(phone_number, transaction_id, summ=0, comment='', lifetime=48):
-    xml = make_request(params['create_invoice'] % (
+def create_invoice(phone_number, transaction_id, summ=0, comment='',
+                   lifetime=LIFETIME):
+    xml = make_request(CREATE_INVOICE_TEMPLATE % (
         phone_number, summ, transaction_id, lifetime, comment))
     if not xml:
         return None
@@ -205,9 +191,9 @@ def create_invoice(phone_number, transaction_id, summ=0, comment='', lifetime=48
 
 
 def get_invoice_id(phone, password, transaction_id, date):
-    date_start = (date - datetime.timedelta(hours=24)).strftime("%d.%m.%Y")
-    date_end = (date + datetime.timedelta(hours=24)).strftime("%d.%m.%Y")
-    xml = make_request(params['get_invoices'] % (
+    date_start = (date - datetime.timedelta(hours=24)).strftime('%d.%m.%Y')
+    date_end = (date + datetime.timedelta(hours=24)).strftime('%d.%m.%Y')
+    xml = make_request(GET_INVOICES_TEMPLATE % (
         phone, password, date_start, date_end))
     if not xml:
         return None
@@ -216,8 +202,8 @@ def get_invoice_id(phone, password, transaction_id, date):
     if not o.account_list:
         return -1
     for a in o.account_list.account:
-        if a['from'].prv == '%s' % term_id and \
-                a.term_ransaction == "%s" % transaction_id:
+        if a['from'].prv == '%s' % TERM_ID and \
+                a.term_ransaction == '%s' % transaction_id:
             return a.id
     return -1
 
@@ -228,13 +214,13 @@ def accept_invoice_id(phone, password, transaction_id, date):
                             transaction_id=transaction_id,
                             date=datetime.datetime.now())
     if txn_id != -1:
-        xml = make_request(params['accept_payment'] % (
+        xml = make_request(ACCEPT_PAYMENT_TEMPLATE % (
             phone, password, txn_id))
         if not xml:
             return None
         o = xml2obj(xml)
         return status_code(o)
-    return -1, result_codes['-1']
+    return -1, RESULT_CODES['-1']
 
 
 def process_invoices():
@@ -244,7 +230,7 @@ def process_invoices():
     for x in a:
         p += pattern % x.id
 
-    xml = make_request(params['get_invoices_status'] % p)
+    xml = make_request(GET_INVOICE_STATUS_TEMPLATE % p)
     o = xml2obj(xml)
     if status_code(o)[0] != 0:
         return
@@ -252,7 +238,7 @@ def process_invoices():
         if not o.bills_list:
             continue
         for item in o.bills_list.bill:
-            p_code, p_status = payment_code(item)
+            p_code, _ = payment_code(item)
             if p_code == 60 and int(item.id) == x.id:
                 x.accepted = True
                 x.date_accepted = datetime.datetime.now()

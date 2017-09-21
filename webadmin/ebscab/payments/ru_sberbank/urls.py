@@ -2,7 +2,7 @@
 
 from django.conf.urls import url
 
-from views import PayView
+from payments.ru_sberbank.views import PayView
 
 
 urlpatterns = [

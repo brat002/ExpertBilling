@@ -4,7 +4,7 @@ import datetime
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 
 from ebsadmin.cardlib import add_addonservice, del_addonservice
 from ebscab.utils.decorators import render_to

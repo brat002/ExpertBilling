@@ -7,7 +7,7 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.views.generic.base import View
 
-from payments.easypay import PaymentProcessor
+from payments.easypay.backend import PaymentProcessor
 
 
 logger = logging.getLogger('payments.easypay')

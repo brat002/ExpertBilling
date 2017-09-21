@@ -6,7 +6,7 @@ from BeautifulSoup import BeautifulSoup
 from django.http import HttpResponse
 from django.views.generic.base import View
 
-from payments.ru_sberbank import PaymentProcessor
+from payments.ru_sberbank.backend import PaymentProcessor
 
 
 logger = logging.getLogger('payments.ru_sberbank')
@@ -22,7 +22,6 @@ class PayView(View):
                 return HttpResponse(PaymentProcessor.error(body, 13))
 
             status = 'FAIL'
-            act = body.request.params.act.text
 
             if body.request.params.act.text == '1':
                 status = PaymentProcessor.check(request, body)

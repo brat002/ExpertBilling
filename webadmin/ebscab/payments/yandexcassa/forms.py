@@ -4,7 +4,7 @@ from django import forms
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
-from .models import PAYMENT_TYPE
+from payments.yandexcassa.models import PAYMENT_TYPE
 
 
 def get_backend_param(param, default=None):
@@ -37,28 +37,28 @@ class PaymentFillForm(forms.Form):
 
 class BasePaymentForm(forms.Form):
     """
-        shopArticleId               <no use>
-        scid                        scid
-        sum                         amount
-        customerNumber              user
-        orderNumber                 id
-        shopSuccessURL                success_url
-        shopFailURL                    fail_url
-        cps_provider                payment_type
-        cps_email                   cps_email
-        cps_phone                   cps_phone
-        paymentType                    payment_type
-        shopId                      shop_id
-        invoiceId                   invoice_id
-        orderCreatedDatetime        <no use>
-        orderSumAmount                order_amount
-        orderSumCurrencyPaycash        order_currency
-        orderSumBankPaycash            <no use>
-        shopSumAmount               shop_amount
-        shopSumCurrencyPaycash      shop_currency
-        shopSumBankPaycash          <no use>
-        paymentPayerCode            payer_code
-        paymentDatetime             <no use>
+    shopArticleId               <no use>
+    scid                        scid
+    sum                         amount
+    customerNumber              user
+    orderNumber                 id
+    shopSuccessURL                success_url
+    shopFailURL                    fail_url
+    cps_provider                payment_type
+    cps_email                   cps_email
+    cps_phone                   cps_phone
+    paymentType                    payment_type
+    shopId                      shop_id
+    invoiceId                   invoice_id
+    orderCreatedDatetime        <no use>
+    orderSumAmount                order_amount
+    orderSumCurrencyPaycash        order_currency
+    orderSumBankPaycash            <no use>
+    shopSumAmount               shop_amount
+    shopSumCurrencyPaycash      shop_currency
+    shopSumBankPaycash          <no use>
+    paymentPayerCode            payer_code
+    paymentDatetime             <no use>
     """
 
     class ERROR_MESSAGE_CODES:

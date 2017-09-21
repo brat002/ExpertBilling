@@ -25,7 +25,8 @@ from getpaid.utils import get_backend_choices, import_name
 def backend_with_image_label(backends):
     result = []
     for backend in backends:
-        backend_module = backend[0]
+        backend_package = backend[0]
+        backend_module = '{}.backend'.format(backend_package)
         backend_label = backend[1]
         logo_url = import_name(backend_module).PaymentProcessor.get_logo_url()
         if logo_url:
@@ -33,7 +34,7 @@ def backend_with_image_label(backends):
                 getattr(settings, 'STATIC_URL', ''),
                 logo_url,
                 force_unicode(backend_label)))
-        result.append((backend_module, backend_label))
+        result.append((backend_package, backend_label))
     return result
 
 

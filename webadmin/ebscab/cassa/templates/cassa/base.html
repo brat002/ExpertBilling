@@ -8,7 +8,7 @@
 <link href="/media/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
 <link href="/media/bootstrap/css/cus-icons.css" rel="stylesheet">
 <link href="/media/bootstrap/css/todc-bootstrap.css" rel="stylesheet"></head>
-<link href="/media/datepicker/css/datepicker.css" rel="stylesheet">
+<link href="/media/bootstrap-datepicker/css/datepicker.css" rel="stylesheet">
 <link rel="stylesheet" type="text/css" media="all" href="/media/daterangepicker/daterangepicker.css" />
 
 
@@ -24,7 +24,7 @@
 <script type="text/javascript" src="/media/jdialogs/lib/jquery.dialog2.helpers.js"></script>
 <script type="text/javascript" src="/media/jquery/js/jquery.controls.js"></script>
 <script type="text/javascript" src="/media/jquery/js/jquery.form.js"></script>
-<script src="/media/datepicker/js/bootstrap-datepicker.js"></script>
+<script src="/media/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
 
 
 <link type="text/css" rel="stylesheet" href="/media/jdialogs/css/jquery-dialog2/jquery.dialog2.css">
@@ -49,14 +49,14 @@ height:100%;
 }
   </style>
 <meta name="robots" content="NONE,NOARCHIVE">
-<script type="text/javascript"> 
+<script type="text/javascript">
     $(function(){
         $('.dropdown-toggle').dropdown()
     });
     $(document).ready(function() {
         $('.datepicker').datepicker({'format': 'yyyy-mm-dd'});
-        
-        
+
+
         $(".daterange").daterangepicker({format:'yyyy-MM-dd'});
     });
 </script>
@@ -71,7 +71,7 @@ height:100%;
   left: 50%;
   z-index: 1050;
   width: 800px;
-  margin: 0 0 0 -400px; /* -1 * (width / 2) */ 
+  margin: 0 0 0 -400px; /* -1 * (width / 2) */
   overflow: auto;
   background-color: #ffffff;
   border: 1px solid #999;
@@ -105,24 +105,24 @@ height:100%;
   <div class="container">
 <a class="brand" href="{% url 'admin_dashboard' %}">
   {% blocktrans %}ExpertBiling кассир{% endblocktrans %}
-</a>  
-    
-  
+</a>
+
+
 <ul class="nav">
 
      <li >
        <a href="{% url 'cashier_index' %}">
-             
+
              {% blocktrans %}Главная{% endblocktrans %}
-             
+
        </a>
 
      </li>
      <li >
        <a href="{% url 'admin_dashboard' %}">
-             
+
              {% blocktrans %}Интерфейс администратора{% endblocktrans %}
-             
+
        </a>
 
      </li>
@@ -132,9 +132,9 @@ height:100%;
      <ul class="nav pull-right">
      <li>
        <a href="/accounts/logout/" class='pull-right'>
-             
+
              {% blocktrans %}Выйти{% endblocktrans %} ({{request.user.account}})
-             
+
        </a>
        </li>
        </ul>

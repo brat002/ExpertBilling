@@ -113,7 +113,7 @@ LOCALE_PATHS = [
     os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'locale'))
 ]
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -141,7 +141,7 @@ INSTALLED_APPS = (
     'mathfilters',
     'captcha',
     'cassa'
-)
+]
 
 
 AJAX_LOOKUP_CHANNELS = {
@@ -241,7 +241,8 @@ GETPAID_BACKENDS_SETTINGS = {
         'DEFAULT_CURRENCY': 'UAH',
         'LOGIN': '12345',
         'PASSWORD': '12345'
-    }
+    },
+    'payments.yandexcassa': {}
 }
 
 SENDSMS_BACKENDS = (

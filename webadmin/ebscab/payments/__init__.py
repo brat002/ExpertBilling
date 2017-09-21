@@ -12,10 +12,10 @@ PAYMENT_VARIANTS = {
 
 
 class BasicProvider(object):
-    '''
+    """
     This class defines the provider API. It should not be instantiated
     directly. Use factory instead.
-    '''
+    """
     _method = 'post'
 
     def _action(self):
@@ -26,7 +26,7 @@ class BasicProvider(object):
         self._variant = variant
 
     def create_payment(self, commit=True, *args, **kwargs):
-        '''
+        """
         Creates a new payment. Always use this method instead of manually
         creating a Payment instance directly.
 
@@ -34,7 +34,7 @@ class BasicProvider(object):
 
         When implementing a new payment provider, you may overload this method
         to return a specialized version of Payment instead.
-        '''
+        """
         from models import Payment  # pragma
 
         payment = Payment(variant=self._variant, *args, **kwargs)
@@ -43,19 +43,19 @@ class BasicProvider(object):
         return payment
 
     def get_hidden_fields(self, payment):
-        '''
+        """
         Converts a payment into a dict containing transaction data. Use
         get_form instead to get a form suitable for templates.
 
         When implementing a new payment provider, overload this method to
         transfer provider-specific data.
-        '''
+        """
         raise NotImplementedError
 
     def get_form(self, payment):
-        '''
+        """
         Converts *payment* into a form suitable for Django templates.
-        '''
+        """
         from forms import PaymentForm  # pragma
 
         return PaymentForm(self.get_hidden_fields(payment),
@@ -63,16 +63,16 @@ class BasicProvider(object):
                            self._method)
 
     def process_data(self, request):
-        '''
+        """
         Process callback request from a payment provider.
-        '''
+        """
         raise NotImplementedError
 
 
 def factory(variant='default'):
-    '''
+    """
     Takes the optional *variant* name and returns an appropriate implementation.
-    '''
+    """
     variants = getattr(settings, 'PAYMENT_VARIANTS', PAYMENT_VARIANTS)
     handler, config = variants.get(variant, (None, None))
     if not handler:

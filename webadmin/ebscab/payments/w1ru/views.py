@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.views.generic.base import View
 from django.views.generic.base import TemplateView
 
-from payments.w1ru import PaymentProcessor
+from payments.w1ru.backend import PaymentProcessor
 
 
 logger = logging.getLogger('payments.w1ru')

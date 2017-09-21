@@ -219,6 +219,10 @@ class NotificationsSettings(models.Model):
     backend = models.CharField(
         max_length=64, blank=True, choices=settings.SENDSMS_BACKENDS)
 
+    def get_remove_url(self):
+        return '{}?id={}'.format(reverse('notificationssettings_delete'),
+                                 self.id)
+
 
 class TPChangeRule(models.Model):
     from_tariff = models.ForeignKey(

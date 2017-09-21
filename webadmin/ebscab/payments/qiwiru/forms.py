@@ -28,3 +28,18 @@ class PostBackForm(forms.Form):
     ccy = forms.CharField()
     comment = forms.CharField()
     command = forms.CharField(required=True)
+
+
+class CheckAdditionalFieldsForm(AdditionalFieldsForm):
+
+    def clean_summ(self):
+        from payments.qiwiru.backend import PaymentProcessor  # avoid cyclic import
+
+        summ = self.cleaned_data['summ']
+        if summ < PaymentProcessor.get_backend_setting(
+                'MIN_SUM', PaymentProcessor.MIN_SUM):
+            raise forms.ValidationError(_(u'Сумма должна быть не меньше %s' %
+                                          PaymentProcessor.get_backend_setting(
+                                              'MIN_SUM', PaymentProcessor.MIN_SUM)))
+
+        return summ

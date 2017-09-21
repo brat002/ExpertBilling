@@ -5,7 +5,7 @@ import logging
 from django.http import HttpResponse
 from django.views.generic.base import View
 
-from payments.paypro import PaymentProcessor
+from payments.paypro.backend import PaymentProcessor
 
 
 logger = logging.getLogger('payments.paypro')

@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.views.generic.base import TemplateView
 from django.views.generic.base import View
 
-from . import PaymentProcessor
+from payments.yandexcassa.backend import PaymentProcessor
 
 
 logger = logging.getLogger('payments.yandexcassa')
@@ -39,7 +39,7 @@ class CheckView(View):
 
 
 class FailureView(TemplateView):
-    template_name = "accounts/payment_failure.html"
+    template_name = 'accounts/payment_failure.html'
 
     def get(self, request, **kwargs):
         return self.render_to_response({})

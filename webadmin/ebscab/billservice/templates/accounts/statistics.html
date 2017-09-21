@@ -25,49 +25,49 @@
 		jQuery(' #transactions_date_to').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.transactions_date_to }}');
-		
+
 		jQuery(' #services_date_from').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.services_date_from }}');
 		jQuery(' #services_date_to').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.services_date_to }}');
-		
+
 		jQuery(' #periodical_service_history_date_from').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.periodical_service_history_date_from }}');
 		jQuery(' #periodical_service_history_date_to').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.periodical_service_history_date_to }}');
-		
+
 		jQuery(' #one_time_history_date_from').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.one_time_history_date_from }}');
 		jQuery(' #one_time_history_date_to').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.one_time_history_date_to }}');
-		
+
 		jQuery(' #addon_service_transaction_date_from').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.addon_service_transaction_date_from }}');
 		jQuery(' #addon_service_transaction_date_to').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.addon_service_transaction_date_to }}');
-		
+
 		jQuery(' #traffic_transaction_date_from').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.traffic_transaction_date_from }}');
 		jQuery(' #traffic_transaction_date_to').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.traffic_transaction_date_to }}');
-		
+
 		jQuery(' #traffic_volume_date_from').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.traffic_volume_date_from }}');
 		jQuery(' #traffic_volume_date_to').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.traffic_volume_date_to }}');
-	    
+
 		jQuery(' #active_session_date_from').datepicker({
 	        dateFormat: dtFormat,
 	    }).attr('value', '{{ date_id_dict.active_session_date_from }}');
@@ -77,9 +77,9 @@
 	})
 </script>
 
-<script>	
-//hide		
-		
+<script>
+//hide
+
 		function runEffect(object_id){
 				$("#"+object_id).toggle();
 				var date = new Date();
@@ -92,9 +92,9 @@
 					$.cookie(object_id, 'show', { path: '/', expires: date });
 				}
 			};
-		
+
 //endhide
-	
+
 </script>
 
 <script type="text/javascript">
@@ -125,7 +125,7 @@
 							</ul>
 						</div>
 					</form>
-					<a id="transactions_data_a" class="close" href="javascript:return 0;" onclick="runEffect('transactions_data')">&nbsp;</a>
+					<a id="transactions_data_a" class="close"  onclick="runEffect('transactions_data')">&nbsp;</a>
 					<a href="#" onclick="document.getElementById('transactions').submit(); return false;">{% blocktrans %}Фильтровать{% endblocktrans %}</a>
 					<a href="/transaction/">{% blocktrans %}Архив{% endblocktrans %}</a>
 				</div>
@@ -162,7 +162,7 @@
 			</td>
 		</tr>
 		{% endif %}
-        
+
 		{% if active_session %}
 		<tr>
 			<th class="white bold s-11 blue_caption">
@@ -179,7 +179,7 @@
 							</ul>
 						</div>
 					</form>
-					<a id="active_session_data_a" class="close" href="javascript:return 0;" onclick="runEffect('active_session_data')">&nbsp;</a>
+					<a id="active_session_data_a" class="close"  onclick="runEffect('active_session_data')">&nbsp;</a>
 					<a href="#" onclick="document.getElementById('active_session').submit(); return false;">{% blocktrans %}Фильтровать{% endblocktrans %}</a>
 					<a href="/session/info/">{% blocktrans %}Архив{% endblocktrans %}</a>
 				</div>
@@ -212,11 +212,11 @@
 			</td>
 		</tr>
 		{% endif %}
-		
-		
-		
 
-		
+
+
+
+
 		{% if periodical_service_history %}
 		<tr>
 			<th class="white bold s-11 blue_caption">
@@ -233,7 +233,7 @@
 							</ul>
 						</div>
 					</form>
-					<a id="periodical_service_history_data_a" class="close" href="javascript:return 0;" onclick="runEffect('periodical_service_history_data')">&nbsp;</a>
+					<a id="periodical_service_history_data_a" class="close"  onclick="runEffect('periodical_service_history_data')">&nbsp;</a>
 					<a href="#" onclick="document.getElementById('periodical_service_history').submit(); return false;">{% blocktrans %}Фильтровать{% endblocktrans %}</a>
 					<a href="/service/history/info/">{% blocktrans %}Архив{% endblocktrans %}</a>
 				</div>
@@ -264,7 +264,7 @@
 			</td>
 		</tr>
 		{% endif %}
-		
+
 
 		{% if one_time_history %}
 		<tr>
@@ -282,7 +282,7 @@
 							</ul>
 						</div>
 					</form>
-					<a id="one_time_history_data_a" class="close" href="javascript:return 0;" onclick="runEffect('one_time_history_data')">&nbsp;</a>
+					<a id="one_time_history_data_a" class="close"  onclick="runEffect('one_time_history_data')">&nbsp;</a>
 					<a href="#" onclick="document.getElementById('one_time_history').submit(); return false;">{% blocktrans %}Фильтровать{% endblocktrans %}</a>
 					<a href="/one/time/history/info/">{% blocktrans %}Архив{% endblocktrans %}</a>
 				</div>
@@ -311,7 +311,7 @@
 			</td>
 		</tr>
 		{% endif %}
-		
+
 		{% if addon_service_transaction %}
 		<tr>
 			<th class="white bold s-11 blue_caption">
@@ -328,7 +328,7 @@
 							</ul>
 						</div>
 					</form>
-					<a id="addon_service_transaction_data_a" class="close" href="javascript:return 0;" onclick="runEffect('addon_service_transaction_data')">&nbsp;</a>
+					<a id="addon_service_transaction_data_a" class="close"  onclick="runEffect('addon_service_transaction_data')">&nbsp;</a>
 					<a href="#" onclick="document.getElementById('addon_service_transaction').submit(); return false;">{% blocktrans %}Фильтровать{% endblocktrans %}</a>
 					<a href="/addon/services/transaction/info/">{% blocktrans %}Архив{% endblocktrans %}</a>
 				</div>
@@ -359,7 +359,7 @@
 			</td>
 		</tr>
 		{% endif %}
-		
+
 		{% if traffic_transaction %}
 		<tr>
 			<th class="white bold s-11 blue_caption">
@@ -376,7 +376,7 @@
 							</ul>
 						</div>
 					</form>
-					<a id="traffic_transaction_data_a" class="close" href="javascript:return 0;" onclick="runEffect('traffic_transaction_data')">&nbsp;</a>
+					<a id="traffic_transaction_data_a" class="close"  onclick="runEffect('traffic_transaction_data')">&nbsp;</a>
 					<a href="#" onclick="document.getElementById('traffic_transaction').submit(); return false;">{% blocktrans %}Фильтровать{% endblocktrans %}</a>
 					<a href="/traffic/transaction/info/">{% blocktrans %}Архив{% endblocktrans %}</a>
 				</div>
@@ -419,7 +419,7 @@
 							</ul>
 						</div>
 					</form>
-					<a id="traffic_volume_data_a" class="close" href="javascript:return 0;" onclick="runEffect('traffic_volume_data')">&nbsp;</a>
+					<a id="traffic_volume_data_a" class="close"  onclick="runEffect('traffic_volume_data')">&nbsp;</a>
 					<a href="#" onclick="document.getElementById('traffic_volume').submit(); return false;">{% blocktrans %}Фильтровать{% endblocktrans %}</a>
 					<a href="/traffic/volume/info/">{% blocktrans %}Архив{% endblocktrans %}</a>
 				</div>
@@ -452,9 +452,9 @@
 			</td>
 		</tr>
 		{% endif %}
-		
-		
-		
+
+
+
 	</table>
 {% else %}
 	<h2 align="center">{% blocktrans %}Информации нет{% endblocktrans %}</h2>

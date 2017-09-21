@@ -1,16 +1,17 @@
 {% load ebsadmin_tags %}
 {% load i18n %}
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block extra_head %}
-  <script type="text/javascript" src="{{STATIC_URL}}/selectable/js/jquery.dj.selectable.js"></script>
-  <link href="{{STATIC_URL}}/selectable/css/dj.selectable.css" type="text/css" media="all" rel="stylesheet">
+  <script type="text/javascript" src="{% static "selectable/js/jquery.dj.selectable.js" %}"></script>
+  <link href="{% static "selectable/css/dj.selectable.css" %}" type="text/css" media="all" rel="stylesheet">
 {% endblock %}
 
 {% block base %}
   {% if not status %}
     {% include "ebsadmin/common/error_messages.html" %}
-    
+
     {% if form %}
       <form action='{% url 'accounthardware' %}?id={{item.id}}&account_id={{account.id}}' method="POST" class="well form-horizontal ajax form-condensed ">
         {{form|crispy}}

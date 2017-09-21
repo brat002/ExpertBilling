@@ -10,7 +10,7 @@ class DummyQuestionForm(forms.Form):
     This dummy form asks for payment authorization.
     """
     authorize_payment = ChoiceField(
-        label=_("authorization"),
+        label=_('authorization'),
         choices=(
             (1, _('yes')),
             (0, _('no'))

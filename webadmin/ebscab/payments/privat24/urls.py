@@ -2,7 +2,7 @@
 
 from django.conf.urls import url
 
-from views import PayView
+from payments.privat24.views import PayView
 
 
 urlpatterns = [
