@@ -17,36 +17,39 @@ class SpeedLimit(models.Model):
         null=True
     )
     speed_units = models.CharField(
-        verbose_name=_(u"Единицы"),
+        default='Kbps',
+        verbose_name=_(u'Единицы измерения скорости'),
         max_length=32,
         choices=(
-            ("Kbps", "Kbps"),
-            ("Mbps", "Mbps"),
-            ("%", "%")
+            ('Kbps', 'Kbps'),
+            ('Mbps', 'Mbps')
         ),
         blank=True,
         null=True
     )
+
     max_tx = models.IntegerField(
-        verbose_name=_(u"MAX tx (kbps)"), default=0, blank=True)
+        verbose_name=_(u'Max Tx'), default=0)
     max_rx = models.IntegerField(
-        verbose_name=_(u"rx"), default=0, blank=True)
-    t_tx = models.IntegerField(
-        verbose_name=_(u"Burst tx (kbps)"), default=0, blank=True)
+        verbose_name=_(u'Max Rx'), default=0)
+    burst_tx = models.IntegerField(
+        verbose_name=_(u'Burst Tx'), default=0)
     burst_rx = models.IntegerField(
-        verbose_name=_(u"rx"), blank=True, default=0)
+        verbose_name=_(u'Burst Rx'), default=0)
     burst_treshold_tx = models.IntegerField(
-        verbose_name=_(u"Burst treshold tx (kbps)"), default=0, blank=True)
+        verbose_name=_(u'Burst treshold Tx'), default=0)
     burst_treshold_rx = models.IntegerField(
-        verbose_name=_(u"rx"), default=0, blank=True)
+        verbose_name=_(u'Burst treshold Rx'), default=0)
     burst_time_tx = models.IntegerField(
-        verbose_name=_(u"Burst time tx (kbps)"), default=0, blank=True)
+        verbose_name=_(u'Burst time Tx (s)'), default=0)
     burst_time_rx = models.IntegerField(
-        verbose_name=_(u"rx"), default=0, blank=True)
+        verbose_name=_(u'Burst time Rx (s)'), default=0)
     min_tx = models.IntegerField(
-        verbose_name=_(u"Min tx (kbps)"), default=0, blank=True)
-    min_rx = models.IntegerField(verbose_name=_(u"tx"), default=0, blank=True)
-    priority = models.IntegerField(default=0, blank=True)
+        verbose_name=_(u'Min Tx'), default=0)
+    min_rx = models.IntegerField(
+        verbose_name=_(u'Min Rx'), default=0)
+    priority = models.IntegerField(
+        verbose_name=_(u'Приоритет'), default=0)
 
     def __unicode__(self):
         return "%s/%s %s/%s %s/%s %s/%s %s/%s %s" % (self.max_tx,

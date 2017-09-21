@@ -91,50 +91,40 @@ class TimeSpeed(models.Model):
     )
     time = models.ForeignKey(
         'billservice.TimePeriod', on_delete=models.CASCADE)
-    # от 1 до 8
-    priority = models.IntegerField(
-        verbose_name=_(u"Приоритет"), blank=True, default=8)
+    speed_units = models.CharField(
+        default='Kbps',
+        verbose_name=_(u'Единицы измерения скорости'),
+        max_length=32,
+        choices=(
+            ('Kbps', 'Kbps'),
+            ('Mbps', 'Mbps')
+        ),
+        blank=True,
+        null=True
+    )
 
-    max_tx = models.CharField(
-        verbose_name=_(u"MAX tx (kbps)"),
-        max_length=64,
-        blank=True,
-        default=""
-    )
-    max_rx = models.CharField(
-        verbose_name=_(u"rx"), max_length=64, blank=True, default="")
-    burst_tx = models.CharField(
-        verbose_name=_(u"Burst tx (kbps)"),
-        max_length=64,
-        blank=True,
-        default=""
-    )
-    burst_rx = models.CharField(
-        verbose_name=_(u"rx"), max_length=64, blank=True, default="")
-    burst_treshold_tx = models.CharField(
-        verbose_name=_(u"Burst treshold tx (kbps)"),
-        max_length=64,
-        blank=True,
-        default=""
-    )
-    burst_treshold_rx = models.CharField(
-        verbose_name=_(u"rx"), max_length=64, blank=True, default="")
-    burst_time_tx = models.CharField(
-        verbose_name=_(u"Burst time tx (s)"),
-        max_length=64,
-        blank=True,
-        default=""
-    )
-    burst_time_rx = models.CharField(
-        verbose_name=_(u"rx"), max_length=64, blank=True, default="")
-    min_tx = models.CharField(
-        verbose_name=_(u"Min tx (kbps)"),
-        max_length=64,
-        blank=True,
-        default=""
-    )
-    min_rx = models.CharField(
-        verbose_name=_(u"tx"), max_length=64, blank=True, default="")
+    max_tx = models.IntegerField(
+        verbose_name=_(u'Max Tx'), default=0)
+    max_rx = models.IntegerField(
+        verbose_name=_(u'Max Rx'), default=0)
+    burst_tx = models.IntegerField(
+        verbose_name=_(u'Burst Tx'), default=0)
+    burst_rx = models.IntegerField(
+        verbose_name=_(u'Burst Rx'), default=0)
+    burst_treshold_tx = models.IntegerField(
+        verbose_name=_(u'Burst treshold Tx'), default=0)
+    burst_treshold_rx = models.IntegerField(
+        verbose_name=_(u'Burst treshold Rx'), default=0)
+    burst_time_tx = models.IntegerField(
+        verbose_name=_(u'Burst time Tx (s)'), default=0)
+    burst_time_rx = models.IntegerField(
+        verbose_name=_(u'Burst time Rx (s)'), default=0)
+    min_tx = models.IntegerField(
+        verbose_name=_(u'Min Tx'), default=0)
+    min_rx = models.IntegerField(
+        verbose_name=_(u'Min Rx'), default=0)
+    priority = models.IntegerField(
+        verbose_name=_(u'Приоритет'), default=8)
 
     def __unicode__(self):
         return u"%s" % self.time

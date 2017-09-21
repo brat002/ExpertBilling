@@ -18,7 +18,7 @@ class AccessParametersTariffForm(forms.ModelForm):
 
     class Meta:
         model = AccessParameters
-        exclude = ('max_tx', 'max_rx', 'burst_tx', 'burst_rx',
+        exclude = ('speed_units', 'max_tx', 'max_rx', 'burst_tx', 'burst_rx',
                    'burst_treshold_tx', 'burst_treshold_rx', 'burst_time_tx',
                    'burst_time_rx', 'min_tx', 'min_rx', 'priority',
                    'sessionscount')

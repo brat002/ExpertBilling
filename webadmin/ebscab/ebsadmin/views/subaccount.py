@@ -25,8 +25,6 @@ log = LogItem.objects.log_action
 def subaccountedit(request):
     id = request.GET.get("id")
     account_id = request.GET.get("account_id")
-    ipn_ipinuse = None
-    vpn_ipinuse = None
     subaccount = None
     table = None
     action_log_table = None
@@ -46,7 +44,6 @@ def subaccountedit(request):
             return create_report_http_response(table_to_report, request)
 
         res = []
-        prev = None
     else:
         if not (request.user.account.has_perm('billservice.add_subaccount')):
             messages.error(request,
@@ -67,15 +64,6 @@ def subaccountedit(request):
             form = SubAccountForm(request.POST)
 
         if form.is_valid():
-            username = form.cleaned_data.get("username")
-            ipn_mac_address = form.cleaned_data.get("ipn_mac_address")
-            vpn_ip_address = form.cleaned_data.get("vpn_ip_address")
-            ipn_ip_address = form.cleaned_data.get("ipn_ip_address")
-            ipv4_vpn_pool = form.cleaned_data.get("ipv4_vpn_pool")
-            ipv4_ipn_pool = form.cleaned_data.get("ipv4_ipn_pool")
-            ipv6_vpn_pool = form.cleaned_data.get("ipv6_vpn_pool")
-            vpn_ipv6_ip_address = form.cleaned_data.get("vpn_ipv6_ip_address")
-
             model = form.save(commit=False)
             model.save()
 
@@ -111,10 +99,9 @@ def subaccountedit(request):
                            extra_tags='alert-danger')
             return HttpResponseRedirect('/ebsadmin/')
         if subaccount:
-
             form = SubAccountForm(instance=subaccount)
         else:
-            form = SubAccountForm(initial={'account': account, })
+            form = SubAccountForm(initial={'account': account})
         return {
             'subaccount': subaccount,
             'account': account,
