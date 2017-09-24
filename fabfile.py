@@ -71,11 +71,15 @@ def requirements():
     with prefix('. /opt/ebs/venv/bin/activate'):
         local('pip install -U -r /opt/ebs/data/soft/requirements.txt')
 
-
+    with prefix('. /opt/ebs/web/venv/bin/activate'):
+        local('pip install -U -r /opt/ebs/web/ebscab/requirements.txt')
+        
 def virtualenv():
     with lcd('/opt/ebs/'):
         local('virtualenv venv')
-
+    with lcd('/opt/ebs/web/'):
+        local('virtualenv venv')
+        
 
 def congratulations():
     print("*" * 80)
@@ -174,13 +178,14 @@ def setup_webcab():
         local(''' su postgres -c 'psql ebs -c "ALTER TABLE billservice_account ALTER COLUMN fullname TYPE varchar(2000);"' ''')
         local(''' su postgres -c 'psql ebs -c "ALTER TABLE auth_user ALTER COLUMN first_name TYPE varchar(2000);"' ''')
 
-    with prefix('. /opt/ebs/venv/bin/activate'):
+    with prefix('. /opt/ebs/web/venv/bin/activate'):
         with lcd(WEBCAB_PATH):
             local("touch /opt/ebs/web/ebscab/templates/site_verify_codes.html")
             local('mkdir -p /opt/ebs/web/ebscab/log/')
 
             local('touch /opt/ebs/web/ebscab/log/django.log')
             local('chmod -R 0777 /opt/ebs/web/ebscab/log/')
+            local('python manage.py migrate --fake-initial --noinput')
             local('python manage.py migrate --noinput')
             local('python manage.py collectstatic --noinput')
             # TODO: add --locale option (ex.: ru_RU, en_US)
