@@ -1,0 +1,110 @@
+{% load i18n %}
+{% load unviewed_notifications from ebsweb %}
+
+{% unviewed_notifications as notifications %}
+
+
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top c-top-navbar">
+	<div class="container">
+		<a class="navbar-brand mr-3" href="{% url 'ebsweb:index' %}">EBS</a>
+
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
+			<span></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navbar">
+			{% with request.resolver_match.url_name as url_name %}
+				<ul class="navbar-nav mr-auto">
+					<li class="nav-item{% if 'account' in url_name %} active{% endif %}">
+						<a class="nav-link" href="{% url 'ebsweb:account' %}">
+							{% trans 'Аккаунт' %}
+						</a>
+					</li>
+					<li class="nav-item{% if 'money' in url_name %} active{% endif %}">
+						<a class="nav-link" href="{% url 'ebsweb:money' %}">
+							{% trans 'Деньги' %}
+						</a>
+					</li>
+					<li class="nav-item{% if 'statistics' in url_name %} active{% endif %}">
+						<a class="nav-link"  href="{% url 'ebsweb:statistics' %}">
+							{% trans 'Статистика' %}
+						</a>
+					</li>
+					<li class="nav-item{% if 'support' in url_name %} active{% endif %}">
+						<a class="nav-link" href="{% url 'ebsweb:support' %}">
+							{% trans 'Служба поддержки' %}
+						</a>
+					</li>
+					<li class="nav-item d-lg-none">
+						<a class="nav-link" href="{% url 'ebsweb:signout' %}">
+							{% trans 'Выйти' %}
+						</a>
+					</li>
+				</ul>
+			{% endwith %}
+
+			<ul class="nav navbar-nav pull-right d-none d-lg-flex">
+				<li class="nav-item">
+					<span class="nav-link c-username">
+						{{ request.user.username }}
+					</span>
+				</li>
+				<li class="nav-item m-dropdown m-dropdown--large m-dropdown--header-bg-fill m-dropdown--arrow m-dropdown--align-right m-dropdown--mobile-full-width" data-dropdown-toggle="click" data-dropdown-persistent="true">
+					<a class="nav-link m-dropdown__toggle" href="#" title="{% trans 'Уведомления' %}">
+						{% if notifications %}
+							<span class="c-nav__link-badge m-badge m-badge--dot m-badge--dot-small m-badge--danger c-animated"></span>
+						{% endif %}
+						<div class="c-nav__link-icon{% if notifications %} c-animated{% endif %}">
+							<i class="fa flaticon-music-2"></i>
+						</div>
+					</a>
+					<div class="m-dropdown__wrapper">
+						<span class="m-dropdown__arrow m-dropdown__arrow--right m-dropdown__arrow--adjust"></span>
+						<div class="m-dropdown__inner">
+							<div class="m-dropdown__header m--align-center">
+								<span class="m-dropdown__header-subtitle">{% trans 'Непрочитанные уведомления' %} ({{ notifications|length }})</span>
+							</div>
+							<div class="m-dropdown__body">
+								<div class="m-dropdown__content">
+										{% for notification in notifications %}
+											{% if forloop.first %}
+												<div class="m-scrollable" data-scrollable="true" data-max-height="250" data-mobile-max-height="200">
+													<div class="m-list-timeline m-list-timeline--skin-light">
+														<div class="m-list-timeline__items">
+											{% endif %}
+															<div class="m-list-timeline__item">
+																<span class="m-list-timeline__badge"></span>
+																<span class="m-list-timeline__text">
+																	<a href="{{ notification.get_absolute_url }}">{{ notification.news.title }}</a>
+																</span>
+																<span class="m-list-timeline__time" title="{{ notification.news.created|date:'Y-m-d H:i' }}">{{ notification.news.created|timesince }}</span>
+															</div>
+											{% if forloop.last %}
+															</div>
+													</div>
+												</div>
+											{% endif %}
+										{% empty %}
+											<div class="text-center">
+												<span class="text-muted">
+													{% trans 'Ничего нет но, вы можете просмотреть' %}
+													<a href="{% url 'ebsweb:notification_list' %}">{% trans 'все уведомления' %}.</a>
+												</span>
+											</div>
+										{% endfor %}
+								</div>
+							</div>
+						</div>
+					</div>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="{% url 'ebsweb:signout' %}" title="{% trans 'Выйти' %}">
+						<div class="c-nav__link-icon">
+							<i class="fa flaticon-logout"></i>
+						</div>
+					</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+</nav>

@@ -10,7 +10,6 @@ from nas.models import Nas
 from sendsms.utils import get_backend_choices
 
 from billservice.fields import DateRangeField, FloatConditionField
-from billservice.inputs import MyMultipleCheckBoxInput, InlineRadioSelect
 from billservice.models import (
     AddonService,
     City,
@@ -22,6 +21,7 @@ from billservice.models import (
     SystemUser,
     Tariff
 )
+from billservice.widgets import InlineRadioSelect, MyMultipleCheckBoxInput
 
 
 class SearchAccountForm(forms.Form):

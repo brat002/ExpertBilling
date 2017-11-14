@@ -1,14 +1,16 @@
 {% extends "ebsadmin/base.html" %}
 
-{% load i18n %}
-{% load ebsadmin_tags %}
 {% load crispy_forms_tags %}
+{% load ebsadmin_tags %}
+{% load i18n %}
+{% load static %}
+
 
 {% block extra_head %}
-  <script type="text/javascript" src="/media/dynatree/jquery.dynatree.js"></script>
-  <link href="/media/dynatree/skin/ui.dynatree.css" rel="stylesheet" type="text/css" id="skinSheet">
+  <script type="text/javascript" src="{% static 'dynatree/jquery.dynatree.js' %}"></script>
+  <link href="{% static 'dynatree/skin/ui.dynatree.css' %}" rel="stylesheet" type="text/css" id="skinSheet">
 
-  <script type="text/javascript"> 
+  <script type="text/javascript">
     $(document).ready(function() {
       $("#id_button_city").click(function(){
         $.fn.dialog2.helpers.prompt("{% blocktrans %}Название{% endblocktrans %}", {
@@ -29,7 +31,7 @@
               }
               return
             })
-          }, 
+          },
           cancel: function() {}
         });
       });
@@ -59,7 +61,7 @@
               }
               return
             })
-          }, 
+          },
           cancel: function() {}
         });
       });
@@ -74,7 +76,7 @@
           $.fn.dialog2.helpers.alert("{% blocktrans %}Выберите улицу{% endblocktrans %}", {
           });
 
-          return 
+          return
         }
 
         $.fn.dialog2.helpers.prompt("{% blocktrans %}Название{% endblocktrans %}", {
@@ -95,7 +97,7 @@
               }
               return
             })
-          }, 
+          },
           cancel: function() {}
         });
       });
@@ -103,7 +105,7 @@
       $("#id_button_delete").click(function(event) {
         var node = $("#tree").dynatree("getActiveNode");
         $.fn.dialog2.helpers.confirm("{% blocktrans %}Вы уверены, что хотите удалить запись?{% endblocktrans %}", {
-          confirm: function() { 
+          confirm: function() {
             $.getJSON('{% url 'address_delete' %}',{key:node.data.key},function(data,status){
               if( status=='success' ){
                 if(data.status==true)
@@ -116,7 +118,7 @@
               }
               return
             })
-          }, 
+          },
         });
 
         event.preventDefault(event);
@@ -173,7 +175,7 @@
                 return
               })
             };
-          }, 
+          },
           cancel: function() {}
         });
 

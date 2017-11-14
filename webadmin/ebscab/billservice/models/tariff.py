@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from django.apps import apps
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -167,6 +168,10 @@ class Tariff(models.Model):
 
     def get_hide_url(self):
         return "%s?id=%s" % (reverse('tariff_hide'), self.id)
+
+    def get_addon_services(self):
+        return (apps.get_model('billservice.AddonServiceTarif').objects
+                .filter(tarif=self, type=0))
 
 
 class NotificationsSettings(models.Model):

@@ -21,9 +21,7 @@ from billservice.views.news import news_delete
 from billservice.views.payment import (
     SelectPaymentView,
     get_promise,
-    make_payment,
-    qiwi_balance,
-    qiwi_payment
+    make_payment
 )
 from billservice.views.service import (
     addon_service,

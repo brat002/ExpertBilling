@@ -1,18 +1,21 @@
 {% extends 'base_extended.html' %}
+
 {% load billservice_tags %}
 {% load i18n %}
-{% block extra_head %}
+{% load static %}
 
-	<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/action_links.css">
-	<link rel="stylesheet" href="{{ MEDIA_URL }}css/forms.css" type="text/css">
-    <link rel='stylesheet' href='{{ MEDIA_URL }}css/helpdesk.css' type='text/css' />
+
+{% block extra_head %}
+	<link rel="stylesheet" type="text/css" href="{% static 'css/action_links.css' %}">
+	<link rel="stylesheet" href="{% static 'css/forms.css' %}" type="text/css">
+	<link rel='stylesheet' href='{% static 'css/helpdesk.css' %}' type='text/css' />
 {% endblock %}
 {% block content %}
 
 {% if service_message %}
 	<h2 align="center" id="error_message">{{ service_message }}</h2>
 {% endif %}
-<h4><a href='/helpdesk/add/'><div style='vertical-align:middle'><img src='/media/img/icons/create-ticket-icon.png'>Создать запрос в службу поддержки</div></a></h4>
+<h4><a href='/helpdesk/add/'><div style='vertical-align:middle'><img src="{% static 'img/icons/create-ticket-icon.png' %}">Создать запрос в службу поддержки</div></a></h4>
 <p></p>
 <table  class="wide statistic_table" cellpadding="0" cellspacing="0">
 		<tr>

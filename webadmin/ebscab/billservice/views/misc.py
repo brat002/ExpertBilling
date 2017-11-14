@@ -42,12 +42,23 @@ def statistics(request):
                            .order_by('-created'))[:8]
     cursor = connection.cursor()
     cursor.execute("""\
-SELECT (SELECT name FROM billservice_group WHERE id=group_id) as group_name, \
-sum(bytes), date_part('day',datetime) as dt_day, date_part('month',datetime) \
-as dt_month, date_part('year',datetime) as dt_year
-FROM billservice_groupstat WHERE account_id=%s GROUP BY date_part('year',\
-datetime),date_part('month',datetime),date_part('day',datetime), group_name \
-ORDER BY dt_year,dt_month, dt_day DESC;\
+SELECT (
+    SELECT name FROM billservice_group
+    WHERE id=group_id
+) as group_name,
+sum(bytes),
+date_part('day', datetime) as dt_day,
+date_part('month', datetime) as dt_month,
+date_part('year', datetime) as dt_year
+FROM billservice_groupstat
+WHERE account_id=%s
+GROUP BY (
+    date_part('year', datetime),
+    date_part('month', datetime),
+    date_part('day', datetime),
+    group_name
+)
+ORDER BY dt_year,dt_month, dt_day DESC;
 """, (user.id,))
     items = cursor.fetchall()
     group_stat = []

@@ -40,6 +40,8 @@ services/nf/pkg/
 venv/
 
 PYFILES
+NOTE
 TODO
 .sublimelinterrc
 env/
+webadmin/ebscab/files/

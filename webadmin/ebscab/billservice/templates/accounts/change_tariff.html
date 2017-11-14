@@ -1,7 +1,10 @@
+{% load billservice_tags %}
 {% load custom_filters %}
 {% load i18n %}
-{% load billservice_tags %}
-<script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.js"></script>
+{% load static %}
+
+
+<script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
 
 <script>
 	var obj_arr = new Array();
@@ -10,8 +13,8 @@
 	{% for tariff_object in tariff_objects  %}
 		obj_arr[{{ tariff_object.from_tariff.id }}][{{ tariff_object.id }}] = new Array({{ tariff_object.ballance_min }}, {{ tariff_object.cost }});
 	{% endfor %}
-	
-	
+
+
 	function change_tariff() {
 		var new_tariff = $('input[name=rule]:checked', '#myForm').val();
 		var message=document.getElementById("error_message");
@@ -37,7 +40,7 @@
         	complete: function(data, status){  }
     	});
 	}
-	
+
 </script>
 
 <div class="cs_tb_header">
@@ -83,7 +86,7 @@
 				</td>
 			</tr>
 		</table>
-		
+
 		<!--<div id="ok_message" class="a-center"></div>-->
 		<div class="clear"></div>
 	</form>

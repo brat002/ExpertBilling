@@ -20,7 +20,8 @@ class NewsTable(EbsadminTableReport):
         model = News
         configurable = True
         available_fields = (
-            "id",
+            'id',
+            'title',
             'body',
             'created',
             'age',

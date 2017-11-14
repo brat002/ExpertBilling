@@ -5,8 +5,8 @@ from django.utils.translation import ugettext as _
 
 from ajax_select.fields import AutoCompleteSelectMultipleField
 
-from billservice.inputs import InlineRadioSelect
 from billservice.models import IPPool
+from billservice.widgets import InlineRadioSelect
 
 
 class IpInUseLogForm(forms.Form):

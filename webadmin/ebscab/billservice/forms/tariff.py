@@ -1,7 +1,5 @@
 # -*- encoding: utf-8 -*-
 
-from datetime import datetime
-
 from django import forms
 from django.utils.translation import ugettext as _
 
@@ -36,12 +34,6 @@ class TariffForm(forms.ModelForm):
 class ChangeTariffForm(forms.Form):
 
     def __init__(self, user=None, account_tariff=None, *args, **kwargs):
-        time = (datetime.now() - account_tariff.datetime).seconds
-        tariffs = [x.id for x in
-                   TPChangeRule.objects.filter(
-                       ballance_min__lte=user.ballance,
-                       from_tariff=account_tariff.tarif
-                   )]
         self.base_fields['tariff_id'] = forms.ChoiceField(
             choices=[('', '----')] + [
                 (x.id, x.to_tariff.name) for x in TPChangeRule.objects.filter(

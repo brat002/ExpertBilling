@@ -1,13 +1,15 @@
 {% extends "ebsadmin/base.html" %}
 
-{% load i18n %}
 {% load ebsadmin_tags %}
+{% load i18n %}
 {% load render_table from django_tables2 %}
+{% load static %}
+
 
 {% block extra_head %}
-  <script type="text/javascript" src="/media/highcharts/js/highcharts.js"></script>
+  <script type="text/javascript" src="{% static 'highcharts/js/highcharts.js' %}"></script>
 
-  <script type="text/javascript"> 
+  <script type="text/javascript">
     $(document).ready(function() {
       var charts_date_start = $.cookie('charts_daterange');
       if (charts_date_start && $('#id_daterange').val!='') {
@@ -28,7 +30,7 @@
   {% block chart_block %}
   {% endblock %}
 {% endblock %}
- 
+
 {% block base %}
   <div class="span12">
     <div class="row-fluid">
@@ -56,7 +58,7 @@
                   </p>
                   {% endif %}
                 </div>
-              </div>  
+              </div>
               <div class="control-group">
                 <label class="control-label">{{form.date_end.label}}: </label>
                 <div class="controls">
@@ -70,7 +72,7 @@
                   </p>
                   {% endif %}
                 </div>
-              </div>  
+              </div>
               {% if 'accountsTab' in rep.tabs %}
               <div class="control-group">
                 <label class="control-label">{{form.accounts.label}}: </label>
@@ -85,7 +87,7 @@
                   </p>
                   {% endif %}
                 </div>
-              </div>  
+              </div>
               {% endif %}
               {% if 'nassesTab' in rep.tabs %}
               <div class="control-group">
@@ -103,7 +105,7 @@
                     </p>
                     {% endif %}
                   </div>
-                </div>  
+                </div>
                 {% endif %}
                 {% if 'tariffsTab' in rep.tabs %}
                 <div class="control-row">
@@ -121,7 +123,7 @@
                   </div>
                 </div>
 
-              </div>  
+              </div>
               {% endif %}
               <div class="control-group">
                 {% if 'classesTab' in rep.tabs %}
@@ -154,9 +156,9 @@
                     </p>
                     {% endif %}
                   </div>
-                </div> 
+                </div>
 
-              </div>  
+              </div>
               {% endif %}
 
               <div class="control-group">
@@ -172,7 +174,7 @@
                   </p>
                   {% endif %}
                 </div>
-              </div>  
+              </div>
             </fieldset>
           </div>
           <div class="tab-pane" id="result">

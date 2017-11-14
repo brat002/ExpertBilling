@@ -1,15 +1,17 @@
 {% extends "ebsadmin/base.html" %}
 
-{% load i18n %}
-{% load ebsadmin_tags %}
 {% load crispy_forms_tags %}
+{% load ebsadmin_tags %}
+{% load i18n %}
 {% load render_table from django_tables2 %}
+{% load static %}
+
 
 {% block extra_head %}
-  <script type="text/javascript" src="/media/dynatree/jquery.dynatree.js"></script>
-  <link href="/media/dynatree/skin/ui.dynatree.css" rel="stylesheet" type="text/css" id="skinSheet">
+  <script type="text/javascript" src="{% static 'dynatree/jquery.dynatree.js' %}"></script>
+  <link href="{% static 'dynatree/skin/ui.dynatree.css' %}" rel="stylesheet" type="text/css" id="skinSheet">
 
-  <script type="text/javascript"> 
+  <script type="text/javascript">
     $(document).ready(function() {
       $("#id_main_table tr th input[type=checkbox]").click(function(event) {
         $("#id_main_table td input[type=checkbox]").attr("checked", this.checked);
@@ -22,26 +24,26 @@
             var arr = new Array();
             $.map( $("#id_main_table tbody input[type=checkbox]:checked").serializeArray(), function(data, item) {
               data.name='transactions';
-              arr.push(data); 
-            }); 
+              arr.push(data);
+            });
 
             $.ajax(
-            { 
+            {
               url: '{% url 'totaltransaction_delete' %}',
-              data: arr,        
+              data: arr,
               type: "POST",
-              dataType: "json",                                                                                               
+              dataType: "json",
               success: function( data ) {
                 window.location.reload();
               },
               failure: function(data) {
                 alert('{% blocktrans %}Произошла ошибка в обработке запросов сервером{% endblocktrans %}');
               }
-            }); 
+            });
           },
           decline: function(event, value) {}
         });
-        
+
         event.preventDefault(event);
       });
 
@@ -77,7 +79,7 @@
 {% block base %}
   <ul class="nav nav-tabs" id="tab-control">
     <li ><a href="#filter">{% blocktrans %}Фильтр{% endblocktrans %}</a></li>
-    <li><a  href="#result">{% blocktrans %}Отчёт{% endblocktrans %}</a></li>  
+    <li><a  href="#result">{% blocktrans %}Отчёт{% endblocktrans %}</a></li>
   </ul>
 
   <div class="tab-content">

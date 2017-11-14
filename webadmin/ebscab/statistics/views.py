@@ -14,11 +14,9 @@ from nas.models import Nas
 
 
 log = logging.getLogger('statistics.views')
-WWW_PREFIX = '/media/statistics/'
 
 RRDTOOL_PATH = '/usr/bin/rrdtool'
 RRDDB_PATH = '/opt/ebs/stats/'
-GRAPH_PATH = '/opt/ebs/web/ebscab/media/'
 IMAGE_PATH = settings.MEDIA_ROOT + '/statistics/'
 GRAPH_INTERVALS = (
     (_(u'Сутки'), '-1day'),

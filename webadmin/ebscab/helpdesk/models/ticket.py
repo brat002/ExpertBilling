@@ -71,6 +71,13 @@ PRIORITY_COLORS = [
     (5, 'grey')
 ]
 
+PRIORITY_COLORS_20 = {
+    1: 'danger',
+    2: 'warning',
+    3: 'brand',
+    4: 'info',
+    5: 'default'
+}
 
 prio = {
     1: 'label-important',
@@ -121,6 +128,8 @@ class Ticket(models.Model):
     PRIORITY_CHOICES = PRIORITY_CHOICES
 
     PRIORITY_COLORS = PRIORITY_COLORS
+
+    PRIORITY_COLORS_20 = PRIORITY_COLORS_20
 
     title = models.CharField(
         _('Title'),
@@ -250,12 +259,6 @@ class Ticket(models.Model):
         return u"%s-%s" % (self.queue.slug, self.id)
     ticket_for_url = property(_get_ticket_for_url)
 
-    def _get_priority_img(self):
-        """ Image-based representation of the priority """
-        return (u"%shelpdesk/priorities/priority%s.png" %
-                (settings.MEDIA_URL, self.priority))
-    get_priority_img = property(_get_priority_img)
-
     def _get_priority_span(self):
         """
         A HTML <span> providing a CSS_styled representation of the priority.
@@ -341,6 +344,46 @@ class Ticket(models.Model):
 
     def get_priority_verbose(self):
         return [y for x, y in self.PRIORITY_CHOICES if x == self.priority][0]
+
+    def get_absolute_url_20(self):
+        return reverse('ebsweb:support_ticket', kwargs={'pk': self.pk})
+
+    def render_id_20(self):
+        return mark_safe('<span class="font-weight-bold">#{0}</span>'.format(
+            self.id))
+
+    @property
+    def priority_color_20(self):
+        return self.PRIORITY_COLORS_20.get(self.priority)
+
+    @property
+    def priority_verbose_20(self):
+        for number, verbose in self.PRIORITY_CHOICES:
+            if number == self.priority:
+                return verbose
+
+    def render_priority_20(self):
+        return mark_safe(
+            '<span class="m-badge m-badge--wide m-badge--{0}">{1}</span>'.format(
+                self.priority_color_20, self.priority_verbose_20))
+
+    @property
+    def status_verbose_20(self):
+        for code, verbose in STATUS_CHOICES:
+            if self.status == code:
+                return verbose
+
+    def render_performer(self):
+        if self.assigned_to:
+            return self.assigned_to.username
+        else:
+            return ugettext(u'Не назначен')
+
+    def render_submitter_email(self):
+        if self.submitter_email:
+            return self.submitter_email
+        else:
+            return ugettext(u'Не указан')
 
 
 class TicketCC(models.Model):

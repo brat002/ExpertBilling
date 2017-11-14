@@ -1,0 +1,83 @@
+{% extends 'ebsweb/account/base.html' %}
+
+{% load i18n %}
+
+
+{% block content %}
+<div class="m-portlet m-portlet--mobile">
+	<div class="m-portlet__head">
+		<div class="m-portlet__head-caption">
+			<div class="m-portlet__head-title">
+				<h3 class="m-portlet__head-text">{% trans 'Дополнительные услуги' %}</h3>
+			</div>
+		</div>
+	</div>
+	<div class="m-portlet__body">
+		{% for service in services %}
+			{% if forloop.first %}
+				<table class="table table-bordered table-responsive">
+					<thead>
+						<tr>
+							<th>{% trans 'Название' %}</th>
+							<th>{% trans 'Описание' %}</th>
+							<th>{% trans 'Стоимость подключения' %}</th>
+							<th>{% trans 'Стоимость досрочного отключения' %}</th>
+							<th>{% trans 'Период действия (расчетный период)' %}</th>
+							<th>{% trans 'Время активации' %}</th>
+							<th>{% trans 'Действие' %}</th>
+						</tr>
+					</thead>
+					<tbody>
+			{% endif %}
+
+			<tr>
+				<td>{{ service.name }}</td>
+				<td>
+					{% if service.description %}
+						{{ service.description }}
+					{% else %}
+						{% trans 'Описание отсутствует' %}
+					{% endif %}
+				</td>
+				<td>{{ service.cost|floatformat:2 }}</td>
+				<td>{{ service.cost_preterm_deactivate|floatformat:2 }}</td>
+				<td>{{ service.settlement_period }}</td>
+				<td>{{ service.available_period }}</td>
+				<td class="text-center">
+					{% if service.is_used %}
+						<form action="{% url 'ebsweb:account_service_disconnect' %}" method="POST">
+							{% csrf_token %}
+							{% for field in service.form %}
+								{{ field.as_hidden }}
+							{% endfor %}
+							<button class="btn btn-outline-warning btn-sm m-btn m-btn--icon m-btn--icon-only" type="submit" title="{% trans 'Отключить' %}">
+								<i class="la la-minus"></i>
+							</button>
+						</form>
+					{% else %}
+						<form action="{% url 'ebsweb:account_service_connect' %}" method="POST">
+							{% csrf_token %}
+							{{form}}
+							{% for field in service.form %}
+								{{ field.as_hidden }}
+							{% endfor %}
+							<button class="btn btn-outline-success btn-sm m-btn m-btn--icon m-btn--icon-only" type="submit" title="{% trans 'Подключить' %}">
+								<i class="la la-plus"></i>
+							</button>
+						</form>
+					{% endif %}
+				</td>
+			</tr>
+
+			{% if forloop.last %}
+					</tbody>
+				</table>
+			{% endif %}
+		{% empty %}
+			<div class="alert m-alert--default">{% trans 'Ваш тариф не содержит дополнительных услуг' %}</div>
+		{% endfor %}
+	</div>
+</div>
+
+{% include 'ebsweb/includes/pagination.html' %}
+{% endblock %}

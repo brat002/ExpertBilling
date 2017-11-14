@@ -84,12 +84,12 @@ def addon_service(request):
         addon_srvcs.append((adds, accs))
 
     return_dict = {
-        'addontarif_services': addontarif_services,
+        'addontarif_services': addontarif_services,  # unused
         'addon_srvcs': addon_srvcs,
-        'account_services_id': user_services_id,
-        'account_services': account_services,
-        'user': user,
-        'active_class': 'services-img'
+        'account_services_id': user_services_id,  # unused
+        'account_services': account_services,  # unused
+        'user': user,  # unused
+        'active_class': 'services-img'  # unused
     }
 
     if request.session.has_key('service_message'):

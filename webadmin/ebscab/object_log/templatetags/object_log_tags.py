@@ -12,7 +12,7 @@ from django.template import (
 from django.utils.safestring import SafeUnicode
 
 
-LINK_FORMAT = '<a href="%s/object/%%s/%%s/">' % settings.SITE_ROOT
+LINK_FORMAT = '<a href="%s/object/%%s/%%s/">' % settings.BASE_DIR
 
 register = Library()
 

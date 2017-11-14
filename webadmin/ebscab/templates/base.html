@@ -1,3 +1,6 @@
+{% load static %}
+
+
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -7,14 +10,14 @@
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 {% endblock %}
 {% block head %}
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/typography.css">
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/layout.css">
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/new_design.css">
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/thickbox.css" />
-<script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.js"></script>
-<script type="text/javascript" src="{{ MEDIA_URL }}js/thickbox-compressed.js"></script>
-<script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.cookies.js"></script>
-<script type="text/javascript" src="{{ MEDIA_URL }}js/js_cookies.js"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/typography.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/layout.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/new_design.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/thickbox.css' %}" />
+<script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/thickbox-compressed.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery.cookies.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/js_cookies.js' %}"></script>
 {% include 'site_verify_codes.html' %}
 
 {% endblock %}
@@ -24,7 +27,7 @@
 {% if active_class %}
 <script type="text/javascript">
 	$(document).ready(function() {
-		$('.{{ active_class }}').addClass('{{ active_class }}-active')	
+		$('.{{ active_class }}').addClass('{{ active_class }}-active')
 	});
 </script>
 {% endif %}
@@ -34,7 +37,7 @@
 
 <div class="content_align wrapper">
 	{% block logo %}
-		<div class="logo"><img src="{{ MEDIA_URL }}{{settings.PROVIDER_LOGO}}"></div>
+		<div class="logo"><img src="{% static '{{settings.PROVIDER_LOGO}}' %}"></div>
 	{% endblock %}
 	{% block login %}
 	{% endblock %}

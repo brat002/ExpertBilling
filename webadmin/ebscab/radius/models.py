@@ -132,6 +132,10 @@ class ActiveSession(models.Model):
     def __unicode__(self):
         return u"%s" % self.sessionid
 
+    @property
+    def bytes_sum(self):
+        return self.bytes_in + self.bytes_out
+
 
 class AuthLog(models.Model):
     account = models.ForeignKey(

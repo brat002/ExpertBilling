@@ -4,12 +4,15 @@ import logging
 import os
 import sys
 
+from django.contrib.messages import constants as messages_constants
 from django.utils.translation import ugettext_lazy as _
 from tzlocal import get_localzone
 
 
 sys.path.append('/opt/ebs/data/workers/')
 
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DEBUG = True
 DEBUG_SQL = False
@@ -54,40 +57,40 @@ USE_I18N = True
 
 USE_l10N = True
 
-MEDIA_URL = '/media/'
-
 DATETIME_FORMAT = 'd.m.Y H:i:s'
 SHORT_DATETIME_FORMAT = 'd.m.Y H:i:s'
 
 STATIC_URL = '/static/'
-STATIC_ROOT = '/opt/ebs/web/ebscab/static'
+STATIC_ROOT = '/opt/ebs/web/ebscab/files/static'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder'
+]
 
-ADMIN_MEDIA_PREFIX = '/admin_media/'
-SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/opt/ebs/web/ebscab/files/media'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '%!a5^gik_4lgzt+k)vyo6)y68_3!u^*j(ujks7(=6f2j89d=x&'
-
-STATICFILES_FINDERS = (
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder'
-)
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             '/opt/ebs/web/ebscab/templates',
-            '%s/templates/' % os.path.abspath('.')
+            os.path.join(BASE_DIR, 'templates')
         ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.contrib.auth.context_processors.auth',
-                'notification.context_processors.auth',
                 'django.template.context_processors.request',
                 'django.template.context_processors.media',
                 'django.template.context_processors.static',
+                'django.template.context_processors.i18n',
                 'django.contrib.messages.context_processors.messages',
                 'ebscab.context_processors.default_current_view_name',
                 'ebscab.context_processors.project_settings'
@@ -110,7 +113,7 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'ebscab.urls'
 
 LOCALE_PATHS = [
-    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'locale'))
+    os.path.join(BASE_DIR, 'locale')
 ]
 
 INSTALLED_APPS = [
@@ -125,7 +128,6 @@ INSTALLED_APPS = [
     'nas',
     'billservice',
     'statistics',
-    'paymentgateways.webmoney',
     'helpdesk',
     'object_log',
     'django_tables2',
@@ -140,9 +142,14 @@ INSTALLED_APPS = [
     'selectable',
     'mathfilters',
     'captcha',
-    'cassa'
+    'cassa',
+    'ebsweb'
 ]
 
+MESSAGE_TAGS = {
+    messages_constants.DEBUG: 'default',
+    messages_constants.ERROR: 'danger'
+}
 
 AJAX_LOOKUP_CHANNELS = {
     #   pass a dict with the model and the field to search against
@@ -191,6 +198,13 @@ MIN_BALLANCE_FOR_PROMISE = -1000
 LEFT_PROMISE_DAYS = 7
 PROMISE_REACTIVATION_DAYS = 28
 
+# NOTE: aliases for 'ebsweb'
+PROMISE_ALLOWED = ALLOW_PROMISE
+PROMISE_MAX_SUM = MAX_PROMISE_SUM
+PROMISE_MIN_BALANCE = MIN_BALLANCE_FOR_PROMISE
+PROMISE_LEFT_DAYS = LEFT_PROMISE_DAYS
+PROMISE_AGAIN_DAYS = PROMISE_REACTIVATION_DAYS
+
 ALLOW_WEBMONEY = False
 ALLOW_QIWI = False
 QIWI_MIN_SUMM = 30
@@ -207,7 +221,7 @@ CURRENCY = u' руб'
 
 HOTSPOT_ONLY_PIN = False
 GETPAID_BACKENDS = []
-PROVIDER_LOGO = 'img/ebs.jpg'  # in media dir
+PROVIDER_LOGO = 'img/ebs.jpg'  # store in STATIC_ROOT
 GETPAID_BACKENDS_SETTINGS = {
     # Please provide your settings for backends
     'payments.liqpay': {
@@ -301,17 +315,16 @@ try:
     if 'GETPAID_BACKENDS' in settings_local.__dict__:
         INSTALLED_APPS += settings_local.GETPAID_BACKENDS
 except Exception, ex:
-    print ex
+    print(ex)
 
 
 # define logging
+# TODO: remake follow https://docs.djangoproject.com/en/1.11/topics/logging/
 if DEBUG:
     LEVEL = logging.DEBUG
 else:
     LEVEL = logging.INFO
-PROJECT_DIR = os.path.join(os.path.dirname(__file__), '..')
 logging.basicConfig(level=LEVEL,
                     format='%(asctime)s %(name)s %(levelname)s %(message)s',
-                    filename=os.path.join(PROJECT_DIR, 'log/django.log'),
+                    filename=os.path.join(BASE_DIR, 'log/django.log'),
                     filemode='a+')
-root = logging.basicConfig()

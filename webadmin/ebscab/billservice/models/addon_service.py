@@ -179,6 +179,14 @@ class AddonService(models.Model):
             ("addonservice_view", _(u"Просмотр")),
         )
 
+    def render_sp_period(self):
+        if self.sp_period:
+            return self.sp_period.render_name()
+
+    def render_wyte_period(self):
+        if self.wyte_period:
+            return self.wyte_period.render_name()
+
 
 class AddonServiceTarif(models.Model):
     tarif = models.ForeignKey('billservice.Tariff', on_delete=models.CASCADE)

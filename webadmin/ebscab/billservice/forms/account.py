@@ -13,7 +13,6 @@ from ajax_select.fields import AutoCompleteSelectMultipleField
 from dynamicmodel.models import DynamicForm, DynamicExtraForm
 
 from billservice.fields import PhoneField
-from billservice.inputs import MyMultipleCheckBoxInput
 from billservice.models import (
     Account,
     AccountAddonService,
@@ -35,7 +34,7 @@ from billservice.models import (
     Tariff
 )
 from billservice.lookups import HardwareLookup
-from billservice.widgets import CustomPasswordWidget
+from billservice.widgets import CustomPasswordWidget, MyMultipleCheckBoxInput
 
 
 class AccountAddonForm(forms.Form):

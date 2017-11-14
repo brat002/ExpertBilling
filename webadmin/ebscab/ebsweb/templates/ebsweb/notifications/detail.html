@@ -1,0 +1,31 @@
+{% extends 'ebsweb/base.html' %}
+
+{% load i18n %}
+
+
+{% block content %}
+<div class="row">
+	<div class="col-lg-8">
+		<div class="m-portlet m-portlet--mobile">
+			<div class="m-portlet__head">
+				<div class="m-portlet__head-caption">
+					<div class="m-portlet__head-title">
+						<h3 class="m-portlet__head-text">
+							{{ notification.news.title }}
+							<small class="text-muted" title="{{ notification.news.created|date:'Y-m-d H:i' }}">
+								{{ notification.news.created|timesince }}
+							</small>
+						</h3>
+					</div>
+				</div>
+				<div class="m-portlet__head-tools">
+					<a class="btn btn-brand" href="{% url 'ebsweb:notification_list' %}">{% trans 'Вернуться к списку' %}</a>
+				</div>
+			</div>
+			<div class="m-portlet__body">
+				{{ notification.news.body|safe }}
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

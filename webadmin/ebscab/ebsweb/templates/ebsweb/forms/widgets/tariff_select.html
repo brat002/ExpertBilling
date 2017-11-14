@@ -1,0 +1,28 @@
+{% load i18n %}
+
+
+{% with id=widget.attrs.id %}
+	{% for group, options, index in widget.optgroups %}
+		{% if group %}
+			<label>{{ group }}</label>
+		{% endif %}
+		{% if forloop.first %}<div class="row">{% endif %}
+		{% for option in options %}
+			<div class="col-lg-4">
+				{% include option.template_name with widget=option %}
+			</div>
+		{% endfor %}
+		{% if forloop.last %}
+			</div>
+		{% elif not foloop.last and forloop.counter|divisibleby:3 %}
+			</div>
+			<br>
+			<div class="row">
+		{% endif %}
+		{% if group and not forloop.last %}<br>{% endif %}
+	{% empty %}
+		<div class="alert alert-info">
+			{% trans 'Вы не можете сменить текущий тариф. Обратитесь в службу поддержки, что бы узнать подробности.' %}
+		</div>
+	{% endfor %}
+{% endwith %}

@@ -105,6 +105,10 @@ class RadiusTraffic(models.Model):
     def get_remove_url(self):
         return "%s?id=%s" % (reverse('radiustrafficservice_delete'), self.id)
 
+    @property
+    def prepaid_value_as_B(self):
+        return self.prepaid_value * 1024 * 1024
+
 
 class RadiusTrafficNode(models.Model):
     radiustraffic = models.ForeignKey(

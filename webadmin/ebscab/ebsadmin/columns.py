@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from django.conf import settings
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -71,8 +72,8 @@ class YesNoColumn(Column):
 
     def render(self, value):
         return mark_safe(
-            '<img src="/media/icons/16/%s.png" />' %
-            ('accept' and True or 'cross'))
+            '<img src="%sicons/16/%s.png" />' %
+            (settings.STATIC_URL, 'accept' and True or 'cross'))
 
 
 class RadioColumn(Column):

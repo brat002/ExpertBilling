@@ -1,0 +1,124 @@
+{% extends 'ebsweb/base.html' %}
+
+{% load i18n %}
+
+
+{% block content %}
+<div class="m-portlet">
+	<div class="m-portlet__head">
+		<div class="m-portlet__head-caption">
+			<div class="m-portlet__head-title">
+				<h3 class="m-portlet__head-text">
+					<span class="text-muted">#{{ ticket.id }}</span>
+					{{ ticket.title }}
+					<small title="{{ ticket.created|date:'Y-m-d H:m:s' }}">{{ ticket.created|timesince }}</small>
+				</h3>
+			</div>
+		</div>
+		<div class="m-portlet__head-tools">
+			<a class="btn btn-success" href="{% url 'ebsweb:support_followup_create' pk=ticket.pk %}">{% trans 'Добавить комментарий' %}</a>
+		</div>
+	</div>
+	<div class="m-portlet__body">
+		{{ ticket.description|linebreaksbr }}
+
+		{% if tags_enabled %}
+			<div class="mt-3">
+				<span class="font-weight-bold">{% trans 'Теги' %}</span>
+				<br>
+				{{ ticket.tags }}
+			</div>
+		{% endif %}
+	</div>
+	<div class="m-portlet__foot">
+		<div class="row">
+			<div class="col-md-3">
+				<span class="font-weight-bold">{% trans 'Статус' %}</span>
+				<br>
+				{{ ticket.status_verbose_20 }}
+			</div>
+
+			<div class="col-md-3 mt-sm-3 mt-md-0">
+				<span class="font-weight-bold">{% trans 'Приоритет' %}</span>
+				<br>
+				{{ ticket.render_priority_20 }}
+			</div>
+
+			<div class="col-md-3 mt-sm-3 mt-md-0">
+				<span class="font-weight-bold">{% trans 'Раздел' %}</span>
+				<br>
+				{{ ticket.queue }}
+			</div>
+
+			<div class="col-md-3 mt-sm-3 mt-md-0">
+				<span class="font-weight-bold">{% trans 'Email отправителя' %}</span>
+				<br>
+				{{ ticket.render_submitter_email }}
+			</div>
+		</div>
+	</div>
+</div>
+
+{% for followup in ticket.followup_set.public_followups %}
+	{% if forloop.first %}
+		<h4>История</h4>
+		<div class="m--margin-top-20">
+	{% endif %}
+	<div class="m-portlet">
+		<div class="m-portlet__head">
+			<div class="m-portlet__head-caption">
+				<div class="m-portlet__head-title">
+					<h3 class="m-portlet__head-text">
+						{{ followup.title }}
+						<small title="{{ followup.date|date:'Y-m-d H:m:s' }}">
+							{# TODO: translate #}
+							{{ followup.date|timesince }}
+						</small>
+					</h3>
+				</div>
+			</div>
+		</div>
+		{% if followup.comment or followup.objectchange_set.all or followup.attachment_set.all %}
+			<div class="m-portlet__body">
+				{% if followup.comment %}
+					<h6>{% trans 'Комментарий' %}</h6>
+					<div class="m--margin-bottom-15">
+						{{ followup.comment|force_escape|linebreaksbr }}
+					</div>
+				{% endif %}
+
+				{% if followup.objectchange_set.all %}
+					<h6>{% trans 'Изменения' %}</h6>
+					<ul>
+						{% for change in followup.objectchange_set.all %}
+							<li>
+								{% blocktrans with change.field as field and change.old_value as old_value and change.new_value as new_value %}
+									Изменен {{ field }} с {{ old_value }} на {{ new_value }}
+								{% endblocktrans %}
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+
+				{% if followup.attachment_set.all %}
+					<h6>{% trans 'Вложения' %}</h6>
+					<div class="m-stack m-stack--hor m-stack--general">
+						{% for attachment in followup.attachment_set.all %}
+							<div class="m-stack__item">
+								<a href='{{ attachment.file.url }}' target="blank">
+									{{ attachment.filename }}
+								</a>
+								({{ attachment.size|filesizeformat }})
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+			</div>
+		{% endif %}
+	</div>
+
+	{% if forloop.last %}
+		</div>
+	{% endif %}
+{% endfor %}
+{% endblock %}

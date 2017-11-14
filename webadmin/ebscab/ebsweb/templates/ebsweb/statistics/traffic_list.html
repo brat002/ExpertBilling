@@ -1,0 +1,41 @@
+{% extends 'ebsweb/statistics/base.html' %}
+
+{% load i18n %}
+
+{% load format_traffic from ebsweb %}
+
+
+{% block header %}
+	{% trans 'Объем траффика' %}
+{% endblock %}
+
+{% block body %}
+	{% for item in groups %}
+		{% if forloop.first %}
+			<table class="table table-bordered table-responsive">
+				<thead>
+					<tr>
+						<th>{% trans 'Направление' %}</th>
+						<th>{% trans 'Год' %}</th>
+						<th>{% trans 'Месяц' %}</th>
+						<th>{% trans 'День' %}</th>
+						<th>{% trans 'Объем' %}</th>
+					</tr>
+				</thead>
+				<tbody>
+		{% endif %}
+					<tr>
+						<td>{{ item.name }}</td>
+						<td>{{ item.year }}</td>
+						<td>{{ item.month }}</td>
+						<td>{{ item.day }}</td>
+						<td>{{ item.bytes_sum|format_traffic:'M' }}</td>
+					</tr>
+		{% if forloop.last %}
+				</tbody>
+			</table>
+		{% endif %}
+	{% empty %}
+		<div class="alert m-alert--default">{% trans 'Нет данных' %}</div>
+	{% endfor %}
+{% endblock %}

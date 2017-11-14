@@ -183,6 +183,8 @@ def setup_webcab():
             local('chmod -R 0777 /opt/ebs/web/ebscab/log/')
             local('python manage.py migrate --noinput')
             local('python manage.py collectstatic --noinput')
+            # TODO: add --locale option (ex.: ru_RU, en_US)
+            local('python manage.py compilemessages')
 
 
 def deploy(tarfile):

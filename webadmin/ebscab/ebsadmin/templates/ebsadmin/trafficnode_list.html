@@ -1,19 +1,21 @@
 {% extends "ebsadmin/base.html" %}
 
-{% load i18n %}
 {% load ebsadmin_tags %}
+{% load i18n %}
 {% load render_table from django_tables2 %}
+{% load static %}
+
 
 {% block extra_head %}
-  <script type="text/javascript" src="/media/jquery/js/jquery.inplacerowedit.js"></script>
+  <script type="text/javascript" src="{% static 'jquery/js/jquery.inplacerowedit.js' %}"></script>
 
-  <script type="text/javascript"> 
+  <script type="text/javascript">
     $(document).ready(function() {
 
       $("#id_btn_add").click(function(event) {
         $('<div />').dialog2({
-          title: "{% blocktrans %}Добавить направление{% endblocktrans %}", 
-          content: "{% url 'trafficnode' %}?traffic_class={{item.id}}", 
+          title: "{% blocktrans %}Добавить направление{% endblocktrans %}",
+          content: "{% url 'trafficnode' %}?traffic_class={{item.id}}",
           id: "accountaddonservicer-modal"
         });
 
@@ -22,8 +24,8 @@
 
       $(".open-custom-dialog").click(function(event) {
         $('<div />').dialog2({
-          title: "{% blocktrans %}Изменить направление{% endblocktrans %}", 
-          content: this.href, 
+          title: "{% blocktrans %}Изменить направление{% endblocktrans %}",
+          content: this.href,
           id: "accountaddonservicer-modal"
         });
 
@@ -51,8 +53,8 @@
               }else{
                 alert('{% blocktrans %}Произошла непредвиденная ошибка{% endblocktrans %}')
               }
-            })                      
-          }, 
+            })
+          },
           decline: function() {  }
         });
 
