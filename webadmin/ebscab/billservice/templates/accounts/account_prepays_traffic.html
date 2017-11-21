@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
-{% load custom_filters %}
+
 {% load billservice_tags %}
+{% load custom_filters %}
 {% load i18n %}
+{% load static %}
+
+
 {% block content %}
 
   <!-- остаток предоплаченного трафика -->
@@ -17,8 +21,8 @@
 		{% for class in traffic.traffic_class.all %}
 			<tr>
 				<td class="first_row">{{ class.name }}</td>
-				<td align="center">{% if traffic.in_direction %} <img src="{{ MEDIA_URL }}img/design/yes.gif"> {% endif %}&nbsp;</td>
-				<td align="center">{% if not traffic.in_direction %}<img src="{{ MEDIA_URL }}img/design/yes.gif"> {% endif %}&nbsp;</td>
+				<td align="center">{% if traffic.in_direction %} <img src="{% static 'img/design/yes.gif' %}"> {% endif %}&nbsp;</td>
+				<td align="center">{% if not traffic.in_direction %}<img src="{% static 'img/design/yes.gif' %}"> {% endif %}&nbsp;</td>
 				<td>{% traffic_size traffic account_tariff %}</td>
 			</tr>
 		{% endfor %}

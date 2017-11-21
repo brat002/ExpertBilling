@@ -3,10 +3,11 @@
 import datetime
 
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext, ugettext_lazy as _
 
 from dynamicmodel.models import DynamicModel
 from ebscab.fields import IPNetworkField, EncryptedTextField
@@ -191,6 +192,41 @@ class Account(DynamicModel):
     )
     objects = SoftDeletedDateManager()
 
+    @property
+    def promise_sum_20(self):
+        return (self.promise_summ
+                if self.promise_summ > 0
+                else settings.PROMISE_MAX_SUM)
+
+    @property
+    def promise_min_balance_20(self):
+        return (self.promise_min_ballance
+                if self.promise_min_ballance
+                else settings.PROMISE_MIN_BALANCE)
+
+    @property
+    def promise_left_days_20(self):
+        return self.promise_days or settings.PROMISE_LEFT_DAYS
+
+    @property
+    def allowed_transfer_sum_20(self):
+        return 0 if self.ballance <= 0 else round(self.ballance, 2)
+
+    @property
+    def address_full(self):
+        items = []
+        if self.city:
+            items.append(str(self.city))
+        if self.street:
+            items.append(ugettext(u'ул. {}'.format(self.street)))
+        if self.house:
+            items.append(ugettext(u'дом {}'.format(self.house)))
+        if self.house_bulk:
+            items.append(ugettext(u'корп. {}'.format(self.house_bulk)))
+        if self.room:
+            items.append(ugettext(u'кв. {}'.format(self.room)))
+        return ', '.join(items)
+
     def get_actual_ballance(self):
         return self.ballance + self.credit
 
@@ -315,6 +351,12 @@ class Account(DynamicModel):
 
     def get_absolute_url(self):
         return "%s?id=%s" % (reverse('account_edit'), self.id)
+
+    def get_addon_services(self):
+        return (apps.get_model('billservice.AccountAddonService').objects
+                .filter(account=self,
+                        subaccount__isnull=True,
+                        deactivated__isnull=True))
 
 
 class AccountAddonService(models.Model):

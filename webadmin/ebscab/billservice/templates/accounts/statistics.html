@@ -1,14 +1,17 @@
 {% extends 'base_extended.html' %}
-{% load i18n %}
-{% load custom_filters %}
+
 {% load billservice_tags %}
+{% load custom_filters %}
+{% load i18n %}
+{% load static %}
+
 
 {% block extra_head %}
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/ui.datepicker.css" />
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/ui.core.css" />
-<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/ui.theme.css" />
-<script type="text/javascript" src="{{ MEDIA_URL }}js/jquery/ui/jquery-ui.min.js"></script>
-<script type="text/javascript" src="{{ MEDIA_URL }}js/jquery/ui/i18n/ui.datepicker-ru.js"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/ui.datepicker.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'css/ui.core.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'css/ui.theme.css' %}" />
+<script type="text/javascript" src="{% static 'js/jquery/ui/jquery-ui.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/jquery/ui/i18n/ui.datepicker-ru.js' %}"></script>
 <script type="text/javascript">
 	$(document).ready(function() {
 		var dtSettings = {

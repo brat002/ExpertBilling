@@ -1,11 +1,15 @@
 {% extends 'base.html' %}
+
 {% load i18n %}
+{% load static %}
+
+
 {% block logo %}{% endblock %}
 
 {% block base %}
 	<table width="100%" class="main-table">
 		<tr>
-			<td valign="top" width="100px"><a href="http://www.expertbilling.ru/"><img src="{{ MEDIA_URL }}img/logo.gif"></a></td>
+			<td valign="top" width="100px"><a href="http://www.expertbilling.ru/"><img src="{% static 'img/logo.gif' %}"></a></td>
 			<td class="horizontal-menu">
 				<div>
 					<a href="/" class="text user-img">{% blocktrans %} Моя учетная запись{% endblocktrans %}</a>

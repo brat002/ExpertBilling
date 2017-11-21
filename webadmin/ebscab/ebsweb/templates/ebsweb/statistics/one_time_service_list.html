@@ -1,0 +1,42 @@
+{% extends 'ebsweb/statistics/base.html' %}
+
+{% load i18n %}
+
+{% load format_money from ebsweb %}
+
+
+{% block header %}
+	{% trans 'Разовые услуги' %}
+{% endblock %}
+
+{% block body %}
+	{% for item in services %}
+		{% if forloop.first %}
+			<table class="table table-bordered table-responsive">
+				<thead>
+					<tr>
+						<th>{% trans 'Название' %}</th>
+						<th>{% trans 'Стоимость' %},{{ settings.CURRENCY }}</th>
+						<th>{% trans 'Дата' %}</th>
+					</tr>
+				</thead>
+				<tbody>
+		{% endif %}
+					<tr>
+						<td>{{ item.onetimeservice.name }}</td>
+						<td>{{ item.summ|format_money }}</td>
+						<td>
+							{{ item.created|date:'Y-m-d' }}
+							<small class="text-muted">
+								{{ item.created|date:'H:i' }}
+							</small>
+						</td>
+					</tr>
+		{% if forloop.last %}
+				</tbody>
+			</table>
+		{% endif %}
+	{% empty %}
+		<div class="alert m-alert--default">{% trans 'Нет данных' %}</div>
+	{% endfor %}
+{% endblock %}

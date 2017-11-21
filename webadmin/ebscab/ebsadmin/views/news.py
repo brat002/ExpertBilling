@@ -104,8 +104,7 @@ def news_edit(request):
         else:
             return {
                 'form': form,
-                'status': False,
-                'item': model
+                'status': False
             }
     else:
         id = request.GET.get("id")

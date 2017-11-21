@@ -1,0 +1,65 @@
+{% load i18n %}
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="{% trans 'Кабинет пользователя' %}">
+
+	<title>{% block title %}{% trans 'Кабинет пользователя' %}{% endblock %} | EBS</title>
+
+	<link rel="stylesheet" href="{% static 'ebsweb/vendors/metronic/vendors/main.css' %}">
+	<link rel="stylesheet" href="{% static 'ebsweb/vendors/metronic/css/main.css' %}">
+	<link rel="stylesheet" href="{% static 'ebsweb/vendors/metronic/css/custom.css' %}">
+	{% block css %}{% endblock %}
+
+	{# BEGIN: Web font #}
+	<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+	<script>
+		WebFont.load({
+			google: {'families': ['Roboto:300,400,500,700:latin,cyrillic']},
+			active: function() {
+				sessionStorage.fonts = true;
+			}
+		});
+	</script>
+	{# END: Web font #}
+
+	{% include 'site_verify_codes.html' %}
+</head>
+
+<body class="m-content--skin-light">
+	<div class="wrapper">
+		<noscript>
+			<div class="alert alert-danger c-alert-squared mb-0">
+				<div class="container text-center">
+					<span class="font-weight-bold">{% trans 'Внимание!' %}</span>
+					{% blocktrans %}
+						Для полноценного функционирования интерфейса необходим JavaScript. Пожалуйста, включите его следуя
+						<a class="alert-link" href="//www.enable-javascript.com" target="blank">этой инструкции</a>.
+					{% endblocktrans %}
+				</div>
+			</div>
+		</noscript>
+		{% include 'ebsweb/includes/header.html' %}
+
+		{% include 'ebsweb/includes/messages.html' %}
+
+		<div class="container mt-4">
+			{% block main %}
+				{% block content %}{% endblock %}
+			{% endblock %}
+		</div>
+	</div>
+
+	<script src="{% static 'ebsweb/vendors/metronic/vendors/main.js' %}"></script>
+	<script src="{% static 'ebsweb/vendors/metronic/js/main.js' %}"></script>
+	<script src="{% static 'ebsweb/components/header/main.js' %}"></script>
+
+	{% block javascript %}{% endblock %}
+</body>
+</html>

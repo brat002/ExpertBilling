@@ -1,22 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from autocomplete_light import shortcuts as autocomplete_light
-from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.db.backends.postgresql_psycopg2.base import DatabaseFeatures
-from django.views import static
 from django.views.i18n import javascript_catalog
 
 from ajax_select import urls as ajax_select_urls
 from billservice import views as billservice_views
 from cassa import views as cassa_views
 from helpdesk.views import account as helpdesk_account_views
-from paymentgateways.osmp_customproviders import views as \
-    osmp_customproviders_views
-from paymentgateways.quickpay import views as quickpay_views
-from paymentgateways.rapida import views as rapida_views
-from paymentgateways.sberbank import views as sberbank_views
 from statistics import views as statistics_views
 
 
@@ -26,17 +19,15 @@ autocomplete_light.autodiscover()
 
 admin.autodiscover()
 
+# NOTE: override django error handlers
+handler400 = 'ebsweb.views.bad_request'
+handler403 = 'ebsweb.views.permission_denied'
+handler404 = 'ebsweb.views.page_not_found'
+handler500 = 'ebsweb.views.server_error'
 
 urlpatterns = [
-    url(r'^media/(?P<path>.*)$',
-        static.serve,
-        {'document_root': settings.MEDIA_ROOT}),
-    url(r'^static/(?P<path>.*)$',
-        static.serve,
-        {'document_root': settings.STATIC_ROOT}),
     url(r'^objectlog/', include('object_log.urls')),
     url(r'^helpdesk/', include('helpdesk.urls')),
-    url(r'^webmoney/', include('paymentgateways.webmoney.urls')),
     url(r'^ebsadmin/', include('ebsadmin.urls')),
     url(r'^cassa/', include('ebsadmin.cashier.urls')),
     url(r'^reports/', include('ebsadmin.reportsystem.urls')),
@@ -66,8 +57,6 @@ urlpatterns += [
         name='account_logout'),
     url(r'^promise/$', billservice_views.get_promise),
     url(r'^payment/$', billservice_views.make_payment),
-    url(r'^qiwi_payment/$', billservice_views.qiwi_payment),
-    url(r'^qiwi_payment/balance/$', billservice_views.qiwi_balance),
     url(r'^transaction/$', billservice_views.transaction),
     url(r'^session/info/$', billservice_views.vpn_session),
     url(r'^password/change/$', billservice_views.change_password),
@@ -133,17 +122,6 @@ urlpatterns += [
 ]
 
 urlpatterns += [
-    url(r'^quickpay/payment/$', quickpay_views.payment)
-]
-
-urlpatterns += [
-    url(r'^osmp_custom/payment/$', osmp_customproviders_views.payment)
-]
-
-urlpatterns += [
-    url(r'^pg/rapida/payment/$', rapida_views.payment)
-]
-
-urlpatterns += [
-    url(r'^pg/sberbank/payment/$', sberbank_views.payment)
+    # TODO: remove prefix '20/'
+    url('^20/', include('ebsweb.urls'))
 ]

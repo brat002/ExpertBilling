@@ -1,0 +1,15 @@
+{% with id=widget.attrs.id %}
+<div class="m-radio-list" {% if id %} id="{{ id }}"{% endif %}>
+	{% for group, options, index in widget.optgroups %}
+		{% if group %}
+			<label>{{ group }}</label>
+		{% endif %}
+		{% for option in options %}
+			{% include option.template_name with widget=option %}
+		{% endfor %}
+		{% if group and not forloop.last %}
+			<br>
+		{% endif %}
+	{% endfor %}
+</div>
+{% endwith %}

@@ -1,34 +1,39 @@
-{% extends "helpdesk/base.html" %}{% load i18n %}
+{% extends 'helpdesk/base.html' %}
+
 {% load billservice_tags %}
 {% load crispy_forms_tags %}
+{% load i18n %}
+{% load static %}
+
+
 {% block helpdesk_title %}{% trans "View Ticket Details" %}{% endblock %}
 {% block extra_head %}
 {{block.super}}
 <script type="text/javascript">
     $(document).ready(function() {
-  
+
 
     $(".btn_followup_add").click(function(event) {
         $('<div/>').dialog2({
-            title: "{% blocktrans %}Добавить комментарий{% endblocktrans %}", 
-            content: this.href, 
+            title: "{% blocktrans %}Добавить комментарий{% endblocktrans %}",
+            content: this.href,
             id: "server-notice"
         });
-        
+
         event.preventDefault(event);
     });
-    
+
     $(".reassign_dialog").click(function(event) {
         $('<div/>').dialog2({
-            title: "{% blocktrans %}Перевести задачу{% endblocktrans %}", 
-            content: this.href, 
+            title: "{% blocktrans %}Перевести задачу{% endblocktrans %}",
+            content: this.href,
             id: "server-notice"
         });
-        
+
         event.preventDefault(event);
     });
-    
-    
+
+
     function processAddFileClick() {
         /* Until jQuery includes some 'livequery' functionality in the core
            distribution, this will have to do. */
@@ -57,12 +62,12 @@
 <div class="navbar navbar-googlenav">
   <div class="navbar-inner">
     <div class="btn-toolbar">
-    
+
     {% if request.user.username != ticket.assigned_to.username %}
         <div class="btn-group">
-        
+
         <a href='{% url 'ticket_assign' %}?ticket_id={{ticket.id}}&systemuser_id={{request.user.account.id}}' class='btn reassign_dialog' ><i class='cus-accept'></i>&nbsp;{% trans "Take" %}</a>
-        
+
       </div>
       {% endif %}
         <div class="btn-group">
@@ -74,7 +79,7 @@
         <a  href='{% url 'helpdesk_submit' %}?id={{ticket.id}}' class='btn'><i class='icon-edit'></i>&nbsp;Изменить</a>
       </div>
 
- 
+
       <div class="btn-group">
     {% if ticket.on_hold %}
         <a href='unhold/' class='btn btn-warning'><i class='cus-lock-delete'></i>&nbsp;{% trans "Unhold" %}</a>
@@ -82,11 +87,11 @@
         <a  href='hold/'  class='btn btn-warning'><i class='cus-lock-open'></i>&nbsp;{% trans "Hold" %}</a>
     {% endif %}
       </div>
- 
+
     <div class="btn-group">
     <a href='{% url 'followup_edit' %}?ticket_id={{ticket.id}}&followup_type=comment' class="btn btn_followup_add"><i class='cus-comments-add'></i>&nbsp;{% blocktrans %}Комментарий{% endblocktrans %}</a>
     </div>
-    
+
       <div class="btn-group">
         <a  href='{% url 'followup_edit' %}?ticket_id={{ticket.id}}&followup_type=files' class='btn btn_followup_add'><i class='cus-attach'></i>&nbsp;Прикрепить файл</a>
       </div>
@@ -103,7 +108,7 @@
       <div class="btn-group pull-right">
         <a  href='{% url 'helpdesk_delete' ticket.id %}' class='btn btn-danger'>Удалить</a>
       </div>
- 
+
   </div>
 </div>
 </div>
@@ -139,7 +144,7 @@
     <td><strong>{% trans "Assigned To" %}</strong></td>
     <td class="left_border {{ 3|coll_bg  }} ">
       {{ticket.assigned_to|default:''}}
- 
+
 
       {% comment%}{% endifequal %}{% endcomment%}
     </td>
@@ -178,7 +183,7 @@
 </tr>
 
 {% if ticket.resolution %}<tr class='row_{% if tags_enabled %}odd{% else %}even{% endif %}'>
-    <th colspan='2'>{% trans "Resolution" %}{% ifequal ticket.get_status_display "Resolved" %} <a href='?close'><img src='{{ MEDIA_URL }}helpdesk/buttons/accept.png' alt='{% trans "Accept" %}' title='{% trans "Accept and Close" %}' width='60' height='15' /></a>{% endifequal %}</th>
+    <th colspan='2'>{% trans "Resolution" %}{% ifequal ticket.get_status_display "Resolved" %} <a href='?close'><img src="{% static 'helpdesk/buttons/accept.png' %}" alt='{% trans "Accept" %}' title='{% trans "Accept and Close" %}' width='60' height='15' /></a>{% endifequal %}</th>
 </tr>
 <tr class='row_{% if tags_enabled %}even{% else %}odd{% endif %}'>
     <td colspan='2'>{{ ticket.resolution|force_escape }}</td>
@@ -194,10 +199,10 @@
 
 <div class="media">
 
- 
-    
 
-  
+
+
+
 
 {% for followup in ticket.followup_set.all %}
 <div class="media-body ">
@@ -206,28 +211,28 @@
 
 <div class='well'>
   <span class="event-date">{{ followup.date|date:"d.m.Y H:i" }}</span>
-	
+
 	{% if not followup.public %}
 	    <span class='private'>({% trans "Private" %})</span>
 	    {% endif %}
 
 	 {% if followup.comment %}{{ followup.comment|force_escape|num_to_link|linebreaksbr }}{% endif %}
   {% for change in followup.ticketchange_set.all %}
-  
+
   <div class='changes'>
   <div>{% blocktrans with change.field as field and change.old_value as old_value and change.new_value as new_value %}Changed {{ field }} from {{ old_value }} to {{ new_value }}.{% endblocktrans %}</div>
   </div>
   {% endfor %}
 
-  
+
   {% for attachment in followup.attachment_set.all %}
 
   <div class='attachments'>
 
   <a href='{{ attachment.file.url }}'>{{ attachment.filename }}</a> ({{ attachment.mime_type }}, {{ attachment.size|filesizeformat }})
   </div>
-  
-  
+
+
   {% endfor %}
 
 </div>

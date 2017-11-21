@@ -80,7 +80,7 @@ class Transaction(models.Model):
     )
     description = models.TextField(
         default='', blank=True, verbose_name=_(u"Комментарий"))
-    created = models.DateTimeField(verbose_name=_(u"Дата"))
+    created = models.DateTimeField(verbose_name=_(u"Дата"), auto_now_add=True)
     end_promise = models.DateTimeField(
         blank=True, null=True, verbose_name=_(u"Закрыть ОП"))
     promise_expired = models.BooleanField(

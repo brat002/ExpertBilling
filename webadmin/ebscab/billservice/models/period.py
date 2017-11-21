@@ -56,6 +56,10 @@ class SettlementPeriod(models.Model):
             ("settlementperiod_view", _(u"Просмотр расчётных периодов")),
         )
 
+    def render_name(self):
+        if self.name:
+            return self.name[1:]
+
 
 class SuspendedPeriod(models.Model):
     account = models.ForeignKey(

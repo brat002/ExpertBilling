@@ -1,0 +1,37 @@
+{% load i18n %}
+
+<div class="card c-tariff-select__item">
+	<label class="mb-0" {% if widget.attrs.id %} for="{{ widget.attrs.id }}"{% endif %}>
+		{% with detail=widget.detail %}
+			<div class="card-body">
+				<h4 class="card-title">{{ detail.title }}</h4>
+				<p class="card-text">
+					{% if detail.description %}
+						{{ detail.description }}
+					{% else %}
+						{% trans 'Нет описания' %}
+					{% endif %}
+				</p>
+				<ul class="list-unstyled mb-0">
+					<li>
+						<i class="la la-money"></i>
+						<span title="{% trans 'Стоимость' %}">{{ detail.price }}</span>/<span title="{% trans 'Мин. баланс' %}">{{ detail.balance_min }}</span>
+					</li>
+					<li>
+						<span title="{% trans 'Время изменения тарифа' %}">
+							<i class="la la-clock-o"></i>
+							{% if detail.date_start %}
+								{{ detail.date_start }}
+							{% else %}
+								{% trans 'Сейчас' %}
+							{% endif %}
+						</span>
+					</li>
+				</ul>
+			</div>
+		{% endwith %}
+		<div class="d-none">
+			{% include "django/forms/widgets/input.html" %}
+		</div>
+	</label>
+</div>

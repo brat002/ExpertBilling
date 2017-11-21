@@ -1,0 +1,47 @@
+{% extends 'ebsweb/statistics/base.html' %}
+
+{% load i18n %}
+
+{% load default_dash from ebsweb %}
+{% load format_money from ebsweb %}
+
+
+{% block header %}
+	{% trans 'Транзакции' %}
+{% endblock %}
+
+{% block body %}
+	{% for item in transactions %}
+		{% if forloop.first %}
+			<table class="table table-bordered table-responsive">
+				<thead>
+					<tr>
+						<th>{% trans 'Дата' %}</th>
+						<th>{% trans 'Сумма' %},{{ settings.CURRENCY }}</th>
+						<th>{% trans 'Описание' %}</th>
+						<th>{% trans 'Документ' %}</th>
+						<th>{% trans 'Комментарий' %}</th>
+					</tr>
+				</thead>
+				<tbody>
+		{% endif %}
+					<tr>
+						<td>
+							{{ item.created|date:'Y-m-d' }}
+							<small class="text-muted">
+								{{ item.created|date:'H:i' }}
+							</small>
+						</td>
+						<td>{{ item.summ|format_money }}</td>
+						<td>{{ item.description|default_dash }}</td>
+						<td>{{ item.type.name }}</td>
+						<td>{{ item.comment|default_dash }}</td>
+					</tr>
+		{% if forloop.last %}
+				</tbody>
+			</table>
+		{% endif %}
+	{% empty %}
+		<div class="alert m-alert--default">{% trans 'Нет данных' %}</div>
+	{% endfor %}
+{% endblock %}

@@ -1,0 +1,199 @@
+{% extends 'ebsweb/account/base.html' %}
+
+{% load i18n %}
+
+{% load format_traffic from ebsweb %}
+{% load progress from ebsweb %}
+
+
+{% block content %}
+<div class="row">
+	<div class="col-lg-6">
+		<div class="m-portlet m-portlet--bordered-semi">
+			<div class="m-portlet__head">
+				<div class="m-portlet__head-caption">
+					<div class="m-portlet__head-title">
+						<h3 class="m-portlet__head-text">{% trans 'Баланс' %}</h3>
+					</div>
+				</div>
+				<div class="m-portlet__head-tools">
+					<a class="btn m-btn--pill btn-secondary m-btn m-btn--custom m-btn--label-success" href="{% url 'ebsweb:money_payment' %}">{% trans 'Пополнить' %}</a>
+				</div>
+			</div>
+			<div class="m-portlet__body">
+				<div class="m-widget25">
+					<span class="m-widget25__price m--font-brand">{{ balance|floatformat:2 }}</span>
+					<span class="m-widget25__desc">{{ settings.CURRENCY }}</span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-lg-6">
+		<div class="m-portlet m-portlet--bordered-semi">
+			<div class="m-portlet__head">
+				<div class="m-portlet__head-caption">
+					<div class="m-portlet__head-title">
+						<h3 class="m-portlet__head-text">{% trans 'Кредит' %}</h3>
+					</div>
+				</div>
+			</div>
+			<div class="m-portlet__body">
+				<div class="m-widget25">
+					<span class="m-widget25__price m--font-warning">{{ credit|floatformat:2 }}</span>
+					<span class="m-widget25__desc">{{ settings.CURRENCY }}</span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="m-portlet">
+	<div class="m-portlet__head">
+		<div class="m-portlet__head-caption">
+			<div class="m-portlet__head-title">
+				<h3 class="m-portlet__head-text">{% trans 'Информация об аккаунте' %}</h3>
+			</div>
+		</div>
+	</div>
+	<div class="m-portlet__body">
+		<div class="m-widget13">
+			<div class="m-widget13__item">
+				<div class="m-widget13__desc m--align-right">{% trans 'Тариф:' %}</div>
+				<div class="m-widget13__text m-widget13__text-bolder">
+					{{ tariff }}
+					(<a class="font-weight-normal text-muted" href="{% url 'ebsweb:account_tariff' %}">{% trans 'сменить' %}</a>)
+				</div>
+			</div>
+			<div class="m-widget13__item">
+				<div class="m-widget13__desc m--align-right">{% trans 'Дата подключения:' %}</div>
+				<div class="m-widget13__text m-widget13__text-bolder">{{ connected|date:'Y-m-d' }}</div>
+			</div>
+			<div class="m-widget13__item">
+				<div class="m-widget13__desc m--align-right">{% trans 'ФИО:' %}</div>
+				<div class="m-widget13__text m-widget13__text-bolder">{{ fullname }}</div>
+			</div>
+			<div class="m-widget13__item">
+				<div class="m-widget13__desc m--align-right">{% trans 'Адрес:' %}</div>
+				<div class="m-widget13__text m-widget13__text-bolder">{{ address }}</div>
+			</div>
+			<div class="m-widget13__item">
+				<div class="m-widget13__desc m--align-right">{% trans 'Email:' %}</div>
+				<div class="m-widget13__text m-widget13__text-bolder">
+					{% if email %}{{ email }}{% else %}-{% endif %}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="m-portlet">
+	<div class="m-portlet__head">
+		<div class="m-portlet__head-caption">
+			<div class="m-portlet__head-title">
+				<h3 class="m-portlet__head-text">{% trans 'Остатки траффика по лимитам' %}</h3>
+			</div>
+		</div>
+	</div>
+	<div class="m-portlet__body">
+		{% for traffic_limit in traffic_limits %}
+			{% if forloop.first %}
+				<table class="table table-bordered table-responsive">
+					<thead>
+						<tr>
+							<th>{% trans 'Название' %}</th>
+							<th>{% trans 'Начало' %}</th>
+							<th>{% trans 'Окончание' %}</th>
+							<th>{% trans 'Потреблено' %}</th>
+							<th>{% trans 'Лимит' %}</th>
+						</tr>
+					</thead>
+					<tbody>
+			{% endif %}
+						<tr>
+							<td>{{ traffic_limit.name }}</td>
+							<td>
+								{{ traffic_limit.settlement_period_start|date:'Y-m-d' }}
+								<small class="text-muted">{{ traffic_limit.settlement_period_start|date:'H:i' }}</small>
+							</td>
+							<td>
+								{{ traffic_limit.settlement_period_end|date:'Y-m-d' }}
+								<small class="text-muted">{{ traffic_limit.settlement_period_end|date:'H:i' }}</small>
+							</td>
+							<td>{{ traffic_limit.traffic_used|format_traffic }}</td>
+							<td>{{ traffic_limit.traffic_limit|format_traffic }}</td>
+						</tr>
+			{% if forloop.last %}
+					</tbody>
+				</table>
+			{% endif %}
+		{% empty %}
+			<div class="alert m-alert--default">{% trans 'Нет данных' %}</div>
+		{% endfor %}
+	</div>
+</div>
+
+{% if prepaid_items.traffic %}
+	<div class="m-portlet">
+		<div class="m-portlet__head">
+			<div class="m-portlet__head-caption">
+				<div class="m-portlet__head-title">
+					<h3 class="m-portlet__head-text">{% trans 'Предоплаченные единицы (NetFlow)' %}</h3>
+				</div>
+			</div>
+		</div>
+		<div class="m-portlet__body">
+			{% for traffic in prepaid_items.traffic %}
+				{% if forloop.first %}
+					<div class="m-stack m-stack--how m-stack--general">
+				{% endif %}
+						<div class="m-stack__item{% if not forloop.first %} mt-3{% endif %}">
+							<h6 title="{% trans 'Направление' %}">{{ traffic.prepaid_traffic.group.name }}</h6>
+							{% with value=traffic.size max=traffic.prepaid_traffic.size %}
+								{% progress value=value max=max value_text=value|format_traffic:'MB' max_text=max|format_traffic:'MB' %}
+							{% endwith %}
+						</div>
+				{% if forloop.last %}
+					</div>
+				{% endif %}
+			{% empty %}
+				<div class="alert m-alert--default">{% trans 'Нет данных' %}</div>
+			{% endfor %}
+		</div>
+	</div>
+{% endif %}
+
+{% if prepaid_items.time or prepaid_items.radius_traffic %}
+	{% with time=prepaid_items.time traffic=prepaid_items.radius_traffic %}
+		<div class="m-portlet">
+			<div class="m-portlet__head">
+				<div class="m-portlet__head-caption">
+					<div class="m-portlet__head-title">
+						<h3 class="m-portlet__head-text">{% trans 'Предоплаченные единицы (Radius)' %}</h3>
+					</div>
+				</div>
+			</div>
+			<div class="m-portlet__body">
+				<div class="m-stack m-stack--how m-stack--general">
+					{% if time %}
+						<div class="m-stack__item">
+							<h6>{% trans 'Время' %}</h6>
+							{% with value=time.size max=time.prepaid_time_service.prepaid_time %}
+								{% progress value=value max=max value_text=value|time:'H:i:s' max_text=max|time:'H:i:s' %}
+							{% endwith %}
+						</div>
+					{% endif %}
+					{% if traffic %}
+						<div class="m-stack__item{% if time %} mt-3{% endif %}">
+							<h6>{% trans 'Траффик ' %}</h6>
+							{% with value=traffic.size max=traffic.prepaid_traffic.prepaid_value_as_B %}
+								{% progress value=value max=max value_text=value|format_traffic:'MB' max_text=max|format_traffic:'MB' %}
+							{% endwith %}
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+	{% endwith %}
+{% endif %}
+
+{% endblock %}

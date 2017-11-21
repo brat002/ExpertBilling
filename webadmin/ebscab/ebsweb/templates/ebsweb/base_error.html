@@ -1,0 +1,9 @@
+{% extends 'ebsweb/base.html' %}
+
+
+{% block main %}
+<div class="c-error_container">
+	<h1 class="c-error_code text-muted">{% block code %}{% endblock %}</h1>
+	<p class="c-error_description text-muted">{% block description %}{% endblock %}</p>
+</div>
+{% endblock %}

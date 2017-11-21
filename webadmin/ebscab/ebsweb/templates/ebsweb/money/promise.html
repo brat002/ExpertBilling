@@ -1,0 +1,104 @@
+{% extends 'ebsweb/money/base.html' %}
+
+{% load i18n %}
+
+
+{% block content %}
+{% if promise_allowed %}
+	<div class="m-portlet m-portlet--mobile">
+		<div class="m-portlet__head">
+			<div class="m-portlet__head-caption">
+				<div class="m-portlet__head-title">
+					<h3 class="m-portlet__head-text">{% trans 'Обещанный платеж' %}</h3>
+				</div>
+			</div>
+		</div>
+		{# TODO: rebuild form follow DRY #}
+		<form class="m-form m-form--fit m-form--label-align-right" action="{% url 'ebsweb:money_promise' %}" method="POST">
+			{% csrf_token %}
+			<div class="m-portlet__body">
+				{% for field in form.visible_fields %}
+					{# TODO: replace to custom tag #}
+					<div class="form-group m-form__group row{% if field.errors %} has-danger{% endif %}">
+						<label class="col-lg-3 col-form-label" for="{{ field.id_for_label }}">
+							{{ field.label }}{% if field.field.required %} *{% endif %}
+						</label>
+						<div class="col-lg-6">
+							{{ field }}
+							{% for error in field.errors %}
+								<div class="form-control-feedback">
+									{{ error|escape }}
+								</div>
+							{% endfor %}
+							{% if field.help_text %}
+								<span class="m-form__help">
+									{{ field.help_text }}
+								</span>
+							{% endif %}
+						</div>
+					</div>
+				{% endfor %}
+
+				<div class="form-group m-form__group row">
+					<div class="col-lg-3"></div>
+					<div class="col-lg-9">
+						<div class="alert m-alert--default">
+							{% trans 'Сумма платежа будет списана с вашего баланса' %} <span class="m--font-bold">{{ promise_left_date|date:'Y-m-d' }} </span> {% trans 'в' %} <span class="m--font-bold">{{ promise_left_date|date:'H:i' }}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="m-portlet__no-border m-portlet__foot--fit">
+				<div class="m-form__actions m-form__actions--solid">
+					<div class="row">
+						<div class="d-none d-lg-block col-lg-3"></div>
+						<div class="col-lg-9">
+							<button type="submit" class="btn btn-success">{% trans 'Взять' %}</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+{% else %}
+	<div class="m-portlet m-portlet--mobile">
+		<div class="m-portlet__head">
+			<div class="m-portlet__head-caption">
+				<div class="m-portlet__head-title">
+					<h3 class="m-portlet__head-text">{% trans 'История' %}</h3>
+				</div>
+			</div>
+		</div>
+		<div class="m-portlet__body">
+			{% for promise in latest_promises %}
+				{% if forloop.first %}
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th>{% trans 'Дата' %}</th>
+								<th>{% trans 'До' %}</th>
+								<th>{% trans 'Сумма' %}</th>
+								<th>{% trans 'Комментарий' %}</th>
+								<th>{% trans 'Возвращен' %}</th>
+							</tr>
+						</thead>
+						<tbody>
+				{% endif %}
+							<tr>
+								<td>{{ promise.created|date:'Y-m-d H:i' }}</td>
+								<td>{{ promise.end_promise|date:'Y-m-d H:i' }}</td>
+								<td>{{ promise.human_sum|floatformat:2 }}</td>
+								<td>{% if promise.description %}{{ promise.description }}{% else %}-{% endif %}</td>
+								<td>{% if promise.promise_expired %}{% trans 'Да' %}{% else %}{% trans 'Нет' %}{% endif %}</td>
+							</tr>
+				{% if forloop.last %}
+						</tbody>
+					</table>
+				{% endif %}
+			{% empty %}
+				{% trans 'Нет данных для отображения' %}
+			{% endfor %}
+		</div>
+	</div>
+{% endif %}
+{% endblock %}

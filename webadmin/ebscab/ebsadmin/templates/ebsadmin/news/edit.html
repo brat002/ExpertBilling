@@ -1,12 +1,14 @@
 {% extends "ebsadmin/base.html" %}
 
-{% load i18n %}
 {% load ebsadmin_tags %}
+{% load i18n %}
+{% load static %}
+
 
 {% block extra_head %}
-  <script type="text/javascript" src="/media/tinymce/tiny_mce/tiny_mce.js"></script>
+  <script type="text/javascript" src="{% static 'tinymce/tiny_mce/tiny_mce.js' %}"></script>
 
-  <script type="text/javascript"> 
+  <script type="text/javascript">
     $(document).ready(function() {
       $("#id_age_1").mask("99:99:99");
       tinyMCE.init({
@@ -32,34 +34,65 @@
         <fieldset>
           {{ form.id }}
           <div class="control-group">
-
             <label class="control-label">{{form.created.label}}: </label>
             <div class="controls">
               {{ form.created }}
               {% if form.created.errors %}
               <span class="help-inline">{% for error in form.created.errors %}{{ error }}<br/> {% endfor %}</span>
               {% endif %}
-              {% if form.created.help_text%}
+              {% if form.created.help_text %}
               <p class="help-block">
                 {{ form.created.help_text|safe }}
               </p>
               {% endif %}
             </div>
 
-          </div>  
+          </div>
           <div class="control-group">
 
             <label class="control-label">{{form.age.label}}: </label>
             <div class="controls">
-              {{ form.age }} {{ form.age.help_text|safe }}
-              {% if form.age.errors %} 
+              {{ form.age }}
+              {% if form.age.errors %}
               <span class="help-inline">{% for error in form.age.errors %}{{ error }}<br/> {% endfor %}</span>
+              {% endif %}
+              {% if form.age.help_text %}
+              <p class="help-block">
+                {{ form.age.help_text|safe }}
+              </p>
               {% endif %}
             </div>
 
-          </div>  
+          </div>
           <div class="control-group">
-
+            <label class="control-label">{{form.title.label}}: </label>
+            <div class="controls">
+              {{ form.title }}
+              {% if form.title.errors %}
+                <span class="help-inline">{% for error in form.title.errors %}{{ error }}<br/> {% endfor %}</span>
+              {% endif %}
+              {% if form.title.help_text%}
+                <p class="help-block">
+                  {{ form.title.help_text|safe }}
+                </p>
+              {% endif %}
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label">{{form.description.label}}: </label>
+            <div class="controls">
+              {{ form.description }}
+              {% if form.description.errors %}
+                <span class="help-inline">{% for error in form.description.errors %}{{ error }}<br/> {% endfor %}</span>
+              {% endif %}
+              {% if form.description.help_text%}
+                <p class="help-block">
+                  {{ form.description.help_text|safe }}
+                </p>
+              {% endif %}
+            </div>
+          </div>
+          <div class="control-group">
             <label class="control-label">{{form.body.label}}: </label>
             <div class="controls">
               {{ form.body }}
@@ -72,8 +105,7 @@
               </p>
               {% endif %}
             </div>
-
-          </div>  
+          </div>
           <div class="control-group">
 
             <label class="control-label">{{form.accounts.label}}: </label>
@@ -89,7 +121,7 @@
               {% endif %}
             </div>
 
-          </div>  
+          </div>
           <div class="control-group">
 
             <label class="control-label">{{form.public.label}}: </label>
@@ -105,7 +137,7 @@
               {% endif %}
             </div>
 
-          </div>  
+          </div>
           <div class="control-group">
 
             <label class="control-label">{{form.private.label}}: </label>
@@ -121,7 +153,7 @@
               {% endif %}
             </div>
 
-          </div>  
+          </div>
           <div class="control-group">
 
             <label class="control-label">{{form.agent.label}}: </label>
@@ -136,7 +168,7 @@
               </p>
               {% endif %}
 
-            </div>  
+            </div>
         </fieldset>
         <fieldset>
           <div class="form-actions form-actions-center">

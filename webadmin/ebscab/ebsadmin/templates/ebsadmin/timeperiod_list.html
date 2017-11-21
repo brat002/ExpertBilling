@@ -1,13 +1,15 @@
 {% extends "ebsadmin/base.html" %}
 
-{% load i18n %}
 {% load ebsadmin_tags %}
+{% load i18n %}
+{% load static %}
+
 
 {% block extra_head %}
-  <script type="text/javascript" src="/media/dynatree/jquery.dynatree.js"></script>
-  <link href="/media/dynatree/skin/ui.dynatree.css" rel="stylesheet" type="text/css" id="skinSheet">
+  <script type="text/javascript" src="{% static 'dynatree/jquery.dynatree.js' %}"></script>
+  <link href="{% static 'dynatree/skin/ui.dynatree.css' %}" rel="stylesheet" type="text/css" id="skinSheet">
 
-  <script type="text/javascript"> 
+  <script type="text/javascript">
     $(document).ready(function() {
       $("#id_button_tp").click(function(){
         $.fn.dialog2.helpers.prompt("{% blocktrans %}Название{% endblocktrans %}", {
@@ -28,7 +30,7 @@
               }
               return
             })
-          }, 
+          },
           cancel: function() {}
         });
       });
@@ -55,7 +57,7 @@
           cache:false,
           dataType: "json",
           data: $("#id_form").serialize(),
-          success: function(data){   
+          success: function(data){
             $("#id_form_content").html(data.form);
             if (data.status==true){
               if (action=='new'){
@@ -106,7 +108,7 @@
           cache:false,
           dataType: "json",
           data: {key:node.data.key},
-          success: function(data){   
+          success: function(data){
             $("#id_form_content").html(data.form);
           }
         });
@@ -145,7 +147,7 @@
       $("#id_button_delete").click(function(event) {
         var node = $("#tree").dynatree("getActiveNode");
         $.fn.dialog2.helpers.confirm("{% blocktrans %}Вы уверены, что хотите удалить запись?{% endblocktrans %}", {
-          confirm: function() { 
+          confirm: function() {
             $.getJSON('{% url 'timeperiod_delete' %}',{key:node.data.key},function(data,status){
               if( status=='success' ){
                 if(data.status==true)
@@ -158,7 +160,7 @@
               }
               return
             })
-          }, 
+          },
         });
 
         event.preventDefault(event);
@@ -172,9 +174,9 @@
     <p class="help-block">
       {% blocktrans %}Двойной клик по элементу - редактировать{% endblocktrans %}
     </p>
-    
+
     <div class="span5" id="tree"></div>
-    
+
     <div class="span6">
       <form method="POST" id="id_form" class="well form-horizontal form-condensed ">
         <div id="id_form_content"></div>

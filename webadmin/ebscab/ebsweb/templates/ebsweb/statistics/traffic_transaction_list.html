@@ -1,0 +1,40 @@
+{% extends 'ebsweb/statistics/base.html' %}
+
+{% load i18n %}
+
+{% load format_money from ebsweb %}
+
+
+{% block header %}
+	{% trans 'Списания за траффик' %}
+{% endblock %}
+
+{% block body %}
+	{% for item in services %}
+		{% if forloop.first %}
+			<table class="table table-bordered table-responsive">
+				<thead>
+					<tr>
+						<th>{% trans 'Дата' %}</th>
+						<th>{% trans 'Сумма' %},{{ settings.CURRENCY }}</th>
+					</tr>
+				</thead>
+				<tbody>
+		{% endif %}
+					<tr>
+						<td>
+							{{ item.created|date:'Y-m-d' }}
+							<small class="text-muted">
+								{{ item.created|date:'H:i' }}
+							</small>
+						</td>
+						<td>{{ item.summ|format_money }}</td>
+					</tr>
+		{% if forloop.last %}
+				</tbody>
+			</table>
+		{% endif %}
+	{% empty %}
+		<div class="alert m-alert--default">{% trans 'Нет данных' %}</div>
+	{% endfor %}
+{% endblock %}

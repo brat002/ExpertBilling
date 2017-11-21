@@ -1,34 +1,37 @@
 {% load i18n %}
+{% load static %}
+
+
 <!DOCTYPE html>
 <html>
 <head>
-<link href="/media/bootstrap/css/bootstrap.css" rel="stylesheet">
-<link href="/media/bootstrap/css/style.css" rel="stylesheet">
+<link href="{% static 'bootstrap/css/bootstrap.css' %}" rel="stylesheet">
+<link href="{% static 'bootstrap/css/style.css' %}" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="/media/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
-<link href="/media/bootstrap/css/cus-icons.css" rel="stylesheet">
-<link href="/media/bootstrap/css/todc-bootstrap.css" rel="stylesheet"></head>
-<link href="/media/bootstrap-datepicker/css/datepicker.css" rel="stylesheet">
-<link rel="stylesheet" type="text/css" media="all" href="/media/daterangepicker/daterangepicker.css" />
+<link href="{% static 'bootstrap/css/bootstrap-responsive.css' %}" rel="stylesheet">
+<link href="{% static 'bootstrap/css/cus-icons.css' %}" rel="stylesheet">
+<link href="{% static 'bootstrap/css/todc-bootstrap.css' %}" rel="stylesheet"></head>
+<link href="{% static 'bootstrap-datepicker/css/datepicker.css' %}" rel="stylesheet">
+<link rel="stylesheet" type="text/css" media="all" href="{% static 'daterangepicker/daterangepicker.css' %}" />
 
 
-<script src="/media/jquery/js/jquery-1.8.2.js"></script>
-<script src="/media/jquery/js/jquery.history.js"></script>
-<script src="/media/jquery/js/jquery.cookie.js"></script>
-<script type="text/javascript" src="/media/jquery/js/jquery-ui-1.9.1.custom.min.js"></script>
-<script type="text/javascript" src="/media/daterangepicker/date.js"></script>
-<script type="text/javascript" src="/media/daterangepicker/daterangepicker.js"></script>
+<script src="{% static 'jquery/js/jquery-1.8.2.js' %}"></script>
+<script src="{% static 'jquery/js/jquery.history.js' %}"></script>
+<script src="{% static 'jquery/js/jquery.cookie.js' %}"></script>
+<script type="text/javascript" src="{% static 'jquery/js/jquery-ui-1.9.1.custom.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'daterangepicker/date.js' %}"></script>
+<script type="text/javascript" src="{% static 'daterangepicker/daterangepicker.js' %}"></script>
 
-<script type="text/javascript" src="/media/jdialogs/lib/jquery.dialog2.js"></script>
+<script type="text/javascript" src="{% static 'jdialogs/lib/jquery.dialog2.js' %}"></script>
 
-<script type="text/javascript" src="/media/jdialogs/lib/jquery.dialog2.helpers.js"></script>
-<script type="text/javascript" src="/media/jquery/js/jquery.controls.js"></script>
-<script type="text/javascript" src="/media/jquery/js/jquery.form.js"></script>
-<script src="/media/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="{% static 'jdialogs/lib/jquery.dialog2.helpers.js' %}"></script>
+<script type="text/javascript" src="{% static 'jquery/js/jquery.controls.js' %}"></script>
+<script type="text/javascript" src="{% static 'jquery/js/jquery.form.js' %}"></script>
+<script src="{% static 'bootstrap-datepicker/js/bootstrap-datepicker.js' %}"></script>
 
 
-<link type="text/css" rel="stylesheet" href="/media/jdialogs/css/jquery-dialog2/jquery.dialog2.css">
-<link rel="stylesheet" href="/media/jquery/css/jquery-ui-1.9.1.custom.min.css" type="text/css" title="ui-theme" />
+<link type="text/css" rel="stylesheet" href="{% static 'jdialogs/css/jquery-dialog2/jquery.dialog2.css' %}">
+<link rel="stylesheet" href="{% static 'jquery/css/jquery-ui-1.9.1.custom.min.css' %}" type="text/css" title="ui-theme" />
 <script  type="text/javascript" >
 $(document).ready(function() {
 
@@ -36,9 +39,9 @@ $(document).ready(function() {
     });
 
 </script>
-<script src="/media/bootstrap/js/bootstrap.min.js"></script>
-<script src="/media/bootstrap/js/bootstrap-multiselect.js"></script>
-<script src="/media/bootstrap/js/bootstrap-tab-history.js"></script>
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'bootstrap/js/bootstrap-multiselect.js' %}"></script>
+<script src="{% static 'bootstrap/js/bootstrap-tab-history.js' %}"></script>
 
 
   <style type="text/css">

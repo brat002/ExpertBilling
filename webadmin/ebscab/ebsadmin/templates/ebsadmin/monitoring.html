@@ -1,12 +1,14 @@
 {% extends "ebsadmin/base.html" %}
 
-{% load i18n %}
 {% load crispy_forms_tags %}
 {% load ebsadmin_tags %}
+{% load i18n %}
+{% load static %}
+
 
 {% block extra_head %}
-  <script type="text/javascript" src="/media/dygraph/dygraph-combined.js"></script>
-  <script type="text/javascript"> 
+  <script type="text/javascript" src="{% static 'dygraph/dygraph-combined.js' %}"></script>
+  <script type="text/javascript">
     $(document).ready(function() {
 
       function refresh()
@@ -30,16 +32,16 @@
 
       $.ajax(
       {
-        url: "{% url 'radiusstat' %}",     
+        url: "{% url 'radiusstat' %}",
         type: "POST",
         dataType: "json",
-        success: function( data ) 
+        success: function( data )
         {
           var new_arr=[];
 
-          $.map( data.records, function( item ) 
+          $.map( data.records, function( item )
           {
-            item.date = new Date(item.date); 
+            item.date = new Date(item.date);
             new_arr.push([item.date, item.active])
             return item
           })
@@ -70,16 +72,16 @@
       {% for nas_id, nas_name in radiusstat_nasses %}
       $.ajax(
       {
-        url: "{% url 'radiusstat' %}?nas={{nas_id}}",     
+        url: "{% url 'radiusstat' %}?nas={{nas_id}}",
         type: "POST",
         dataType: "json",
-        success: function( data ) 
+        success: function( data )
         {
           var new_arr=[];
 
-          $.map( data.records, function( item ) 
+          $.map( data.records, function( item )
           {
-            item.date = new Date(item.date); 
+            item.date = new Date(item.date);
             new_arr.push([item.date, item.active])
             return item
           })
@@ -119,11 +121,11 @@
         <label class="checkbox inline">Автообновление:&nbsp;</label>
         <input type="checkbox" id="id_autorefresh">
       </div>
-      
+
       <div class='span12' id="demodiv"></div>
-      
+
       <div class='span12'  id="status"></div>
-      
+
       {% for nas_id, nas_name in radiusstat_nasses %}
         <div class='span12' id="demodiv{{nas_id}}"></div>
         <div class='span12'  id="status{{nas_id}}"></div>

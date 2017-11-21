@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 
 from billservice.models import (
@@ -102,8 +103,8 @@ class TPChangeRuleTable(EbsadminTableReport):
     d = showconfirmcolumn(message='Удалить правило?')
     settlement_period = FormatBlankColumn(verbose_name=_(u'Расчётный период'))
     on_next_sp = TemplateColumn(
-        "<img src='/media/img/icons/{% if record.on_next_sp %}accept.png"
-        "{% else %}icon_error.gif{% endif %}'>")
+        "<img src='{}img/icons/{{% if record.on_next_sp %}}accept.png"
+        "{{% else %}}icon_error.gif{{% endif %}}'>".format(settings.STATIC_URL))
     row_class = Column(visible=False)
 
     def render_row_class(self, value, record):

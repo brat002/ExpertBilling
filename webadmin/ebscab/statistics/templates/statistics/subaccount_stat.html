@@ -1,14 +1,17 @@
+{% load static %}
+
+
 <html>
 <body>
-<center><img src='/media/img/header.png'></center>
-<div>Графики утилизации канала субаккаунтами пользователя {{account.username}} </div>
+<center><img src="{% static 'img/header.png' %}"></center>
+<div>Графики утилизации канала субаккаунтами пользователя {{ account.username }} </div>
 <table>
 <tr>
 <td>Байты/с</td><td>Пакеты/с</td>
 </tr>
 {% for interval, bytes_graph, packets_graph in filenames %}
 <tr>
-<td><img src=/media/statistics/subaccounts/{{bytes_graph}}></td><td><img src=/media/statistics/subaccounts/{{packets_graph}}></td>
+<td><img src="/media/statistics/subaccounts/{{ bytes_graph }}"></td><td><img src="/media/statistics/subaccounts/{{ packets_graph }}"></td>
 </tr>
 {% endfor %}
 </table>

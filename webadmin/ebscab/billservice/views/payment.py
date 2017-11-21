@@ -10,17 +10,8 @@ from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 
-from ebscab.utils.decorators import ajax_request, render_to
+from ebscab.utils.decorators import render_to
 from getpaid.forms import SelectPaymentMethodForm
-from paymentgateways.qiwi.forms import QiwiPaymentRequestForm
-from paymentgateways.qiwi.models import Invoice as QiwiInvoice
-from paymentgateways.qiwi.qiwiapi import (
-    accept_invoice_id,
-    create_invoice,
-    get_balance,
-    lifetime,
-    term_id
-)
 
 from billservice.forms import PromiseForm
 from billservice.models import (
@@ -370,148 +361,11 @@ False)""" , (to_user.id,
         }
 
 
-@ajax_request
-@login_required
-def qiwi_payment(request):
-    if request.method != 'POST':
-        return {
-            'status_message': _(u"Неправильный вызов функции")
-        }
-
-    form = QiwiPaymentRequestForm(request.POST)
-    if not form.is_valid():
-        return {
-            'status_message': _(u"Ошибка в заполнении полей")
-        }
-
-    summ = form.cleaned_data.get('summ', 0)
-    phone = form.cleaned_data.get('phone', '')
-    password = form.cleaned_data.get('password', '')
-
-    autoaccept = form.cleaned_data.get("autoaccept", False)
-    if autoaccept == True and not (password):
-        return {
-            'status_message': _(u"Для автоматического зачисления необходимо "
-                                u"указать пароль")
-        }
-    if summ < settings.QIWI_MIN_SUMM:
-        return {
-            'status_message': _(u"Минимальная сумма платежа %s" %
-                                settings.QIWI_MIN_SUMM)
-        }
-
-    if summ >= 1 and len(phone) == 10:
-        invoice = QiwiInvoice()
-        invoice.account = request.user.account
-        invoice.phone = phone
-        invoice.summ = summ
-        invoice.created = datetime.datetime.now()
-        invoice.autoaccept = autoaccept
-        invoice.lifetime = lifetime
-        invoice.save()
-
-        comment = _(u"Пополнение счёта %s") % request.user.account.username
-        status, message = create_invoice(phone_number=phone,
-                                         transaction_id=invoice.id,
-                                         summ=invoice.summ,
-                                         comment=comment)
-        payed = False
-        if status != 0:
-            return {
-                'status_message': _(u'Произошла ошибка выставления счёта. %s' %
-                                    message)}
-
-        payment_url = ''
-        if not invoice.autoaccept:
-            if status == 0:
-                payment_url = (
-                    "https://w.qiwi.ru/externalorder.action"
-                    "?shop=%s&transaction=%s") % (term_id, invoice.id)
-                message = _(u'Счёт удачно создан. Пройдите по ссылке для его '
-                            u'оплаты.')
-                payed = True
-        else:
-            status, message = accept_invoice_id(phone=phone,
-                                                password=password,
-                                                transaction_id=invoice.id,
-                                                date=invoice.created)
-            if status == 0:
-                message = _(u"Платёж успешно выполнен.")
-                invoice.accepted = True
-                invoice.date_accepted = datetime.datetime.now()
-                invoice.save()
-                payed = True
-
-        return {
-            'status_message': message,
-            'payment_url': payment_url,
-            'payed': payed,
-            'invoice_id': invoice.id,
-            'invoice_summ': float(invoice.summ),
-            'invoice_date': "%s-%s-%s %s:%s:%s" % (invoice.created.day,
-                                                   invoice.created.month,
-                                                   invoice.created.year,
-                                                   invoice.created.hour,
-                                                   invoice.created.minute,
-                                                   invoice.created.second)
-        }
-    else:
-        return {
-            'status_message': _(u'Сумма<1 или неправильный формат телефонного '
-                                u'номера.')
-        }
-
-
-@ajax_request
-@login_required
-def qiwi_balance(request):
-    if request.method != 'POST':
-        return {
-            'balance': 0,
-            'status_message': _(u"Неправильный вызов функции")
-        }
-
-    phone = request.POST.get('phone', None)
-    password = request.POST.get('password', None)
-    if phone and password:
-        balance, message = get_balance(phone=phone, password=password)
-        return {
-            'balance': balance,
-            'status_message': message
-        }
-    else:
-        message = _(u"Не указан телефон или пароль")
-        return {
-            'balance': 0,
-            'status_message': message
-        }
-
-
 @login_required
 @render_to('accounts/make_payment.html')
 def make_payment(request):
-    wm_form = None
-    qiwi_form = None
-    if settings.ALLOW_QIWI:
-        last_qiwi_invoice = None
-        try:
-            last_qiwi_invoice = (QiwiInvoice.objects
-                                 .filter(account=request.user.account)
-                                 .order_by('-created'))[0]
-        except Exception, e:
-            pass
-
-        if last_qiwi_invoice:
-            qiwi_form = QiwiPaymentRequestForm(
-                initial={'phone': last_qiwi_invoice.phone})
-        else:
-            qiwi_form = QiwiPaymentRequestForm(
-                initial={'phone': request.user.account.phone_m})
     form = SelectPaymentMethodForm()
     return {
-        'allow_qiwi': settings.ALLOW_QIWI,
-        'allow_webmoney': settings.ALLOW_WEBMONEY,
-        'qiwi_form': qiwi_form,
         'payment_form': form
     }
 

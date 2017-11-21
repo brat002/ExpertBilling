@@ -174,11 +174,7 @@ def settlement_period_info(time_start, repeat_after='', repeat_after_seconds=0,
 
 def is_login_user(request):
     form = LoginForm()
-    context = {
-        'MEDIA_URL': settings.MEDIA_URL,
-        'form': form,
-    }
-    return render(request, 'registration/login.html', context)
+    return render(request, 'registration/login.html', {'form': form})
 
 
 def systemuser_required(func):

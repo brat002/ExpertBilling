@@ -1,3 +1,6 @@
+{% load static %}
+
+
 <head>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <!-- code to include the highcharts and jQuery libraries goes here -->
@@ -34,7 +37,7 @@ $(document).ready(function() {
                     Highcharts.dateFormat('%e. %b', this.x) +': '+ this.y +' m';
             }
         },
-        
+
         series: [
                  {% for username, data in res %}
                  {
@@ -49,8 +52,8 @@ $(document).ready(function() {
                  ]
     });
 });
-</script>    
-<script type="text/javascript" src="/media/highcharts/js/highcharts.js"></script>    
+</script>
+<script type="text/javascript" src="{% static 'highcharts/js/highcharts.js' %}"></script>
 </head>
 <body>
 
