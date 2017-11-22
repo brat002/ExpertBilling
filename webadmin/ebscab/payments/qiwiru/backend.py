@@ -4,6 +4,7 @@ import binascii
 import datetime
 import time
 import urllib2
+import re
 from collections import defaultdict
 from hashlib import md5
 
@@ -337,7 +338,9 @@ class PaymentProcessor(PaymentProcessorBase):
         else:
             amount = float(amount)
 
-        if len(str(acc)) > 32:
+        pattern = re.compile(PaymentProcessor.get_backend_setting('CONTRACT_REGEXP', '.*'))
+        
+        if not pattern.match(acc):
             return PaymentProcessor.error(txn_id, 4)
 
         try:
@@ -362,16 +365,21 @@ class PaymentProcessor(PaymentProcessorBase):
 
         txn_id = request.GET.get('txn_id')
         amount = request.GET.get('sum')
-        txn_date = datetime.datetime(
-            *time.strptime(request.GET.get('txn_date'), '%Y%m%d%H%M%S')[0:5])
         acc = request.GET.get('account')
+        try:
+            txn_date = datetime.datetime(*time.strptime(request.GET.get('txn_date'), 
+                                                        "%Y%m%d%H%M%S")[0:5])
+        except Exception, e:
+            return PaymentProcessor.error(txn_id, 300)
 
         if not amount:
             return PaymentProcessor.error(txn_id, 300)
         else:
             amount = float(amount)
 
-        if len(str(acc)) > 32:
+        pattern = re.compile(PaymentProcessor.get_backend_setting('CONTRACT_REGEXP', '.*'))
+        
+        if not pattern.match(acc):
             return PaymentProcessor.error(txn_id, 4)
 
         try:
