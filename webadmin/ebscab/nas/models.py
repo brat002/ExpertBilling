@@ -379,13 +379,13 @@ class Nas(models.Model):
     subacc_enable_action = models.TextField(blank=True, null=True, default="")
     subacc_add_action = models.TextField(blank=True, null=True, default="")
     subacc_delete_action = models.TextField(blank=True, null=True, default="")
-    subacc_ipn_speed_add_action = models.TextField(verbose_name = _(u"Add IPN speed command")
+    subacc_ipn_speed_add_action = models.TextField(verbose_name = _(u"Add IPN speed command"),
         blank=True, null=True, default="")
-    subacc_ipn_speed_action = models.TextField(verbose_name = _(u"Change IPN speed command")
+    subacc_ipn_speed_action = models.TextField(verbose_name = _(u"Change IPN speed command"),
         blank=True, null=True, default="")
-    subacc_ipn_speed_remove_action = models.TextField(verbose_name = _(u"Remove IPN speed command")
+    subacc_ipn_speed_remove_action = models.TextField(verbose_name = _(u"Remove IPN speed command"),
         blank=True, null=True, default="")
-    subacc_vpn_speed_change_action = models.TextField(verbose_name = _(u"Change VPN speed command")
+    subacc_vpn_speed_change_action = models.TextField(verbose_name = _(u"Change VPN speed command"),
         blank=True, null=True, default="")
         
     speed_attr_id1 = models.CharField(max_length=128, blank=True, null=True, default="")
