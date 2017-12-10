@@ -32,7 +32,6 @@ class TransactionModelForm(forms.ModelForm):
         self.fields['description'].widget = \
             forms.widgets.TextInput(attrs={'class': 'input-xlarge span5'})
         self.fields['account'].widget.attrs['class'] = 'input-xlarge span5'
-        self.fields['type'].widget.attrs['class'] = 'input-xlarge span5'
         self.fields['bill'].widget.attrs['class'] = 'input-xlarge span5'
         self.fields['created'].widget = \
             forms.widgets.DateTimeInput(attrs={'class': 'datepicker'})
@@ -66,11 +65,7 @@ class BonusTransactionModelForm(forms.ModelForm):
         self.fields['type'].widget.attrs['class'] = 'input-xlarge span5'
         self.fields['description'].widget = \
             forms.widgets.TextInput(attrs={'class': 'input-xlarge span5'})
-        self.fields['type'].widget.attrs['class'] = 'input-xlarge span5'
         self.fields['bill'].widget.attrs['class'] = 'input-xlarge span5'
-        self.fields['created'].widget = \
-            forms.widgets.DateTimeInput(attrs={'class': 'datepicker'})
-        self.fields['created'].initial = datetime.now()
 
     def clean_summ(self):
         summ = self.cleaned_data.get('summ', 0)
