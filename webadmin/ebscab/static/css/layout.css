@@ -1,0 +1,141 @@
+#container-outer {
+    width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+    min-height: 100%;
+    position: relative;
+    background-color: #f2f2f2;
+}
+#container {
+    float: left;
+    width: 100%;
+    text-align: left;
+}
+
+/*
+Header
+*/
+#header {
+    float: left;
+    width: 100%;
+    margin: 0 0 20px 0;
+    background: #9A0033;
+    height: 50px;
+    position: relative;
+    background: url(/static/img/layout/header_bg.gif) repeat-x;
+}
+a#logo {
+    display: block;
+    font-size: 30px;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: bold;
+    position: absolute;
+    left: 54px;
+    bottom: 7px;
+}
+/*
+End header
+*/
+
+/*
+Body
+*/
+#content {
+    padding-bottom: 100px;
+}
+/*
+End body
+*/
+
+/*
+Top menu
+*/
+#top-menu {
+    /*
+position: absolute;
+    right: 20px;
+    bottom: 14px;
+*/
+    float: right;
+    margin: -30px 0px 10px 10px;
+}
+.top-menu-item {
+    display: block;
+    float: left;
+    margin: 0 12px;
+    padding: 2px 10px 2px 10px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.top-menu-item.last {
+    margin-right: 0;
+}
+
+.top-menu-item a, .top-menu-item a:link {
+    color: #000;
+    text-decoration: none;
+    display: block;
+    margin-top: 4px;
+}
+.top-menu-item a:hover {
+    text-decoration: none;
+}
+
+.top-menu-item.selected a {
+    font-weight: bold;
+}
+
+/*
+End top menu
+*/
+
+/*
+Footer
+*/
+#footer {
+    background: url(/static/img/layout/footer_bg.gif) repeat-x;
+    width: 100%;
+    height: 104px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    color: #ffffff;
+}
+
+#footer-contacts {
+    position: absolute;
+    top: 15px;
+    left: 47px;
+}
+
+#footer-phone {
+    background: url(/static/img/layout/phone_icon.gif) no-repeat;
+    padding: 0px 0px 0 30px;
+}
+
+#footer-email {
+    background: url(/static/img/layout/mailto_icon.gif) no-repeat;
+    margin: 7px 0 0 0;
+    padding: 0 0 0 30px;
+}
+
+#footer-counter {
+    margin: 7px 0 0 0;
+    padding: 0 0 0 30px;
+}
+
+#footer-logo {
+    position: absolute;
+    right: 50px;
+    bottom: 10px;
+    text-align: center;
+}
+
+#footer-logo img {
+    margin-bottom: -5px;
+}
+/*
+End footer
+*/
