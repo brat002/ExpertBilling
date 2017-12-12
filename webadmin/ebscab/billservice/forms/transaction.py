@@ -33,8 +33,6 @@ class TransactionModelForm(forms.ModelForm):
             forms.widgets.TextInput(attrs={'class': 'input-xlarge span5'})
         self.fields['account'].widget.attrs['class'] = 'input-xlarge span5'
         self.fields['bill'].widget.attrs['class'] = 'input-xlarge span5'
-        self.fields['created'].widget = \
-            forms.widgets.DateTimeInput(attrs={'class': 'datepicker'})
         self.fields['end_promise'].widget = \
             forms.widgets.DateTimeInput(attrs={'class': 'datepicker'})
 
