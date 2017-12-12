@@ -4,6 +4,7 @@ from django.db import models
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
+from ebscab.utils.decorators import to_partition
 from nas.models import TrafficClass
 
 
@@ -96,6 +97,10 @@ class TrafficTransaction(models.Model):
         permissions = (
             ("traffictransaction_view", _(u"Просмотр")),
         )
+
+    @to_partition
+    def save(self, *args, **kwargs):
+        super(TrafficTransaction, self).save(*args, **kwargs)
 
 
 class TrafficTransmitNodes(models.Model):

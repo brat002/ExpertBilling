@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from billservice.models.constants import CASH_METHODS
+from ebscab.utils.decorators import to_partition
 
 
 class PeriodicalService(models.Model):
@@ -138,6 +139,10 @@ class PeriodicalServiceHistory(models.Model):
         permissions = (
             ("periodicalservicehistory_view", _(u"Просмотр списаний")),
         )
+
+    @to_partition
+    def save(self, *args, **kwargs):
+        super(PeriodicalServiceHistory, self).save(*args, **kwargs)
 
 
 class PeriodicalServiceLog(models.Model):

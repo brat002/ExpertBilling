@@ -4,6 +4,8 @@ from django.db import models
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
+from ebscab.utils.decorators import to_partition
+
 
 class OneTimeService(models.Model):
     """
@@ -66,3 +68,7 @@ class OneTimeServiceHistory(models.Model):
         permissions = (
             ("onetimeservicehistory_view", _(u"Просмотр услуг")),
         )
+
+    @to_partition
+    def save(self, *args, **kwargs):
+        super(OneTimeServiceHistory, self).save(*args, **kwargs)
