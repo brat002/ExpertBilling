@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from django.db import connection
-
 from billservice.models.access import AccessParameters
 from billservice.models.limit import SpeedLimit
 from billservice.models.organization import Organization
@@ -89,6 +87,3 @@ from billservice.models.agreement import (
 )
 from billservice.models.dealer import Dealer, DealerPay
 from billservice.models.news import AccountViewedNews, News
-
-
-connection.features.can_return_id_from_insert = False

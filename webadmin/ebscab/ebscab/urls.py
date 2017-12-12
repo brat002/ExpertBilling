@@ -3,7 +3,6 @@
 from autocomplete_light import shortcuts as autocomplete_light
 from django.conf.urls import include, url
 from django.contrib import admin
-from django.db.backends.postgresql_psycopg2.base import DatabaseFeatures
 from django.views.i18n import javascript_catalog
 
 from ajax_select import urls as ajax_select_urls
@@ -12,8 +11,6 @@ from cassa import views as cassa_views
 from helpdesk.views import account as helpdesk_account_views
 from statistics import views as statistics_views
 
-
-DatabaseFeatures.can_return_id_from_insert = False
 
 autocomplete_light.autodiscover()
 
