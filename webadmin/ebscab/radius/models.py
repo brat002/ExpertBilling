@@ -4,6 +4,7 @@ from django.db import models
 from django.utils.translation import ugettext as _
 
 from billservice.models import Account, SubAccount, IPInUse
+from ebscab.utils.decorators import to_partition
 from nas.models import Nas
 
 
@@ -135,6 +136,10 @@ class ActiveSession(models.Model):
     @property
     def bytes_sum(self):
         return self.bytes_in + self.bytes_out
+
+    @to_partition
+    def save(self, *args, **kwargs):
+        super(ActiveSession, self).save(*args, **kwargs)
 
 
 class AuthLog(models.Model):

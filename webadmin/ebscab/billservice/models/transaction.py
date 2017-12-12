@@ -5,6 +5,8 @@ from django.db import models
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
+from ebscab.utils.decorators import to_partition
+
 
 new_transaction = Signal()
 
@@ -92,6 +94,7 @@ class Transaction(models.Model):
         verbose_name=_(u"Выполнил")
     )
 
+    @to_partition
     def save(self, *args, **kwargs):
         if not self.id:
             new_transaction.send(sender=self)

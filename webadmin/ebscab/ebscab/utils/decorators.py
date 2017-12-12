@@ -4,11 +4,15 @@ from functools import wraps, WRAPPER_ASSIGNMENTS
 
 from django.conf import settings
 from django.contrib.auth import REDIRECT_FIELD_NAME
+from django.db import connections, DEFAULT_DB_ALIAS
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.translation import ugettext_lazy as _
 
 from ebscab.utils.http import JsonResponse
+
+
+BROKEN_INSERT_RETURN = ('django.db.backends.postgresql_psycopg2',)
 
 
 def available_attrs(fn):
@@ -91,3 +95,27 @@ def render_xml(func):
             content_type='text/xml',
             contenttype='text/xml;charset=utf-8')
     return wrapper
+
+
+def to_partition(func):
+    """Decorator that wraps turning off `can_return_id_from_insert`
+    db connection feature"""
+    if any(((settings.DATABASES[alias]['ENGINE'] in BROKEN_INSERT_RETURN)
+            for alias in settings.DATABASES)):
+        def wrapper(*args, **kwargs):
+            """{}
+            Wrapped with
+            {}""".format(func.__doc__, to_partition.__doc__)
+            using = kwargs.get('using', DEFAULT_DB_ALIAS)
+            kwargs['using'] = using
+            if settings.DATABASES[using]['ENGINE'] in BROKEN_INSERT_RETURN:
+                oldval = connections[using].features.can_return_id_from_insert
+                connections[using].features.can_return_id_from_insert = False
+                return_value = func(*args, **kwargs)
+                connections[using].features.can_return_id_from_insert = oldval
+                return return_value
+            else:
+                return func(*args, **kwargs)
+        return wrapper
+    else:
+        return func
