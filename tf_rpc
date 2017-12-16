@@ -1,1 +1,0 @@
-python freezer/freezer2.py --nloc=chartprovider.pychartdir25 --order=chartprovider.bpplotadapter,chartprovider.pychartdir,chartprovider.bpbl,chartprovider.bpcdplot,chartprovider -i -k test rpc.py

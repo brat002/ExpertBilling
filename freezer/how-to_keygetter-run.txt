@@ -1,1 +1,0 @@
-find keygetter/ -type f -print |   shar -z -S -o keygetter.run
