@@ -28,7 +28,7 @@ class TransactionModelForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(TransactionModelForm, self).__init__(*args, **kwargs)
-        print self.fields
+
         self.fields['type'].widget.attrs['class'] = 'input-xlarge span5'
         self.fields['description'].widget = \
             forms.widgets.TextInput(attrs={'class': 'input-xlarge span5'})
