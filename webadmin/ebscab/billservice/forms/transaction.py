@@ -26,6 +26,7 @@ class TransactionModelForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(TransactionModelForm, self).__init__(*args, **kwargs)
+        print self.fields
         self.fields['type'].widget.attrs['class'] = 'input-xlarge span5'
         self.fields['description'].widget = \
             forms.widgets.TextInput(attrs={'class': 'input-xlarge span5'})
@@ -43,6 +44,8 @@ class TransactionModelForm(forms.ModelForm):
 
     class Meta:
         model = Transaction
+        fields = ('type', 'description', 'account', 'bill', 'created', 
+                  'summ', 'end_promise', 'id')
         exclude = ('systemuser', 'accounttarif', 'approved', 'tarif',
                    'promise_expired', 'prev_balance', 'is_bonus')
 

@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import datetime
+
+from django.dispatch import Signal
+from django.db import models
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.dispatch import Signal
@@ -102,6 +106,8 @@ class Transaction(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             new_transaction.send(sender=self)
+        if not (self.id and self.created):
+            self.created = datetime.datetime.now()
         super(Transaction, self).save(*args, **kwargs)
 
     class Admin:
