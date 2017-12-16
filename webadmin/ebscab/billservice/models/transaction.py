@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import datetime
+
 from django.dispatch import Signal
 from django.db import models
 from django.core.urlresolvers import reverse
@@ -82,7 +84,7 @@ class Transaction(models.Model):
     )
     description = models.TextField(
         default='', blank=True, verbose_name=_(u"Комментарий"))
-    created = models.DateTimeField(verbose_name=_(u"Дата"), auto_now_add=True)
+    created = models.DateTimeField(verbose_name=_(u"Дата"))
     end_promise = models.DateTimeField(
         blank=True, null=True, verbose_name=_(u"Закрыть ОП"))
     promise_expired = models.BooleanField(
@@ -98,6 +100,8 @@ class Transaction(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             new_transaction.send(sender=self)
+        if not (self.id and self.created):
+            self.created = datetime.datetime.now()
         super(Transaction, self).save(*args, **kwargs)
 
     class Admin:
