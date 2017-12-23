@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from django.dispatch import Signal
-from django.db import models
 from django.core.urlresolvers import reverse
+from django.db import models
+from django.dispatch import Signal
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from ebscab.utils.decorators import to_partition
@@ -82,7 +83,10 @@ class Transaction(models.Model):
     )
     description = models.TextField(
         default='', blank=True, verbose_name=_(u"Комментарий"))
-    created = models.DateTimeField(verbose_name=_(u"Дата"), auto_now_add=True)
+    created = models.DateTimeField(
+        verbose_name=_(u"Дата"),
+        default=timezone.now
+    )
     end_promise = models.DateTimeField(
         blank=True, null=True, verbose_name=_(u"Закрыть ОП"))
     promise_expired = models.BooleanField(
