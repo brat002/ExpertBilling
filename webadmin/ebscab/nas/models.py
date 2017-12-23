@@ -317,7 +317,8 @@ class Nas(models.Model):
     """
     type = models.CharField(
         choices=NAS_LIST, max_length=32, default='mikrotik3')
-    identify = models.CharField(verbose_name=_(u'RADIUS имя'), max_length=255)
+    identify = models.CharField(verbose_name=_(u'RADIUS имя'), max_length=255, blank=True, 
+                                null=True)
     name = models.CharField(
         verbose_name=_(u'Имя'), max_length=255, unique=True)
     ipaddress = models.GenericIPAddressField(
@@ -325,6 +326,7 @@ class Nas(models.Model):
     secret = EncryptedTextField(
         verbose_name=_(u'Секретная фраза'),
         help_text=_(u"Смотрите вывод команды /radius print"),
+        blank=True, null=True,
         max_length=255)
     login = models.CharField(
         verbose_name=_(u'Имя пользователя'),
@@ -379,7 +381,17 @@ class Nas(models.Model):
     subacc_enable_action = models.TextField(blank=True, null=True, default="")
     subacc_add_action = models.TextField(blank=True, null=True, default="")
     subacc_delete_action = models.TextField(blank=True, null=True, default="")
-    subacc_ipn_speed_action = models.TextField(
+
+    subacc_ipn_speed_add_action = models.TextField(verbose_name = _(u"Add IPN speed command"),
+        blank=True, null=True, default="")
+    subacc_ipn_speed_action = models.TextField(verbose_name = _(u"Change IPN speed command"),
+        blank=True, null=True, default="")
+    subacc_ipn_speed_remove_action = models.TextField(verbose_name = _(u"Remove IPN speed command"),
+        blank=True, null=True, default="")
+    subacc_vpn_speed_change_action = models.TextField(verbose_name = _(u"Change VPN speed command"),
+        blank=True, null=True, default="")
+
+    subacc_ipn_speed_action = models.TextField(verbose_name = _(u"Set IPN speed command"),
         blank=True, null=True, default="")
 
     speed_vendor_1 = models.IntegerField(blank=True, null=True, default=0)
@@ -388,6 +400,16 @@ class Nas(models.Model):
     speed_attr_id2 = models.IntegerField(blank=True, null=True, default=0)
     speed_value1 = models.TextField(blank=True, default="")
     speed_value2 = models.TextField(blank=True, default="")
+
+    radius_speed_attr1 = models.CharField(verbose_name = _(u"Radius Speed attribute 1"),
+                                             max_length=128, blank=True, null=True, default="")
+    radius_speed_attr2 = models.CharField(verbose_name = _(u"Radius Speed attribute 2"),
+                                             max_length=128, blank=True, null=True, default="")
+    radius_speed_value1 = models.CharField(verbose_name = _(u"Radius Speed value 1"),
+                                           max_length=128, blank=True, null=True, default="")
+    radius_speed_value2 = models.CharField(verbose_name = _(u"Radius Speed value 2"),
+                                           max_length=128, blank=True, null=True, default="")
+
     acct_interim_interval = models.IntegerField(
         default=60, blank=True, null=False)
 
@@ -397,7 +419,7 @@ class Nas(models.Model):
 
     class Meta:
         verbose_name = _(u"Сервер доступа")
-        verbose_name_plural = _(u"Сервера доступа")
+        verbose_name_plural = _(u"Серверы доступа")
         permissions = (
            ("nas_view", _(u"Просмотр")),
         )
