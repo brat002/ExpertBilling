@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from django.http import HttpResponse
-from django.template import Template as DjangoTemplate
+from django.template import Context, Template as DjangoTemplate
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 from mako.template import Template as mako_template
@@ -57,7 +57,7 @@ def documentrender(request):
     if form.is_valid():
         template = Template.objects.get(id=form.cleaned_data.get('template'))
         t = DjangoTemplate(mark_safe(unicode(template.body)))
-        print template.type.id
+
         data = ''
         if template.type.id == 1:
             account = Account.objects.get(id=form.cleaned_data.get('account'))
@@ -73,7 +73,7 @@ def documentrender(request):
             c = {'cards': form.cleaned_data.get('cards')}
 
         try:
-            data = t.render(c)
+            data = t.render(Context(c))
         except Exception, e:
             data = u"Error %s" % str(e)
 
