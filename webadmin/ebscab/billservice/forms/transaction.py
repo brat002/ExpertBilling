@@ -59,6 +59,7 @@ class BonusTransactionModelForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(BonusTransactionModelForm, self).__init__(*args, **kwargs)
+        self.fields['created'].widget.attrs['class'] = 'datepicker'
         self.fields['type'].widget.attrs['class'] = 'input-xlarge span5'
         self.fields['description'].widget = \
             forms.widgets.TextInput(attrs={'class': 'input-xlarge span5'})
