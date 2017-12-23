@@ -10,7 +10,7 @@ from django.db import models
 from django.utils.translation import ugettext, ugettext_lazy as _
 
 from dynamicmodel.models import DynamicModel
-from ebscab.fields import IPNetworkField, EncryptedTextField
+from ebscab.fields import IPAddressField, IPNetworkField, EncryptedTextField
 from nas.models import Nas
 
 from billservice.models.constants import ACCOUNT_STATUS, STATUS_CLASS
@@ -672,7 +672,7 @@ class SubAccount(models.Model):
         verbose_name=_(u'Пароль'), blank=True, default='')
     ipn_ip_address = IPNetworkField(blank=True, null=True, default='0.0.0.0')
     ipn_mac_address = models.CharField(blank=True, max_length=17, default='')
-    vpn_ip_address = models.GenericIPAddressField(
+    vpn_ip_address = IPAddressField(
         blank=True, null=True, default='0.0.0.0')
     allow_mac_update = models.BooleanField(default=False)
     nas = models.ForeignKey(
@@ -783,7 +783,7 @@ class SubAccount(models.Model):
         related_name='subaccount_ipn_ipinuse_set',
         on_delete=models.SET_NULL
     )
-    vpn_ipv6_ip_address = models.GenericIPAddressField(blank=True, null=True)
+    vpn_ipv6_ip_address = IPAddressField(blank=True, null=True)
     vpn_ipv6_ipinuse = models.ForeignKey(
         'billservice.IPInUse',
         blank=True,

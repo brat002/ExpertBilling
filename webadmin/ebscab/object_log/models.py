@@ -5,7 +5,7 @@ import json
 from decimal import Decimal
 from sys import modules
 
-import ipaddr
+from ipaddr import IPv4Network, IPAddress, IPv4Address
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -26,7 +26,9 @@ def default(obj):
     if isinstance(obj, datetime.date):
         return obj.strftime('%Y-%m-%d')
     else:
-        if type(obj) == ipaddr.IPv4Network or type(obj) == ipaddr.IPAddress:
+        if type(obj) == IPv4Network or \
+                type(obj) == IPAddress or \
+                type(obj) == IPv4Address:
             return str(obj)
         return json.JSONEncoder().default(obj)
 
