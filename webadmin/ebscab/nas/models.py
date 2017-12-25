@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models import Max
 from django.utils.translation import ugettext_lazy as _
 
-from ebscab.fields import EncryptedTextField, IPNetworkField
+from ebscab.fields import EncryptedTextField, IPAddressField, IPNetworkField
 
 
 NAS_LIST = (
@@ -317,11 +317,11 @@ class Nas(models.Model):
     """
     type = models.CharField(
         choices=NAS_LIST, max_length=32, default='mikrotik3')
-    identify = models.CharField(verbose_name=_(u'RADIUS имя'), max_length=255, blank=True, 
+    identify = models.CharField(verbose_name=_(u'RADIUS имя'), max_length=255, blank=True,
                                 null=True)
     name = models.CharField(
         verbose_name=_(u'Имя'), max_length=255, unique=True)
-    ipaddress = models.GenericIPAddressField(
+    ipaddress = IPAddressField(
         verbose_name=_(u'IP адрес'), max_length=255)
     secret = EncryptedTextField(
         verbose_name=_(u'Секретная фраза'),
@@ -493,7 +493,7 @@ class TrafficNode(models.Model):
     dst_port = models.IntegerField(
         verbose_name=_(u'Dst port'), blank=True, default=0)
 
-    next_hop = models.GenericIPAddressField(
+    next_hop = IPAddressField(
         verbose_name=_(u'next Hop'),
         blank=True,
         null=True,

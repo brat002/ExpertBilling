@@ -11,7 +11,7 @@ from django.db import models
 from django.db.models import lookups
 from django.forms import fields, widgets
 from django.forms.widgets import PasswordInput
-from ipaddr import _IPAddrBase, IPNetwork
+from ipaddr import IPAddress, IPNetwork, _IPAddrBase
 
 
 class IPNetworkWidget(widgets.TextInput):
@@ -117,6 +117,46 @@ class IPNetworkFieldIn(lookups.In):
         return [self.get_prep_value(v) for v in value]
 
 IPNetworkField.register_lookup(IPNetworkFieldIn)
+
+
+class IPAddressField(models.Field):
+    description = "IP Address Field with IPv6 support"
+
+    def db_type(self, connection):
+        return 'varchar(42)'
+
+    def to_python(self, value):
+        if not value:
+            return None
+
+        if isinstance(value, _IPAddrBase):
+            return value
+
+        try:
+            return IPAddress(value.encode('latin-1'))
+        except Exception, e:
+            raise ValidationError(e)
+
+    def get_prep_lookup(self, lookup_type, value):
+        if lookup_type == 'exact':
+            return self.get_prep_value(value)
+        elif lookup_type == 'in':
+            return [self.get_prep_value(v) for v in value]
+        else:
+            raise TypeError('Lookup type %r not supported.' % lookup_type)
+
+    def get_prep_value(self, value):
+        if isinstance(value, _IPAddrBase):
+            value = '%s' % value
+        return unicode(value)
+
+    def formfield(self, **kwargs):
+        defaults = {
+            'form_class': fields.CharField,
+            'widget': IPNetworkWidget
+        }
+        defaults.update(kwargs)
+        return super(IPAddressField, self).formfield(**defaults)
 
 
 class PasswordHashField(models.Field):

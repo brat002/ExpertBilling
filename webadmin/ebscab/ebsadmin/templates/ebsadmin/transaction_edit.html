@@ -23,7 +23,7 @@
   </script>
 
   {% include "ebsadmin/common/error_messages.html" %}
-           
+
   {% if form %}
     <form action='{% url 'transaction_edit' %}?account_id={{account.id}}' method="POST" class="well form-horizontal ajax form-condensed ">
       <fieldset>
@@ -42,7 +42,7 @@
             <p class="help-block">
               {{ form.type.help_text|safe }}
             </p>
-            {% endif %}  
+            {% endif %}
           </div>
         </div>
 
@@ -106,10 +106,10 @@
           </div>
         </div>
 
-        <div class="control-group" id='id_promise_section'>
+        <div class="control-group">
           <label class="control-label">{{form.end_promise.label}}</label>
           <div class="controls">
-            <span class="add-on">{{ form.end_promise }}</span> 
+            <span class="add-on">{{ form.end_promise }}</span>
             {% if form.end_promise.errors %}
             <span class="help-inline">{% for error in form.end_promise.errors %}{{ error }}<br/> {% endfor %}</span>
             {% endif %}
@@ -126,21 +126,9 @@
         <a class="btn close-dialog" href="#">{% blocktrans %}Закрыть{% endblocktrans %}</a>
       </div>
     </form>
-
-    <script type="text/javascript"> 
-      $(document).ready(function() {
-        $('.datepicker').datepicker({
-          months: ["{% blocktrans %}Январь{% endblocktrans %}","{% blocktrans %}Февраль{% endblocktrans %}","{% blocktrans %}Март{% endblocktrans %}","{% blocktrans %}Апрель{% endblocktrans %}","{% blocktrans %}Май{% endblocktrans %}","{% blocktrans %}Июнь{% endblocktrans %}","{% blocktrans %}Июль{% endblocktrans %}","{% blocktrans %}Август{% endblocktrans %}","{% blocktrans %}Сентябрь{% endblocktrans %}","{% blocktrans %}Октябрь{% endblocktrans %}","{% blocktrans %}Ноябрь{% endblocktrans %}","{% blocktrans %}Декабрь{% endblocktrans %}"],
-          weekStart: 1,
-          noDefault: true,
-          format: 'yyyy-mm-dd hh:ii:ss',
-          days: ["{% blocktrans %}вс{% endblocktrans %}", "{% blocktrans %}пн{% endblocktrans %}","{% blocktrans %}вт{% endblocktrans %}","{% blocktrans %}ср{% endblocktrans %}","{% blocktrans %}чт{% endblocktrans %}","{% blocktrans %}пт{% endblocktrans %}","{% blocktrans %}сб{% endblocktrans %}"],
-        });
-      });
-    </script>
   {% endif %}
 {% else %}
-  <script type="text/javascript"> 
+  <script type="text/javascript">
     $(document).ready(function() {
       $("#id_btn_print").click( function() {
         var data = {transaction:{{transaction.id}}, template:7};

@@ -8,6 +8,8 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 
+from ebscab.fields import IPAddressField
+
 
 class IPPool(models.Model):
     name = models.CharField(verbose_name=_(u'Название'), max_length=255)
@@ -21,8 +23,8 @@ class IPPool(models.Model):
             (3, _(u"IPv6 IPN"))
         )
     )
-    start_ip = models.GenericIPAddressField(verbose_name=_(u'C IP'))
-    end_ip = models.GenericIPAddressField(verbose_name=_(u'По IP'))
+    start_ip = IPAddressField(verbose_name=_(u'C IP'))
+    end_ip = IPAddressField(verbose_name=_(u'По IP'))
     next_ippool = models.ForeignKey(
         'billservice.IPPool',
         verbose_name=_(u'Следующий пул'),

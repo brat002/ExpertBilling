@@ -4,6 +4,8 @@ from django.db import models
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 
+from ebscab.fields import IPAddressField
+
 
 class HardwareType(models.Model):
     name = models.TextField()
@@ -80,7 +82,7 @@ class Hardware(models.Model):
         default='',
         verbose_name=_(u"Серийный номер")
     )
-    ipaddress = models.GenericIPAddressField(
+    ipaddress = IPAddressField(
         blank=True,
         null=True,
         verbose_name=_(u"IP адрес")

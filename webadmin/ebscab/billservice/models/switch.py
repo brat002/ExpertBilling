@@ -3,6 +3,8 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from ebscab.fields import IPAddressField
+
 from billservice.models.constants import ADMIN_OPER_STATUS, PORT_OPER_STATUS
 
 
@@ -87,7 +89,7 @@ class Switch(models.Model):
         blank=True,
         default=''
     )
-    ipaddress = models.GenericIPAddressField(
+    ipaddress = IPAddressField(
         blank=True,
         null=True,
         verbose_name=_(u"IP адрес"),
