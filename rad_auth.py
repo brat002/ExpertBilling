@@ -1397,7 +1397,7 @@ if __name__ == "__main__":
         vars.get_vars(config=config, name=NAME, db_name=DB_NAME)
 
         if '-p' in sys.argv and len(sys.argv)==3:
-            port = sys.argv[2]
+            port = int(sys.argv[2])
         elif '-p' in sys.argv:
             print "unknown port"
             sys.exit()

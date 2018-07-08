@@ -132,6 +132,14 @@ class Tariff(models.Model):
         on_delete=models.SET_NULL
     )
 
+    guest_ippool = models.ForeignKey(
+        'billservice.IPPool',
+        verbose_name=_(u"Guest IP Pool"),
+        blank=True,
+        null=True,
+        related_name='tariff_guest_ippool_set',
+        on_delete=models.SET_NULL
+    )
     objects = SoftDeletedDateManager()
 
     def __unicode__(self):

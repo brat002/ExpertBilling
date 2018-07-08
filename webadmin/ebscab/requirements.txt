@@ -40,3 +40,5 @@ Twisted==13.1.0
 tzlocal==1.4
 wsgiref==0.1.2
 zope.interface==4.0.5
+jinja2
+
