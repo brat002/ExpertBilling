@@ -2,6 +2,8 @@
 
 import datetime
 
+from jinja2 import Environment
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
@@ -36,5 +38,5 @@ class Command(BaseCommand):
             item.account = acc
             item.backend = settings.SENDSMS_DEFAULT_BACKEND
             item.to = acc.phone_m
-            item.body = body.body
+            item.body = Environment().from_string(body.body).render(account=acc)
             item.save()
