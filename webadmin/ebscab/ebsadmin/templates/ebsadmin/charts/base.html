@@ -1,0 +1,196 @@
+{% extends "ebsadmin/base.html" %}
+
+{% load ebsadmin_tags %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+{% load static %}
+
+
+{% block extra_head %}
+  <script type="text/javascript" src="{% static 'highcharts/js/highcharts.js' %}"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      var charts_date_start = $.cookie('charts_daterange');
+      if (charts_date_start && $('#id_daterange').val!='') {
+        $('#id_daterange').val(charts_date_start);
+      }
+
+      $('#id_daterange').change(function(e){
+        $.cookie('charts_daterange', $('#id_daterange').val())
+      })
+
+      {% if res %}
+      $('#tab-panel a[href="#result"]').tab('show');
+      {% else %}
+      $('#tab-panel a[href="#general"]').tab('show');
+      {% endif %}
+    });
+  </script>
+  {% block chart_block %}
+  {% endblock %}
+{% endblock %}
+
+{% block base %}
+  <div class="span12">
+    <div class="row-fluid">
+      <ul class="nav nav-tabs" id="tab-panel">
+        <li><a href="#general" data-toggle="tab">{% blocktrans %}Настройки{% endblocktrans %}</a></li>
+        <li><a href="#result" data-toggle="tab">{% blocktrans %}Отчёт{% endblocktrans %}</a></li>
+      </ul>
+      <form id="id_form" method="GET" action="{% url 'charts' %}?report={{form.report.value}}" class="well form-horizontal form-condensed ">
+
+        <div class="tab-content">
+          <div class="tab-pane" id="general">
+            <legend>{% blocktrans %}Параметры отчёта:{% endblocktrans %} {{rep.name}}</legend>
+            <fieldset>
+              {{form.report}}
+              <div class="control-group">
+                <label class="control-label">{{form.date_start.label}}: </label>
+                <div class="controls">
+                  {{ form.date_start }}
+                  {% if form.date_start.errors %}
+                  <span class="help-inline">{% for error in form.date_start.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.date_start.help_text%}
+                  <p class="help-block">
+                    {{ form.date_start.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">{{form.date_end.label}}: </label>
+                <div class="controls">
+                  {{ form.date_end }}
+                  {% if form.date_end.errors %}
+                  <span class="help-inline">{% for error in form.date_end.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.date_end.help_text%}
+                  <p class="help-block">
+                    {{ form.date_end.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+              {% if 'accountsTab' in rep.tabs %}
+              <div class="control-group">
+                <label class="control-label">{{form.accounts.label}}: </label>
+                <div class="controls">
+                  {{ form.accounts }}
+                  {% if form.accounts.errors %}
+                  <span class="help-inline">{% for error in form.accounts.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.accounts.help_text%}
+                  <p class="help-block">
+                    {{ form.accounts.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+              {% endif %}
+              {% if 'nassesTab' in rep.tabs %}
+              <div class="control-group">
+
+                <div class="control-row">
+                  <label class="control-label">{{form.nasses.label}}:</label>
+                  <div class="controls">
+                    {{ form.nasses }}
+                    {% if form.nasses.errors %}
+                    <span class="help-inline">{% for error in form.nasses.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if form.nasses.help_text%}
+                    <p class="help-block">
+                      {{ form.nasses.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+                {% endif %}
+                {% if 'tariffsTab' in rep.tabs %}
+                <div class="control-row">
+                  <label class="control-label">{{form.tariffs.label}}: </label>
+                  <div class="controls">
+                    {{ form.tariffs }}
+                    {% if form.tariffs.errors %}
+                    <span class="help-inline">{% for error in form.tariffs.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if form.tariffs.help_text%}
+                    <p class="help-block">
+                      {{ form.tariffs.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+
+              </div>
+              {% endif %}
+              <div class="control-group">
+                {% if 'classesTab' in rep.tabs %}
+                <div class="control-row">
+                  <label class="control-label">{{form.classes.label}}:</label>
+                  <div class="controls">
+                    {{ form.classes }}
+                    {% if form.classes.errors %}
+                    <span class="help-inline">{% for error in form.classes.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if form.classes.help_text%}
+                    <p class="help-block">
+                      {{ form.classes.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+                {% endif %}
+                {% if 'groupsTab' in rep.tabs %}
+                <div class="control-row">
+                  <label class="control-label">{{form.groups.label}}: </label>
+                  <div class="controls">
+                    {{ form.groups }}
+                    {% if form.groups.errors %}
+                    <span class="help-inline">{% for error in form.groups.errors %}{{ error }}<br/> {% endfor %}</span>
+                    {% endif %}
+                    {% if form.groups.help_text%}
+                    <p class="help-block">
+                      {{ form.groups.help_text|safe }}
+                    </p>
+                    {% endif %}
+                  </div>
+                </div>
+
+              </div>
+              {% endif %}
+
+              <div class="control-group">
+                <label class="control-label">{{form.grouping.label}}: </label>
+                <div class="controls">
+                  {{ form.grouping }}
+                  {% if form.grouping.errors %}
+                  <span class="help-inline">{% for error in form.grouping.errors %}{{ error }}<br/> {% endfor %}</span>
+                  {% endif %}
+                  {% if form.grouping.help_text%}
+                  <p class="help-block">
+                    {{ form.grouping.help_text|safe }}
+                  </p>
+                  {% endif %}
+                </div>
+              </div>
+            </fieldset>
+          </div>
+          <div class="tab-pane" id="result">
+
+
+            <div id='container' class="span12" style="min-width: 400px; height: {{len|default:"600"}}px; margin: 0 auto"> Chart will be rendered here </div>
+
+          </div>
+        </div>
+
+        <fieldset>
+          <div class="form-actions form-actions-center">
+            <button class="btn btn-primary" type="submit">{% blocktrans %}Построить{% endblocktrans %}</button>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'ebsweb/base.html' %}
+
+{% load i18n %}
+
+
+{% block content %}
+<div class="m-portlet">
+	<div class="m-portlet__head">
+		<div class="m-portlet__head-caption">
+			<div class="m-portlet__head-title">
+				<h3 class="m-portlet__head-text">{% trans 'Ваши запросы' %}</h3>
+			</div>
+		</div>
+		<div class="m-portlet__head-tools">
+			<a class="btn btn-brand m-btn" href="{% url 'ebsweb:support_ticket_create' %}">{% trans 'Создать новый' %}</a>
+		</div>
+	</div>
+	<div class="m-portlet__body">
+		{% for ticket in tickets %}
+			{% if forloop.first %}
+				<table class="table table-responsive table-bordered">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>{% trans 'Заголовок' %}</th>
+							<th>{% trans 'Дата' %}</th>
+							<th>{% trans 'Исполнитель' %}</th>
+							<th>{% trans 'Приоритет' %}</th>
+							<th>{% trans 'Статус' %}</th>
+						</tr>
+					</thead>
+					<tbody>
+			{% endif %}
+
+						<tr>
+							<td>{{ ticket.id }}</td>
+							<td>
+								<a href="{% url 'ebsweb:support_ticket' pk=ticket.pk %}">
+									{{ ticket.title }}
+								</a>
+							</td>
+							<td>{{ ticket.created|date:'Y-m-d H:i:s' }}</td>
+							<td>{{ ticket.render_performer }}</td>
+							<td>{{ ticket.render_priority_20 }}</td>
+							<td>{{ ticket.status_verbose_20 }}</td>
+						</tr>
+
+			{% if forloop.last %}
+						</tbody>
+				</table>
+			{% endif %}
+		{% empty %}
+			{% trans 'У вас нет созданных запросов' %}
+		{% endfor %}
+	</div>
+</div>
+
+{% include 'ebsweb/includes/pagination.html' %}
+{% endblock %}

@@ -1,6 +1,9 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import, unicode_literals
+
 from django.db import models
+
 from .base import library
 from .linkcolumn import BaseLinkColumn
 
@@ -23,6 +26,7 @@ class URLColumn(BaseLinkColumn):
     ``attrs['a']``.
 
     """
+
     def render(self, value):
         return self.render_link(value, value)
 

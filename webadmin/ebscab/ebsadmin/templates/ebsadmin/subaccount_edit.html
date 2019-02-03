@@ -1,0 +1,1044 @@
+{% extends "ebsadmin/base.html" %}
+
+{% load i18n %}
+{% load ebsadmin_tags %}
+{% load billservice_tags %}
+{% load render_table from django_tables2 %}
+
+{% block extra_head %}
+
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$("#generate_username").click(function() {
+				$.getJSON('{% url 'generate_credentials' %}',{action:'login'},function(data,status){
+					if( status=='success' ){
+						if(data.success==true)
+							$("#id_username").val(data.generated);
+						else
+							alert(data.generated)
+					}else{
+						alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
+					}
+				})
+			});
+
+			$("#generate_password").click(function() {
+				$.getJSON('{% url 'generate_credentials' %}',{action:'password'},function(data,status){
+					if( status=='success' ){
+						if(data.success==true)
+							$("#id_password").val(data.generated);
+						else
+							alert(data.generated)
+					}else{
+						alert('{% blocktrans %}В процессе отправки произошла ошибка{% endblocktrans %}')
+					}
+				})
+			});
+
+			$("#modal-accountaddonservice-dialog").click(function(event) {
+				$('<div />').dialog2({
+					title: "{% blocktrans %}Прикрепить подключаемую услугу{% endblocktrans %}",
+					content: "{% url 'accountaddonservice' %}?subaccount_id={{subaccount.id}}",
+					id: "accountaddonservicer-modal"
+				});
+
+				event.preventDefault(event);
+			});
+
+			$("#modal-form-dialog").click(function(event) {
+				$('#id_form').submit();
+			});
+
+			$(function() {
+				$(".open-custom-dialog").click(function(event) {
+					$('<div />').dialog2({
+						title: "{% blocktrans %}Прикрепить подключаемую услугу{% endblocktrans %}",
+						content: this.href,
+						id: "accountaddonservicer-modal"
+					});
+
+					event.preventDefault(event);
+				});
+			});
+
+			$('#id_assign_vpn_ip_address').popover({title:'{% blocktrans %}Подбор IP адреса{% endblocktrans %}', content: '{% blocktrans %}Выдать следующий IP из пула или показать доcтупные{% endblocktrans %}', trigger: 'hover'});
+
+			$('#id_vpn_ip_address').autocomplete({
+				source: function( request, response )
+				{
+					$.ajax(
+					{
+						url: "{% url 'getipfrompool' %}",
+						data: {
+							term: request.term,
+							pool_id: $('#id_ipv4_vpn_pool').val(),
+						},
+						type: "POST",
+						dataType: "json",
+
+						success: function( data )
+						{
+							response( $.map( data.records, function( item )
+							{
+								return item
+							}));
+						}
+					});
+				},
+				minChars: 0,
+				maxHeight: 400,
+				width: 300,
+				zIndex: 9999,
+				deferRequestBy: 300,
+				onSelect: function(data, value){ },
+			});
+
+			$('#id_vpn_ip_address').click(function(){$('#id_vpn_ip_address').autocomplete('search')});
+
+			$('#id_assign_vpn_ip_address').click(function(){
+				if ($('#id_vpn_ip_address').val()=='' || $('#id_vpn_ip_address').val()=='0.0.0.0'){
+					$('#id_vpn_ip_address').val('')
+				}
+				if ($('#id_vpn_ip_address').val()){
+					$('#id_vpn_ip_address').autocomplete('search')
+					return
+				}
+				$.ajax(
+				{
+					url: "{% url 'getipfrompool' %}",
+					data: {
+						term: $('#id_vpn_ip_address').val(),
+						pool_id: $('#id_ipv4_vpn_pool').val(),
+						limit:1
+					},
+					type: "POST",
+					dataType: "json",
+
+					success: function( data )
+					{
+						$('#id_vpn_ip_address').val(data.records);
+					}
+				});
+			});
+
+			$('#id_assign_ipn_ip_address').popover({title:'{% blocktrans %}Подбор IP адреса{% endblocktrans %}', content: '{% blocktrans %}Выдать следующий IP из пула или показать дсотупные{% endblocktrans %}', trigger: 'hover'});
+
+			$('#id_ipn_ip_address').autocomplete({
+				source: function( request, response )
+				{
+					$.ajax(
+					{
+						url: "{% url 'getipfrompool' %}",
+						data: {
+							term: request.term,
+							pool_id: $('#id_ipv4_ipn_pool').val(),
+						},
+						type: "POST",
+						dataType: "json",
+
+						success: function( data )
+						{
+							response( $.map( data.records, function( item )
+							{
+								return item
+							}));
+						}
+					});
+				},
+				minChars: 0,
+				maxHeight: 400,
+				width: 300,
+				zIndex: 9999,
+				deferRequestBy: 300,
+				onSelect: function(data, value){ },
+			});
+
+			$("#modal-ipn-ping-dialog").click(function(event) {
+				$('<div />').dialog2({
+					title: "Ping",
+					content: "{% url 'tools_ping' %}?ip="+ $('#id_ipn_ip_address').val()
+				});
+
+				event.preventDefault(event);
+			});
+
+			$("#modal-vpn-ping-dialog").click(function(event) {
+				$('<div />').dialog2({
+					title: "Ping",
+					content: "{% url 'tools_ping' %}?ip="+ $('#id_vpn_ip_address').val()
+				});
+
+				event.preventDefault(event);
+			});
+
+			$('#id_ipn_ip_address').click(function(){$('#id_ipn_ip_address').autocomplete('search')});
+
+			$('#id_ipv6_vpn_ip_address').click(function(){$('#id_ipv6_vpn_ip_address').autocomplete('search')});
+
+			$('#id_vpn_ipv6_ip_address').autocomplete({
+				source: function( request, response )
+				{
+					$.ajax(
+					{
+						url: "{% url 'getipfrompool' %}",
+						data: {
+							term: request.term,
+							pool_id: $('#id_ipv6_vpn_pool').val(),
+						},
+						type: "POST",
+						dataType: "json",
+
+						success: function( data )
+						{
+							response( $.map( data.records, function( item )
+							{
+								return item
+							}));
+						}
+					});
+				},
+				minChars: 0,
+				maxHeight: 400,
+				width: 300,
+				zIndex: 9999,
+				deferRequestBy: 300,
+				onSelect: function(data, value){ },
+			});
+
+			$('#id_assign_ipv6_vpn_ip_address').click(function(){
+				if ($('#id_vpn_ipv6_ip_address').val()=='' || $('#id_vpn_ipv6_ip_address').val()==':::'){
+					$('#id_vpn_ipv6_ip_address').val('')
+				}
+				if ($('#id_vpn_ipv6_ip_address').val()){
+					$('#id_vpn_ipv6_ip_address').autocomplete('search')
+					return
+				}
+				$.ajax(
+				{
+					url: "{% url 'getipfrompool' %}",
+					data: {
+						term: $('#id_vpn_ipv6_ip_address').val(),
+						pool_id: $('#id_ipv6_vpn_pool').val(),
+						limit:1
+					},
+					type: "POST",
+					dataType: "json",
+
+					success: function( data )
+					{
+
+						$('#id_vpn_ipv6_ip_address').val(data.records);
+					}
+				});
+			});
+
+
+			$('#id_assign_ipn_ip_address').click(function(){
+				if ($('#id_ipn_ip_address').val()=='' || $('#id_ipn_ip_address').val()=='0.0.0.0'){
+					$('#id_ipn_ip_address').val('')
+				}
+				if ($('#id_ipn_ip_address').val()){
+					$('#id_ipn_ip_address').autocomplete('search')
+					return
+				}
+				$.ajax(
+				{
+					url: "{% url 'getipfrompool' %}",
+					data: {
+						term: $('#id_ipn_ip_address').val(),
+						pool_id: $('#id_ipv4_ipn_pool').val(),
+						limit:1
+					},
+					type: "POST",
+					dataType: "json",
+					success: function( data )
+					{
+						$('#id_ipn_ip_address').val(data.records);
+					}
+				});
+			});
+
+			$('#id_get_mac_address').popover({title:'{% blocktrans %}Внимание{% endblocktrans %}', content: '{% blocktrans %}Этот функционал поддерживается только при использовании RouterOS MikroTik{% endblocktrans %}', trigger: 'hover'});
+
+			$('#id_get_mac_address').click(function(){
+				if (!$('#id_nas').val()==null){
+					$.fn.dialog2.helpers.alert("{% blocktrans %}Вы не выбрали сервер доступа.{% endblocktrans %}", {
+
+					});
+					return
+				};
+				if ($('#id_ipn_ip_address').val()==''){
+					$.fn.dialog2.helpers.alert("{% blocktrans %}Вы не указали IPN IP адрес.{% endblocktrans %}", {
+
+					});
+					return
+				};
+				$.ajax(
+				{
+					url: "{% url 'get_mac_for_ip' %}",
+					data: {
+						nas_id: $('#id_nas').val(),
+						ipn_ip_address: $('#id_ipn_ip_address').val(),
+					},
+					type: "POST",
+					dataType: "json",
+
+					success: function( data )
+					{
+						if(data.success==true){
+							$('#id_ipn_mac_address').val(data.mac);
+						}else{
+							$.fn.dialog2.helpers.alert("{% blocktrans %}Не удалось получить MAC адрес по причине {% endblocktrans %}"+ data.message, {
+
+							});
+						}
+					}
+				});
+			});
+		});
+	</script>
+
+	<style>
+		.ui-autocomplete {
+				max-height: 200px;
+				overflow-y: auto;
+				overflow-x: hidden;
+				padding-right: 20px;
+		}
+
+		* html .ui-autocomplete {
+				height: 200px;
+		}
+	</style>
+{% endblock %}
+
+{% block base %}
+
+{% if message %}
+<div class="alert alert-error">{{message}}<a class="close" data-dismiss="alert" href="#">&times;</a></div>
+{% endif %}
+
+<ul class="breadcrumb">
+	<li>
+		<a href='{% url 'account_list' %}?data=data'>{% blocktrans %}Все аккаунты{% endblocktrans %}</a> / <a href="{% url 'account_edit' %}?id={{subaccount.account.id}}">{{subaccount.account.username}}</a> <span class="divider">/</span>{% blocktrans %}Субаккаунт{% endblocktrans %}: {{subaccount.username}} id:{{subaccount.id}}
+	</li>
+</ul>
+
+<div class="navbar navbar-googlenav">
+	<div class="navbar-inner">
+		<div class="btn-toolbar">
+			<div class="btn-group">
+				<a href="#" class="btn btn-danger" id='modal-form-dialog'>{% blocktrans %}Сохранить{% endblocktrans %}</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row-fluid">
+	<div class="span9">
+		<form method="POST"  id ='id_form' action="{% url 'subaccount' %}?account_id={{account.id}}&id={{subaccount.id}}"class="well form-horizontal form-condensed">
+			<ul class="nav nav-tabs" id="tab-control">
+				<li class="active"><a href="#tab-first" data-toggle="tab">{% blocktrans %}Карточка{% endblocktrans %}</a></li>
+				{% if subaccount %}<li class=""><a href="#tab-addonservice" data-toggle="tab">{% blocktrans %}Подключаемые услуги{% endblocktrans %}</a></li>{% endif %}
+				<li class=""><a href="#tab-options" data-toggle="tab">{% blocktrans %}Опции{% endblocktrans %}</a></li>
+				<li class=""><a href="#tab-others" data-toggle="tab">{% blocktrans %}Прочее{% endblocktrans %}</a></li>
+			</ul>
+
+			<div class="tab-content">
+				<div class="tab-pane active" id="tab-first">
+					<fieldset>
+						<legend>{% blocktrans %}Профиль субаккаунта{% endblocktrans %}{% objectlog subaccount %}</legend>
+
+						<div class="control-group">
+							<label class="control-label">{% blocktrans %}ID аккаунта{% endblocktrans %}</label>
+							<div class="controls">
+								<label class="checkbox"><a href="{% url 'account_edit' %}?id={{account.id}}">{{account.id}}&nbsp;<i class="icon-globe"></i></a></label>
+								{{ form.account }}
+								{% if form.account.errors %}
+								<span class="help-inline">{% for error in form.account.errors %}{{ error }}<br/> {% endfor %}</span>
+								{% endif %}
+								{% if form.account.help_text%}
+								<p class="help-block">
+									{{ form.account.help_text|safe }}
+								</p>
+								{% endif %}
+							</div>
+							<label class="control-label">{% blocktrans %}ID субаккаунта{% endblocktrans %}</label>
+							<div class="controls">
+								<label class="checkbox"><a href="{% url 'subaccount' %}?id={{subaccount.id}}">{{subaccount.id}}&nbsp;<i class="icon-globe"></i></a></label>
+							</div>
+						</div>
+
+						<div class="control-group">
+							<div class="control-row">
+								<label class="control-label" for="input-username">{{form.username.label}}</label>
+								<div class="controls">
+									<div class="input-append">{{ form.username }}
+										<a id="generate_username" class="btn  add-on">#</a>
+									</div>
+									{% if form.username.errors %}
+									<span class="help-inline">{% for error in form.username.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.username.help_text%}
+									<p class="help-block">
+										{{ form.username.help_text|safe }}
+									</p>
+									{% endif %}
+								</div>
+							</div>
+						</div>
+
+						<div class="control-group">
+							<div class="control-row">
+								<label class="control-label" for="input-password">{{form.password.label}}</label>
+								<div class="controls">
+									<div class="input-append">{{ form.password }}
+										<a id="generate_password" class="btn  add-on">#</a>
+									</div>
+									{% if form.password.errors %}
+									<span class="help-inline">{% for error in form.password.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.password.help_text%}
+									<p class="help-block">
+										{{ form.password.help_text|safe }}
+									</p>
+									{% endif %}
+								</div>
+							</div>
+						</div>
+
+						<hr />
+
+						<div class="control-group">
+							<label class="control-label" for="input-server-access">{{form.nas.label}}</label>
+							<div class="controls">
+								{{ form.nas }}
+								{% if form.nas.errors %}
+								<span class="help-inline">{% for error in form.nas.errors %}{{ error }}<br/> {% endfor %}</span>
+								{% endif %}
+								{% if form.nas.help_text%}
+								<p class="help-block">
+									{{ form.nas.help_text|safe }}
+								</p>
+								{% endif %}
+							</div>
+						</div>
+
+						<div class="control-group">
+							<label class="control-label" for="input-vpn-ip">{{ form.vpn_ip_address.label }}</label>
+							<div class="controls">
+								{{ form.ipv4_vpn_pool }}{{ form.vpn_ip_address }}<input type="button" id="id_assign_vpn_ip_address" class="btn btn-success" value="Выдать">&nbsp;<a href="#" class="btn btn-success" id='modal-vpn-ping-dialog'>{% blocktrans %}Ping{% endblocktrans %}</a>
+
+								{% if form.vpn_ip_address.errors %}
+								<span class="help-inline">{% for error in form.vpn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
+								{% endif %}
+								{% if form.vpn_ip_address.help_text%}
+								<p class="help-block">
+									{{ form.vpn_ip_address.help_text|safe }}
+								</p>
+								{% endif %}
+							</div>
+						</div>
+
+						<div class="control-group">
+							<label class="control-label" for="input-ipn-ip">{{form.ipn_ip_address.label}}</label>
+							<div class="controls">
+								{{ form.ipv4_ipn_pool }}{{ form.ipn_ip_address }}<input type="button" id="id_assign_ipn_ip_address" class="btn btn-success"  value="Выдать">&nbsp;<a href="#" class="btn btn-success" id='modal-ipn-ping-dialog'>{% blocktrans %}Ping{% endblocktrans %}</a>
+								{% if form.ipn_ip_address.errors %}
+								<span class="help-inline">{% for error in form.ipn_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
+								{% endif %}
+								{% if form.ipn_ip_address.help_text%}
+								<p class="help-block">
+									{{ form.ipn_ip_address.help_text|safe }}
+								</p>
+								{% endif %}
+							</div>
+						</div>
+
+						<div class="control-group">
+							<label class="control-label" for="input-ipn-mac">{{form.ipn_mac_address.label}}</label>
+							<div class="controls">
+								{{ form.ipn_mac_address }}
+								{% if form.ipn_mac_address.errors %}
+								<span class="help-inline">{% for error in form.ipn_mac_address.errors %}{{ error }}<br/> {% endfor %}</span>
+								{% endif %}
+								{% if form.ipn_mac_address.help_text%}
+								<p class="help-block">
+									{{ form.ipn_mac_address.help_text|safe }}
+								</p>
+								{% endif %}<input type="button" class="btn" id="id_get_mac_address" value="Получить">
+							</div>
+						</div>
+
+						<div class="control-group">
+							<label class="control-label" for="input-ipn-ip">{{form.vpn_ipv6_ip_address.label}}</label>
+							<div class="controls">
+								{{ form.ipv6_vpn_pool }}{{ form.vpn_ipv6_ip_address }}<input type="button" id="id_assign_ipv6_vpn_ip_address" class="btn btn-success"  value="Выдать">
+								{% if form.vpn_ipv6_ip_address.errors %}
+								<span class="help-inline">{% for error in form.vpn_ipv6_ip_address.errors %}{{ error }}<br/> {% endfor %}</span>
+								{% endif %}
+								{% if form.vpn_ipv6_ip_address.help_text%}
+								<p class="help-block">
+									{{ form.vpn_ipv6_ip_address.help_text|safe }}
+								</p>
+								{% endif %}
+							</div>
+						</div>
+
+						<div class="control-group">
+							<label class="control-label" for="input-vpn-speed">{{form.sessionscount.label}}</label>
+							<div class="controls">
+								{{ form.sessionscount }}
+								{% if form.sessionscount.errors %}
+								<span class="help-inline">{% for error in form.sessionscount.errors %}{{ error }}<br/> {% endfor %}</span>
+								{% endif %}
+								{% if form.sessionscount.help_text%}
+								<p class="help-block">
+									{{ form.sessionscount.help_text|safe }}
+								</p>
+								{% endif %}
+							</div>
+						</div>
+
+						<hr />
+
+						<div class="control-group">
+							<div class="control-row">
+								<label class="control-label" for="input-switch">{{form.switch.label}}</label>
+								<div class="controls">
+									{{ form.switch }}
+									{% if form.switch.errors %}
+									<span class="help-inline">{% for error in form.switch.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.switch.help_text%}
+									<p class="help-block">
+										{{ form.switch.help_text|safe }}
+									</p>
+									{% endif %}
+								</div>
+							</div>
+
+							<div class="control-row">
+								<label class="control-label" for="input-switch-port">{{form.switch_port.label}}</label>
+								<div class="controls">
+									{{ form.switch_port }}
+									{% if form.switch_port.errors %}
+									<span class="help-inline">{% for error in form.switch_port.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.switch_port.help_text%}
+									<p class="help-block">
+										{{ form.switch_port.help_text|safe }}
+									</p>
+									{% endif %}
+								</div>
+							</div>
+						</div>
+
+						<div class="control-group">
+							<div class="control-row">
+								<label class="control-label" for="input-switch"></label>
+								<div class="controls">
+									&nbsp;
+								</div>
+							</div>
+
+							<div class="control-row">
+								<label class="control-label" for="input-switch-port">{{form.vlan.label}}</label>
+								<div class="controls">
+									{{ form.vlan }}
+									{% if form.vlan.errors %}
+									<span class="help-inline">{% for error in form.vlan.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.vlan.help_text%}
+									<p class="help-block">
+										{{ form.vlan.help_text|safe }}
+									</p>
+									{% endif %}
+								</div>
+							</div>
+						</div>
+
+						<hr />
+
+						<div class="control-group">
+							<label class="control-label" for="input-password">{% blocktrans %}IPN статус{% endblocktrans %}</label>
+							<div class="controls">
+								{{ form.ipn_added }} {{form.ipn_added.label}}
+							</div>
+							<div class="controls">
+								{{ form.ipn_enabled }} {{form.ipn_enabled.label}}
+							</div>
+							<div class="controls">
+								{{ form.ipn_sleep }} {{form.ipn_sleep.label}}
+							</div>
+							<br />
+							<div class="controls alert alert-info">
+								{% blocktrans %}Текущие IPN статусы отображены выше. Для их изменения - отметьте соответствующие пункты и сохраните субаккаунт. Изменения применятся в течении нескольких минут.{% endblocktrans %}
+							</div>
+						</div>
+						<hr />
+
+						<hr />
+					</fieldset>
+
+					<fieldset>
+						<div class="form-actions form-actions-center">
+							<input type="submit" class="btn btn-primary" value="{% blocktrans %}Сохранить{% endblocktrans %}">
+						</div>
+					</fieldset>
+				</div>
+
+				<div class="tab-pane" id="tab-addonservice">
+					{% if subaccount %}
+					<fieldset>
+						<legend>{% blocktrans %}Активированные подключаемые услуги{% endblocktrans %}</legend>
+						{% if accountaddonservice_table %}{% render_table accountaddonservice_table %}{% endif %}
+						<a href="#" class="btn align-right btn-success" id="modal-accountaddonservice-dialog" >{% blocktrans %}Добавить{% endblocktrans %}</a>
+					</fieldset>
+					{% endif %}
+				</div>
+				<div class="tab-pane" id="tab-options">
+
+					<fieldset>
+						<div class="control-group">
+							<label class="control-label">{% blocktrans %}Опции{% endblocktrans %}</label>
+							<div class="controls docs-input-sizes">
+								<label class="checkbox">
+									{{ form.allow_dhcp }}{{form.allow_dhcp.label}}
+									{% if form.allow_dhcp.errors %}
+									<span class="help-inline">{% for error in form.allow_dhcp.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.allow_dhcp.help_text%}
+									<p class="help-block">
+										{{ form.allow_dhcp.help_text|safe }}
+									</p>
+									{% endif %}
+								</label>
+								<label class="checkbox">
+									{{ form.allow_dhcp_with_null }}{{form.allow_dhcp_with_null.label}}
+									{% if form.allow_dhcp_with_null.errors %}
+									<span class="help-inline">{% for error in form.allow_dhcp_with_null.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.allow_dhcp_with_null.help_text%}
+									<p class="help-block">
+										{{ form.allow_dhcp_with_null.help_text|safe }}
+									</p>
+									{% endif %}
+								</label>
+								<label class="checkbox">
+									{{ form.allow_dhcp_with_minus }}{{form.allow_dhcp_with_minus.label}}
+									{% if form.allow_dhcp_with_null.errors %}
+									<span class="help-inline">{% for error in form.allow_dhcp_with_minus.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.allow_dhcp_with_minus.help_text%}
+									<p class="help-block">
+										{{ form.allow_dhcp_with_minus.help_text|safe }}
+									</p>
+									{% endif %}
+								</label>
+								<label class="checkbox">
+									{{ form.allow_dhcp_with_block }}{{form.allow_dhcp_with_block.label}}
+									{% if form.allow_dhcp_with_null.errors %}
+									<span class="help-inline">{% for error in form.allow_dhcp_with_block.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.allow_dhcp_with_block.help_text%}
+									<p class="help-block">
+										{{ form.allow_dhcp_with_block.help_text|safe }}
+									</p>
+									{% endif %}
+								</label>
+
+
+								<label class="checkbox">
+									{{ form.allow_vpn_with_null }}{{form.allow_vpn_with_null.label}}
+									{% if form.allow_vpn_with_null.errors %}
+									<span class="help-inline">{% for error in form.allow_vpn_with_null.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.allow_vpn_with_null.help_text%}
+									<p class="help-block">
+										{{ form.allow_vpn_with_null.help_text|safe }}
+									</p>
+									{% endif %}
+								</label>
+								<label class="checkbox">
+									{{ form.allow_vpn_with_minus }}{{form.allow_vpn_with_minus.label}}
+									{% if form.allow_dhcp_with_null.errors %}
+									<span class="help-inline">{% for error in form.allow_vpn_with_minus.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.allow_vpn_with_minus.help_text%}
+									<p class="help-block">
+										{{ form.allow_vpn_with_minus.help_text|safe }}
+									</p>
+									{% endif %}
+								</label>
+								<label class="checkbox">
+									{{ form.allow_vpn_with_block }}{{form.allow_vpn_with_block.label}}
+									{% if form.allow_dhcp_with_null.errors %}
+									<span class="help-inline">{% for error in form.allow_vpn_with_block.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.allow_vpn_with_block.help_text%}
+									<p class="help-block">
+										{{ form.allow_vpn_with_block.help_text|safe }}
+									</p>
+									{% endif %}
+								</label>
+								<label class="checkbox">
+									{{ form.associate_pptp_ipn_ip }}{{form.associate_pptp_ipn_ip.label}}
+									{% if form.allow_dhcp_with_null.errors %}
+									<span class="help-inline">{% for error in form.associate_pptp_ipn_ip.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.associate_pptp_ipn_ip.help_text%}
+									<p class="help-block">
+										{{ form.associate_pptp_ipn_ip.help_text|safe }}
+									</p>
+									{% endif %}
+								</label>
+								<label class="checkbox">
+									{{ form.associate_pppoe_ipn_mac }}{{form.associate_pppoe_ipn_mac.label}}
+									{% if form.allow_dhcp_with_null.errors %}
+									<span class="help-inline">{% for error in form.associate_pppoe_ipn_mac.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.associate_pppoe_ipn_mac.help_text%}
+									<p class="help-block">
+										{{ form.associate_pppoe_ipn_mac.help_text|safe }}
+									</p>
+									{% endif %}
+								</label>
+								<label class="checkbox">
+									{{ form.allow_ipn_with_null }}{{form.allow_ipn_with_null.label}}
+									{% if form.allow_vpn_with_null.errors %}
+									<span class="help-inline">{% for error in form.allow_ipn_with_null.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.allow_ipn_with_null.help_text%}
+									<p class="help-block">
+										{{ form.allow_ipn_with_null.help_text|safe }}
+									</p>
+									{% endif %}
+								</label>
+								<label class="checkbox">
+									{{ form.allow_ipn_with_minus }}{{form.allow_ipn_with_minus.label}}
+									{% if form.allow_dhcp_with_null.errors %}
+									<span class="help-inline">{% for error in form.allow_ipn_with_minus.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.allow_ipn_with_minus.help_text%}
+									<p class="help-block">
+										{{ form.allow_ipn_with_minus.help_text|safe }}
+									</p>
+									{% endif %}
+								</label>
+								<label class="checkbox">
+									{{ form.allow_ipn_with_block }}{{form.allow_ipn_with_block.label}}
+									{% if form.allow_dhcp_with_null.errors %}
+									<span class="help-inline">{% for error in form.allow_ipn_with_block.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.allow_ipn_with_block.help_text%}
+									<p class="help-block">
+										{{ form.allow_ipn_with_block.help_text|safe }}
+									</p>
+									{% endif %}
+								</label>
+								<label class="checkbox">
+									{{ form.allow_addonservice }}{{form.allow_addonservice.label}}
+									{% if form.allow_addonservice.errors %}
+									<span class="help-inline">{% for error in form.allow_addonservice.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.allow_addonservice.help_text%}
+									<p class="help-block">
+										{{ form.allow_addonservice.help_text|safe }}
+									</p>
+									{% endif %}
+								</label>
+								<label class="checkbox">
+									{{ form.allow_mac_update }}{{form.allow_mac_update.label}}
+									{% if form.allow_addonservice.errors %}
+									<span class="help-inline">{% for error in form.allow_mac_update.errors %}{{ error }}<br/> {% endfor %}</span>
+									{% endif %}
+									{% if form.allow_mac_update.help_text%}
+									<p class="help-block">
+										{{ form.allow_mac_update.help_text|safe }}
+									</p>
+									{% endif %}
+								</label>
+							</div>
+						</div>
+						<fieldset>
+							<div class="form-actions form-actions-center">
+								<input type="submit" class="btn btn-primary" value="{% blocktrans %}Сохранить{% endblocktrans %}">
+							</div>
+						</fieldset>
+					</fieldset>
+				</div>
+
+				<div class="tab-pane" id="tab-others">
+					<div class="control-group">
+						<label class="control-label" for="input-vpn-speed">{{form.vpn_speed.label}}</label>
+						<div class="controls">
+							{{ form.vpn_speed }}
+							{% if form.vpn_speed.errors %}
+							<span class="help-inline">{% for error in form.vpn_speed.errors %}{{ error }}<br/> {% endfor %}</span>
+							{% endif %}
+							{% if form.vpn_speed.help_text%}
+							<p class="help-block">
+								{{ form.vpn_speed.help_text|safe }}
+							</p>
+							{% endif %}
+						</div>
+					</div>
+
+					<div class="control-group">
+						<label class="control-label" for="input-ipn-speed">{{form.ipn_speed.label}}</label>
+						<div class="controls">
+							{{ form.ipn_speed }}
+							{% if form.ipn_speed.errors %}
+							<span class="help-inline">{% for error in form.ipn_speed.errors %}{{ error }}<br/> {% endfor %}</span>
+							{% endif %}
+							{% if form.ipn_speed.help_text%}
+							<p class="help-block">
+								{{ form.ipn_speed.help_text|safe }}
+							</p>
+							{% endif %}
+						</div>
+						<div class="controls alert alert-info">
+							{% blocktrans %}
+							<small>Формат: rx-rate[/tx-rate] [rx-burst-rate[/tx-burst-rate] [rx-burst-threshold[/tx-burst-threshold] [rx-burst-time[/tx-burst-time] [priority] <br />
+								Примеры:  <br />
+								128k  - rx-rate=128000, tx-rate=128000 (no bursts)  <br />
+								64k/128M - rx-rate=64000, tx-rate=128000000  <br />
+								64k 256k - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=64000, rx/tx-burst-time=1s  <br />
+								64k/64k 256k/256k 128k/128k 10/10 - rx/tx-rate=64000, rx/tx-burst-rate=256000, rx/tx-burst-threshold=128000, rx/tx-burst-time=10s  <br /></small>
+								{% endblocktrans %}
+							</div>
+						</div>
+
+						<fieldset>
+							<div class="control-group">
+								<div class="control-row">
+									<label class="control-label">{{form.speed_units.label}}</label>
+									<div class="controls">
+										{{ form.speed_units }}
+										{% if form.speed_units.errors %}
+										<span class="help-inline">{% for error in form.speed_units.errors %}{{ error }}<br/> {% endfor %}</span>
+										{% endif %}
+										{% if form.speed_units.help_text%}
+										<p class="help-block">
+											{{ form.speed_units.help_text|safe }}
+										</p>
+										{% endif %}
+									</div>
+								</div>
+
+								<div class="control-row">
+									<label class="control-label">{{form.priority.label}}</label>
+									<div class="controls">
+										{{ form.priority }}
+										{% if form.priority.errors %}
+										<span class="help-inline">{% for error in form.priority.errors %}{{ error }}<br/> {% endfor %}</span>
+										{% endif %}
+										{% if form.priority.help_text%}
+										<p class="help-block">
+											{{ form.priority.help_text|safe }}
+										</p>
+										{% endif %}
+									</div>
+								</div>
+							</div>
+
+							<div class="control-group">
+								<div class="control-row">
+									<label class="control-label">{{form.max_tx.label}}</label>
+									<div class="controls">
+										{{ form.max_tx }}
+										{% if form.max_tx.errors %}
+										<span class="help-inline">{% for error in form.max_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+										{% endif %}
+										{% if form.max_tx.help_text%}
+										<p class="help-block">
+											{{ form.max_tx.help_text|safe }}
+										</p>
+										{% endif %}
+									</div>
+								</div>
+								<div class="control-row">
+									<label class="control-label">{{form.max_rx.label}}</label>
+									<div class="controls">
+										{{ form.max_rx }}
+										{% if form.max_rx.errors %}
+										<span class="help-inline">{% for error in form.max_rx.errors %}{{ error }}<br/> {% endfor %}</span>
+										{% endif %}
+										{% if form.max_rx.help_text%}
+										<p class="help-block">
+											{{ form.max_rx.help_text|safe }}
+										</p>
+										{% endif %}
+									</div>
+								</div>
+							</div>
+
+							<div class="control-group">
+								<div class="control-row">
+									<label class="control-label">{{form.burst_tx.label}}</label>
+									<div class="controls">
+										{{ form.burst_tx }}
+										{% if form.burst_tx.errors %}
+										<span class="help-inline">{% for error in form.burst_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+										{% endif %}
+										{% if form.burst_tx.help_text%}
+										<p class="help-block">
+											{{ form.burst_tx.help_text|safe }}
+										</p>
+										{% endif %}
+									</div>
+								</div>
+								<div class="control-row">
+									<label class="control-label">{{form.burst_rx.label}}</label>
+									<div class="controls">
+										{{ form.burst_rx }}
+										{% if form.burst_rx.errors %}
+										<span class="help-inline">{% for error in form.burst_rx.errors %}{{ error }}<br/> {% endfor %}</span>
+										{% endif %}
+										{% if form.burst_rx.help_text%}
+										<p class="help-block">
+											{{ form.burst_rx.help_text|safe }}
+										</p>
+										{% endif %}
+									</div>
+								</div>
+							</div>
+
+							<div class="control-group">
+								<div class="control-row">
+									<label class="control-label">{{form.burst_treshold_tx.label}}</label>
+									<div class="controls">
+										{{ form.burst_treshold_tx }}
+										{% if form.burst_treshold_tx.errors %}
+										<span class="help-inline">{% for error in form.burst_treshold_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+										{% endif %}
+										{% if form.burst_treshold_tx.help_text%}
+										<p class="help-block">
+											{{ form.burst_treshold_tx.help_text|safe }}
+										</p>
+										{% endif %}
+									</div>
+								</div>
+								<div class="control-row">
+									<label class="control-label">{{form.burst_treshold_rx.label}}</label>
+									<div class="controls">
+										{{ form.burst_treshold_rx }}
+										{% if form.burst_treshold_rx.errors %}
+										<span class="help-inline">{% for error in form.burst_treshold_rx.errors %}{{ error }}<br/> {% endfor %}</span>
+										{% endif %}
+										{% if form.burst_treshold_rx.help_text%}
+										<p class="help-block">
+											{{ form.burst_treshold_rx.help_text|safe }}
+										</p>
+										{% endif %}
+									</div>
+								</div>
+							</div>
+
+							<div class="control-group">
+								<div class="control-row">
+									<label class="control-label">{{form.burst_time_tx.label}}</label>
+									<div class="controls">
+										{{ form.burst_time_tx }}
+										{% if form.burst_time_tx.errors %}
+										<span class="help-inline">{% for error in form.burst_time_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+										{% endif %}
+										{% if form.burst_time_tx.help_text%}
+										<p class="help-block">
+											{{ form.burst_time_tx.help_text|safe }}
+										</p>
+										{% endif %}
+									</div>
+								</div>
+								<div class="control-row">
+									<label class="control-label">{{form.burst_time_rx.label}}</label>
+									<div class="controls">
+										{{ form.burst_time_rx }}
+										{% if form.burst_time_rx.errors %}
+										<span class="help-inline">{% for error in form.burst_time_rx.errors %}{{ error }}<br/> {% endfor %}</span>
+										{% endif %}
+										{% if form.burst_time_rx.help_text%}
+										<p class="help-block">
+											{{ form.burst_time_rx.help_text|safe }}
+										</p>
+										{% endif %}
+									</div>
+								</div>
+							</div>
+
+							<div class="control-group">
+								<div class="control-row">
+									<label class="control-label">{{form.min_tx.label}}</label>
+									<div class="controls">
+										{{ form.min_tx }}
+										{% if form.min_tx.errors %}
+										<span class="help-inline">{% for error in form.min_tx.errors %}{{ error }}<br/> {% endfor %}</span>
+										{% endif %}
+										{% if form.min_tx.help_text%}
+										<p class="help-block">
+											{{ form.min_tx.help_text|safe }}
+										</p>
+										{% endif %}
+									</div>
+								</div>
+								<div class="control-row">
+									<label class="control-label">{{form.min_rx.label}}</label>
+									<div class="controls">
+										{{ form.min_rx }}
+										{% if form.min_rx.errors %}
+										<span class="help-inline">{% for error in form.min_rx.errors %}{{ error }}<br/> {% endfor %}</span>
+										{% endif %}
+										{% if form.min_rx.help_text%}
+										<p class="help-block">
+											{{ form.min_rx.help_text|safe }}
+										</p>
+										{% endif %}
+									</div>
+								</div>
+							</div>
+						</fieldset>
+
+						<fieldset>
+							<div class="form-actions form-actions-center">
+								<input type="submit" class="btn btn-primary" value="{% blocktrans %}Сохранить{% endblocktrans %}">
+							</div>
+						</fieldset>
+					</div>
+				</div>
+
+			</form>
+		</div>
+
+		<div class="span3">
+			<div class="well sidebar-nav">
+				<ul class="nav nav-list">
+					<li class="nav-header">{% blocktrans %}Информация{% endblocktrans %}</li>
+					{% get_switch_port subaccount.switch.id subaccount.switch_port as switch_port%}
+					{% if switch_port %}
+					{{switch_port}}
+					{% endif %}
+					<ul>
+						<li class="nav-header">VPN сессии</li>
+						{% get_subaccount_vpn_active subaccount as vpn_active %}
+						{% if vpn_active %}
+						<span class='label label-success'>Сессия активна</span>
+						{% endif %}
+						{% get_subaccount_sessions_info subaccount 1 as activesessions %}
+						{% if activesessions %}
+						{% for session in activesessions %}
+						<li><strong>Последняя сессия:</strong></li>
+						<li>Начало: {{session.date_start}}</li>
+						<li>Окончание: {{session.date_end}}</li>
+						<li>Длительность: {{session.session_time}} сек.</li>
+						<li>Передано: {{session.bytes_in|filesizeformat}}</li>
+						<li>Принято: {{session.bytes_out|filesizeformat}}</li>
+						{% endfor %}
+						{% endif %}
+						<li></li>
+					</ul>
+				</ul>
+			</div>
+		</div>
+	</div>
+{% endblock %}

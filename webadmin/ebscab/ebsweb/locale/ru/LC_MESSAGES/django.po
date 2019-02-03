@@ -1,0 +1,887 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-11-14 13:48+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n"
+"%100>=11 && n%100<=14)? 2 : 3);\n"
+#: ebsweb/forms/account.py:35
+msgid "Не верный тариф"
+msgstr ""
+
+#: ebsweb/forms/account.py:37
+msgid "Вы не можете перейти на выбранный тариф"
+msgstr ""
+
+#: ebsweb/forms/account.py:39
+#, python-format
+msgid ""
+"Для перехода на новый тариф вам необходимо использовать старый еще не менее "
+"%(x)s дней"
+msgstr ""
+
+#: ebsweb/forms/account.py:41
+msgid "Ваш баланс меньше допустимого для перехода на этот тариф"
+msgstr ""
+
+#: ebsweb/forms/account.py:160
+#, python-brace-format
+msgid "Списание средств за переход на тарифный план {tariff_name}"
+msgstr ""
+
+#: ebsweb/forms/account.py:166
+#, python-brace-format
+msgid ""
+"За переход на данный тариф с вашего счета будет списано <span class=\"m--"
+"font-bold\">{tariff_change_cost}{currency}</span>."
+msgstr ""
+
+#: ebsweb/forms/account.py:175
+#, python-brace-format
+msgid ""
+"Тариф будет изменен в следующем расчетном периоде с {settlement_date_start}."
+msgstr ""
+
+#: ebsweb/forms/account.py:179
+msgid "Тариф успешно изменен."
+msgstr ""
+
+#: ebsweb/forms/account.py:203
+msgid "Email не корректен."
+msgstr ""
+
+#: ebsweb/forms/account.py:204
+msgid "Email не совпали."
+msgstr ""
+
+#: ebsweb/forms/account.py:208
+msgid "Новый email"
+msgstr ""
+
+#: ebsweb/forms/account.py:212
+msgid "Повторите email"
+msgstr ""
+
+#: ebsweb/forms/account.py:239
+msgid "Пароль не корректен. Пожалуйста, попробуйте еще раз."
+msgstr ""
+
+#: ebsweb/forms/account.py:241
+msgid "Пароли не совпали."
+msgstr ""
+
+#: ebsweb/forms/account.py:245
+msgid "Старый пароль"
+msgstr ""
+
+#: ebsweb/forms/account.py:250
+msgid "Новый пароль"
+msgstr ""
+
+#: ebsweb/forms/account.py:255
+msgid "Повторите пароль"
+msgstr ""
+
+#: ebsweb/forms/money.py:37
+msgid "Способ оплаты"
+msgstr ""
+
+#: ebsweb/forms/money.py:53
+msgid "Превышен максимальный размер обещанного платежа"
+msgstr ""
+
+#: ebsweb/forms/money.py:54
+msgid "Сумма должна быть положительной"
+msgstr ""
+
+#: ebsweb/forms/money.py:58 ebsweb/forms/money.py:113
+#: ebsweb/templates/ebsweb/money/promise.html:80
+msgid "Сумма"
+msgstr ""
+
+#: ebsweb/forms/money.py:69
+#, python-brace-format
+msgid "Макс. {0} {1}"
+msgstr ""
+
+#: ebsweb/forms/money.py:88
+msgid "Обещанный платёж"
+msgstr ""
+
+#: ebsweb/forms/money.py:98
+msgid "Пользователь не существует"
+msgstr ""
+
+#: ebsweb/forms/money.py:102
+msgid "Логин адресата"
+msgstr ""
+
+#: ebsweb/forms/money.py:114
+#, python-brace-format
+msgid "Макс. {0:.2f} {1}"
+msgstr ""
+
+#: ebsweb/forms/money.py:138
+msgid "Перевод средств на аккаунт {}"
+msgstr ""
+
+#: ebsweb/forms/money.py:149
+msgid "Перевод средств с аккаунта {}"
+msgstr ""
+
+#: ebsweb/forms/money.py:161
+msgid "Номер карты"
+msgstr ""
+
+#: ebsweb/forms/money.py:165
+msgid "ПИН"
+msgstr ""
+
+#: ebsweb/forms/support.py:38
+msgid "Тема"
+msgstr ""
+
+#: ebsweb/forms/support.py:39
+msgid "Не выбрана"
+msgstr ""
+
+#: ebsweb/forms/support.py:44
+msgid "Краткое описание"
+msgstr ""
+
+#: ebsweb/forms/support.py:50
+msgid "Email адрес"
+msgstr ""
+
+#: ebsweb/forms/support.py:51
+msgid "Мы отправим вам уведомление при обновлении этого запроса"
+msgstr ""
+
+#: ebsweb/forms/support.py:57
+msgid "Полное описание"
+msgstr ""
+
+#: ebsweb/forms/support.py:58
+msgid ""
+"Пожалуйста, будьте максимально подробными, напишите любые детали, которые "
+"могут нам пригодиться, что бы ответить на ваш запрос"
+msgstr ""
+
+#: ebsweb/forms/support.py:64 ebsweb/templates/ebsweb/support/ticket.html:42
+#: ebsweb/templates/ebsweb/support/tickets.html:28
+msgid "Приоритет"
+msgstr ""
+
+#: ebsweb/forms/support.py:65
+msgid "Пожалуйста, выбирайте ответственно"
+msgstr ""
+
+#: ebsweb/forms/support.py:71 ebsweb/forms/support.py:177
+msgid "Файл"
+msgstr ""
+
+#: ebsweb/forms/support.py:72
+msgid ""
+"Вы можете прикрепить файл, например документ или скриншот экрана к этому "
+"запросу"
+msgstr ""
+
+#: ebsweb/forms/support.py:94
+msgid "Запрос создан через WEB"
+msgstr ""
+
+#: ebsweb/forms/support.py:165 ebsweb/templates/ebsweb/money/promise.html:81
+#: ebsweb/templates/ebsweb/support/ticket.html:84
+msgid "Комментарий"
+msgstr ""
+
+#: ebsweb/forms/support.py:170
+msgid "Новый статус"
+msgstr ""
+
+#: ebsweb/forms/support.py:212
+#, python-brace-format
+msgid "{status} {user} "
+msgstr ""
+
+#: ebsweb/forms/support.py:222
+#, python-brace-format
+msgid "Добавлен комментарий от {user} "
+msgstr ""
+
+#: ebsweb/forms/support.py:226
+#, python-brace-format
+msgid "Обновлено {user} "
+msgstr ""
+
+#: ebsweb/forms/support.py:251
+msgid "Title"
+msgstr ""
+
+#: ebsweb/forms/support.py:261
+msgid "Tags"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/400.html:7
+msgid "Неверный зварос"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/403.html:7
+msgid "Доступ запрещен"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/404.html:7
+msgid "Эта страница не существует"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/500.html:7
+msgid "Страница недоступна"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/base.html:9
+msgid "Информация"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/base.html:10
+#: ebsweb/templates/ebsweb/account/subaccount_list.html:11
+msgid "Субаккаунты"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/base.html:11
+#: ebsweb/templates/ebsweb/account/tariff_update.html:29
+msgid "Смена тарифа"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/base.html:12
+msgid "Доп. услуги"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/base.html:13
+msgid "Email"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/base.html:14
+msgid "Пароль"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/email_update.html:11
+msgid "Изменение email"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/email_update.html:41
+msgid "Изменить email"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:16
+msgid "Баланс"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:20
+msgid "Пополнить"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:36
+msgid "Кредит"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:54
+msgid "Информация об аккаунте"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:61
+msgid "Тариф:"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:64
+msgid "сменить"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:68
+msgid "Дата подключения:"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:72
+msgid "ФИО:"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:76
+msgid "Адрес:"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:80
+msgid "Email:"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:93
+msgid "Остатки траффика по лимитам"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:103
+#: ebsweb/templates/ebsweb/account/services.html:21
+msgid "Название"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:104
+msgid "Начало"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:105
+msgid "Окончание"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:106
+msgid "Потреблено"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:107
+msgid "Лимит"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:130
+#: ebsweb/templates/ebsweb/account/info.html:159
+msgid "Нет данных"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:140
+msgid "Предоплаченные единицы (NetFlow)"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:150
+msgid "Направление"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:171
+msgid "Предоплаченные единицы (Radius)"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:179
+msgid "Время"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/info.html:187
+msgid "Траффик "
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/password_update.html:11
+#: ebsweb/templates/ebsweb/account/subaccount_password_update.html:12
+msgid "Изменение пароля"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/password_update.html:41
+#: ebsweb/templates/ebsweb/account/subaccount_password_update.html:44
+msgid "Изменить пароль"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/services.html:11
+msgid "Дополнительные услуги"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/services.html:22
+msgid "Описание"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/services.html:23
+msgid "Стоимость подключения"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/services.html:24
+msgid "Стоимость досрочного отключения"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/services.html:25
+msgid "Период действия (расчетный период)"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/services.html:26
+msgid "Время активации"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/services.html:27
+msgid "Действие"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/services.html:39
+msgid "Описание отсутствует"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/services.html:53
+msgid "Отключить"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/services.html:64
+msgid "Подключить"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/services.html:77
+msgid "Ваш тариф не содержит дополнительных услуг"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/subaccount_list.html:21
+msgid "Логин"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/subaccount_list.html:22
+msgid "VPN IP"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/subaccount_list.html:23
+msgid "IPN IP"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/subaccount_list.html:24
+msgid "MAC"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/subaccount_list.html:25
+msgid "Действия"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/subaccount_list.html:44
+#: ebsweb/templates/ebsweb/money/promise.html:99
+msgid "Нет данных для отображения"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/tariff_update.html:19
+msgid ""
+"\n"
+"\t\t<span class=\"font-weight-bold\">Внимание!</span> При смене тарифного "
+"плана активированные подключаемые услуги, работа которых не предусмотрена на "
+"выбранном тарифном плане, будут отключены!<br />\n"
+"\t\tОбратите внимание на условия досрочного отключения подключенных услуг и "
+"свяжитесь с провайдером.\n"
+"\t"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/account/tariff_update.html:52
+msgid "Сменить тариф на выбранный"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/base.html:11 ebsweb/templates/ebsweb/base.html:13
+msgid "Кабинет пользователя"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/base.html:40
+msgid "Внимание!"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/base.html:41
+msgid ""
+"\n"
+"\t\t\t\t\t\tДля полноценного функционирования интерфейса необходим "
+"JavaScript. Пожалуйста, включите его следуя\n"
+"\t\t\t\t\t\t<a class=\"alert-link\" href=\"//www.enable-javascript.com\" "
+"target=\"blank\">этой инструкции</a>.\n"
+"\t\t\t\t\t"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/forms/widgets/tariff_select.html:25
+msgid ""
+"Вы не можете сменить текущий тариф. Обратитесь в службу поддержки, что бы "
+"узнать подробности."
+msgstr ""
+
+#: ebsweb/templates/ebsweb/forms/widgets/tariff_select_option.html:12
+msgid "Нет описания"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/forms/widgets/tariff_select_option.html:18
+msgid "Стоимость"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/forms/widgets/tariff_select_option.html:18
+msgid "Мин. баланс"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/forms/widgets/tariff_select_option.html:21
+msgid "Время изменения тарифа"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/forms/widgets/tariff_select_option.html:26
+msgid "Сейчас"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/includes/header.html:20
+msgid "Аккаунт"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/includes/header.html:25
+msgid "Деньги"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/includes/header.html:30
+msgid "Статистика"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/includes/header.html:35
+msgid "Служба поддержки"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/includes/header.html:40
+#: ebsweb/templates/ebsweb/includes/header.html:101
+msgid "Выйти"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/includes/header.html:53
+#: ebsweb/templates/ebsweb/notifications/list.html:7
+msgid "Уведомления"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/includes/header.html:65
+msgid "Непрочитанные уведомления"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/includes/header.html:90
+msgid "Ничего нет но, вы можете просмотреть"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/includes/header.html:91
+msgid "все уведомления"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/includes/pagination.html:9
+#: ebsweb/templates/ebsweb/includes/pagination.html:13
+msgid "Назад"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/includes/pagination.html:29
+#: ebsweb/templates/ebsweb/includes/pagination.html:33
+msgid "Вперед"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/base.html:9
+#: ebsweb/templates/ebsweb/money/payment.html:11
+msgid "Пополнение счета"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/base.html:12
+#: ebsweb/templates/ebsweb/money/promise.html:12
+msgid "Обещанный платеж"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/base.html:17
+#: ebsweb/templates/ebsweb/money/transfer.html:12
+msgid "Перевод баланса"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/base.html:22
+#: ebsweb/templates/ebsweb/money/card.html:11
+msgid "Активация карты"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/card.html:41
+msgid "Активировать карту"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/payment.html:44
+msgid "Далее"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/promise.html:46
+msgid "Сумма платежа будет списана с вашего баланса"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/promise.html:46
+msgid "в"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/promise.html:56
+msgid "Взять"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/promise.html:68
+msgid "История"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/promise.html:78
+#: ebsweb/templates/ebsweb/support/tickets.html:26
+msgid "Дата"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/promise.html:79
+msgid "До"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/promise.html:82
+msgid "Возвращен"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/promise.html:92
+msgid "Да"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/promise.html:92
+msgid "Нет"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/money/transfer.html:47
+#: ebsweb/templates/ebsweb/support/followup_create.html:44
+msgid "Отправить"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/notifications/detail.html:22
+msgid "Вернуться к списку"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/notifications/list.html:20
+msgid "Непрочитанное уведомление"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/notifications/list.html:26
+msgid "Краткое описание отсутствует"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/notifications/list.html:33
+msgid "Подробнее"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/followup_create.html:11
+msgid "Новый комментарий к запросу #"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/ticket.html:19
+msgid "Добавить комментарий"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/ticket.html:27
+msgid "Теги"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/ticket.html:36
+#: ebsweb/templates/ebsweb/support/tickets.html:29
+msgid "Статус"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/ticket.html:48
+msgid "Раздел"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/ticket.html:54
+msgid "Email отправителя"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/ticket.html:91
+msgid "Изменения"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/ticket.html:95
+#, python-format
+msgid ""
+"\n"
+"\t\t\t\t\t\t\t\t\tИзменен %(field)s с %(old_value)s на %(new_value)s\n"
+"\t\t\t\t\t\t\t\t"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/ticket.html:104
+msgid "Вложения"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/ticket_create.html:11
+msgid "Новый запрос"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/ticket_create.html:44
+msgid "Создать запрос"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/tickets.html:11
+msgid "Ваши запросы"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/tickets.html:15
+msgid "Создать новый"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/tickets.html:25
+msgid "Заголовок"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/tickets.html:27
+msgid "Исполнитель"
+msgstr ""
+
+#: ebsweb/templates/ebsweb/support/tickets.html:53
+msgid "У вас нет созданных запросов"
+msgstr ""
+
+#: ebsweb/templatetags/ebsweb.py:42
+#, python-brace-format
+msgid "{value:.2f} Б"
+msgstr ""
+
+#: ebsweb/templatetags/ebsweb.py:44
+#, python-brace-format
+msgid "{value:.2f} КБ"
+msgstr ""
+
+#: ebsweb/templatetags/ebsweb.py:46 ebsweb/templatetags/ebsweb.py:48
+#, python-brace-format
+msgid "{value:.2f} МБ"
+msgstr ""
+
+#: ebsweb/views/account.py:180
+msgid "Пароль успешно изменен."
+msgstr ""
+
+#: ebsweb/views/account.py:204
+#, python-brace-format
+msgid ""
+"Вы не можете сменить тарифный план в связи с действующим доп. соглашением "
+"{numbers}"
+msgstr ""
+
+#: ebsweb/views/account.py:208
+#, python-brace-format
+msgid ""
+"Вы не можете сменить тарифный план в связи с действующими доп. соглашениями "
+"{numbers}"
+msgstr ""
+
+#: ebsweb/views/account.py:288
+msgid "Услуга услуга успешно подключена"
+msgstr ""
+
+#: ebsweb/views/account.py:291 ebsweb/views/account.py:340
+msgid "Указанный пользователь не найден"
+msgstr ""
+
+#: ebsweb/views/account.py:294 ebsweb/views/account.py:342
+msgid "Указанная подключаемая услуга не найдена"
+msgstr ""
+
+#: ebsweb/views/account.py:297
+msgid "Активация выбранной услуги в данный момент не доступна"
+msgstr ""
+
+#: ebsweb/views/account.py:300
+msgid "У вас уже подключенны изменяющие скорость услуги"
+msgstr ""
+
+#: ebsweb/views/account.py:303
+msgid ""
+"Услуга не может быть подключена. Проверьте Ваш баланс или обратитесь в "
+"службу поддержки"
+msgstr ""
+
+#: ebsweb/views/account.py:307
+msgid "На вашем тарифном плане активация выбранной услуги невозможна"
+msgstr ""
+
+#: ebsweb/views/account.py:311
+msgid ""
+"Превышенно допустимое количество активаций. Обратитесь в службу поддержки"
+msgstr ""
+
+#: ebsweb/views/account.py:315
+msgid "Указанная услуга уже подключена и не может быть активирована дважды."
+msgstr ""
+
+#: ebsweb/views/account.py:318
+msgid "Услугу не возможно подключить"
+msgstr ""
+
+#: ebsweb/views/account.py:338
+msgid "Услуга успешно отключена"
+msgstr ""
+
+#: ebsweb/views/account.py:344
+msgid "Вы не можете отключить выбранную услугу"
+msgstr ""
+
+#: ebsweb/views/account.py:347
+msgid "Даннная услуга не может быть отключена. Обратитесь в службу поддержки"
+msgstr ""
+
+#: ebsweb/views/account.py:350
+msgid "Услугу не возможно отключить"
+msgstr ""
+
+#: ebsweb/views/account.py:371
+msgid "Email успешно изменен"
+msgstr ""
+
+#: ebsweb/views/account.py:389
+msgid "Пароль успешно изменен"
+msgstr ""
+
+#: ebsweb/views/base.py:45
+msgid "Вам не назначен тарифный план"
+msgstr ""
+
+#: ebsweb/views/money.py:89
+msgid "У вас есть невозвращенные обещанные платежи"
+msgstr ""
+
+#: ebsweb/views/money.py:119
+msgid ""
+"Обещанный платеж успешно создан. Повторно воспользоваться этой услугой вы "
+"сможете после единоразового погашения всей суммы или истечения даты "
+"созданного платежа"
+msgstr ""
+
+#: ebsweb/views/money.py:141
+msgid "Сервис перевода баланса не доступен для вас"
+msgstr ""
+
+#: ebsweb/views/money.py:149
+msgid "Перевод средств успешно выполнен"
+msgstr ""
+
+#: ebsweb/views/money.py:159
+msgid "Вам не доступна услуга активации карт"
+msgstr ""
+
+#: ebsweb/views/money.py:169
+msgid "Ошибка активации. Карта не найдена."
+msgstr ""
+
+#: ebsweb/views/money.py:171
+msgid "Ошибка активации. Карта не была продана."
+msgstr ""
+
+#: ebsweb/views/money.py:174
+msgid "Ошибка активации. Карта была активирована раньше."
+msgstr ""
+
+#: ebsweb/views/money.py:177
+msgid "Ошибка активации. Срок действия карты истёк."
+msgstr ""
+
+#: ebsweb/views/money.py:179
+msgid "Карта успешно активирована."
+msgstr ""
+
+#: ebsweb/views/money.py:181
+msgid "Ошибка активации карты."
+msgstr ""
+
+#: ebsweb/views/support.py:43
+msgid ""
+"Наша система отметила ваше сообщение как <strong>спам</strong>, поэтому мы "
+"не можем его сохранить. Если это ошибка, пожалуйста, повторите попытку. "
+"Избегайте большого количества внешних ссылок.\n"
+"<br>\n"
+"Извините за неудобства."
+msgstr ""
+
+#: ebsweb/views/support.py:64
+#, python-brace-format
+msgid "Запрос {ticket_id} успешно создан!"
+msgstr ""
+
+#: ebsweb/views/support.py:94
+msgid "Комментарий успешно добавлен"
+msgstr ""

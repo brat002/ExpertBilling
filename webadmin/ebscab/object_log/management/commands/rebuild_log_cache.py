@@ -1,8 +1,12 @@
+# -*- coding: utf-8 -*-
+
 from sys import stdout
+
 from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand, CommandError
 
 from object_log.models import LogItem, LogAction
+
 
 class Command(BaseCommand):
     args = '[LOG_KEY LOG_KEY ...]'
@@ -27,7 +31,7 @@ def rebuild_cache(*args):
 def _rebuild_cache(key):
     """
     Rebuild the log cache for all entries of the given type.  If the type has no
-    cache builder then it is ignored    
+    cache builder then it is ignored
     """
     action = LogAction.objects.get_from_cache(key)
     if action.build_cache is None:
@@ -49,11 +53,8 @@ def _rebuild_cache(key):
         except Exception:
             object3 = None
 
-        entry.data = action.build_cache(entry.user,
-                                    object1,
-                                    object2,
-                                    object3,
-                                    entry.data)
+        entry.data = action.build_cache(
+            entry.user, object1, object2, object3, entry.data)
         entry.save(force_update=True)
         write('.')
         flush()

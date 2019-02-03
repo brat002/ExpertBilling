@@ -1,0 +1,12 @@
+<div class="progress-wrapper">
+	<div class="progress">
+		<div class="progress-bar" style="width: {{ value }}%;"></div>
+	</div>
+	{% if value_text or max_text %}
+		<div class="m-stack m-stack--ver m-stack--general">
+			<div class="m-stack__item m-stack__item--left">{{ value_text }}</div>
+			<div class="m-stack__item"></div>
+			<div class="m-stack__item m-stack__item--right">{{ max_text }}</div>
+		</div>
+	{% endif %}
+</div>

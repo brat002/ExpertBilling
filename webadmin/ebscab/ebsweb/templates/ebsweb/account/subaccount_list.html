@@ -1,0 +1,50 @@
+{% extends 'ebsweb/account/base.html' %}
+
+{% load i18n %}
+
+
+{% block content %}
+<div class="m-portlet m-portlet--mobile">
+	<div class="m-portlet__head">
+		<div class="m-portlet__head-caption">
+			<div class="m-portlet__head-title">
+				<h3 class="m-portlet__head-text">{% trans 'Субаккаунты' %}</h3>
+			</div>
+		</div>
+	</div>
+	<div class="m-portlet__body">
+		{% for subaccount in subaccounts %}
+			{% if forloop.first %}
+				<table class="table table-responsive table-bordered">
+					<thead>
+						<tr>
+							<th>{% trans 'Логин' %}</th>
+							<th>{% trans 'VPN IP' %}</th>
+							<th>{% trans 'IPN IP' %}</th>
+							<th>{% trans 'MAC' %}</th>
+							<th>{% trans 'Действия' %}</th>
+						</tr>
+					</thead>
+					<tbody>
+			{% endif %}
+						<tr>
+							<td>{{ subaccount.username }}</td>
+							<td>{{ subaccount.vpn_ip_address }}</td>
+							<td>{{ subaccount.ipn_ip_address }}</td>
+							<td>{% if subaccount.ipn_mac_address %}{{ subaccount.ipn_mac_address }}{% else %}-{% endif %}</td>
+							<td>
+									<a href="{% url 'ebsweb:account_subaccount_password' pk=subaccount.pk %}">Изменить пароль</a>
+							</td>
+						</tr>
+			{% if forloop.last %}
+					</tbody>
+				</table>
+			{% endif %}
+		{% empty %}
+			{% trans 'Нет данных для отображения' %}
+		{% endfor %}
+	</div>
+</div>
+
+{% include 'ebsweb/includes/pagination.html' %}
+{% endblock %}

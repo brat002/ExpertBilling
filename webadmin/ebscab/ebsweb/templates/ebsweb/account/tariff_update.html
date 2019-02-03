@@ -1,0 +1,58 @@
+{% extends 'ebsweb/account/base.html' %}
+
+
+{% load i18n %}
+{% load static %}
+
+
+{# TODO: auto-load widget static files #}
+{% block css %}
+<link rel="stylesheet" href="{% static "ebsweb/widgets/forms/tariff_select/main.css" %}">
+{% endblock %}
+{% block javascript %}
+<script src="{% static "ebsweb/widgets/forms/tariff_select/main.js" %}"></script>
+{% endblock %}
+
+
+{% block content %}
+<div class="alert alert-warning">
+	{% blocktrans %}
+		<span class="font-weight-bold">Внимание!</span> При смене тарифного плана активированные подключаемые услуги, работа которых не предусмотрена на выбранном тарифном плане, будут отключены!<br />
+		Обратите внимание на условия досрочного отключения подключенных услуг и свяжитесь с провайдером.
+	{% endblocktrans %}
+</div>
+
+<div class="m-portlet m-portlet--mobile">
+	<div class="m-portlet__head">
+		<div class="m-portlet__head-caption">
+			<div class="m-portlet__head-title">
+				<h3 class="m-portlet__head-text">{% trans 'Смена тарифа' %}</h3>
+			</div>
+		</div>
+	</div>
+	{# TODO: rebuild form follow DRY #}
+	<form class="m-form m-form--fit m-form--label-align-right" action="{% url 'ebsweb:account_tariff' %}" method="POST">
+		{% csrf_token %}
+		<div class="m-portlet__body">
+			{% for field in form.visible_fields %}
+				{# TODO: replace to custom tag #}
+				<div class="form-group m-form__group{% if field.errors %} has-danger{% endif %}">
+					{{ field }}
+					{% for error in field.errors %}
+						<div class="form-control-feedback">
+							{{ error|escape }}
+						</div>
+					{% endfor %}
+				</div>
+			{% endfor %}
+		</div>
+		<div class="m-portlet__no-border m-portlet__foot--fit">
+			<div class="m-form__actions m-form__actions--solid">
+				<div class="row">
+					<button type="submit" class="btn btn-success">{% trans 'Сменить тариф на выбранный' %}</button>
+				</div>
+			</div>
+		</div>
+	</form>
+</div>
+{% endblock %}

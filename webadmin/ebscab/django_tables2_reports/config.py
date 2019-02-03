@@ -15,10 +15,8 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>.
 
 from django_tables2.config import RequestConfig
-
 from django_tables2_reports.utils import REQUEST_VARIABLE
-from ebsadmin.models import TableSettings
-from ebsadmin.forms import TableColumnsForm 
+
 
 class RequestConfigReport(RequestConfig):
 
@@ -29,7 +27,6 @@ class RequestConfigReport(RequestConfig):
 
     def configure(self, table, extra_context=None):
 
-        
         table.is_configured = True
         param_report = table.param_report
         is_report = self.request.GET.get(param_report)

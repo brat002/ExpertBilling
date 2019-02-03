@@ -1,8 +1,15 @@
-from django.conf.urls import patterns, url
-from views import PayView
+# -*- coding: utf-8 -*-
 
-urlpatterns = patterns('',
-                       url(r'^privat24/payment/result/$', PayView.as_view(), name='getpaid-privat24-pay'),
-                       url(r'^privat24/payment/$', PayView.as_view(), name='payment-result'),
-    
-)
+from django.conf.urls import url
+
+from payments.privat24.views import PayView
+
+
+urlpatterns = [
+    url(r'^privat24/payment/result/$',
+        PayView.as_view(),
+        name='getpaid-privat24-pay'),
+    url(r'^privat24/payment/$',
+        PayView.as_view(),
+        name='payment-result')
+]

@@ -1,0 +1,67 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-09-07 01:39+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: object_log/forms.py:13
+msgid "ID объекта"
+msgstr ""
+
+#: object_log/forms.py:15 object_log/models.py:197
+msgid "Тип объекта"
+msgstr ""
+
+#: object_log/forms.py:20 object_log/models.py:181
+msgid "Действие"
+msgstr ""
+
+#: object_log/forms.py:28
+msgid "Администратор"
+msgstr ""
+
+#: object_log/forms.py:32
+msgid "С даты"
+msgstr ""
+
+#: object_log/forms.py:39
+msgid "По дату"
+msgstr ""
+
+#: object_log/models.py:187
+msgid "Дата"
+msgstr ""
+
+#: object_log/models.py:190
+msgid "Пользователь"
+msgstr ""
+
+#: object_log/models.py:205
+msgid "Дамп"
+msgstr ""
+
+#: object_log/models.py:207
+msgid "Изменённые поля"
+msgstr ""
+
+#: object_log/templates/object_log/muddle/group_log_tab.html:2
+#: object_log/templates/object_log/muddle/user_log_tab.html:2
+msgid "Log"
+msgstr ""
+
+#: object_log/templates/object_log/muddle/user_actions_tab.html:2
+msgid "User Actions"
+msgstr ""

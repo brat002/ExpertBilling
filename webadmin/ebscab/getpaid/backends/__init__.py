@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.template.base import Template
-from django.template.context import Context
+
 from getpaid.utils import get_backend_settings
+
 
 class PaymentProcessorBase(object):
     """
@@ -12,21 +15,23 @@ class PaymentProcessorBase(object):
        a View for incoming transaction notification status changes
     """
 
-    #Each backend need to define this values
+    # Each backend need to define this values
     BACKEND = None
     """
-    This constant should be set to fully qualified python path to the module. This is also
-    a name that will be used to identify and enabling this backend in django-getpaid
+    This constant should be set to fully qualified python path to the module.
+    This is also a name that will be used to identify and enabling this backend
+    in django-getpaid
     """
     BACKEND_NAME = None
     """
-    This constant should be set to human readable backend name. Consider using lazy translation strings
-    for i18n support
+    This constant should be set to human readable backend name. Consider using
+    lazy translation strings for i18n support
     """
     BACKEND_ACCEPTED_CURRENCY = tuple()
     """
-    This constant should be any type of iterable that defines accepted currencies by the backend. Currencies should be
-    set as three letters ISO code strings (eg. 'USD', 'EUR')
+    This constant should be any type of iterable that defines accepted
+    currencies by the backend. Currencies should be set as three letters ISO
+    code strings (eg. 'USD', 'EUR')
     """
     BACKEND_LOGO_URL = None
     """
@@ -36,13 +41,16 @@ class PaymentProcessorBase(object):
     def __init__(self, payment):
 
         if payment.currency not in self.BACKEND_ACCEPTED_CURRENCY:
-            raise ValueError("Backend '%s' cannot process '%s' payments." % (self.BACKEND, payment.currency))
+            raise ValueError(
+                "Backend '%s' cannot process '%s' payments." %
+                (self.BACKEND, payment.currency))
         self.payment = payment
 
     @classmethod
     def get_logo_url(cls):
         """
-        Get backend logo. Use always this method, instead of reading BACKEND_LOGO_URL attribute directly.
+        Get backend logo. Use always this method, instead of reading
+        BACKEND_LOGO_URL attribute directly.
 
         :return: str
         """
@@ -50,21 +58,23 @@ class PaymentProcessorBase(object):
 
     def get_order_description(self, payment, order):
         """
-        Renders order description using django template provided in ``settings.GETPAID_ORDER_DESCRIPTION``
-        or if not provided return unicode representation of ``Order object``.
+        Renders order description using django template provided in
+        ``settings.GETPAID_ORDER_DESCRIPTION`` or if not provided return
+        unicode representation of ``Order object``.
         """
         template = getattr(settings, 'GETPAID_ORDER_DESCRIPTION', None)
         if template:
-            return Template(template).render(Context({"payment": payment, "order": order}))
+            ctx = {"payment": payment, "order": order}
+            return Template(template).render(ctx)
         else:
             return unicode(order)
 
-
     def get_gateway_url(self, request):
         """
-        Should return a tuple with the first item being the URL that redirects to payment Gateway
-        Second item should be if the request is made via GET or POST. Third item are the parameters
-        to be passed in case of a POST REQUEST. Request context need to be given because various
+        Should return a tuple with the first item being the URL that redirects
+        to payment Gateway Second item should be if the request is made
+        via GET or POST. Third item are the parameters to be passed in case
+        of a POST REQUEST. Request context need to be given because various
         payment engines requires information about client (e.g. a client IP).
         """
         raise NotImplementedError('Must be implemented in PaymentProcessor')
@@ -74,17 +84,19 @@ class PaymentProcessorBase(object):
         Only used if the payment processor requires POST requests.
         Generates a form only containg hidden input fields.
         """
+        # TODO: import should be on top on the file
         from getpaid.forms import PaymentHiddenInputsPostForm
-        return PaymentHiddenInputsPostForm(items=post_data) 
-    
+        return PaymentHiddenInputsPostForm(items=post_data)
+
     @staticmethod
     def form():
         """
         Form with custom fields for payment
         """
+        # TODO: import should be on top on the file
         from getpaid.forms import GenericForm
         return GenericForm
-    
+
     @classmethod
     def get_backend_setting(cls, name, default=None):
         """
@@ -100,4 +112,6 @@ class PaymentProcessorBase(object):
             try:
                 return backend_settings[name]
             except KeyError:
-                raise ImproperlyConfigured("getpaid '%s' requires backend '%s' setting" % (cls.BACKEND, name))
+                raise ImproperlyConfigured(
+                    "getpaid '%s' requires backend '%s' setting" %
+                    (cls.BACKEND, name))

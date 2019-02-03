@@ -1,26 +1,31 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import, unicode_literals
+
+import re
+import tokenize
+from collections import OrderedDict
+
+import six
 from django import template
 from django.core.exceptions import ImproperlyConfigured
 from django.template import TemplateSyntaxError, Variable, Node
-from django.template.loader import get_template, select_template
 from django.template.defaultfilters import stringfilter, title as old_title
-from django.utils.datastructures import SortedDict
-from django.utils.http import urlencode
+from django.template.loader import get_template, select_template
+from django.templatetags.l10n import register as l10n_register
 from django.utils.html import escape
+from django.utils.http import urlencode
 from django.utils.safestring import mark_safe
-import django_tables2 as tables
+
+from django_tables2 import tables
 from django_tables2.config import RequestConfig
-import re
-import six
-import tokenize
 
 
 register = template.Library()
 kwarg_re = re.compile(r"(?:(.+)=)?(.+)")
 context_processor_error_msg = (
     "{%% %s %%} requires django.core.context_processors.request "
-    "to be in your settings.TEMPLATE_CONTEXT_PROCESSORS in order for "
+    "to be in your settings.TEMPLATES in order for "
     "the included template tags to function correctly."
 )
 
@@ -35,7 +40,7 @@ def token_kwargs(bits, parser):
     """
     if not bits:
         return {}
-    kwargs = SortedDict()
+    kwargs = OrderedDict()
     while bits:
         match = kwarg_re.match(bits[0])
         if not match or not match.group(1):
@@ -47,6 +52,7 @@ def token_kwargs(bits, parser):
 
 
 class SetUrlParamNode(Node):
+
     def __init__(self, changes):
         super(SetUrlParamNode, self).__init__()
         self.changes = changes
@@ -89,7 +95,8 @@ def set_url_param(parser, token):
             keys = list(tokenize.generate_tokens(key_line_iter))
             if keys[0][0] == tokenize.NAME:
                 # workaround bug #5270
-                value = Variable(value) if value == '""' else parser.compile_filter(value)
+                value = Variable(
+                    value) if value == '""' else parser.compile_filter(value)
                 qschanges[str(key)] = value
             else:
                 raise ValueError
@@ -100,6 +107,7 @@ def set_url_param(parser, token):
 
 
 class QuerystringNode(Node):
+
     def __init__(self, updates, removals):
         super(QuerystringNode, self).__init__()
         self.updates = updates
@@ -154,6 +162,7 @@ class RenderTableNode(Node):
     :param template: Name[s] of template to render
     :type  template: unicode or list
     """
+
     def __init__(self, table, template=None):
         super(RenderTableNode, self).__init__()
         self.table = table
@@ -170,6 +179,7 @@ class RenderTableNode(Node):
             # We've been given a queryset, create a table using its model and
             # render that.
             class OnTheFlyTable(tables.Table):
+
                 class Meta:
                     model = queryset.model
                     attrs = {"class": "paleblue"}
@@ -203,10 +213,11 @@ class RenderTableNode(Node):
             # achieved is to temporarily attach the context to the table,
             # which TemplateColumn then looks for and uses.
             table.context = context
-            return template.render(context)
+            return template.render(context.flatten())
         finally:
             del table.context
             context.pop()
+
 
 @register.tag
 def render_table(parser, token):
@@ -248,6 +259,7 @@ def render_table(parser, token):
 
 
 class NoSpacelessNode(Node):
+
     def __init__(self, nodelist):
         self.nodelist = nodelist
         super(NoSpacelessNode, self).__init__()
@@ -255,6 +267,7 @@ class NoSpacelessNode(Node):
     def render(self, context):
         return mark_safe(re.sub(r'>\s+<', '>&#32;<',
                                 self.nodelist.render(context)))
+
 
 @register.tag
 def nospaceless(parser, token):
@@ -281,16 +294,8 @@ def title(value):
 title.is_safe = True
 
 
-# Django 1.2 doesn't include the l10n template tag library (and it's non-
-# trivial to implement) so for Django 1.2 the localize functionality is
-# disabled.
-try:
-    from django.templatetags.l10n import register as l10n_register
-except ImportError:
-    localize = unlocalize = lambda x: x  # no-op
-else:
-    localize = l10n_register.filters['localize']
-    unlocalize = l10n_register.filters['unlocalize']
+localize = l10n_register.filters['localize']
+unlocalize = l10n_register.filters['unlocalize']
 
 register.filter('localize', localize)
 register.filter('unlocalize', unlocalize)

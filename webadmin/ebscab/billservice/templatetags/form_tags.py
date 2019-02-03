@@ -1,10 +1,14 @@
-# -*- coding:utf-8 -*-
-# $Id: custom_tags.py 2448 2009-03-25 09:07:59Z oleg $
+# -*- coding: utf-8 -*-
+
 from django import template
 from django.forms.widgets import CheckboxInput
+
+
 register = template.Library()
 
+
 class FormFieldNode(template.Node):
+
     def __init__(self, field_var, tmpl, template_vars, params):
         self.field_var = template.Variable(field_var)
         self.tmpl = tmpl
@@ -27,7 +31,8 @@ class FormFieldNode(template.Node):
                 pass
         for param in self.params:
             _context[param] = True
-        return t.render(template.Context(_context))
+        return t.render(_context)
+
 
 @register.tag
 def form_field(parser, token):
@@ -53,6 +58,7 @@ def form_field(parser, token):
     args = token.split_contents()
     template_vars = []
     params = []
+
     try:
         field_var = args[1]
         tmpl = args[2].strip('\'"')
@@ -62,8 +68,8 @@ def form_field(parser, token):
     if len(args) > 3:
         args = args[3:]
         for arg in args:
-            if arg[0] in ('"', "'") and arg[len(arg)-1] == arg[0]:
-                params.append(str(arg[1:len(arg)-1]))
+            if arg[0] in ('"', "'") and arg[len(arg) - 1] == arg[0]:
+                params.append(str(arg[1:len(arg) - 1]))
             else:
                 template_vars.append(arg)
 

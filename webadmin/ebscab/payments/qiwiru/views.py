@@ -1,60 +1,52 @@
+# -*- coding: utf-8 -*-
+
 import logging
-from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect
-from django.views.generic.base import View
-from payments.qiwiru import PaymentProcessor
-from getpaid.models import Payment
+
 from django.conf import settings
-from BeautifulSoup import BeautifulSoup
+from django.http import HttpResponse
+from django.views.generic.base import View
+
+from payments.qiwiru.backend import PaymentProcessor
 
 
 logger = logging.getLogger('payments.qiwiru')
 
-class PayView(View):
-    def post(self, request, *args, **kwargs):
 
-        status=''
+class PayView(View):
+
+    def post(self, request, *args, **kwargs):
+        status = ''
         try:
-            
-            ip=request.META['REMOTE_ADDR']
-            if settings.DEBUG==False:
+            ip = request.META['REMOTE_ADDR']
+            if settings.DEBUG == False:
                 status = PaymentProcessor.check_allowed_ip(ip, request)
-                if status!='OK':
+                if status != 'OK':
                     return HttpResponse(status)
 
             status = PaymentProcessor.postback(request)
-
-                
         except KeyError, e:
-            print e
             logger.warning('Got malformed GET request: %s' % str(e))
             return HttpResponse('MALFORMED')
 
-        return HttpResponse(status,  content_type="text/xml")
-
-
-
+        return HttpResponse(status, content_type='text/xml')
 
     def get(self, request, *args, **kwargs):
-
         status = PaymentProcessor.error(0, 300)
         try:
-            ip=request.META['REMOTE_ADDR']
-            if settings.DEBUG==False:
+            ip = request.META['REMOTE_ADDR']
+            if settings.DEBUG == False:
                 status = PaymentProcessor.check_allowed_ip(ip, request)
-                if status!='OK':
+                if status != 'OK':
                     return HttpResponse(status)
             request_type = request.GET.get('command')
-            if request_type=='check':
+            if request_type == 'check':
                 status = PaymentProcessor.check(request)
-            elif request_type=='pay':
+            elif request_type == 'pay':
                 status = PaymentProcessor.pay(request)
             else:
                 status = PaymentProcessor.error(0, 300)
 
-
         except KeyError, e:
-            print e
             logger.warning('Got malformed GET request: %s' % str(request.POST))
             return HttpResponse(status)
 

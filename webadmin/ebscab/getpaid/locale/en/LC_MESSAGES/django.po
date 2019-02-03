@@ -1,0 +1,111 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-09-07 01:39+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: getpaid/backends/dotpay/__init__.py:32
+msgid "Dotpay"
+msgstr ""
+
+#: getpaid/backends/payu/__init__.py:38
+msgid "PayU"
+msgstr ""
+
+#: getpaid/backends/transferuj/__init__.py:25
+msgid "Transferuj.pl"
+msgstr ""
+
+#: getpaid/forms.py:51 getpaid/forms.py:71
+msgid "Payment method"
+msgstr ""
+
+#: getpaid/forms.py:57
+msgid "Amount"
+msgstr ""
+
+#: getpaid/models.py:20
+msgid "new"
+msgstr ""
+
+#: getpaid/models.py:21
+msgid "in progress"
+msgstr ""
+
+#: getpaid/models.py:22
+msgid "partially paid"
+msgstr ""
+
+#: getpaid/models.py:23
+msgid "paid"
+msgstr ""
+
+#: getpaid/models.py:24
+msgid "failed"
+msgstr ""
+
+#: getpaid/models.py:25
+msgid "canceled"
+msgstr ""
+
+#: getpaid/models.py:46
+msgid "amount"
+msgstr ""
+
+#: getpaid/models.py:47
+msgid "currency"
+msgstr ""
+
+#: getpaid/models.py:49
+msgid "status"
+msgstr ""
+
+#: getpaid/models.py:55
+msgid "backend"
+msgstr ""
+
+#: getpaid/models.py:57
+msgid "created on"
+msgstr ""
+
+#: getpaid/models.py:59
+msgid "paid on"
+msgstr ""
+
+#: getpaid/models.py:61
+msgid "amount paid"
+msgstr ""
+
+#: getpaid/models.py:63
+msgid "external id"
+msgstr ""
+
+#: getpaid/models.py:65
+msgid "description"
+msgstr ""
+
+#: getpaid/models.py:71
+#, python-format
+msgid "Payment #%(id)d"
+msgstr ""
+
+#: getpaid/models.py:175
+msgid "Payment"
+msgstr ""
+
+#: getpaid/models.py:176
+msgid "Payments"
+msgstr ""

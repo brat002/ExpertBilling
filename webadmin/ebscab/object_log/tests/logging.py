@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) 2010 Oregon State University et al.
 # Copyright (C) 2010 Greek Research and Technology Network
 #
@@ -17,11 +18,11 @@
 # USA.
 
 from datetime import datetime
-from django.test.client import Client
 
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
+from django.test.client import Client
 
 from object_log.models import LogItem, LogAction, create_defaults
 
@@ -40,7 +41,7 @@ class TestLogActionModel(TestCase):
 
     def test_trivial(self):
         LogAction()
-    
+
     def test_log_action_register(self):
         """
         tests registering a log action
@@ -83,19 +84,19 @@ class TestLogActionModel(TestCase):
 
 
 class TestLogItemModel(TestCase):
+
     def setUp(self):
         self.tearDown()
 
         user1 = User(username="Mod")
         user1.save()
-        
+
         user2 = User(username="Joe User")
         user2.save()
 
         dict_ = globals()
         dict_["user1"] = user1
-        
-        #dict_ = globals()
+
         dict_["user2"] = user2
 
         create_defaults()
@@ -111,17 +112,16 @@ class TestLogItemModel(TestCase):
         Verifies:
             * LogItem, LogAction are created/deleted properly
         """
-        
+
         self.assertEqual(len(LogItem.objects.all()), 0)
-                
+
         log_item = LogItem.objects.log_action("EDIT", user1, user2,)
         self.assertTrue(log_item is not None)
         LogItem.objects.log_action("DELETE", user1, user2,)
         self.assertEqual(len(LogItem.objects.all()), 2)
-        
+
         LogItem.objects.log_action("EDIT", user1, user2,)
         self.assertEqual(len(LogItem.objects.all()), 3)
-
 
     def test_log_representation(self):
         """
@@ -140,10 +140,12 @@ class TestLogItemModel(TestCase):
         item2.timestamp = timestamp
 
         ct = ContentType.objects.get_for_model(User)
-        self.assertEqual('\n<a href="%s">Mod</a> edited user\n<a href="/object/%s/%s/">Joe User</a>' %
+        self.assertEqual(
+            ('\n<a href="%s">Mod</a> edited user\n<a href="/object/%s/%s/">'
+             'Joe User</a>') %
             (user1.get_absolute_url(), ct.id, item1.object_id1), str(item1))
         self.assertEqual('\n<a href="%s">Mod</a> deleted user Joe User' %
-            (user1.get_absolute_url()), str(item2))
+                         (user1.get_absolute_url()), str(item2))
 
     def test_data(self):
         """
@@ -151,7 +153,7 @@ class TestLogItemModel(TestCase):
         """
         item1 = LogItem.objects.log_action('EDIT', user1, user2)
 
-        data = {'a':1, 'b':2}
+        data = {'a': 1, 'b': 2}
         item1.data = data
 
         # set data
@@ -198,13 +200,10 @@ class TestObjectLogViews(TestCase):
         log('EDIT', unauthorized, unauthorized)
         log('EDIT', unauthorized, unauthorized)
 
-
-
     def tearDown(self):
         User.objects.all().delete()
         Group.objects.all().delete()
         LogItem.objects.all().delete()
-
 
     def test_list_for_user(self):
         """ tests list_for_user and list_for_object """
@@ -221,22 +220,24 @@ class TestObjectLogViews(TestCase):
         self.assertTemplateUsed(response, 'registration/login.html')
 
         # unauthorized user
-        self.assertTrue(c.login(username=unauthorized.username, password='secret'))
+        self.assertTrue(
+            c.login(username=unauthorized.username, password='secret'))
         response = c.get(url % args)
         self.assertEqual(403, response.status_code)
 
         # superuser - unknown user
-        self.assertTrue(c.login(username=superuser.username, password='secret'))
+        self.assertTrue(
+            c.login(username=superuser.username, password='secret'))
         response = c.get(url % -1)
         self.assertEqual(404, response.status_code)
 
         # superuser - checking self
-        response = c.get(url % superuser.pk )
+        response = c.get(url % superuser.pk)
         self.assertEqual(200, response.status_code)
         self.assertEqual(2, response.context['log'].count(), response.content)
 
         # superuser - checking other user
-        response = c.get(url % args )
+        response = c.get(url % args)
         self.assertEqual(200, response.status_code)
         self.assertEqual(8, response.context['log'].count())
 
@@ -254,22 +255,24 @@ class TestObjectLogViews(TestCase):
         self.assertTemplateUsed(response, 'registration/login.html')
 
         # unauthorized user
-        self.assertTrue(c.login(username=unauthorized.username, password='secret'))
+        self.assertTrue(
+            c.login(username=unauthorized.username, password='secret'))
         response = c.get(url % args)
         self.assertEqual(403, response.status_code)
 
         # superuser - unknown user
-        self.assertTrue(c.login(username=superuser.username, password='secret'))
+        self.assertTrue(
+            c.login(username=superuser.username, password='secret'))
         response = c.get(url % -1)
         self.assertEqual(404, response.status_code)
 
         # superuser - checking self
-        response = c.get(url % superuser.pk )
+        response = c.get(url % superuser.pk)
         self.assertEqual(200, response.status_code)
         self.assertEqual(6, response.context['log'].count())
 
         # superuser - checking other user
-        response = c.get(url % args )
+        response = c.get(url % args)
         self.assertEqual(200, response.status_code)
         self.assertEqual(2, response.context['log'].count())
 
@@ -289,16 +292,18 @@ class TestObjectLogViews(TestCase):
         self.assertTemplateUsed(response, 'registration/login.html')
 
         # unauthorized user
-        self.assertTrue(c.login(username=unauthorized.username, password='secret'))
+        self.assertTrue(
+            c.login(username=unauthorized.username, password='secret'))
         response = c.get(url % args)
         self.assertEqual(403, response.status_code)
 
         # superuser - unknown user
-        self.assertTrue(c.login(username=superuser.username, password='secret'))
+        self.assertTrue(
+            c.login(username=superuser.username, password='secret'))
         response = c.get(url % -1)
         self.assertEqual(404, response.status_code)
 
         # superuser - checking self
-        response = c.get(url % args )
+        response = c.get(url % args)
         self.assertEqual(200, response.status_code)
         self.assertEqual(1, response.context['log'].count())

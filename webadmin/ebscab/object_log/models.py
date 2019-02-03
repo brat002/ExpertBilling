@@ -1,21 +1,21 @@
-#-*-coding: utf-8 -*-
+# -*- coding: utf-8 -*-
+
+import datetime
+import json
+from decimal import Decimal
 from sys import modules
 
-from django.db import models
-
+from ipaddr import IPv4Network, IPAddress, IPv4Address
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.generic import GenericForeignKey
-from django.db import transaction
+from django.db import models, transaction
 from django.db.utils import DatabaseError
 from django.template.loader import get_template
-from django.template import Context
-from django.utils import simplejson
+from django.utils.translation import ugettext_lazy as _
 
-from ebsadmin.lib import instance_dict
-import ipaddr
-import datetime
-from decimal import Decimal
+from ebscab.utils.misc import instance_dict
+
 
 def default(obj):
     '''Convert object to JSON encodable type.'''
@@ -26,15 +26,20 @@ def default(obj):
     if isinstance(obj, datetime.date):
         return obj.strftime('%Y-%m-%d')
     else:
-        if type(obj)==ipaddr.IPv4Network or  type(obj)==ipaddr.IPAddress:
+        if type(obj) == IPv4Network or \
+                type(obj) == IPAddress or \
+                type(obj) == IPv4Address:
             return str(obj)
-        return simplejson.JSONEncoder().default(obj)
-        
+        return json.JSONEncoder().default(obj)
+
+
 def compare(old, new):
     r = []
     for key in new:
-        if new[key]!=old.get(key) and not (new[key]  in [None, ''] and old.get(key)  in [None, '']):
-            r.append({'%s_old' % key: old.get(key), '%s_new' % key:new.get(key)})
+        if new[key] != old.get(key) and not \
+                (new[key] in [None, ''] and old.get(key) in [None, '']):
+            r.append({'%s_old' % key: old.get(key),
+                      '%s_new' % key: new.get(key)})
     return r
 
 
@@ -49,22 +54,22 @@ class LogActionManager(models.Manager):
         else:
             self._DELAYED.append((key, template, build_cache))
 
-    @transaction.commit_manually
     def _register(self, key, template, build_cache=None):
         """
         Registers and caches an LogAction type
-        
+
         @param key : Key identifying log action
         @param template : template associated with key
         """
+        transaction.set_autocommit(False)
         try:
             try:
                 action = self.get_from_cache(key)
                 action.template = template
                 action.save()
             except LogAction.DoesNotExist:
-                action, new = LogAction.objects.get_or_create(name=key, \
-                template=template)
+                action, new = LogAction.objects.get_or_create(
+                    name=key, template=template)
                 self._cache.setdefault(self.db, {})[key] = action
                 action.save()
             action.build_cache = build_cache
@@ -73,18 +78,20 @@ class LogActionManager(models.Manager):
             transaction.rollback()
         finally:
             transaction.commit()
+            transaction.set_autocommit(True)
 
     def _register_delayed(sender, **kwargs):
         """
         Register all permissions that were delayed waiting for database tables to
         be created.
-        
+
         Don't call this from outside code.
         """
         try:
             for args in LogActionManager._DELAYED:
                 LogAction.objects._register(*args)
-            models.signals.post_syncdb.disconnect(LogActionManager._register_delayed)
+            models.signals.post_migrate.disconnect(
+                LogActionManager._register_delayed)
             LogActionManager._SYNCED = True
         except DatabaseError:
             # still waiting for models in other apps to be created
@@ -92,21 +99,21 @@ class LogActionManager(models.Manager):
 
     # connect signal for delayed registration.  Filter by this module so that
     # it is only called once
-    models.signals.post_syncdb.connect(_register_delayed, \
-                                       sender=modules['object_log.models'])
+    models.signals.post_migrate.connect(
+        _register_delayed, sender=modules['object_log.models'])
 
     def get_from_cache(self, key):
         """
         Attempts to retrieve the LogAction from cache, if it fails, loads
         the action into the cache.
-        
+
         @param key : key passed to LogAction.objects.get
         """
         try:
             action = self._cache[self.db][key]
         except KeyError:
             action = LogAction.objects.get(name=key)
-            self._cache.setdefault(self.db, {})[key]=action
+            self._cache.setdefault(self.db, {})[key] = action
 
             # update build_cache function if needed
             for key_, template, build_cache in LogActionManager._DELAYED:
@@ -122,18 +129,19 @@ class LogAction(models.Model):
 
     @param name           string  verb (for example: add)
     """
-    
+
     name = models.CharField(max_length=128, unique=True, primary_key=True)
     template = models.CharField(max_length=128)
     objects = LogActionManager()
-    
+
     def __unicode__(self):
         return u'%s' % self.name
-    
+
 
 class LogItemManager(models.Manager):
 
-    def log_action(self, key, user, object1, object2=None, object3=None, data=None):
+    def log_action(self, key, user, object1, object2=None, object3=None,
+                   data=None):
         """
         Creates new log entry
 
@@ -148,16 +156,17 @@ class LogItemManager(models.Manager):
         #key = smart_unicode(key)
         action = LogAction.objects.get_from_cache(key)
         entry = self.model(action=action, user=user, object1=object1)
-        
+
         if object2 is not None:
             entry.object2 = object2
-        
+
         if object3 is not None:
             entry.object3 = object3
-        
+
         # build cached data and or arbitrary data.
         if action.build_cache is not None:
-            entry.data = action.build_cache(user, object1, object2, object3, data)
+            entry.data = action.build_cache(
+                user, object1, object2, object3, data)
         elif data is not None:
             entry.data = data
 
@@ -169,39 +178,46 @@ class LogItem(models.Model):
     """
     Single entry in log
     """
-    action = models.ForeignKey(LogAction, verbose_name=u'Действие', related_name="entries")
+    action = models.ForeignKey(
+        LogAction,
+        verbose_name=_(u'Действие'),
+        related_name="entries",
+        on_delete=models.CASCADE
+    )
     #action = models.CharField(max_length=128)
-    timestamp = models.DateTimeField(verbose_name=u'Дата', auto_now_add=True, )
-    user = models.ForeignKey(User, verbose_name=u'Пользователь', related_name='log_items')
-    
-    object_type1 = models.ForeignKey(ContentType, \
-    verbose_name=u'Тип объекта', related_name='log_items1', null=True)
+    timestamp = models.DateTimeField(
+        verbose_name=_(u'Дата'), auto_now_add=True)
+    user = models.ForeignKey(
+        User,
+        verbose_name=_(u'Пользователь'),
+        related_name='log_items',
+        on_delete=models.CASCADE
+    )
+
+    object_type1 = models.ForeignKey(
+        ContentType,
+        verbose_name=_(u'Тип объекта'),
+        related_name='log_items1',
+        null=True,
+        on_delete=models.CASCADE
+    )
     object_id1 = models.PositiveIntegerField(null=True)
     object1 = GenericForeignKey("object_type1", "object_id1")
-    
-    #object_type2 = models.ForeignKey(ContentType, \
-    #related_name='log_items2', null=True)
-    #object_id2 = models.PositiveIntegerField(null=True)
-    #object2 = GenericForeignKey("object_type2", "object_id2")
-    
-    #object_type3 = models.ForeignKey(ContentType, \
-    #related_name='log_items3', null=True)
-    #object_id3 = models.PositiveIntegerField(null=True)
-    #object3 = GenericForeignKey("object_type3", "object_id3")
 
-    serialized_data = models.TextField(null=True, verbose_name=u'Дамп',)
-    changed_data = models.TextField(null=True, verbose_name=u'Изменённые поля',)
+    serialized_data = models.TextField(null=True, verbose_name=_(u'Дамп'))
+    changed_data = models.TextField(
+        null=True, verbose_name=_(u'Изменённые поля'))
 
     objects = LogItemManager()
     _data = None
 
     class Meta:
-        ordering = ("timestamp", )
+        ordering = ("timestamp",)
 
     @property
     def data(self):
         if self._data is None and not self.serialized_data is None:
-            self._data = simplejson.loads(self.serialized_data)
+            self._data = json.loads(self.serialized_data)
         return self._data
 
     @data.setter
@@ -218,21 +234,30 @@ class LogItem(models.Model):
         return get_template(action.template)
 
     def save(self, *args, **kwargs):
-        
-        
+
         sd = {}
         try:
             content_type = ContentType.objects.get_for_model(self.object1)
-            log = LogItem.objects.filter(object_type1=content_type, object_id1=self.object1.pk).order_by('-id').select_related('user').distinct()[0]
+            log = (LogItem.objects
+                   .filter(object_type1=content_type,
+                           object_id1=self.object1.pk)
+                   .order_by('-id')
+                   .select_related('user')
+                   .distinct())[0]
             if log:
-                sd = simplejson.loads(log.serialized_data)
+                sd = json.loads(log.serialized_data)
 
         except:
             pass
-            
+
         if self._data is not None and self.serialized_data is None:
-            self.serialized_data = simplejson.dumps(self._data, ensure_ascii=False, default=default)
-            self.changed_data = simplejson.dumps(compare(sd.get('object1_str',{}), self._data.get('object1_str',{})), ensure_ascii=False, default=default)
+            self.serialized_data = json.dumps(
+                self._data, ensure_ascii=False, default=default)
+            self.changed_data = json.dumps(
+                compare(sd.get('object1_str', {}),
+                        self._data.get('object1_str', {})),
+                ensure_ascii=False,
+                default=default)
         super(LogItem, self).save(*args, **kwargs)
 
     def render(self, **context):
@@ -244,14 +269,15 @@ class LogItem(models.Model):
         context['log_item'] = self
         action = LogAction.objects.get_from_cache(self.action_id)
         template = get_template(action.template)
-        return template.render(Context(context))
+        return template.render(context)
 
     def __repr__(self):
-        return 'time: %s user: %s object_type1: %s'%(self.timestamp, self.user, self.object_type1)
-    
+        return ('time: %s user: %s object_type1: %s' %
+                (self.timestamp, self.user, self.object_type1))
+
     def __unicode__(self):
         """
-        Renders single line log entry to a string, 
+        Renders single line log entry to a string,
         containing information like:
         - date and extensive time
         - user who performed an action
@@ -263,13 +289,21 @@ class LogItem(models.Model):
 
 def build_default_cache(user, obj1, obj2, obj3, data):
     """ build cache for default log types """
-    return {'object1_str':instance_dict(obj1), 'data':data}
+    return {
+        'object1_str': instance_dict(obj1),
+        'data': data
+    }
 
 
-#Most common log types, registered by default for convenience
+# Most common log types, registered by default for convenience
 def create_defaults():
-    LogAction.objects.register('EDIT', 'object_log/edit.html', build_default_cache)
-    LogAction.objects.register('CREATE', 'object_log/add.html', build_default_cache)
-    LogAction.objects.register('DELETE', 'object_log/delete.html', build_default_cache)
-    LogAction.objects.register('RAWSQL','object_log/rawsql.html', build_default_cache)
+    LogAction.objects.register(
+        'EDIT', 'object_log/edit.html', build_default_cache)
+    LogAction.objects.register(
+        'CREATE', 'object_log/add.html', build_default_cache)
+    LogAction.objects.register(
+        'DELETE', 'object_log/delete.html', build_default_cache)
+    LogAction.objects.register(
+        'RAWSQL', 'object_log/rawsql.html', build_default_cache)
+
 create_defaults()

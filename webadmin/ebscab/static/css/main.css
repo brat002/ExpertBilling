@@ -7,7 +7,7 @@
   top: 5%;
   left: 50%;
   z-index: 900;
-  width: 810px;
+  width: 900px;
   margin: 0 0 0 -400px;
   overflow: auto;
   background-color: #ffffff;
@@ -69,7 +69,7 @@
 .table td {
     padding-top: 3px;
     padding-bottom: 3px;
-    /*padding-left: 2px; */ 
+    /*padding-left: 2px; */
     padding-right: 3px;
     background-color: #FFFFFF;
 }
@@ -96,8 +96,8 @@ min-height: 100%;
 }
 
 .bottom-up {
-    top: auto; 
-    bottom: 100%; 
+    top: auto;
+    bottom: 100%;
 }
 
 .table tbody tr:hover td, .table tbody tr:hover th {

@@ -1,59 +1,64 @@
-#-*- coding: utf-8 -*-
-from django import forms
-from django.forms.fields import ChoiceField
-from django.utils.translation import ugettext as _
-from django.core.urlresolvers import reverse
+# -*- coding: utf-8 -*-
 
-from django.conf import settings
-from hashlib import md5
 from django import forms
 from django.conf import settings
-from .models import PAYMENT_TYPE
+from django.utils.translation import ugettext_lazy as _
+
+from payments.yandexcassa.models import PAYMENT_TYPE
+
 
 def get_backend_param(param, default=None):
-    return settings.GETPAID_BACKENDS_SETTINGS['payments.yandexcassa'].get(param, default)
+    return (settings.GETPAID_BACKENDS_SETTINGS['payments.yandexcassa']
+            .get(param, default))
 
 
 class PaymentFillForm(forms.Form):
-    paymentType = forms.CharField(label='Способ оплаты',
-                                  widget=forms.Select(choices=PAYMENT_TYPE.CHOICES),
-                                  min_length=2, max_length=2,
-                                  initial=PAYMENT_TYPE.PC)
-    summ = forms.FloatField(label=u'Сумма')
+    paymentType = forms.CharField(
+        label=_(u'Способ оплаты'),
+        widget=forms.Select(
+            choices=PAYMENT_TYPE.CHOICES),
+        min_length=2, max_length=2,
+        initial=PAYMENT_TYPE.PC
+    )
+    summ = forms.FloatField(label=_(u'Сумма'))
 
-    cps_email = forms.EmailField(label=u'Email', required=False)
-    cps_phone = forms.CharField(label=u'Телефон',
-                                max_length=15, required=False)
-    order = forms.IntegerField(widget=forms.widgets.HiddenInput, required=False)
+    cps_email = forms.EmailField(label=_(u'Email'), required=False)
+    cps_phone = forms.CharField(
+        label=_(u'Телефон'),
+        max_length=15,
+        required=False
+    )
+    order = forms.IntegerField(
+        widget=forms.widgets.HiddenInput, required=False)
+
+    backend = forms.CharField(
+        initial='payments.yandexcassa', widget=forms.widgets.HiddenInput)
 
 
-
-    backend = forms.CharField(initial='payments.yandexcassa', widget=forms.widgets.HiddenInput)
-    
 class BasePaymentForm(forms.Form):
     """
-        shopArticleId               <no use>
-        scid                        scid
-        sum                         amount
-        customerNumber              user
-        orderNumber                 id
-        shopSuccessURL                success_url
-        shopFailURL                    fail_url
-        cps_provider                payment_type
-        cps_email                   cps_email
-        cps_phone                   cps_phone
-        paymentType                    payment_type
-        shopId                      shop_id
-        invoiceId                   invoice_id
-        orderCreatedDatetime        <no use>
-        orderSumAmount                order_amount
-        orderSumCurrencyPaycash        order_currency
-        orderSumBankPaycash            <no use>
-        shopSumAmount               shop_amount
-        shopSumCurrencyPaycash      shop_currency
-        shopSumBankPaycash          <no use>
-        paymentPayerCode            payer_code
-        paymentDatetime             <no use>
+    shopArticleId               <no use>
+    scid                        scid
+    sum                         amount
+    customerNumber              user
+    orderNumber                 id
+    shopSuccessURL                success_url
+    shopFailURL                    fail_url
+    cps_provider                payment_type
+    cps_email                   cps_email
+    cps_phone                   cps_phone
+    paymentType                    payment_type
+    shopId                      shop_id
+    invoiceId                   invoice_id
+    orderCreatedDatetime        <no use>
+    orderSumAmount                order_amount
+    orderSumCurrencyPaycash        order_currency
+    orderSumBankPaycash            <no use>
+    shopSumAmount               shop_amount
+    shopSumCurrencyPaycash      shop_currency
+    shopSumBankPaycash          <no use>
+    paymentPayerCode            payer_code
+    paymentDatetime             <no use>
     """
 
     class ERROR_MESSAGE_CODES:
@@ -61,8 +66,8 @@ class BasePaymentForm(forms.Form):
         BAD_SHOP_ID = 1
 
     error_messages = {
-        ERROR_MESSAGE_CODES.BAD_SCID: u'scid не совпадает с YANDEX_MONEY_SCID',
-        ERROR_MESSAGE_CODES.BAD_SHOP_ID: u'scid не совпадает с YANDEX_MONEY_SHOP_ID'
+        ERROR_MESSAGE_CODES.BAD_SCID: _(u'scid не совпадает с YANDEX_MONEY_SCID'),
+        ERROR_MESSAGE_CODES.BAD_SHOP_ID: _(u'scid не совпадает с YANDEX_MONEY_SHOP_ID')
     }
 
     class ACTION:
@@ -70,22 +75,27 @@ class BasePaymentForm(forms.Form):
         CPAYMENT = 'paymentAviso'
 
         CHOICES = (
-            (CHECK, 'Проверка заказа'),
-            (CPAYMENT, 'Уведомления о переводе'),
+            (CHECK, _(u'Проверка заказа')),
+            (CPAYMENT, _(u'Уведомления о переводе'))
         )
 
-    shopId = forms.IntegerField(initial=get_backend_param('YANDEX_MONEY_SHOP_ID'))
+    shopId = forms.IntegerField(
+        initial=get_backend_param('YANDEX_MONEY_SHOP_ID'))
     scid = forms.IntegerField(initial=get_backend_param('YANDEX_MONEY_SCID'))
     customerNumber = forms.CharField(min_length=1, max_length=64)
-    paymentType = forms.CharField(label='Способ оплаты',
-                                  widget=forms.Select(choices=PAYMENT_TYPE.CHOICES),
-                                  min_length=2, max_length=2,
-                                  initial=PAYMENT_TYPE.PC)
+    paymentType = forms.CharField(
+        label=_(u'Способ оплаты'),
+        widget=forms.Select(
+            choices=PAYMENT_TYPE.CHOICES),
+        min_length=2, max_length=2,
+        initial=PAYMENT_TYPE.PC
+    )
     orderSumBankPaycash = forms.IntegerField()
 
     md5 = forms.CharField(min_length=32, max_length=32)
     action = forms.CharField(max_length=16)
-    backend = forms.CharField(initial='payments.yandexcassa', widget=forms.widgets.HiddenInput)
+    backend = forms.CharField(
+        initial='payments.yandexcassa', widget=forms.widgets.HiddenInput)
 
     def clean_scid(self):
         scid = self.cleaned_data['scid']
@@ -103,17 +113,15 @@ class BasePaymentForm(forms.Form):
 
 
 class PaymentForm(BasePaymentForm):
+
     def get_display_field_names(self):
         return ['paymentType', 'cps_email', 'cps_phone', 'sum']
 
-    sum = forms.FloatField(label=u'Сумма')
+    sum = forms.FloatField(label=_(u'Сумма'))
 
-    cps_email = forms.EmailField(label=u'Email', required=False)
-    cps_phone = forms.CharField(label=u'Телефон',
-                                max_length=15, required=False)
-
-    #shopFailURL = forms.URLField(initial=reverse('yandexcassa-postback'))
-    #shopSuccessURL = forms.URLField(initial=reverse('yandexcassa-failure'))
+    cps_email = forms.EmailField(label=_(u'Email'), required=False)
+    cps_phone = forms.CharField(
+        label=_(u'Телефон'), max_length=15, required=False)
 
     def __init__(self, *args, **kwargs):
 
@@ -127,7 +135,6 @@ class PaymentForm(BasePaymentForm):
             for name in self.fields:
                 if name not in self.get_display_field_names():
                     self.fields[name].widget = forms.HiddenInput()
-
 
 
 class CheckForm(BasePaymentForm):

@@ -1,8 +1,15 @@
-from django.conf.urls import patterns, url
-from views import PayView
+# -*- coding: utf-8 -*-
 
-urlpatterns = patterns('',
-                       url(r'^liqpay/payment/result/$', PayView.as_view(), name='getpaid-liqpay-pay'),
-                       url(r'^liqpay/payment/$', PayView.as_view(), name='payment-result'),
-    
-)
+from django.conf.urls import url
+
+from payments.liqpay.views import PayView
+
+
+urlpatterns = [
+    url(r'^liqpay/payment/result/$',
+        PayView.as_view(),
+        name='getpaid-liqpay-pay'),
+    url(r'^liqpay/payment/$',
+        PayView.as_view(),
+        name='payment-result')
+]

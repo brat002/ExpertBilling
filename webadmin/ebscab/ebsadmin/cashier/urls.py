@@ -1,10 +1,15 @@
-from django.conf.urls import *
+# -*- coding: utf-8 -*-
+
+from django.conf.urls import url
+
+from ebsadmin.cashier import views
 
 
-
-
-urlpatterns = patterns('ebsadmin.cashier.views',
-    url(r'^$', 'index', name='cashier_index'),
-    url(r'^transactionreport/$', 'transactionreport', name='cashier_transactionreport'),
-)
-
+urlpatterns = [
+    url(r'^$',
+        views.index,
+        name='cashier_index'),
+    url(r'^transactionreport/$',
+        views.transactionreport,
+        name='cashier_transactionreport')
+]

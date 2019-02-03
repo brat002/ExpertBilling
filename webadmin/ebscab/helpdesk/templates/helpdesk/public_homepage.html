@@ -2,9 +2,9 @@
 {% load billservice_tags %}
 {% block extra_head %}
 
-	<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/action_links.css">
-	<link rel="stylesheet" href="{{ MEDIA_URL }}css/forms.css" type="text/css">
-    <link rel='stylesheet' href='{{ MEDIA_URL }}css/helpdesk.css' type='text/css' />
+	<link rel="stylesheet" type="text/css" href="{% static 'css/action_links.css' %}">
+	<link rel="stylesheet" href="{% static 'css/forms.css' %}" type="text/css">
+	<link rel='stylesheet' href="{% static 'css/helpdesk.css' %}" type='text/css' />
 <script type="text/javascript">
     $(document).ready(function() {
         $("#ShowFurtherEditOptions").click(function() {
@@ -20,7 +20,7 @@
             return false;
         });
 
-     
+
     });
 
     function processAddFileClick() {
@@ -62,7 +62,7 @@
             {% endif %}
         {% endfor %}
     </dl>
-    
+
     <div class='buttons'>
         <input type='submit' value='{% trans "Submit Ticket" %}' />
     </div>

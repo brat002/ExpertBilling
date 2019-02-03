@@ -1,0 +1,51 @@
+{% extends 'ebsweb/statistics/base.html' %}
+
+{% load i18n %}
+
+{% load format_traffic from ebsweb %}
+
+
+{% block header %}
+	{% trans 'Периодические услуги' %}
+{% endblock %}
+
+{% block body %}
+	{% for item in sessions %}
+		{% if forloop.first %}
+			<table class="table table-bordered table-responsive">
+				<thead>
+					<tr>
+						<th>{% trans 'Начало' %}</th>
+						<th>{% trans 'Окончание' %}</th>
+						<th>{% trans 'IP' %}</th>
+						<th>{% trans 'Передано / Принято / Всего' %}</th>
+						<th>{% trans 'Время' %}</th>
+					</tr>
+				</thead>
+				<tbody>
+		{% endif %}
+					<tr>
+						<td>
+							{{ item.date_start|date:'Y-m-d' }}
+							<small class="text-muted">
+								{{ item.date_start|date:'H:i' }}
+							</small>
+						</td>
+						<td>
+							{{ item.date_end|date:'Y-m-d' }}
+							<small class="text-muted">
+								{{ item.date_end|date:'H:i' }}
+							</small>
+						</td>
+						<td>{{ item.framed_ip_address }}</td>
+						<td>{{ item.bytes_out|format_traffic:'M' }} / {{ item.bytes_in|format_traffic:'M' }} / {{ item.bytes_sum|format_traffic:'M' }}</td>
+						<td>{{ item.session_time|time:'H:i:s' }}</td>
+					</tr>
+		{% if forloop.last %}
+				</tbody>
+			</table>
+		{% endif %}
+	{% empty %}
+		<div class="alert m-alert--default">{% trans 'Нет данных' %}</div>
+	{% endfor %}
+{% endblock %}

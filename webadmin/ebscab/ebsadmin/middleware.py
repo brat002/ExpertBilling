@@ -1,17 +1,19 @@
+# -*- coding: utf-8 -*-
+
 import subprocess
 
 
 class Version(object):
+
     def process_request(self, request):
         try:
-            request.webcab_version=open('/opt/ebs/web/version', 'r').read()
-            request.server_version=open('/opt/ebs/data/version', 'r').read()
+            request.webcab_version = open('/opt/ebs/web/version', 'r').read()
+            request.server_version = open('/opt/ebs/data/version', 'r').read()
         except Exception, e:
             # assumed that user is Anonimous
             request.webcab_version = 0
             request.server_version = 0
         try:
-            request.uptime=subprocess.check_output('uptime')
+            request.uptime = subprocess.check_output('uptime')
         except Exception, e:
             request.uptime = 'unknown'
-

@@ -35,10 +35,12 @@ license*.lic
 .settings/org.eclipse.core.resources.prefs
 settings_local.py
 site_verify_codes.html
-webadmin/ebscab/static/
 services/nf/pkg/
 venv/
 
+PYFILES
+NOTE
 TODO
 .sublimelinterrc
 env/
+webadmin/ebscab/files/

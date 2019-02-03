@@ -1,0 +1,17 @@
+{% extends 'ebsweb/base_col_2.html' %}
+
+{% load i18n %}
+
+
+{% block sidebar %}
+{% with request.resolver_match.url_name as url_name %}
+	<div class="nav nav-pills flex-column">
+		<a class="nav-link{% if url_name == 'account_info' %} active{% endif %}" href="{% url 'ebsweb:account_info' %}">{% trans 'Информация' %}</a>
+		<a class="nav-link{% if 'subaccount' in url_name %} active{% endif %}" href="{% url 'ebsweb:account_subaccounts' %}">{% trans 'Субаккаунты' %}</a>
+		<a class="nav-link{% if url_name == 'account_tariff' %} active{% endif %}" href="{% url 'ebsweb:account_tariff' %}">{% trans 'Смена тарифа' %}</a>
+		<a class="nav-link{% if url_name == 'account_services' %} active{% endif %}" href="{% url 'ebsweb:account_services' %}">{% trans 'Доп. услуги' %}</a>
+		<a class="nav-link{% if url_name == 'account_email' %} active{% endif %}" href="{% url 'ebsweb:account_email' %}">{% trans 'Email' %}</a>
+		<a class="nav-link{% if url_name == 'account_password' %} active{% endif %}" href="{% url 'ebsweb:account_password' %}">{% trans 'Пароль' %}</a>
+	</div>
+{% endwith %}
+{% endblock %}

@@ -3,13 +3,9 @@
 
 {% load crispy_forms_tags %}
 {% block extra_head %}
-<link href="/media/select2/css/select2.css" type="text/css" media="screen" rel="stylesheet">
-<link href="/media/select2/css/extra.css" type="text/css" media="screen" rel="stylesheet">
-<script type="text/javascript" src="/media/select2/js/select2.js"></script>
-<script type="text/javascript" src="/media/select2/js/heavy_data.js"></script>
 
     {{ block.super }}
-<script type="text/javascript"> 
+<script type="text/javascript">
 $(document).ready(function() {
 	        $("#id_ticket-toolbar-save").click(function(event) {
 	            $('#id_form').submit();

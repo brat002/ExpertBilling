@@ -1,0 +1,54 @@
+{% extends 'ebsweb/base_col_2.html' %}
+
+{% load i18n %}
+{% load static %}
+
+
+{% block sidebar %}
+{% with request.resolver_match.url_name as url_name %}
+	<div class="nav nav-pills flex-column">
+		<a class="nav-link{% if url_name == 'statistics_transactions' %} active{% endif %}" href="{% url 'ebsweb:statistics_transactions' %}">
+			{% trans 'Транзакции' %}
+		</a>
+		<a class="nav-link{% if url_name == 'statistics_promises' %} active{% endif %}" href="{% url 'ebsweb:statistics_promises' %}">
+			{% trans 'Обещанные платежи' %}
+		</a>
+		<a class="nav-link{% if url_name == 'statistics_sessions' %} active{% endif %}" href="{% url 'ebsweb:statistics_sessions' %}">
+			{% trans 'Сессии' %}
+		</a>
+		<a class="nav-link{% if url_name == 'statistics_periodical_services' %} active{% endif %}" href="{% url 'ebsweb:statistics_periodical_services' %}">
+			{% trans 'Периодические услуги' %}
+		</a>
+		<a class="nav-link{% if url_name == 'statistics_addon_services' %} active{% endif %}" href="{% url 'ebsweb:statistics_addon_services' %}">
+			{% trans 'Дополнительные услуги' %}
+		</a>
+		<a class="nav-link{% if url_name == 'statistics_one_time_services' %} active{% endif %}" href="{% url 'ebsweb:statistics_one_time_services' %}">
+			{% trans 'Разовые услуги' %}
+		</a>
+		<a class="nav-link{% if url_name == 'statistics_traffic_transactions' %} active{% endif %}" href="{% url 'ebsweb:statistics_traffic_transactions' %}">
+			{% trans 'Списания за траффик' %}
+		</a>
+		<a class="nav-link{% if url_name == 'statistics_traffic' %} active{% endif %}" href="{% url 'ebsweb:statistics_traffic' %}">
+			{% trans 'Объем траффика' %}
+		</a>
+	</div>
+{% endwith %}
+{% endblock %}
+
+
+{% block content %}
+<div class="m-portlet m-portlet--mobile">
+	<div class="m-portlet__head">
+		<div class="m-portlet__head-caption">
+			<div class="m-portlet__head-title">
+				<h3 class="m-portlet__head-text">{% block header %}{% endblock %}</h3>
+			</div>
+		</div>
+	</div>
+	<div class="m-portlet__body">
+		{% block body %}{% endblock %}
+	</div>
+</div>
+
+{% include 'ebsweb/includes/pagination.html' %}
+{% endblock %}

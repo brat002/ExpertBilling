@@ -1,9 +1,0 @@
-<div style='height:40px;'>
-<ul class="nav nav-tabs nav-tabs-google">
-{% for item in menu %}
-  <li {% if item.is_current %} class="active"{% endif %}>
-    <a href="{{ item.url }}" {% if item.attrs %}{{item.attrs}}{% endif %}>{{ item.verbose_name|safe }}</a>
-  </li>
-{% endfor %}
-</ul>
-</div>

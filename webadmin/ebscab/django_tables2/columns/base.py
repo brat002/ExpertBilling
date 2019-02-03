@@ -1,19 +1,22 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import, unicode_literals
-from django.db.models.fields import FieldDoesNotExist
-from django.utils.datastructures import SortedDict
-from django.utils.safestring import SafeData
-from django_tables2.templatetags.django_tables2 import title
-from django_tables2.utils import A, AttributeDict, OrderBy, OrderByTuple
-from itertools import islice
-import six
+
 import warnings
+from collections import OrderedDict
+from itertools import islice
+
+import six
+from django.db.models.fields import FieldDoesNotExist
+from django.utils.safestring import SafeData
+from django_tables2.utils import A, AttributeDict, OrderBy, OrderByTuple
 
 
 class Library(object):
     """
     A collection of columns.
     """
+
     def __init__(self):
         self.columns = []
 
@@ -154,7 +157,8 @@ class Column(object):  # pylint: disable=R0902
             raise TypeError('accessor must be a string or callable, not %s' %
                             type(accessor).__name__)
         if callable(accessor) and default is not None:
-            raise TypeError('accessor must be string when default is used, not callable')
+            raise TypeError(
+                'accessor must be string when default is used, not callable')
         self.accessor = A(accessor) if accessor else None
         self._default = default
         self.verbose_name = verbose_name
@@ -168,8 +172,10 @@ class Column(object):  # pylint: disable=R0902
         self.orderable = orderable
         self.attrs = attrs or {}
         # massage order_by into an OrderByTuple or None
-        order_by = (order_by, ) if isinstance(order_by, six.string_types) else order_by
-        self.order_by = OrderByTuple(order_by) if order_by is not None else None
+        order_by = (order_by, ) if isinstance(
+            order_by, six.string_types) else order_by
+        self.order_by = OrderByTuple(
+            order_by) if order_by is not None else None
         if empty_values is not None:
             self.empty_values = empty_values
 
@@ -208,6 +214,7 @@ class Column(object):  # pylint: disable=R0902
                 # If the author has used mark_safe, we're going to assume the
                 # author wants the value used verbatim.
                 return self.verbose_name
+            from django_tables2.templatetags.django_tables2 import title  # avoid cyclic imports
             return title(self.verbose_name)
 
     def render(self, value):
@@ -253,7 +260,10 @@ class Column(object):  # pylint: disable=R0902
         # Since this method is inherited by every subclass, only provide a
         # column if this class was asked directly.
         if cls is Column:
-            return cls(verbose_name=field.verbose_name)
+            name = getattr(field, 'verbose_name', None)
+            if name is None:
+                name = field.name
+            return cls(verbose_name=name)
 
 
 class BoundColumn(object):
@@ -280,6 +290,7 @@ class BoundColumn(object):
                                age = tables.Column()
 
     """
+
     def __init__(self, table, column, name):
         self.table = table
         self.column = column
@@ -310,17 +321,22 @@ class BoundColumn(object):
 
         # Find the relevant th attributes (fall back to cell if th isn't
         # explicitly specified).
-        attrs["td"] = td = AttributeDict(attrs.get('td', attrs.get('cell', {})))
-        attrs["th"] = th = AttributeDict(attrs.get("th", attrs.get("cell", {})))
+        attrs["td"] = td = AttributeDict(
+            attrs.get('td', attrs.get('cell', {})))
+        attrs["th"] = th = AttributeDict(
+            attrs.get("th", attrs.get("cell", {})))
         # make set of existing classes.
-        th_class = set((c for c in th.get("class", "").split(" ") if c))  # pylint: disable=C0103
-        td_class = set((c for c in td.get("class", "").split(" ") if c))  # pylint: disable=C0103
+        th_class = set((c for c in th.get("class", "").split(
+            " ") if c))  # pylint: disable=C0103
+        td_class = set((c for c in td.get("class", "").split(
+            " ") if c))  # pylint: disable=C0103
         # add classes for ordering
         if self.orderable:
             th_class.add("orderable")
             th_class.add("sortable")  # backwards compatible
         if self.is_ordered:
-            th_class.add("desc" if self.order_by_alias.is_descending else "asc")
+            th_class.add(
+                "desc" if self.order_by_alias.is_descending else "asc")
         # Always add the column name as a class
         th_class.add(self.name)
         td_class.add(self.name)
@@ -356,6 +372,7 @@ class BoundColumn(object):
             # that the author used mark_safe to include HTML in the value. If
             # this is the case, we leave it verbatim.
             return verbose_name
+        from django_tables2.templatetags.django_tables2 import title  # avoid cyclic imports
         return title(verbose_name)
 
     @property
@@ -424,7 +441,8 @@ class BoundColumn(object):
             {% endif %}
 
         """
-        order_by = OrderBy((self.table.order_by or {}).get(self.name, self.name))
+        order_by = OrderBy(
+            (self.table.order_by or {}).get(self.name, self.name))
         order_by.next = order_by.opposite if self.is_ordered else order_by
         return order_by
 
@@ -488,7 +506,9 @@ class BoundColumn(object):
                     continue
                 break
             if field:
-                name = field.verbose_name
+                name = getattr(field, 'verbose_name', None)
+                if name is None:
+                    name = field.name
         return name
 
     @property
@@ -517,8 +537,7 @@ class BoundColumns(object):
 
     A `BoundColumns` object is a container for holding `BoundColumn` objects.
     It provides methods that make accessing columns easier than if they were
-    stored in a `list` or `dict`. `Columns` has a similar API to a `dict` (it
-    actually uses a `~django.utils.datastructures.SortedDict` interally).
+    stored in a `list` or `dict`. `Columns` has a similar API to a `dict`.
 
     At the moment you'll only come across this class when you access a
     `.Table.columns` property.
@@ -526,9 +545,10 @@ class BoundColumns(object):
     :type  table: `.Table` object
     :param table: the table containing the columns
     """
+
     def __init__(self, table):
         self.table = table
-        self.columns = SortedDict()
+        self.columns = OrderedDict()
         for name, column in six.iteritems(table.base_columns):
             self.columns[name] = bc = BoundColumn(table, column, name)
             bc.render = getattr(table, 'render_' + name, column.render)

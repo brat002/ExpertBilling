@@ -1,0 +1,52 @@
+{% extends 'ebsweb/base.html' %}
+
+{% load i18n %}
+
+
+{% block content %}
+<h2>{% trans 'Уведомления' %}</h2>
+
+<div class="mt-4">
+	{% for notification in notifications %}
+		{% if forloop.first %}
+			<div class="row">
+				<div class="col-lg-8">
+		{% endif %}
+					<div class="card{% if not forloop.first %} mt-3{% endif %}{% if not notification.viewed %} border-primary{% endif %}">
+						<div class="card-body">
+							<h4 class="card-title">
+								{{ notification.news.title }}
+								{% if not notification.viewed %}
+									<span class="m-badge m-badge--dot m-badge--primary" title="{% trans 'Непрочитанное уведомление' %}"></span>
+								{% endif %}
+							</h4>
+							{% if notification.news.description %}
+								{{ notification.news.description|safe }}
+							{% else %}
+								<p class="card-text">{% trans 'Краткое описание отсутствует' %}</p>
+							{% endif %}
+							<div class="d-flex justify-content-between align-items-center">
+								<small class="text-muted" title="{{ notification.news.created|date:'Y-m-d H:i' }}">
+									{{ notification.news.created|timesince }}
+								</small>
+								<a class="card-link" href="{{ notification.get_absolute_url }}">
+									{% trans 'Подробнее' %}
+								</a>
+							</div>
+
+						</div>
+					</div>
+		{% if forloop.last %}
+					{# TODO: not best solution #}
+					{% if is_paginated %}
+						<div class="mt-3">
+							{% include 'ebsweb/includes/pagination.html' %}
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		{% endif %}
+	{% endfor %}
+</div>
+
+{% endblock %}

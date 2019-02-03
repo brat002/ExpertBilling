@@ -1,0 +1,107 @@
+.wrapper {
+	margin-top: 4.892rem;
+}
+
+body.m-content--skin-light {
+	background-color: #f2f3f8;
+}
+
+/* TODO: override with bootstrap variables */
+.c-top-navbar {
+	padding: 16px 16px;
+	background: #2c2d3a !important;
+	font-weight: 400;
+}
+.c-top-navbar .navbar-nav .nav-link {
+	color: #6c6e86;
+}
+@media (min-width: 992px) {
+	.c-top-navbar .navbar-nav .nav-link {
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+}
+.c-top-navbar .c-username {
+	color: #ffffff !important;
+}
+.c-top-navbar .nav-link .c-nav__link-badge {
+	left: 50%;
+	margin-left: -2px;
+	position: absolute;
+	z-index: 2;
+	top: -10%;
+}
+.c-top-navbar .c-nav__link-icon {
+	color: #bc1965;
+}
+.c-top-navbar .navbar-nav .nav-link:hover .c-nav__link-icon {
+	opacity: 0.8;
+}
+
+.navbar-toggler {
+	position: relative;
+	overflow: hidden;
+	margin: 0;
+	padding: 0;
+	width: 24px;
+	height: 24px;
+	font-size: 0;
+	text-indent: -9999px;
+	box-shadow: none;
+	border: none;
+	background: 0 0;
+	outline: 0!important;
+	transition: all .4s ease;
+	line-height: 0;
+	vertical-align: middle;
+	cursor: pointer;
+}
+.navbar-toggler span {
+	background: #6c6e86;
+	display: block;
+	position: absolute;
+	top: 12px;
+	height: 1px;
+	min-height: 1px;
+	width: 100%;
+	border-radius: 4px;
+	transition: all .4s ease;
+}
+.navbar-toggler span::before, .navbar-toggler span::after {
+	position: absolute;
+	display: block;
+	left: 0;
+	width: 100%;
+	height: 1px;
+	min-height: 1px;
+	content: "";
+	border-radius: 4px;
+	transition: all .4s ease;
+	background: #6c6e86;
+}
+.navbar-toggler span::before {
+	top: -7px;
+}
+.navbar-toggler span::after {
+	bottom: -7px;
+}
+.navbar-toggler:hover span,
+.navbar-toggler:hover span::before,
+.navbar-toggler:hover span::after {
+	background: #ffffff;
+}
+
+
+.c-error_container {
+	text-align: center;
+}
+.c-error_code {
+	font-size: 12rem;
+}
+.c-error_description {
+	font-size: 1.5rem;
+}
+
+.c-alert-squared {
+	border-radius: 0;
+}

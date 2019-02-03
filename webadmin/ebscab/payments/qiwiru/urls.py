@@ -1,6 +1,12 @@
-from django.conf.urls import patterns, url
+# -*- coding: utf-8 -*-
+
+from django.conf.urls import url
+
 from payments.qiwiru.views import PayView
 
-urlpatterns = patterns('',
-    url(r'^qiwiru/payment/$', PayView.as_view(), name='getpaid-qiwiru-pay'),
-)
+
+urlpatterns = [
+    url(r'^qiwiru/payment/$',
+        PayView.as_view(),
+        name='getpaid-qiwiru-pay')
+]

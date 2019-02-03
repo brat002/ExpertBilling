@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Jutda Helpdesk - A Django powered ticket tracker for small enterprise.
 
@@ -16,6 +18,7 @@ Assuming 'food' = 'pizza' and 'best_foods' = ['pizza', 'pie', 'cake]:
 """
 
 from django import template
+
 
 def in_list(value, arg):
     return value in arg

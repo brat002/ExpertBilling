@@ -1,4 +1,5 @@
-#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 """
 Jutda Helpdesk - A Django powered ticket tracker for small enterprise.
 
@@ -15,34 +16,32 @@ import imaplib
 import mimetypes
 import poplib
 import re
-
 from datetime import datetime, timedelta
 from email.header import decode_header
 from email.Utils import parseaddr
-from optparse import make_option
 
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 from django.utils.translation import ugettext as _
 
-from helpdesk.lib import send_templated_mail
+from helpdesk.utils import send_templated_mail
 from helpdesk.models import Queue, Ticket, FollowUp, Attachment, IgnoreEmail
 
 
 class Command(BaseCommand):
+    help = ('Process Jutda Helpdesk queues and process e-mails via POP3/IMAP '
+            'as required, feeding them into the helpdesk.')
+
     def __init__(self):
         BaseCommand.__init__(self)
 
-        self.option_list += (
-            make_option(
-                '--quiet', '-q',
-                default=False,
-                action='store_true',
-                help='Hide details about each queue/message as they are processed'),
-            )
-
-    help = 'Process Jutda Helpdesk queues and process e-mails via POP3/IMAP as required, feeding them into the helpdesk.'
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--quiet', '-q',
+            default=False,
+            action='store_true',
+            help='Hide details about each queue/message as they are processed')
 
     def handle(self, *args, **options):
         quiet = options.get('quiet', False)
@@ -55,14 +54,12 @@ def process_email(quiet=False):
             allow_email_submission=True):
 
         if not q.email_box_last_check:
-            q.email_box_last_check = datetime.now()-timedelta(minutes=30)
+            q.email_box_last_check = datetime.now() - timedelta(minutes=30)
 
         if not q.email_box_interval:
             q.email_box_interval = 0
 
-
         queue_time_delta = timedelta(minutes=q.email_box_interval)
-
         if (q.email_box_last_check + queue_time_delta) > datetime.now():
             continue
 
@@ -78,10 +75,12 @@ def process_queue(q, quiet=False):
     if q.email_box_type == 'pop3':
 
         if q.email_box_ssl:
-            if not q.email_box_port: q.email_box_port = 995
+            if not q.email_box_port:
+                q.email_box_port = 995
             server = poplib.POP3_SSL(q.email_box_host, int(q.email_box_port))
         else:
-            if not q.email_box_port: q.email_box_port = 110
+            if not q.email_box_port:
+                q.email_box_port = 110
             server = poplib.POP3(q.email_box_host, int(q.email_box_port))
 
         server.getwelcome()
@@ -95,7 +94,8 @@ def process_queue(q, quiet=False):
             msgSize = msg.split(" ")[1]
 
             full_message = "\n".join(server.retr(msgNum)[1])
-            ticket = ticket_from_message(message=full_message, queue=q, quiet=quiet)
+            ticket = ticket_from_message(
+                message=full_message, queue=q, quiet=quiet)
 
             if ticket:
                 server.dele(msgNum)
@@ -104,10 +104,12 @@ def process_queue(q, quiet=False):
 
     elif q.email_box_type == 'imap':
         if q.email_box_ssl:
-            if not q.email_box_port: q.email_box_port = 993
+            if not q.email_box_port:
+                q.email_box_port = 993
             server = imaplib.IMAP4_SSL(q.email_box_host, int(q.email_box_port))
         else:
-            if not q.email_box_port: q.email_box_port = 143
+            if not q.email_box_port:
+                q.email_box_port = 143
             server = imaplib.IMAP4(q.email_box_host, int(q.email_box_port))
 
         server.login(q.email_box_user, q.email_box_pass)
@@ -119,10 +121,11 @@ def process_queue(q, quiet=False):
                 break
             for num in msgnums:
                 status, data = server.fetch(num, '(RFC822)')
-                ticket = ticket_from_message(message=data[0][1], queue=q, quiet=quiet)
+                ticket = ticket_from_message(
+                    message=data[0][1], queue=q, quiet=quiet)
                 if ticket:
                     server.store(num, '+FLAGS', '\\Deleted')
-        
+
         server.expunge()
         server.close()
         server.logout()
@@ -137,17 +140,25 @@ def decodeUnknown(charset, string):
     string = unicode(string)
     return string
 
+
 def decode_mail_headers(string):
     decoded = decode_header(string)
     return u' '.join([unicode(msg, charset or 'utf-8') for msg, charset in decoded])
+
 
 def ticket_from_message(message, queue, quiet):
     # 'message' must be an RFC822 formatted message.
     msg = message
     message = email.message_from_string(msg)
     subject = message.get('subject', _('Created from e-mail'))
-    subject = decode_mail_headers(decodeUnknown(message.get_charset(), subject))
-    subject = subject.replace("Re: ", "").replace("Fw: ", "").replace("RE: ", "").replace("FW: ", "").strip()
+    subject = decode_mail_headers(
+        decodeUnknown(message.get_charset(), subject))
+    subject = (subject
+               .replace("Re: ", "")
+               .replace("Fw: ", "")
+               .replace("RE: ", "")
+               .replace("FW: ", "")
+               .strip())
 
     sender = message.get('from', _('Unknown Sender'))
     sender = decode_mail_headers(decodeUnknown(message.get_charset(), sender))
@@ -156,7 +167,8 @@ def ticket_from_message(message, queue, quiet):
 
     body_plain, body_html = '', ''
 
-    for ignore in IgnoreEmail.objects.filter(Q(queues=queue) | Q(queues__isnull=True)):
+    for ignore in IgnoreEmail.objects.filter(Q(queues=queue) |
+                                             Q(queues__isnull=True)):
         if ignore.test(sender_email):
             if ignore.keep_in_mailbox:
                 # By returning 'False' the message will be kept in the mailbox,
@@ -182,7 +194,8 @@ def ticket_from_message(message, queue, quiet):
 
         if part.get_content_maintype() == 'text' and name == None:
             if part.get_content_subtype() == 'plain':
-                body_plain = decodeUnknown(part.get_charset(), part.get_payload(decode=True))
+                body_plain = decodeUnknown(
+                    part.get_charset(), part.get_payload(decode=True))
             else:
                 body_html = part.get_payload(decode=True)
         else:
@@ -194,20 +207,21 @@ def ticket_from_message(message, queue, quiet):
                 'filename': name,
                 'content': part.get_payload(decode=True),
                 'type': part.get_content_type()},
-                )
+            )
 
         counter += 1
 
     if body_plain:
         body = body_plain
     else:
-        body = _('No plain-text email body available. Please see attachment email_html_body.html.')
+        body = _('No plain-text email body available. Please see '
+                 'attachment email_html_body.html.')
 
     if body_html:
         files.append({
             'filename': "email_html_body.html",
             'content': body_html,
-            'type': 'text/html',
+            'type': 'text/html'
         })
 
     now = datetime.now()
@@ -225,8 +239,8 @@ def ticket_from_message(message, queue, quiet):
     smtp_importance = message.get('importance', '')
 
     high_priority_types = ('high', 'important', '1', 'urgent')
-
-    if smtp_priority in high_priority_types or smtp_importance in high_priority_types:
+    if smtp_priority in high_priority_types or \
+            smtp_importance in high_priority_types:
         priority = 2
 
     if ticket == None:
@@ -236,7 +250,7 @@ def ticket_from_message(message, queue, quiet):
             submitter_email=sender_email,
             created=now,
             description=body,
-            priority=priority,
+            priority=priority
         )
         t.save()
         new = True
@@ -248,19 +262,18 @@ def ticket_from_message(message, queue, quiet):
 
     context = {
         'ticket': t,
-        'queue': queue,
+        'queue': queue
     }
 
     if new:
-
         if sender_email:
             send_templated_mail(
                 'newticket_owner',
                 context,
                 recipients=sender_email,
                 sender=queue.from_address,
-                fail_silently=True,
-                )
+                fail_silently=True
+            )
 
         if queue.new_ticket_cc:
             send_templated_mail(
@@ -268,17 +281,18 @@ def ticket_from_message(message, queue, quiet):
                 context,
                 recipients=queue.new_ticket_cc,
                 sender=queue.from_address,
-                fail_silently=True,
-                )
+                fail_silently=True
+            )
 
-        if queue.updated_ticket_cc and queue.updated_ticket_cc != queue.new_ticket_cc:
+        if queue.updated_ticket_cc and \
+                queue.updated_ticket_cc != queue.new_ticket_cc:
             send_templated_mail(
                 'newticket_cc',
                 context,
                 recipients=queue.updated_ticket_cc,
                 sender=queue.from_address,
-                fail_silently=True,
-                )
+                fail_silently=True
+            )
 
     else:
         if t.status == Ticket.REOPENED_STATUS:
@@ -292,8 +306,8 @@ def ticket_from_message(message, queue, quiet):
                 context,
                 recipients=t.assigned_to.email,
                 sender=queue.from_address,
-                fail_silently=True,
-                )
+                fail_silently=True
+            )
 
         if queue.updated_ticket_cc:
             send_templated_mail(
@@ -301,36 +315,41 @@ def ticket_from_message(message, queue, quiet):
                 context,
                 recipients=queue.updated_ticket_cc,
                 sender=queue.from_address,
-                fail_silently=True,
-                )
+                fail_silently=True
+            )
 
     f = FollowUp(
-        ticket = t,
-        title = _('E-Mail Received from %(sender_email)s' % {'sender_email': sender_email}),
-        date = datetime.now(),
-        public = True,
-        comment = body,
+        ticket=t,
+        title=_('E-Mail Received from %(sender_email)s' %
+                {'sender_email': sender_email}),
+        date=datetime.now(),
+        public=True,
+        comment=body,
     )
 
     if t.status == Ticket.REOPENED_STATUS:
         f.new_status = Ticket.REOPENED_STATUS
-        f.title = _('Ticket Re-Opened by E-Mail Received from %(sender_email)s' % {'sender_email': sender_email})
-    
+        f.title = _('Ticket Re-Opened by E-Mail Received from %(sender_email)s' %
+                    {'sender_email': sender_email})
+
     f.save()
 
     if not quiet:
-        print (" [%s-%s] %s%s" % (t.queue.slug, t.id, t.title, update)).encode('ascii', 'replace')
+        print(" [%s-%s] %s%s" % (t.queue.slug, t.id,
+                                 t.title, update)).encode('ascii', 'replace')
 
     for file in files:
         if file['content']:
-            filename = file['filename'].encode('ascii', 'replace').replace(' ', '_')
+            filename = (file['filename']
+                        .encode('ascii', 'replace')
+                        .replace(' ', '_'))
             filename = re.sub('[^a-zA-Z0-9._-]+', '', filename)
             a = Attachment(
                 followup=f,
                 filename=filename,
                 mime_type=file['type'],
-                size=len(file['content']),
-                )
+                size=len(file['content'])
+            )
             a.file.save(filename, ContentFile(file['content']), save=False)
             a.save()
             if not quiet:
@@ -341,4 +360,3 @@ def ticket_from_message(message, queue, quiet):
 
 if __name__ == '__main__':
     process_email()
-

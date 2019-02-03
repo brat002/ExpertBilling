@@ -1,9 +1,13 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
 from __future__ import absolute_import, unicode_literals
+
+import os
+
 from django.db import models
 from django.utils.safestring import mark_safe
 from django_tables2.utils import AttributeDict
-import os
+
 from .base import Column, library
 
 
@@ -30,6 +34,7 @@ class FileColumn(Column):
     If *verify_exists*, the HTML class ``exists`` or ``missing`` is added to
     the element to indicate the integrity of the storage.
     """
+
     def __init__(self, verify_exists=True, **kwargs):
         self.verify_exists = True
         super(FileColumn, self).__init__(**kwargs)

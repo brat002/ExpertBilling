@@ -1,0 +1,26 @@
+{% extends 'ebsweb/base_col_2.html' %}
+
+{% load i18n %}
+
+
+{% block sidebar %}
+{% with request.resolver_match.url_name as url_name %}
+	<div class="nav nav-pills flex-column">
+		<a class="nav-link{% if url_name == 'money_payment' %} active{% endif %}" href="{% url 'ebsweb:money_payment' %}">{% trans 'Пополнение счета' %}</a>
+
+		{% if settings.PROMISE_ALLOWED %}
+			<a class="nav-link{% if url_name == 'money_promise' %} active{% endif %}" href="{% url 'ebsweb:money_promise' %}">{% trans 'Обещанный платеж' %}</a>
+		{% endif %}
+
+		{% with request.user.account.get_account_tariff as tariff %}
+			{% if tariff and tariff.allow_ballance_transfer %}
+				<a class="nav-link{% if url_name == 'money_transfer' %} active{% endif %}" href="{% url 'ebsweb:money_transfer' %}">{% trans 'Перевод баланса' %}</a>
+			{% endif %}
+		{% endwith %}
+
+		{% if request.user.account.allow_expresscards %}
+			<a class="nav-link{% if url_name == 'money_card' %} active{% endif %}" href="{% url 'ebsweb:money_card' %}">{% trans 'Активация карты' %}</a>
+		{% endif %}
+	</div>
+{% endwith %}
+{% endblock %}

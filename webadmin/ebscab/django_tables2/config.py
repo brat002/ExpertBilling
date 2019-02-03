@@ -1,7 +1,10 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+
 from django.core.paginator import EmptyPage, PageNotAnInteger
-from ebsadmin.models import TableSettings
+
 from ebsadmin.forms import TableColumnsForm, TablePerPageForm
+from ebsadmin.models import TableSettings
+
 
 class RequestConfig(object):
     """
@@ -25,6 +28,7 @@ class RequestConfig(object):
                        the last page.
 
     """
+
     def __init__(self, request, paginate=True):
         self.request = request
         self.paginate = paginate
@@ -35,10 +39,18 @@ class RequestConfig(object):
         """
         if table.Meta.__dict__.get("configurable"):
             try:
-                ts = TableSettings.objects.get(name=table.name, user=self.request.user)
+                ts = TableSettings.objects.get(
+                    name=table.name, user=self.request.user)
             except:
                 af = table.Meta.__dict__.get('available_fields')
-                ts = TableSettings.objects.create(name=table.name, value={'fields': af if af else table.base_columns.keys()}, per_page=50, user=self.request.user)
+                ts = TableSettings.objects.create(
+                    name=table.name,
+                    value={
+                        'fields': af if af else table.base_columns.keys()
+                    },
+                    per_page=50,
+                    user=self.request.user
+                )
 
             bc = table.base_columns
             table.sequence = ts.value.get('fields')
@@ -48,20 +60,29 @@ class RequestConfig(object):
                     column.visible = False
 
             selected_columns = ts.value.get('fields')
-            z = [x for x in  table.base_columns if x not in selected_columns]
+            z = [x for x in table.base_columns if x not in selected_columns]
 
-            table.columns_form = TableColumnsForm(initial={'columns':selected_columns, 'table_name': table.name})
-            table.columns_form.fields['columns'].choices=[(x,table.base_columns.get(x).verbose_name or x) for x in  tuple(selected_columns)+tuple(z) if bc.get(x)]
-        
-            table.per_page_form = TablePerPageForm(per_page_id='id_per_page%s' % table.name, initial={'per_page': ts.per_page})
-        
+            table.columns_form = TableColumnsForm(
+                initial={'columns': selected_columns, 'table_name': table.name})
+            table.columns_form.fields['columns'].choices = [
+                (x, table.base_columns.get(x).verbose_name or x)
+                for x in tuple(selected_columns) + tuple(z) if bc.get(x)
+            ]
+
+            table.per_page_form = TablePerPageForm(
+                per_page_id='id_per_page%s' % table.name,
+                initial={
+                    'per_page': ts.per_page
+                }
+            )
+
         order_by = self.request.GET.getlist(table.prefixed_order_by_field)
         if order_by:
             table.order_by = order_by
         if self.paginate:
             self.paginate = {}
             if table.Meta.__dict__.get("configurable"):
-                self.paginate['per_page']=ts.per_page
+                self.paginate['per_page'] = ts.per_page
             if hasattr(self.paginate, "items"):
                 kwargs = dict(self.paginate)
             else:
@@ -83,4 +104,5 @@ class RequestConfig(object):
                 except PageNotAnInteger:
                     table.page = table.paginator.page(1)
                 except EmptyPage:
-                    table.page = table.paginator.page(table.paginator.num_pages)
+                    table.page = table.paginator.page(
+                        table.paginator.num_pages)

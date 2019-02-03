@@ -1,6 +1,12 @@
-from django.conf.urls import *
+# -*- coding: utf-8 -*-
+
+from django.conf.urls import url
+
+from ebsadmin.reportsystem import views as reportsystem_views
 
 
-urlpatterns = patterns('ebsadmin.reportsystem.views',
-                       url(r'^(?P<slug>[\w-]+)/$', 'report', name='reports_report'),
-                       )
+urlpatterns = [
+    url(r'^(?P<slug>[\w-]+)/$',
+        reportsystem_views.report,
+        name='reports_report')
+]
