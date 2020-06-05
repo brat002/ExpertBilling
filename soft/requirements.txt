@@ -1,6 +1,6 @@
 setuptools
 BeautifulSoup
-Django==1.5.5
+Django==1.11.29
 Django-Select2==4.3.2
 IPy
 Mako
