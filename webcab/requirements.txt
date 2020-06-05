@@ -1,5 +1,5 @@
 BeautifulSoup==3.2.1
-Django==1.5.4
+Django==1.11.29
 Django-Select2==4.2.1
 IPy==0.81
 Mako==0.9.0
