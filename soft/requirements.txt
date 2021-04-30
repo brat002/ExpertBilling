@@ -7,7 +7,7 @@ Mako
 MarkupSafe
 Pillow==2.5.3
 SQLAlchemy==0.8.2
-Twisted==13.1.0
+Twisted==20.3.0
 anyjson
 argparse
 billiard==3.3.0.23
