@@ -6,5 +6,5 @@ simplejson
 #rrdtool
 pexpect
 django-compress
-django==1.2
+django==2.2.24
 
