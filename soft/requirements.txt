@@ -34,7 +34,7 @@ pyExcelerator==0.6.4.1
 pycrypto==2.6
 pylibmc==1.2.3
 pyrad==2.0
-python-cjson==1.0.5
+python-cjson==1.1.0
 python-dateutil==2.1
 pytils==0.2.3
 pytz==2013.7
