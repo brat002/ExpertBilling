@@ -11,7 +11,7 @@ Twisted==13.1.0
 anyjson
 argparse
 billiard==3.3.0.23
-celery==3.1.23
+celery==5.2.2
 celery-with-redis
 django-annoying==0.7.7
 django-autocomplete-light==1.4.3
