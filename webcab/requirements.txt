@@ -7,7 +7,7 @@ MarkupSafe==0.18
 PIL==1.1.7
 Pillow==2.2.1
 SQLAlchemy==0.8.2
-Twisted==13.1.0
+Twisted==22.10.0
 amqp==1.0.13
 amqplib==1.0.2
 anyjson==0.3.3
