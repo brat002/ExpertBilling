@@ -142,16 +142,16 @@ def ungraceful_save():
     
 
 def SIGTERM_handler(signum, frame):
-    logger.lprint("SIGTERM recieved")
+    logger.lprint("SIGTERM received")
     graceful_save()
 
 def SIGINT_handler(signum, frame):
-    logger.lprint("SIGINT recieved")
+    logger.lprint("SIGINT received")
     graceful_save()
     
 def SIGHUP_handler(signum, frame):
     global config
-    logger.lprint("SIGHUP recieved")
+    logger.lprint("SIGHUP received")
     try:
         config.read("ebs_config.ini")
         logger.setNewLevel(int(config.get("nf", "log_level")))
@@ -163,7 +163,7 @@ def SIGHUP_handler(signum, frame):
 
 def SIGUSR1_handler(signum, frame):
     global flags
-    logger.lprint("SIGUSR1 recieved")
+    logger.lprint("SIGUSR1 received")
     with flags.cacheLock: flags.cacheFlag = True
     
 def graceful_save():
